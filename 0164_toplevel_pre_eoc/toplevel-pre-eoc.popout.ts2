@@ -1,0 +1,31 @@
+import { CS2, sessionState, useState } from 'ts2';
+
+import { popoutContentRef } from '../0728_popout/popout.refs';
+import { popoutLayout } from '../0728_popout/popout.state';
+import { ToplevelComponents } from '../lib/lib.constants';
+import { toplevelComponents } from '../lib/lib.helpers';
+
+export const preEocPopoutWidth = sessionState(42);
+
+export function preEocPopoutLayout(): void {
+  popoutLayout();
+  const [, setWidth] = useState(preEocPopoutWidth);
+  if (CS2.if_sub_has(popoutContentRef)) {
+    setWidth(PopoutWidth.OPEN);
+  } else {
+    setWidth(PopoutWidth.CLOSED);
+  }
+}
+
+export function toplevelPopoutRelayout(): void {
+  if (toplevelComponents() === ToplevelComponents.PRE_EOC) {
+    preEocPopoutLayout();
+    return;
+  }
+  popoutLayout();
+}
+
+export enum PopoutWidth {
+  CLOSED = 42,
+  OPEN = 312,
+}

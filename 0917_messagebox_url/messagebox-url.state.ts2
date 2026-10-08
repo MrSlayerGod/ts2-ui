@@ -1,0 +1,21 @@
+import { CS2, sessionState, useState } from 'ts2';
+import { openUrlRaw } from '../lib/lib.helpers';
+
+export const messageboxUrlTarget = sessionState('');
+
+export const messageboxUrlLabel = sessionState('Information');
+
+export function messageboxUrlSet(url: String, label: String): void {
+  const [, setTarget] = useState(messageboxUrlTarget);
+  const [, setLabel] = useState(messageboxUrlLabel);
+  setTarget(url);
+  setLabel(label);
+}
+
+export function messageboxUrlOpen(): void {
+  const [url] = useState(messageboxUrlTarget);
+  if (CS2.string_length(url) === 0) {
+    return;
+  }
+  openUrlRaw(url, true, true);
+}

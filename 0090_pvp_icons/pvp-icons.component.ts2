@@ -5,6 +5,7 @@ import {
   predictServerState,
   useInterval,
   useOnResize,
+  useRef,
   useServerState,
   useState,
   useUniverse,
@@ -46,10 +47,11 @@ import {
   safezoneRef,
   targetDodgerRef,
   targetSystemRef,
+  StyleWatchVarps,
   TargetVarbits,
   TELEBLOCK_OP,
 } from './pvp-icons.constants';
-import { kdrText, layoutMode, levelText, rangeText, wildernessLevel } from './pvp-icons.helpers';
+import { attackStyleText, kdrText, layoutMode, levelText, rangeText, wildernessLevel } from './pvp-icons.helpers';
 import {
   bannerBoundsW,
   bannerRevealW,
@@ -297,6 +299,23 @@ function IconPlate(): Component {
   const skullHidden: Boolean = !skullShown(mode);
   const quitterHidden: Boolean = targetHidden(mode);
   const styleHidden: Boolean = !enhancedAny();
+  const styleRef = useRef();
+  const [styleBound, setStyleBound] = useState<Boolean>(false);
+  useWatch(
+    [
+      StyleWatchVarps.SETTINGS_VARP_2,
+      StyleWatchVarps.COM_MODE,
+      StyleWatchVarps.RANDOMHITSOUND,
+      StyleWatchVarps.TOPLEVEL_TEMP,
+    ],
+    () => {
+      if (enhancedAny()) {
+        setStyleBound(true);
+      }
+    },
+    styleRef,
+  );
+  const styleText: String = styleBound ? attackStyleText() : '';
 
   return (
     <>
@@ -352,6 +371,7 @@ function IconPlate(): Component {
       />
 
       <text
+        ref={styleRef}
         x="center"
         y={{ bottom: 0 }}
         w="fill"
@@ -361,7 +381,7 @@ function IconPlate(): Component {
         align="center"
         valign="middle"
         shadow
-        text=""
+        text={styleText}
         hide={styleHidden}
       />
     </>

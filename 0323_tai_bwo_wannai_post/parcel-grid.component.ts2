@@ -9,10 +9,10 @@ export function ParcelGrid(): Component {
   return (
     <layer w="fill" h="fill">
       {inv.map((item, slot) =>
-        item !== -1 ? (
+        (item !== -1 ? (
           <sprite
-            x={(slot % Grid.COLUMNS) * Grid.STRIDE_X}
-            y={Grid.TOP + (slot / Grid.COLUMNS) * Grid.STRIDE_Y}
+            x={slot % Grid.COLUMNS * Grid.STRIDE_X}
+            y={Grid.TOP + slot / Grid.COLUMNS * Grid.STRIDE_Y}
             w={Grid.SLOT_W}
             h={Grid.SLOT_H}
             item={item}
@@ -30,8 +30,8 @@ export function ParcelGrid(): Component {
           />
         ) : (
           <sprite
-            x={(slot % Grid.COLUMNS) * Grid.STRIDE_X}
-            y={Grid.TOP + (slot / Grid.COLUMNS) * Grid.STRIDE_Y}
+            x={slot % Grid.COLUMNS * Grid.STRIDE_X}
+            y={Grid.TOP + slot / Grid.COLUMNS * Grid.STRIDE_Y}
             w={Grid.SLOT_W}
             h={Grid.SLOT_H}
             item={ParcelItems.BLANK}
@@ -42,7 +42,7 @@ export function ParcelGrid(): Component {
             dragDeadZone={5}
             dragDeadTime={5}
           />
-        ),
+        )),
       )}
     </layer>
   );

@@ -6,7 +6,7 @@ import { Sounds } from '../lib/game/sounds';
 import { Sprites } from '../lib/game/sprites';
 import { Varbits } from '../lib/game/varbits';
 
-export function setSelectedQuantity(table: Enum, value: Int): void {
+export function setSelectedQuantity(table: QuantityTable, value: Int): void {
   if (table === QuantityTable.FARMING_TOOLS || table === QuantityTable.HALLOWED_TOOLS) {
     predictServerState(Varbits.FARMING_TOOLS_SELECTEDQUANTITY, value);
     return;
@@ -56,7 +56,7 @@ export const QUANTITY_BUTTONS = [
   { label: 'All', value: 2 },
 ];
 
-export function selectQuantity(table: Enum, value: Int, op: Int): void {
+export function selectQuantity(table: QuantityTable, value: Int, op: Int): void {
   if (op !== 1) {
     return;
   }

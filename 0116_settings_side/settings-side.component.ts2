@@ -8,6 +8,8 @@ import { ControlsPanel } from './controls-panel.component';
 import { DisplayPanel } from './display-panel.component';
 import { DropdownOverlay } from './dropdown-overlay.component';
 import { TabRail } from './tab-rail.component';
+import { SideTooltip } from './settings-side.tooltip.component';
+import { resetZoomSlider } from './settings-side.zoom';
 import { clickSound } from './settings-side.helpers';
 import { Layout, LineHeight, SideColor, SideFont, SideTab, SideVars } from './settings-side.constants';
 
@@ -16,7 +18,13 @@ export function SettingsSide(): Component {
     <>
       <TabRail />
       <Heading />
-      <layer x="center" y={{ bottom: Layout.frame.bottom }} w={Layout.frame.w} h={Layout.frame.h}>
+      <layer
+        x="center"
+        y={{ bottom: Layout.frame.bottom }}
+        w={Layout.frame.w}
+        h={Layout.frame.h}
+        onLoad={() => resetZoomSlider()}
+      >
         <ControlsPanel />
         <AudioPanel />
         <DisplayPanel />
@@ -24,7 +32,7 @@ export function SettingsSide(): Component {
       </layer>
       <AllSettingsButton />
       <DropdownOverlay />
-      <layer w={Layout.tooltip.w} h={Layout.tooltip.h} />
+      <SideTooltip />
     </>
   );
 }

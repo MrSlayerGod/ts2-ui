@@ -1,0 +1,52 @@
+import { CS2, sessionState, stopTimer, useServerState, useState } from 'ts2';
+import { clientClock, playSound } from '../lib/lib.engine';
+import { Fade, LockSounds, LockVars } from './bank-side-locks.constants';
+
+export enum LockPanel {
+  UNBUILT = 0,
+  OPEN = 1,
+  DISMISSED = 2,
+}
+
+export const lockPanel = sessionState(0);
+
+export const lockPanelAt = sessionState(0);
+
+export function bankSideLocksBuild(target: Int): void {
+  const [, setPhase] = useState(lockPanel);
+  const [, setAt] = useState(lockPanelAt);
+  setPhase(LockPanel.OPEN);
+  setAt(clientClock());
+}
+
+export function dismissLockPanel(fromDone: Boolean): void {
+  const [, setPhase] = useState(lockPanel);
+  const [, setAt] = useState(lockPanelAt);
+  if (fromDone) {
+    playSound(LockSounds.SELECT);
+  }
+  setPhase(LockPanel.DISMISSED);
+  setAt(clientClock());
+  if (!fromDone) {
+    const floater: Int = useServerState(LockVars.CHATBOX_FLOATER_OPENED);
+    const colour: Int = useServerState(LockVars.COLOUR_MODAL_OPENED);
+    const csv: Int = useServerState(LockVars.TEXTFIELD_MODAL_OPENED);
+    if (floater === 1 || colour === 1 || csv === 1) {
+      return;
+    }
+  }
+  CS2.countdialog_resume('0');
+}
+
+export function lockFadeStep(target: ComponentId, phase: Int, startedAt: Int): void {
+  const from: Int = phase === LockPanel.OPEN ? Fade.CLEAR : Fade.DIM;
+  const to: Int = phase === LockPanel.OPEN ? Fade.DIM : Fade.CLEAR;
+  const cycles: Int = phase === LockPanel.OPEN ? Fade.IN_CYCLES : Fade.OUT_CYCLES;
+  const elapsed: Int = clientClock() - startedAt;
+  if (elapsed >= cycles) {
+    target.transparency = to;
+    stopTimer(target);
+    return;
+  }
+  target.transparency = from + CS2.scale(elapsed, cycles, to - from);
+}

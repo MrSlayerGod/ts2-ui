@@ -1,3 +1,4 @@
+/** @wire */
 export enum ServerScript {
   LEAGUE_RELIC_TOGGLE = 1,
   SAILING_CUSTOMISATION_BUILD = 2,

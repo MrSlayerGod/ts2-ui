@@ -40,7 +40,7 @@ export function StatisticsPane(): Component {
 
         {Leagues.scan(
           (row, league, index, top) =>
-            leaguePoints(league) > 0 ? <LeagueBlock row={row} league={league} top={top} width={width} /> : null,
+            (leaguePoints(league) > 0 ? <LeagueBlock row={row} league={league} top={top} width={width} /> : null),
           (row, league) => (leaguePoints(league) > 0 ? Rows.LEAGUE_H : 0),
           Rows.GENERAL_H,
         )}

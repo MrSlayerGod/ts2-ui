@@ -1,6 +1,8 @@
 import { CS2, intArray, useInventory, useUniverse } from 'ts2';
 
 import { itemName } from '../lib/lib.engine';
+import { tradeSlotChangedAt } from '../0334_tradeconfirm/trade-confirm.helpers';
+import { ChangeMark, flashingSince as flashWindowStart } from './change-mark.component';
 import { Grid, OtherInventory, TradeColors, TradeInventories, TradeSprites } from './trademain.constants';
 import { cellX, cellY, gridColumnGap, gridRowGap, gridRows } from './trade-grid';
 import { hideTradeTip, showTradeTip } from './trade-tooltip.component';
@@ -10,6 +12,7 @@ export function OtherOffer(): Component {
   const universe = useUniverse();
 
   const slots: Int = trade.size;
+  const flashingSince: Int = flashWindowStart();
   const rows: Int = gridRows(slots);
   const rowGap: Int = gridRowGap(universe.height, rows);
   const columnGap: Int = gridColumnGap(universe.width);
@@ -45,16 +48,29 @@ export function OtherOffer(): Component {
           ),
       )}
 
-      {held.map((item, index) => (
-        <sprite
-          x={cellX(index, columnGap) + Grid.MARK_INSET}
-          y={cellY(index, rowGap)}
-          w={Grid.MARK_W}
-          h={Grid.CELL_H}
-          sprite={TradeSprites.CHANGED}
-          transparency={Grid.MARK_TRANSPARENCY}
-        />
-      ))}
+      {held.map(
+        (item, index) =>
+          tradeSlotChangedAt(index) > flashingSince && (
+            <ChangeMark
+              x={cellX(index, columnGap) + Grid.MARK_INSET}
+              y={cellY(index, rowGap)}
+              changedAt={tradeSlotChangedAt(index)}
+            />
+          ),
+      )}
+      {held.map(
+        (item, index) =>
+          tradeSlotChangedAt(index) <= flashingSince && (
+            <sprite
+              x={cellX(index, columnGap) + Grid.MARK_INSET}
+              y={cellY(index, rowGap)}
+              w={Grid.MARK_W}
+              h={Grid.CELL_H}
+              sprite={TradeSprites.CHANGED}
+              transparency={Grid.MARK_TRANSPARENCY}
+            />
+          ),
+      )}
     </layer>
   );
 }

@@ -28,7 +28,7 @@ export function ColosseumTab({
   const [hovered, setHovered] = useState(0);
 
   const left: Int = index * (width + gap);
-  const state: Int = selected ? BoxStyle.PLAIN : hovered === 1 ? BoxStyle.HOVERED : BoxStyle.INSET;
+  const state: Int = selected ? BoxStyle.PLAIN : (hovered === 1 ? BoxStyle.HOVERED : BoxStyle.INSET);
   const skin = ColosseumBoxStyles.at(state);
   const fill: Sprite = skin === null ? -1 : skin.fill;
   const edgeLeft: Sprite = skin === null ? -1 : skin.edgeLeft;

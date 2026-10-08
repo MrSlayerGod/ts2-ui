@@ -1,0 +1,68 @@
+import { CS2, useState } from 'ts2';
+import { clampFreecamSpeed } from '../0161_toplevel_osrs_stretch/toplevel-osrs-stretch.atmosphere';
+import { freecamSpeed } from '../lib/game/varcs';
+
+enum Freecam {
+  SLOWED = 6,
+  MIN = 3,
+  MAX = 12,
+}
+
+export function deadmanFreecamEnable(): void {
+  CS2.cheat_do('~freecam');
+  clampFreecamSpeed();
+  const [speed] = useState(freecamSpeed);
+  CS2.free_cam_speed_set(speed, Freecam.SLOWED);
+}
+
+export function deadmanOverlayHide(): void {
+  CS2.cheat_do('~dmm_overlay_close');
+}
+
+export function deadmanMapEnable(): void {
+  CS2.cheat_do('~dmm_map');
+}
+
+export function deadmanAreaSwitch(): void {
+  CS2.cheat_do('~dmm_switch');
+}
+
+export function deadmanFinalArea1Tele(): void {
+  CS2.cheat_do('~dmm_area_1');
+}
+
+export function deadmanFinalArea2Tele(): void {
+  CS2.cheat_do('~dmm_area_2');
+}
+
+export function deadmanArenasTele(): void {
+  CS2.cheat_do('~dmm_arenas');
+}
+
+export function deadman1v1Tele(): void {
+  CS2.cheat_do('~dmm_1v1_tele');
+}
+
+export function deadmanChestTele(): void {
+  CS2.cheat_do('~dmm_chest_tele');
+}
+
+export function deadmanLobbyTele(): void {
+  CS2.cheat_do('~dmm_lobby_tele');
+}
+
+export function freecamFaster(): void {
+  clampFreecamSpeed();
+  const [speed, setSpeed] = useState(freecamSpeed);
+  const faster: Int = Math.min(speed + 1, Freecam.MAX);
+  setSpeed(faster);
+  CS2.free_cam_speed_set(faster, Freecam.SLOWED);
+}
+
+export function freecamSlower(): void {
+  clampFreecamSpeed();
+  const [speed, setSpeed] = useState(freecamSpeed);
+  const slower: Int = Math.max(speed - 1, Freecam.MIN);
+  setSpeed(slower);
+  CS2.free_cam_speed_set(slower, Freecam.SLOWED);
+}

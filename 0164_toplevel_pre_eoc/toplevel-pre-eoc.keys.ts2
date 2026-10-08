@@ -1,0 +1,88 @@
+import { CS2, useServerState, useState } from 'ts2';
+import { crmOverlayDismiss } from '../0065_crm_surprisepopup_side/crm-overlay-dismiss';
+import { keybindPanel } from '../0161_toplevel_osrs_stretch/toplevel-osrs-stretch.keys';
+import { chatmodalRef } from '../0162_chatbox/chatbox.constants';
+import { Panel } from '../0548_toplevel/toplevel.constants';
+import { deselectsOpenTab, switchSidePanel } from '../0548_toplevel/toplevel.helpers';
+import { Varbits } from '../lib/game/varbits';
+import { crmOverlayActive, meslayermode, toplevelPanel } from '../lib/game/varcs';
+import { ToplevelComponents } from '../lib/lib.constants';
+import { dialogueMayAdvance } from '../lib/lib.dialogue';
+import { SideSlots, controlRef, floaterRef, mainmodalRef, sidemodalRef } from './toplevel-pre-eoc.constants';
+import { preEocToplevelInit } from './toplevel-pre-eoc.helpers';
+import { preEocPopoutLayout } from './toplevel-pre-eoc.popout';
+import { rendererNoticeBuild } from '../lib/enhanced/renderer-notice.component';
+
+export function preEocKeypress(key: Int): void {
+  if (dialogueMayAdvance(-1, -1) === false) {
+    return;
+  }
+  if (key === Keys.ESCAPE) {
+    const [mode] = useState(meslayermode);
+    if (mode === 14 || mode === 17 || mode === 18 || mode === 11) {
+      return;
+    }
+    if (useServerState(Varbits.KEYBINDING_ESC_TO_CLOSE) === 1) {
+      const dismissed: Boolean = crmOverlayDismiss();
+      if (CS2.if_sub_has(floaterRef)) {
+        return;
+      }
+      if (preEocMountOpen(Panel.INVENTORY) && CS2.if_sub_has(mainmodalRef)) {
+        CS2.if_close();
+        return;
+      }
+      if (preEocMountOpen(Panel.INVENTORY) && CS2.if_sub_has(sidemodalRef)) {
+        CS2.if_close();
+        return;
+      } else if (CS2.if_sub_has(chatmodalRef)) {
+        CS2.if_close();
+        return;
+      } else if (dismissed) {
+        return;
+      }
+    }
+  }
+  const panel: Int = keybindPanel(key);
+  if (panel === -1 || panel === useServerState(Varbits.FLASHSIDE) - 1) {
+    return;
+  }
+  if (preEocMountOpen(panel)) {
+    preEocTabHotkey(panel);
+  }
+}
+
+function preEocTabHotkey(panel: Int): void {
+  const [active] = useState(crmOverlayActive);
+  if (CS2.testbit(active, 1)) {
+    crmOverlayDismiss();
+  }
+  let target: Int = panel;
+  const [selected] = useState(toplevelPanel);
+  if (
+    useServerState(Varbits.HOTKEY_CANNOT_CLOSE_SIDEPANEL) === 0 &&
+    selected === panel &&
+    deselectsOpenTab(ToplevelComponents.PRE_EOC)
+  ) {
+    target = Panel.NONE;
+  }
+  switchSidePanel(target, 0, true);
+}
+
+function preEocMountOpen(panel: Int): Boolean {
+  const slot: ComponentId = SideSlots.at(panel) ?? -1;
+  if (slot !== -1 && CS2.if_sub_has(slot)) {
+    return true;
+  }
+  return false;
+}
+
+enum Keys {
+  ESCAPE = 13,
+}
+
+export function preEocToplevelLoad(): void {
+  preEocToplevelInit();
+  controlRef.onKey = (event) => preEocKeypress(event.keyCode);
+  preEocPopoutLayout();
+  rendererNoticeBuild();
+}

@@ -33,7 +33,7 @@ export function RefundButton(): Component {
           h="fill"
           text={Copy.REFUND}
           font={PetFonts.BODY}
-          color={raised === 1 ? PetColor.ACCENT : dead === 1 ? PetColor.DIM : PetColor.WHITE}
+          color={raised === 1 ? PetColor.ACCENT : (dead === 1 ? PetColor.DIM : PetColor.WHITE)}
           align="center"
           valign="middle"
           shadow

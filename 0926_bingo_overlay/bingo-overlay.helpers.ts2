@@ -962,7 +962,7 @@ export function bingoGlobalRewardSlot(grid: Int, slot: Int): Int {
 
 export function bingoSlotBitAddress(slot: Int): [Int, Int, Int] {
   const varp: Int = slot / 16;
-  const low: Int = (slot % 16) * 2;
+  const low: Int = slot % 16 * 2;
   return [varp, low, low + 1];
 }
 
@@ -1174,7 +1174,7 @@ export function bingoRewardClaim(grid: Int, slot: Int): Int {
 export function bingoXpBoostAddress(slot: Int): [Int, Int, Int] {
   const width: Int = 10;
   const perVarp: Int = 32 / width;
-  const low: Int = (slot % perVarp) * width;
+  const low: Int = slot % perVarp * width;
   return [slot / perVarp, low, low + width - 1];
 }
 

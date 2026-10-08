@@ -67,12 +67,13 @@ import {
   xpDropsRef,
   zeahRef,
 } from './toplevel-spectator.constants';
-import { spectatorHelperInit, spectatorToplevelInit } from './toplevel-spectator.helpers';
+import { spectatorHelperInit } from './toplevel-spectator.helpers';
+import { spectatorToplevelLoad } from './toplevel-spectator.keys';
 
 export function ToplevelSpectator(): Component {
   return (
     <>
-      <layer static ref={gameframeRef} x={0} y={0} w="fill" h="fill" onLoad={() => spectatorToplevelInit()}>
+      <layer static ref={gameframeRef} x={0} y={0} w="fill" h="fill" onLoad={() => spectatorToplevelLoad()}>
         <layer static ref={viewportRef} x={0} y={0} w="fill" h="fill" contentType="worldView" />
         <layer static ref={viewportTrackerBackRef} x="center" y="center" w="fill" h="fill">
           <layer

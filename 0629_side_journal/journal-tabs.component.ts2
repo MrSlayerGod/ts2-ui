@@ -93,6 +93,7 @@ export function JournalTabs(): Component {
             index={Tab.LEAGUES}
             icon={fifthTabIcon(fifth)}
             label={fifthTabLabel(fifth)}
+            blink={1}
             selected={open === Tab.LEAGUES ? 1 : 0}
             transparent={transparent}
             painted={fifthPainted === 1 || open === Tab.LEAGUES ? 1 : 0}

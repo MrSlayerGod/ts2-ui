@@ -74,8 +74,8 @@ function DeathkeepSlot({
   tip: String;
   noCount?: Boolean;
 }): Component {
-  const x: Int = inset + (index % cols) * (Layout.SLOT_W + gap);
-  const y: Int = Layout.ROW_TOP + (index / cols) * (Layout.SLOT_H + gap);
+  const x: Int = inset + index % cols * (Layout.SLOT_W + gap);
+  const y: Int = Layout.ROW_TOP + index / cols * (Layout.SLOT_H + gap);
   if (noCount) {
     return (
       <sprite
@@ -140,7 +140,7 @@ function sectionHeight(n: Int, cols: Int, gap: Int): Int {
   if (n <= 0) {
     return 0;
   }
-  return Layout.ROW_TOP + ((n - 1) / cols) * (Layout.SLOT_H + gap) + Layout.SLOT_H;
+  return Layout.ROW_TOP + (n - 1) / cols * (Layout.SLOT_H + gap) + Layout.SLOT_H;
 }
 
 export function DeathkeepLeft(): Component {

@@ -112,7 +112,7 @@ export function LeagueTrophies(): Component {
         scrollHeight={extent > Layout.PANE_H ? extent : 0}
       >
         {Trophies.map((trophy, slotIndex) =>
-          !trophyEarned(trophy) ? (
+          (!trophyEarned(trophy) ? (
             <sprite
               x={column[slotIndex] * Grid.STRIDE + Grid.INSET_X}
               y={rowY[slotIndex]}
@@ -161,7 +161,7 @@ export function LeagueTrophies(): Component {
               options={['Store', '', '', '', '', '', '', '', '', 'Examine']}
               optionSubject={`<col=ff9040>${itemName(trophy as Item)}`}
             />
-          ),
+          )),
         )}
 
         {onLeagueWorld ? (
@@ -213,7 +213,7 @@ export function LeagueTrophies(): Component {
         ) : (
           <>
             {leagueShown.map((flag, leagueKey) =>
-              leagueKey >= 1 && leagueKey <= boundaries && flag === 0 ? (
+              (leagueKey >= 1 && leagueKey <= boundaries && flag === 0 ? (
                 <>
                   <text
                     x={Grid.INSET_X}
@@ -234,7 +234,7 @@ export function LeagueTrophies(): Component {
                     h={0}
                   />
                 </>
-              ) : null,
+              ) : null),
             )}
 
             {anyHeading === 0 && (

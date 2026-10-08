@@ -1,3 +1,5 @@
+import { onMounted, onUpdated } from 'ts2';
+
 import { BoardButton } from '../lib/board-button.component';
 import { ScrollbarVertical } from '../lib/scrollbar-vertical.component';
 import { SteelBorderEntrypoint } from '../lib/steel-border-entrypoint.component';
@@ -14,7 +16,9 @@ import {
   Copy,
   Layout,
   SortMode,
+  BoardPausebutton,
   applicantsRef,
+  boardAnchorsRef,
   bottomRef,
   filtersRef,
   legendRef,
@@ -24,8 +28,9 @@ import {
   sortareaRef,
   universeRef,
 } from './clans-board.constants';
-import { layoutBoardButtons } from './clans-board.helpers';
-import { MyClanButton } from './my-clan-button.component';
+import { ClanBoardLoadedButton, MyClanButton } from './my-clan-button.component';
+import { applicantsWidth, buttonGap, myclanWidth, refreshWidth } from './clans-board.helpers';
+import { resetClanBoard } from './clans-board.state';
 
 export function ClansBoard(): Component {
   return (
@@ -35,7 +40,8 @@ export function ClansBoard(): Component {
       y="center"
       w={Layout.PANEL_W}
       h={Layout.PANEL_H}
-      onLoad={() => layoutBoardButtons()}
+      static
+      onLoad={() => resetClanBoard()}
     >
       <SteelBorderEntrypoint title={Copy.TITLE} />
 
@@ -111,7 +117,7 @@ export function ClansBoard(): Component {
               shadow
             />
             <layer x="center" y={{ bottom: Layout.RESET_BOTTOM }} w={Layout.RESET_W} h={{ fill: Layout.RESET_INSET_H }}>
-              <BoardButton label={Copy.RESET} />
+              <ClanBoardLoadedButton label={Copy.RESET} resumeAt={BoardPausebutton.RESET} />
             </layer>
             <ThinBoxEntrypoint />
           </layer>
@@ -186,19 +192,49 @@ export function ClansBoard(): Component {
             <ThinBoxEntrypoint />
           </layer>
           <layer ref={bottomRef} x="center" y="bottom" w="fill" h={Layout.BOTTOM_H}>
-            <layer ref={myclanRef} x={0} y="center" w={0} h={{ fill: Layout.BUTTON_INSET_H }}>
+            <layer static ref={myclanRef} x={0} y="center" w={0} h={{ fill: Layout.BUTTON_INSET_H }}>
               <MyClanButton />
             </layer>
-            <layer ref={applicantsRef} x={0} y="center" w={0} h={{ fill: Layout.BUTTON_INSET_H }}>
-              <BoardButton label={Copy.APPLICANTS} />
+            <layer static ref={applicantsRef} x={0} y="center" w={0} h={{ fill: Layout.BUTTON_INSET_H }}>
+              <BoardButton label={Copy.APPLICANTS} resumeIn={boardAnchorsRef} resumeAt={BoardPausebutton.APPLICANTS} />
             </layer>
-            <layer ref={refreshRef} x={0} y="center" w={0} h={{ fill: Layout.BUTTON_INSET_H }}>
-              <BoardButton label={Copy.REFRESH} />
+            <layer static ref={refreshRef} x={0} y="center" w={0} h={{ fill: Layout.BUTTON_INSET_H }}>
+              <ClanBoardLoadedButton label={Copy.REFRESH} resumeAt={BoardPausebutton.REFRESH} />
             </layer>
             <ThinBoxEntrypoint />
           </layer>
         </layer>
       </layer>
+
+      <ClanBoardButtonLayout />
     </layer>
   );
+}
+
+function ClanBoardButtonLayout(): Component {
+  const myclanW: Int = myclanWidth();
+  const applicantsW: Int = applicantsWidth();
+  const refreshW: Int = refreshWidth();
+  const gap: Int = buttonGap(myclanW, applicantsW, refreshW);
+  const myclanX: Int = Layout.BOTTOM_EDGE + gap;
+  const applicantsX: Int = myclanX + myclanW + gap;
+  const refreshX: Int = applicantsX + applicantsW + gap;
+
+  onMounted(() => placeButtons(myclanX, myclanW, applicantsX, applicantsW, refreshX, refreshW));
+  onUpdated(() => placeButtons(myclanX, myclanW, applicantsX, applicantsW, refreshX, refreshW));
+
+  return <layer x={0} y={0} w={0} h={0} />;
+}
+
+function placeButtons(
+  myclanX: Int,
+  myclanW: Int,
+  applicantsX: Int,
+  applicantsW: Int,
+  refreshX: Int,
+  refreshW: Int,
+): void {
+  myclanRef.props = { x: myclanX, y: 'center', w: myclanW, h: { fill: Layout.BUTTON_INSET_H } };
+  applicantsRef.props = { x: applicantsX, y: 'center', w: applicantsW, h: { fill: Layout.BUTTON_INSET_H } };
+  refreshRef.props = { x: refreshX, y: 'center', w: refreshW, h: { fill: Layout.BUTTON_INSET_H } };
 }

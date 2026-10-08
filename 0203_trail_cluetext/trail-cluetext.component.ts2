@@ -1,5 +1,10 @@
+import { createRef, onMounted, onUpdated, useState } from 'ts2';
+
 import { closeInterface, graphicSwapper } from '../lib/lib.helpers';
 import { ClueColor, ClueFonts, ClueModel, CloseSprites, Layout } from './trail-cluetext.constants';
+import { resetClueTextTight, trailClueTextTight } from './trail-cluetext.state';
+
+const clueText = createRef('trail_cluetext_text');
 
 export function TrailClueText(): Component {
   return (
@@ -28,6 +33,8 @@ export function TrailClueText(): Component {
       />
 
       <text
+        static
+        ref={clueText}
         x={Layout.TEXT_X}
         y={Layout.TEXT_Y}
         w={Layout.TEXT_W}
@@ -38,7 +45,24 @@ export function TrailClueText(): Component {
         align="center"
         valign="middle"
         lineHeight={Layout.TEXT_LINE_H}
+        onLoad={() => resetClueTextTight()}
       />
+
+      <ClueTextSpacing />
     </>
   );
+}
+
+function ClueTextSpacing(): Component {
+  const [tight] = useState(trailClueTextTight);
+  const lineHeight = tight !== 0 ? Layout.TEXT_LINE_H_TIGHT : Layout.TEXT_LINE_H;
+
+  onMounted(() => placeClueText(lineHeight));
+  onUpdated(() => placeClueText(lineHeight));
+
+  return <layer x={0} y={0} w={0} h={0} />;
+}
+
+function placeClueText(lineHeight: Int): void {
+  clueText.props = { align: 'center', valign: 'middle', lineHeight: lineHeight };
 }

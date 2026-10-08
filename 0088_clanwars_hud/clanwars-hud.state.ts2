@@ -1,0 +1,9 @@
+import { sessionState } from 'ts2';
+
+export const clanwarsBoardDraws = sessionState(0);
+
+export const clanwarsCountdownAt = sessionState(-1);
+
+export const clanwarsClockAt = sessionState(0);
+
+export const clanwarsClockRunning = sessionState(0);

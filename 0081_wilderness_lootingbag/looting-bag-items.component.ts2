@@ -21,8 +21,8 @@ export function LootingBagItems(): Component {
         (item, index) =>
           item !== -1 && (
             <sprite
-              x={(index % Grid.COLUMNS) * Grid.STRIDE_X}
-              y={(index / Grid.COLUMNS) * Grid.CELL_H}
+              x={index % Grid.COLUMNS * Grid.STRIDE_X}
+              y={index / Grid.COLUMNS * Grid.CELL_H}
               w={Grid.CELL_W}
               h={Grid.CELL_H}
               item={item}

@@ -46,8 +46,8 @@ export function NzoneResourcesPane(): Component {
       {NzoneResources.map((item, index) => (
         <NzoneShopCell
           item={item}
-          x={NzoneLayout.ICON_INSET + (index % NzoneLayout.COLUMNS) * NzoneLayout.COLUMN}
-          y={(index / NzoneLayout.COLUMNS) * NzoneLayout.ROW_PITCH}
+          x={NzoneLayout.ICON_INSET + index % NzoneLayout.COLUMNS * NzoneLayout.COLUMN}
+          y={index / NzoneLayout.COLUMNS * NzoneLayout.ROW_PITCH}
         />
       ))}
     </layer>
@@ -64,15 +64,15 @@ export function NzoneBenefitsPane(): Component {
         <>
           <NzoneShopCell
             item={item}
-            x={NzoneLayout.ICON_INSET + (index % NzoneLayout.COLUMNS) * NzoneLayout.COLUMN}
-            y={blurbHeight + (index / NzoneLayout.COLUMNS) * NzoneLayout.BENEFIT_PITCH}
+            x={NzoneLayout.ICON_INSET + index % NzoneLayout.COLUMNS * NzoneLayout.COLUMN}
+            y={blurbHeight + index / NzoneLayout.COLUMNS * NzoneLayout.BENEFIT_PITCH}
           />
           <NzonePotionDoses
             potion={item}
-            x={NzoneLayout.ICON_INSET + (index % NzoneLayout.COLUMNS) * NzoneLayout.COLUMN}
+            x={NzoneLayout.ICON_INSET + index % NzoneLayout.COLUMNS * NzoneLayout.COLUMN}
             y={
               blurbHeight +
-              (index / NzoneLayout.COLUMNS) * NzoneLayout.BENEFIT_PITCH +
+              index / NzoneLayout.COLUMNS * NzoneLayout.BENEFIT_PITCH +
               NzoneLayout.ICON_H +
               NzoneLayout.PRICE_H
             }
@@ -123,8 +123,8 @@ export function NzoneUpgradesPane(): Component {
           NzoneImbueable.get(item) !== -1 && (
             <>
               <sprite
-                x={NzoneLayout.ICON_INSET + (rank[index] % NzoneLayout.COLUMNS) * NzoneLayout.COLUMN}
-                y={blurbHeight + (rank[index] / NzoneLayout.COLUMNS) * NzoneLayout.ROW_PITCH}
+                x={NzoneLayout.ICON_INSET + rank[index] % NzoneLayout.COLUMNS * NzoneLayout.COLUMN}
+                y={blurbHeight + rank[index] / NzoneLayout.COLUMNS * NzoneLayout.ROW_PITCH}
                 w={NzoneLayout.ICON_W}
                 h={NzoneLayout.ICON_H}
                 item={item}
@@ -137,8 +137,8 @@ export function NzoneUpgradesPane(): Component {
                 onMouseLeave={(event) => ccSetTransparency(event.component, event.subId, 0)}
               />
               <text
-                x={NzoneLayout.ICON_INSET + (rank[index] % NzoneLayout.COLUMNS) * NzoneLayout.COLUMN}
-                y={blurbHeight + (rank[index] / NzoneLayout.COLUMNS) * NzoneLayout.ROW_PITCH + NzoneLayout.ICON_H}
+                x={NzoneLayout.ICON_INSET + rank[index] % NzoneLayout.COLUMNS * NzoneLayout.COLUMN}
+                y={blurbHeight + rank[index] / NzoneLayout.COLUMNS * NzoneLayout.ROW_PITCH + NzoneLayout.ICON_H}
                 w={NzoneLayout.PRICE_W}
                 h={NzoneLayout.PRICE_H}
                 text={nzoneRewardPrice(item as ItemName)}

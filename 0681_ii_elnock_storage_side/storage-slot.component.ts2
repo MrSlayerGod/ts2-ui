@@ -1,6 +1,6 @@
 import { useRef, useState } from 'ts2';
 
-import { magicToString, selectedQuantity } from '../0126_farming_tools_side/carried-tools.shared';
+import { magicToString, QuantityTable, selectedQuantity } from '../0126_farming_tools_side/carried-tools.shared';
 import { StoneButtonOutFilled } from '../lib/stone-button-out-filled.component';
 import { flashFor } from '../lib/lib.components';
 import { StoneButtonPressedFilled } from '../lib/stone-button-pressed-filled.component';
@@ -14,7 +14,15 @@ import {
   StorageSlot,
 } from './ii-elnock-storage-side.constants';
 
-export function StorageToolSlot({ table, item, label }: { table: Enum; item: Item; label: String }): Component {
+export function StorageToolSlot({
+  table,
+  item,
+  label,
+}: {
+  table: QuantityTable;
+  item: Item;
+  label: String;
+}): Component {
   const [hovered, setHovered] = useState(0);
   const icon = useRef();
 

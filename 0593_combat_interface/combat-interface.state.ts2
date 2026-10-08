@@ -1,0 +1,13 @@
+import { sessionState, useState } from 'ts2';
+
+import { playSound } from '../lib/lib.engine';
+
+const SELECT_SOUND = 2266;
+
+export const combatSailingLoose = sessionState(0);
+
+export function combatSailingReshow(): void {
+  playSound(SELECT_SOUND);
+  const [, setLoose] = useState(combatSailingLoose);
+  setLoose(0);
+}

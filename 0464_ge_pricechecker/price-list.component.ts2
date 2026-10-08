@@ -103,7 +103,7 @@ export function PriceList(): Component {
   let slot: Int = 0;
   while (slot < Grid.SLOTS) {
     if (offer[slot] !== -1) {
-      lastRowY = (slot / Grid.COLUMNS) * Grid.ROW_H;
+      lastRowY = slot / Grid.COLUMNS * Grid.ROW_H;
     }
     slot = slot + 1;
   }
@@ -125,8 +125,8 @@ export function PriceList(): Component {
             item !== -1 && (
               <>
                 <sprite
-                  x={(index % Grid.COLUMNS) * Grid.STRIDE_X + Grid.ITEM_DX}
-                  y={(index / Grid.COLUMNS) * Grid.ROW_H}
+                  x={index % Grid.COLUMNS * Grid.STRIDE_X + Grid.ITEM_DX}
+                  y={index / Grid.COLUMNS * Grid.ROW_H}
                   w={Grid.ITEM_W}
                   h={Grid.ITEM_H}
                   item={item}
@@ -142,8 +142,8 @@ export function PriceList(): Component {
 
                 {offer.count(index) > 0 && (
                   <text
-                    x={(index % Grid.COLUMNS) * Grid.STRIDE_X}
-                    y={(index / Grid.COLUMNS) * Grid.ROW_H + Grid.LABEL_DY}
+                    x={index % Grid.COLUMNS * Grid.STRIDE_X}
+                    y={index / Grid.COLUMNS * Grid.ROW_H + Grid.LABEL_DY}
                     w={Grid.COL_W}
                     h={Grid.LABEL_H}
                     text={priceLabel(offer.count(index), prices[index])}

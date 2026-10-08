@@ -1,4 +1,5 @@
-import { Layout, toaPartylistRef, tooltipRef } from './toa-partylist.constants';
+import { BoardAnchors } from '../lib/board-button.component';
+import { boardAnchorsRef, Layout, toaPartylistRef, tooltipRef } from './toa-partylist.constants';
 import { ToaPanelResizer, ToaPartylist } from './toa-partylist.component';
 
 export const toaPartylistUi = (): UI => (
@@ -6,6 +7,9 @@ export const toaPartylistUi = (): UI => (
     <ToaPanelResizer />
     <ToaPartylist />
     <ToaPartylistTooltipAnchor />
+    <layer ref={boardAnchorsRef} x={0} y={0} w={0} h={0}>
+      <BoardAnchors universe={boardAnchorsRef} count={3} />
+    </layer>
   </ui>
 );
 

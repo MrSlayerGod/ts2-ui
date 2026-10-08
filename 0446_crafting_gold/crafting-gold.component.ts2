@@ -14,6 +14,7 @@ import {
 } from './crafting-gold.data';
 import { CraftingGoldCell } from './crafting-gold-cell.component';
 import { craftingMouldToggle } from './crafting-gold.helpers';
+import { craftingInit } from './crafting-gold.state';
 import {
   amuletsHighlight,
   amuletsPrompt,
@@ -298,6 +299,8 @@ export function CraftingGold(): Component {
       <layer x={{ right: Strip.X }} y={Strip.Y} w={Strip.W} h={Strip.H}>
         <SkillQuantityStrip dx={Strip.DX} dy={Strip.DY} declared={Strip.MATERIAL} />
       </layer>
+
+      <layer x={0} y={0} w={0} h={0} onLoad={() => craftingInit()} />
     </>
   );
 }

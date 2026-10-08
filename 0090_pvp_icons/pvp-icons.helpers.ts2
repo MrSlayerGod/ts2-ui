@@ -17,8 +17,9 @@ import {
   LEVEL_PROTECTION,
   PvpVarbits,
   PvpVarps,
+  StyleVars,
 } from './pvp-icons.constants';
-import { SkullTypeNames } from './pvp-icons.data';
+import { AttackStyles, attackStyleName, SkullTypeNames } from './pvp-icons.data';
 
 export const enum LayoutMode {
   DEADMAN_SPECTATING = 0,
@@ -77,7 +78,7 @@ export function wildernessLevel(): Int {
     return 29;
   }
   if (coordInBox(tileOf(3328, 10240, 0), tileOf(3391, 10303, 3), at)) {
-    return 33 + scaled((at.z % 64) - 6, 50, 7);
+    return 33 + scaled(at.z % 64 - 6, 50, 7);
   }
   if (coordInBox(tileOf(2944, 9920, 0), tileOf(3455, 10879, 3), at)) {
     return (at.z - 155 * 64) / 8 + 1;
@@ -287,7 +288,7 @@ function kdrWorld(): Boolean {
 export function kdrText(): String {
   if (
     useServerState(PvpVarbits.KD_TOGGLE) === 0 ||
-    (useServerState(PvpVarbits.INSIDE_WILDERNESS) === 0 && kdrWorld() === false)
+    useServerState(PvpVarbits.INSIDE_WILDERNESS) === 0 && kdrWorld() === false
   ) {
     return '';
   }
@@ -334,4 +335,14 @@ export function targetPanelShown(mode: Int): Boolean {
 
 export function mobileClient(): Boolean {
   return onMobile();
+}
+
+export function attackStyleText(): String {
+  if (useServerState(StyleVars.ENABLED) === 0) {
+    return '';
+  }
+  const comMode: Int = useServerState(StyleVars.COM_MODE);
+  const mode: Int = comMode === 4 && useServerState(StyleVars.AUTOCAST_DEFMODE) === 1 ? 5 : comMode;
+  const index: Int = AttackStyles.get(useServerState(StyleVars.CATEGORY) * 6 + mode) ?? 0;
+  return `<img=31> <col=ffffff>${attackStyleName(index)}</col>`;
 }

@@ -5,6 +5,7 @@ import {
   onUpdated,
   useInterval,
   useOnResize,
+  useRef,
   useRerenderOn,
   useServerState,
   useState,
@@ -35,6 +36,9 @@ import { HighlightPulses } from '../0149_inventory/highlight-pulses.data';
 import { pulseTransparency } from '../0149_inventory/inventory-highlight.state';
 import { tobHudNameFlasher } from '../0773_toa_lobby/toa-lobby.helpers';
 import { SideChannelIcons, SideChannelLabels } from '../0892_osm_hotkeys/side-channels.data';
+import { logoutTimerNotifierStep } from '../lib/enhanced/logout-notifier';
+import { MouseoverOps } from '../lib/enhanced/mouseover.component';
+import { RendererNotice } from '../lib/enhanced/renderer-notice.component';
 import { Fonts } from '../lib/game/fonts';
 import { Sprites } from '../lib/game/sprites';
 import { Varbits } from '../lib/game/varbits';
@@ -161,14 +165,24 @@ import {
   saradominsLightYaw,
   saradominsLightZoom,
   soulbearerRepairFill,
+  atmosphereText,
+  bannerCover,
+  bannerElapsed,
+  bannerHeadOffset,
+  bannerStep,
+  bannerTextHidden,
+  ModeBanner,
 } from './toplevel-osrs-stretch.atmosphere';
+import { HighlightRow, HighlightRows } from './toplevel-osrs-stretch.highlight';
 import { Animations } from '../lib/game/animations';
 import { Models } from '../lib/game/models';
+
+import { stretchLoad } from './toplevel-osrs-stretch.keys';
 
 export function ToplevelOsrsStretch(): Component {
   return (
     <>
-      <layer static ref={gameframeRef} x={0} y={0} w="fill" h="fill" onLoad={() => stretchInit()}>
+      <layer static ref={gameframeRef} x={0} y={0} w="fill" h="fill" onLoad={() => stretchLoad()}>
         <layer static ref={viewportRef} x={0} y={0} w="fill" h="fill" contentType="worldView" />
 
         <layer static ref={viewportTrackerBackRef} x="center" y="center" w="fill" h="fill">
@@ -427,6 +441,9 @@ export function ToplevelOsrsStretch(): Component {
       </layer>
       <layer x={0} y={0} w={1} h={1}>
         <SideBackdrop />
+      </layer>
+      <layer x={0} y={0} w="fill" h="fill">
+        <MouseoverOps />
       </layer>
     </>
   );
@@ -702,11 +719,13 @@ function ModalBackdrop(): Component {
 
 function EhcHooks(): Component {
   const enhanced: Boolean = enhancedAny();
+  const logoutTimer = useRef();
+  useInterval(() => logoutTimerNotifierStep(), logoutTimer);
   return (
     <>
       {enhanced && (
         <>
-          <rect x={0} y={0} w={1} h={1} transparency={255} />
+          <rect ref={logoutTimer} x={0} y={0} w={1} h={1} transparency={255} />
           <rect x={0} y={0} w={1} h={1} transparency={255} />
           <rect x={0} y={0} w={1} h={1} transparency={255} />
           <rect x={0} y={0} w={1} h={1} transparency={255} />
@@ -1048,6 +1067,8 @@ function AtmosphereEffect(): Component {
   const [until] = useState(atmosphereUntil);
   const [phase] = useState(weddingPhase);
   const [phaseStart] = useState(weddingPhaseStart);
+  const [bannerName] = useState(atmosphereText);
+  const bannerNameRef = useRef();
   return (
     <layer x={0} y={0} w="fill" h="fill">
       {kind === AtmosphereKind.JAR_OF_DARKNESS ? (
@@ -1318,7 +1339,7 @@ function AtmosphereEffect(): Component {
           y="center"
           w="fill"
           h="fill"
-          model={modelId as Model}
+          model={(modelId as Model)}
           anim={Animations.MOLE_MUD_SPLAT_INTERFACE}
           pitch={MoleSplat.PITCH}
           zoom={moleSplatZoom(overlayAtmosphereRef.height!)}
@@ -1371,6 +1392,88 @@ function AtmosphereEffect(): Component {
           }}
         />
       ) : null}
+      {kind === AtmosphereKind.MODE_BANNER ? (
+        <>
+          <sprite
+            x="center"
+            y="35%"
+            w="fill"
+            h={ModeBanner.HEAD}
+            sprite={Sprites.TRADEBACKING}
+            tiling
+            transparency={255}
+            onTimer={(event) => {
+              const strip: Int = bannerStep(start);
+              const nameHidden: Boolean = bannerTextHidden(bannerElapsed(start));
+              event.self.transparency = strip;
+              bannerNameRef.hide = nameHidden;
+            }}
+          />
+          <text
+            ref={bannerNameRef}
+            x="center"
+            y="35%"
+            w="fill"
+            h={ModeBanner.HEAD}
+            text={`Mode: <col=ffffff>${bannerName}</col>`}
+            font={Fonts.QUILL_OBLIQUE_LARGE}
+            color={0xff981f}
+            shadow
+            align="center"
+            valign="middle"
+            hide
+          />
+          <sprite
+            x="center"
+            y="35%"
+            w="fill"
+            h={ModeBanner.HEAD}
+            sprite={Sprites.TRADEBACKING}
+            tiling
+            transparency={255}
+            onTimer={(event) => {
+              event.self.transparency = bannerCover(bannerElapsed(start));
+            }}
+          />
+          <model
+            x={-40}
+            y="35%"
+            w={ModeBanner.HEAD}
+            h={ModeBanner.HEAD}
+            model={149}
+            anim={Animations.CHATIDLENEU1}
+            offsetX={0}
+            offsetY={5}
+            pitch={2030}
+            yaw={0}
+            roll={0}
+            zoom={1900}
+            onTimer={(event) => {
+              event.self.x = bannerHeadOffset(bannerElapsed(start), overlayAtmosphereRef.width!);
+            }}
+          />
+          <model
+            x={{ right: -40 }}
+            y="35%"
+            w={ModeBanner.HEAD}
+            h={ModeBanner.HEAD}
+            model={149}
+            anim={Animations.CHATIDLENEU1}
+            offsetX={0}
+            offsetY={5}
+            pitch={2030}
+            yaw={0}
+            roll={0}
+            zoom={1900}
+            onTimer={(event) => {
+              event.self.x =
+                overlayAtmosphereRef.width! -
+                ModeBanner.HEAD -
+                bannerHeadOffset(bannerElapsed(start), overlayAtmosphereRef.width!);
+            }}
+          />
+        </>
+      ) : null}
     </layer>
   );
 }
@@ -1382,6 +1485,7 @@ function OverlayHudEffect(): Component {
   const [phaseStart] = useState(weddingPhaseStart);
   return (
     <layer x={0} y={0} w="fill" h="fill">
+      <RendererNotice />
       {kind === AtmosphereKind.WEDDING && phase === WeddingPhase.HUD ? (
         <>
           <model
@@ -1511,6 +1615,9 @@ function FlashHighlight(): Component {
   const boxY: Int = universe.height - tabRowFromBottom(tab) - Frame.ROW_H - grow / 2;
   return (
     <layer x={0} y={0} w="fill" h="fill">
+      {HighlightRows.map((row) => (
+        <HighlightRow row={row} />
+      ))}
       {shown ? (
         <layer x={boxX} y={boxY} w={Frame.ICON_W + grow} h={Frame.ICON_H + grow}>
           <rect

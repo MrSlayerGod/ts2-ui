@@ -14,8 +14,8 @@ import {
 function PartyDropSlot({ item, count, slot, armed }: { item: Item; count: Int; slot: Int; armed: Int }): Component {
   return (
     <sprite
-      x={Grid.ORIGIN_X + (slot % Grid.COLUMNS) * Grid.STRIDE_X}
-      y={Grid.ORIGIN_Y + (slot / Grid.COLUMNS) * Grid.STRIDE_Y}
+      x={Grid.ORIGIN_X + slot % Grid.COLUMNS * Grid.STRIDE_X}
+      y={Grid.ORIGIN_Y + slot / Grid.COLUMNS * Grid.STRIDE_Y}
       w={Grid.W}
       h={Grid.H}
       item={item}
@@ -54,8 +54,8 @@ function PartyDropSlot({ item, count, slot, armed }: { item: Item; count: Int; s
 function PartyDropBlank({ slot }: { slot: Int }): Component {
   return (
     <sprite
-      x={Grid.ORIGIN_X + (slot % Grid.COLUMNS) * Grid.STRIDE_X}
-      y={Grid.ORIGIN_Y + (slot / Grid.COLUMNS) * Grid.STRIDE_Y}
+      x={Grid.ORIGIN_X + slot % Grid.COLUMNS * Grid.STRIDE_X}
+      y={Grid.ORIGIN_Y + slot / Grid.COLUMNS * Grid.STRIDE_Y}
       w={Grid.W}
       h={Grid.H}
       item={BLANK_ITEM}
@@ -76,11 +76,11 @@ export function PartydropSide(): Component {
   return (
     <layer w="fill" h="fill">
       {bag.map((item, slot) =>
-        item === -1 ? (
+        (item === -1 ? (
           <PartyDropBlank slot={slot} />
         ) : (
           <PartyDropSlot item={item} count={bag.count(slot)} slot={slot} armed={armed} />
-        ),
+        )),
       )}
     </layer>
   );

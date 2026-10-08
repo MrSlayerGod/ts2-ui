@@ -1,13 +1,7 @@
 import { ThinStoneBoxEntrypoint } from '../lib/thin-stone-box.component';
 import { InventoryGrid } from '../lib/pvp-arena/inventory-grid.component';
 import { ItemList, ItemListScrollbar } from '../lib/pvp-arena/item-list.component';
-import {
-  BIN_LABEL,
-  binClicked,
-  SeekButton,
-  SpellbookControl,
-  WipeButton,
-} from '../lib/pvp-arena/loadout-chrome.component';
+import { binClicked, SeekButton, SpellbookControl, WipeButton } from '../lib/pvp-arena/loadout-chrome.component';
 import { KitSheet } from '../lib/pvp-arena/kit-sheet.component';
 import { KitWarning } from '../lib/pvp-arena/kit-warning.component';
 import { WornSlot } from '../lib/pvp-arena/worn-slot.component';
@@ -21,14 +15,11 @@ import {
   Wash,
   WornSlotKey,
 } from '../0758_pvp_arena_stagingarea_supplies/pvp-arena-stagingarea-supplies.constants';
-import { binHover } from './bin-hover';
+import { BinLabelA, BinLabelB, BinLabelC, binHover } from './bin-hover';
 import {
   binA,
   binB,
   binC,
-  binLabelA,
-  binLabelB,
-  binLabelC,
   dragZoneA,
   dragZoneB,
   dragZoneC,
@@ -109,20 +100,7 @@ export function DisplayA(): Component {
           h={Layout.bin.iconH}
           sprite={SuppliesSprites.BIN}
         />
-        <text
-          static
-          ref={binLabelA}
-          x="right"
-          y="center"
-          w={{ fill: Layout.bin.textInset }}
-          h="fill"
-          color={SuppliesColor.LABEL}
-          font={SuppliesFonts.BODY}
-          shadow
-          align="center"
-          valign="middle"
-          text={BIN_LABEL}
-        />
+        <BinLabelA />
       </layer>
 
       <layer static x={0} y={0} w={Layout.equipment.w} h={{ fill: Layout.equipment.drop }}>
@@ -601,20 +579,7 @@ export function DisplayB(): Component {
           h={Layout.bin.iconH}
           sprite={SuppliesSprites.BIN}
         />
-        <text
-          static
-          ref={binLabelB}
-          x="right"
-          y="center"
-          w={{ fill: Layout.bin.textInset }}
-          h="fill"
-          color={SuppliesColor.LABEL}
-          font={SuppliesFonts.BODY}
-          shadow
-          align="center"
-          valign="middle"
-          text={BIN_LABEL}
-        />
+        <BinLabelB />
       </layer>
 
       <layer static x={0} y={0} w={Layout.equipment.w} h={{ fill: Layout.equipment.drop }}>
@@ -1093,20 +1058,7 @@ export function DisplayC(): Component {
           h={Layout.bin.iconH}
           sprite={SuppliesSprites.BIN}
         />
-        <text
-          static
-          ref={binLabelC}
-          x="right"
-          y="center"
-          w={{ fill: Layout.bin.textInset }}
-          h="fill"
-          color={SuppliesColor.LABEL}
-          font={SuppliesFonts.BODY}
-          shadow
-          align="center"
-          valign="middle"
-          text={BIN_LABEL}
-        />
+        <BinLabelC />
       </layer>
 
       <layer static x={0} y={0} w={Layout.equipment.w} h={{ fill: Layout.equipment.drop }}>

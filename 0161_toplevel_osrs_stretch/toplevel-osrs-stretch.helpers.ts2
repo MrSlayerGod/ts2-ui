@@ -1,16 +1,19 @@
 import { CS2, useServerState, useState } from 'ts2';
 
 import { zoomPositionSlider } from '../0016_oculus/oculus.camera';
+import { crmOverlayDismiss } from '../0065_crm_surprisepopup_side/crm-overlay-dismiss';
 import { switchSidePanel } from '../0601_toplevel_osm/toplevel-osm.helpers';
 import { Sprites } from '../lib/game/sprites';
 import { Varbits } from '../lib/game/varbits';
 import {
   buffBarDodgerUpdate,
+  crmOverlayActive,
   toplevelMainmodalBgColour,
   toplevelMainmodalBgTrans,
   toplevelPanel,
 } from '../lib/game/varcs';
 import { clientClock } from '../lib/lib.engine';
+import { GameframeSlot, gameframeSlotIn } from '../lib/lib.gameframe';
 import { onMobile } from '../lib/lib.helpers';
 import { FovClamp, Frame, NoSprite, SideSlots, StoneX } from './toplevel-osrs-stretch.constants';
 import { StoneHighlights } from './toplevel-osrs-stretch.data';
@@ -35,9 +38,21 @@ export function stretchInit(): void {
   switchSidePanel(panel, 0);
 }
 
+export function helperNewToplevel(entered: Int, left: Int): void {
+  const into: ComponentId = gameframeSlotIn(entered, GameframeSlot.HELPER_CONTENT);
+  const from: ComponentId = gameframeSlotIn(left, GameframeSlot.HELPER_CONTENT);
+  if (into !== -1 && from !== -1) {
+    CS2.if_size_set(CS2.if_width_get(from), CS2.if_height_get(from), 0, 0, into);
+  }
+}
+
 export function stretchTabOp(panel: Int, option: Int): void {
   if (option !== 1) {
     return;
+  }
+  const [crmActive] = useState(crmOverlayActive);
+  if (CS2.testbit(crmActive, 1)) {
+    crmOverlayDismiss();
   }
   switchSidePanel(panel, 0);
 }

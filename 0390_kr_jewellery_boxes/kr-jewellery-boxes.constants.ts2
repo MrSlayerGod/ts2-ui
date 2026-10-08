@@ -20,6 +20,7 @@ export declare const KrFonts: {
 
 export enum KrColors {
   RIDDLE = 0x46320a,
+  RIDDLE_INK = 0x000000,
   SHOW_REST = 0xd2be64,
   SHOW_HOVER = 0xe1981f,
 }
@@ -83,6 +84,26 @@ export const Layout = {
 
 export const KrCopy = {
   SHOW_RIDDLE: 'Show riddle',
+  HIDE_RIDDLE: 'Hide riddle',
+  RIDDLE:
+    "You seek the grail of old,<br>but no longer is it a goblet of gold.<br>Among these nine will you find what you seek,<br>but be careful and don't peek!<br>A wrong choice will expel you,<br>so consider carefully each clue.<br><br>Three boxes contain only air,<br>beware of three boxes, for danger lurks there.<br>Two hold only rubbish but would fool you with disguise,<br>only one box holds your prize.<br><br>Clues will give the information you need,<br><br>rubbish always sits to the right of danger, pay heed.<br>There is nothing helpful in boxes great in height,<br>and boxes on either end will not end your plight.<br>A tall or small box will only bring you anger,<br>but a square box will not put you in danger.",
+};
+
+export enum RiddleView {
+  CACHE = 0,
+  BOXES = 1,
+  RIDDLE = 2,
+}
+
+export const RiddleScroll = { W: 190, H: 520 };
+
+export declare const KrScrollbar: {
+  readonly TRACK: typeof Sprites.SCROLLBAR_DRAGGER_V2_3;
+  readonly CAP_TOP: typeof Sprites.SCROLLBAR_DRAGGER_V2_0;
+  readonly THUMB: typeof Sprites.SCROLLBAR_DRAGGER_V2_1;
+  readonly CAP_BOTTOM: typeof Sprites.SCROLLBAR_DRAGGER_V2_2;
+  readonly ARROW_UP: typeof Sprites.SCROLLBAR_V2_0;
+  readonly ARROW_DOWN: typeof Sprites.SCROLLBAR_V2_1;
 };
 
 export const Boxes = {

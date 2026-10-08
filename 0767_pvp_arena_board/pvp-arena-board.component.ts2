@@ -1,3 +1,5 @@
+import { onMounted, onUpdated } from 'ts2';
+
 import { BoardButton } from '../lib/board-button.component';
 import { ScrollbarVertical } from '../lib/scrollbar-vertical.component';
 import { SteelBorderEntrypoint } from '../lib/steel-border-entrypoint.component';
@@ -10,7 +12,8 @@ import {
   BoardSprites,
   Copy,
   Layout,
-  bottomRef,
+  BoardPausebutton,
+  boardAnchorsRef,
   filtersRef,
   listRef,
   mygroupRef,
@@ -18,7 +21,7 @@ import {
   refreshRef,
   universeRef,
 } from './pvp-arena-board.constants';
-import { layoutBoardButtons } from './pvp-arena-board.helpers';
+import { buttonGap, mygroupWidth, optionsWidth, refreshWidth, resetBoardPoll } from './pvp-arena-board.helpers';
 
 export function PvpArenaBoard(): Component {
   return (
@@ -28,7 +31,7 @@ export function PvpArenaBoard(): Component {
       y="center"
       w={Layout.PANEL_W}
       h={Layout.PANEL_H}
-      onLoad={() => layoutBoardButtons()}
+      onLoad={() => resetBoardPoll()}
     >
       <SteelBorderEntrypoint title={Copy.TITLE} />
 
@@ -89,7 +92,7 @@ export function PvpArenaBoard(): Component {
               w={Layout.RESET_W}
               h={{ fill: Layout.RESET_INSET_H }}
             >
-              <BoardButton label={Copy.RESET} />
+              <BoardButton label={Copy.RESET} resumeIn={boardAnchorsRef} resumeAt={BoardPausebutton.RESET} />
             </layer>
             <ThinBoxEntrypoint />
           </layer>
@@ -155,15 +158,15 @@ export function PvpArenaBoard(): Component {
             </layer>
             <ThinBoxEntrypoint />
           </layer>
-          <layer ref={bottomRef} x="center" y="bottom" w="fill" h={Layout.BOTTOM_H}>
-            <layer ref={mygroupRef} hide x={0} y="center" w={0} h={{ fill: Layout.BUTTON_INSET_H }}>
+          <layer x="center" y="bottom" w="fill" h={Layout.BOTTOM_H}>
+            <layer static ref={mygroupRef} hide x={0} y="center" w={0} h={{ fill: Layout.BUTTON_INSET_H }}>
               <MyGroupButton />
             </layer>
-            <layer ref={refreshRef} hide x={0} y="center" w={0} h={{ fill: Layout.BUTTON_INSET_H }}>
-              <BoardButton label={Copy.REFRESH} />
+            <layer static ref={refreshRef} hide x={0} y="center" w={0} h={{ fill: Layout.BUTTON_INSET_H }}>
+              <BoardButton label={Copy.REFRESH} resumeIn={boardAnchorsRef} resumeAt={BoardPausebutton.REFRESH} />
             </layer>
-            <layer ref={optionsRef} hide x={0} y="center" w={0} h={{ fill: Layout.BUTTON_INSET_H }}>
-              <BoardButton label={Copy.OPTIONS} />
+            <layer static ref={optionsRef} hide x={0} y="center" w={0} h={{ fill: Layout.BUTTON_INSET_H }}>
+              <BoardButton label={Copy.OPTIONS} resumeIn={boardAnchorsRef} resumeAt={BoardPausebutton.OPTIONS} />
             </layer>
             <ThinBoxEntrypoint />
           </layer>
@@ -171,6 +174,29 @@ export function PvpArenaBoard(): Component {
       </layer>
 
       <layer x={0} y={0} w="fill" h="fill" />
+
+      <BoardButtonLayout />
     </layer>
   );
+}
+
+function BoardButtonLayout(): Component {
+  const mygroupW: Int = mygroupWidth();
+  const refreshW: Int = refreshWidth();
+  const optionsW: Int = optionsWidth();
+  const gap: Int = buttonGap(mygroupW, refreshW, optionsW);
+  const mygroupX: Int = Layout.BOTTOM_EDGE + gap;
+  const optionsX: Int = mygroupX + mygroupW + gap;
+  const refreshX: Int = optionsX + optionsW + gap;
+
+  onMounted(() => placeButtons(mygroupX, mygroupW, optionsX, optionsW, refreshX, refreshW));
+  onUpdated(() => placeButtons(mygroupX, mygroupW, optionsX, optionsW, refreshX, refreshW));
+
+  return <layer x={0} y={0} w={0} h={0} />;
+}
+
+function placeButtons(mygroupX: Int, mygroupW: Int, optionsX: Int, optionsW: Int, refreshX: Int, refreshW: Int): void {
+  mygroupRef.props = { x: mygroupX, y: 'center', w: mygroupW, h: { fill: Layout.BUTTON_INSET_H } };
+  optionsRef.props = { x: optionsX, y: 'center', w: optionsW, h: { fill: Layout.BUTTON_INSET_H } };
+  refreshRef.props = { x: refreshX, y: 'center', w: refreshW, h: { fill: Layout.BUTTON_INSET_H } };
 }

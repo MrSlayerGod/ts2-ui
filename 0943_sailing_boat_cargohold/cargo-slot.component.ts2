@@ -22,8 +22,8 @@ interface SlotProps {
 function CargoCrateSlot({ item, count, rank, margin, gap }: SlotProps): Component {
   return (
     <sprite
-      x={margin + (rank % Grid.COLUMNS) * (Grid.W + gap)}
-      y={Grid.TOP + (rank / Grid.COLUMNS) * Grid.STRIDE_Y}
+      x={margin + rank % Grid.COLUMNS * (Grid.W + gap)}
+      y={Grid.TOP + rank / Grid.COLUMNS * Grid.STRIDE_Y}
       w={Grid.W}
       h={Grid.H}
       item={item}
@@ -47,8 +47,8 @@ function CargoCrateSlot({ item, count, rank, margin, gap }: SlotProps): Componen
 function WithdrawOneSlot({ item, count, rank, margin, gap }: SlotProps): Component {
   return (
     <sprite
-      x={margin + (rank % Grid.COLUMNS) * (Grid.W + gap)}
-      y={Grid.TOP + (rank / Grid.COLUMNS) * Grid.STRIDE_Y}
+      x={margin + rank % Grid.COLUMNS * (Grid.W + gap)}
+      y={Grid.TOP + rank / Grid.COLUMNS * Grid.STRIDE_Y}
       w={Grid.W}
       h={Grid.H}
       item={item}
@@ -72,8 +72,8 @@ function WithdrawOneSlot({ item, count, rank, margin, gap }: SlotProps): Compone
 function WithdrawFiveSlot({ item, count, rank, margin, gap }: SlotProps): Component {
   return (
     <sprite
-      x={margin + (rank % Grid.COLUMNS) * (Grid.W + gap)}
-      y={Grid.TOP + (rank / Grid.COLUMNS) * Grid.STRIDE_Y}
+      x={margin + rank % Grid.COLUMNS * (Grid.W + gap)}
+      y={Grid.TOP + rank / Grid.COLUMNS * Grid.STRIDE_Y}
       w={Grid.W}
       h={Grid.H}
       item={item}
@@ -97,8 +97,8 @@ function WithdrawFiveSlot({ item, count, rank, margin, gap }: SlotProps): Compon
 function WithdrawTenSlot({ item, count, rank, margin, gap }: SlotProps): Component {
   return (
     <sprite
-      x={margin + (rank % Grid.COLUMNS) * (Grid.W + gap)}
-      y={Grid.TOP + (rank / Grid.COLUMNS) * Grid.STRIDE_Y}
+      x={margin + rank % Grid.COLUMNS * (Grid.W + gap)}
+      y={Grid.TOP + rank / Grid.COLUMNS * Grid.STRIDE_Y}
       w={Grid.W}
       h={Grid.H}
       item={item}
@@ -122,8 +122,8 @@ function WithdrawTenSlot({ item, count, rank, margin, gap }: SlotProps): Compone
 function WithdrawXSlot({ item, count, rank, margin, gap }: SlotProps): Component {
   return (
     <sprite
-      x={margin + (rank % Grid.COLUMNS) * (Grid.W + gap)}
-      y={Grid.TOP + (rank / Grid.COLUMNS) * Grid.STRIDE_Y}
+      x={margin + rank % Grid.COLUMNS * (Grid.W + gap)}
+      y={Grid.TOP + rank / Grid.COLUMNS * Grid.STRIDE_Y}
       w={Grid.W}
       h={Grid.H}
       item={item}
@@ -147,8 +147,8 @@ function WithdrawXSlot({ item, count, rank, margin, gap }: SlotProps): Component
 function WithdrawAllSlot({ item, count, rank, margin, gap }: SlotProps): Component {
   return (
     <sprite
-      x={margin + (rank % Grid.COLUMNS) * (Grid.W + gap)}
-      y={Grid.TOP + (rank / Grid.COLUMNS) * Grid.STRIDE_Y}
+      x={margin + rank % Grid.COLUMNS * (Grid.W + gap)}
+      y={Grid.TOP + rank / Grid.COLUMNS * Grid.STRIDE_Y}
       w={Grid.W}
       h={Grid.H}
       item={item}

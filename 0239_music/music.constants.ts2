@@ -157,4 +157,7 @@ export const MusicFlags = {
 export const MusicCount = {
   VARPS: 27,
   PLAYLISTS: 4,
+  PLAYLISTS_OWNED: 3,
+  PLAYLIST_SLOTS: 100,
+  TRACK_IDS: 853,
 } as const;

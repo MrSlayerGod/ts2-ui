@@ -1,0 +1,138 @@
+import { Engine, useRef, useServerStateOnce, useState, useWatch } from 'ts2';
+
+import { hideTooltip } from '../0128_hosidius_seedbox/hosidius-seedbox.state';
+import { ChatChannelSort, ChatChannelSprites, Layout, SortArrow } from './chatchannel-setup.constants';
+import { chooseSort, currentSort } from './chatchannel-setup.state';
+
+export function SortColumns(): Component {
+  const [shown, setShown] = useState(useServerStateOnce(() => currentSort()));
+  const [nameLit, setNameLit] = useState(0);
+  const [rankLit, setRankLit] = useState(0);
+  const [legacyLit, setLegacyLit] = useState(0);
+
+  const transmitAnchor = useRef();
+
+  useWatch(
+    Engine.FRIENDS,
+    () => {
+      setNameLit(0);
+      setRankLit(0);
+      setLegacyLit(0);
+    },
+    transmitAnchor,
+  );
+
+  const nameNext: Int = columnNext(shown, ChatChannelSort.NAME_ASC, ChatChannelSort.NAME_DESC);
+  const rankNext: Int = columnNext(shown, ChatChannelSort.RANK_ASC, ChatChannelSort.RANK_DESC);
+  const legacyNext: Int = columnNext(shown, ChatChannelSort.LEGACY, ChatChannelSort.LEGACY_REVERSED);
+
+  return (
+    <>
+      <layer ref={transmitAnchor} w={1} h={1} />
+      <layer
+        x={Layout.SORT_NAME_X}
+        y="center"
+        w={Layout.SORT_NAME_W}
+        h={{ fill: Layout.HEADER_DROP }}
+        onMouseRepeat={() => setNameLit(1)}
+        onMouseLeave={() => {
+          setNameLit(0);
+          hideTooltip();
+        }}
+        onClick={() => {
+          setShown(nameNext);
+          setNameLit(0);
+          setRankLit(0);
+          setLegacyLit(0);
+          chooseSort(nameNext);
+        }}
+      >
+        <sprite
+          x="center"
+          y="center"
+          w={Layout.ARROW_W}
+          h={Layout.ARROW_H}
+          sprite={columnSprite(shown, ChatChannelSort.NAME_DESC)}
+          transparency={columnFace(shown, ChatChannelSort.NAME_ASC, ChatChannelSort.NAME_DESC, nameLit)}
+        />
+      </layer>
+
+      <layer
+        x={{ right: Layout.SORT_RANK_RIGHT }}
+        y="center"
+        w={{ fill: Layout.SORT_RANK_INSET }}
+        h={{ fill: Layout.HEADER_DROP }}
+        onMouseRepeat={() => setRankLit(1)}
+        onMouseLeave={() => {
+          setRankLit(0);
+          hideTooltip();
+        }}
+        onClick={() => {
+          setShown(rankNext);
+          setNameLit(0);
+          setRankLit(0);
+          setLegacyLit(0);
+          chooseSort(rankNext);
+        }}
+      >
+        <sprite
+          x="center"
+          y="center"
+          w={Layout.ARROW_W}
+          h={Layout.ARROW_H}
+          sprite={columnSprite(shown, ChatChannelSort.RANK_DESC)}
+          transparency={columnFace(shown, ChatChannelSort.RANK_ASC, ChatChannelSort.RANK_DESC, rankLit)}
+        />
+      </layer>
+
+      <layer
+        x={{ right: Layout.SORT_LEGACY_RIGHT }}
+        y="center"
+        w={Layout.SORT_LEGACY_W}
+        h={{ fill: Layout.HEADER_DROP }}
+        onMouseRepeat={() => setLegacyLit(1)}
+        onMouseLeave={() => {
+          setLegacyLit(0);
+          hideTooltip();
+        }}
+        onClick={() => {
+          setShown(legacyNext);
+          setNameLit(0);
+          setRankLit(0);
+          setLegacyLit(0);
+          chooseSort(legacyNext);
+        }}
+      >
+        <sprite
+          x="center"
+          y="center"
+          w={Layout.ARROW_W}
+          h={Layout.ARROW_H}
+          sprite={columnSprite(shown, ChatChannelSort.LEGACY_REVERSED)}
+          transparency={columnFace(shown, ChatChannelSort.LEGACY, ChatChannelSort.LEGACY_REVERSED, legacyLit)}
+        />
+      </layer>
+    </>
+  );
+}
+
+function columnSprite(sort: Int, second: Int): Sprite {
+  if (sort === second) {
+    return ChatChannelSprites.SORT_REVERSED;
+  }
+  return ChatChannelSprites.SORT_DEFAULT;
+}
+
+function columnFace(sort: Int, first: Int, second: Int, lit: Int): Int {
+  if (sort === first || sort === second) {
+    return lit === 1 ? SortArrow.ACTIVE_HOVER : SortArrow.ACTIVE;
+  }
+  return lit === 1 ? SortArrow.IDLE_HOVER : SortArrow.IDLE;
+}
+
+function columnNext(sort: Int, first: Int, second: Int): Int {
+  if (sort === first) {
+    return second;
+  }
+  return first;
+}

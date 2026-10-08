@@ -72,7 +72,7 @@ export function masteryUnlocked(index: Int): Boolean {
   if (row === null) {
     return false;
   }
-  if ((index % TIERS) + 1 <= styleProgress(row.styleParam)) {
+  if (index % TIERS + 1 <= styleProgress(row.styleParam)) {
     return true;
   }
   return false;
@@ -89,7 +89,7 @@ export function masterySelectable(index: Int): Boolean {
   if (pointsToSpend() <= 0) {
     return false;
   }
-  if ((index % TIERS) + 1 === styleProgress(row.styleParam) + 1) {
+  if (index % TIERS + 1 === styleProgress(row.styleParam) + 1) {
     return true;
   }
   return false;

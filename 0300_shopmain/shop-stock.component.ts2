@@ -102,8 +102,8 @@ export function ShopStock({
             item !== -1 &&
             item === selected && (
               <sprite
-                x={(slot % Layout.COLUMNS) * stride}
-                y={(slot / Layout.COLUMNS) * stride}
+                x={slot % Layout.COLUMNS * stride}
+                y={slot / Layout.COLUMNS * stride}
                 w={Layout.SELECTED_BOX}
                 h={Layout.SELECTED_BOX}
                 sprite={ShopArt.SELECTED}

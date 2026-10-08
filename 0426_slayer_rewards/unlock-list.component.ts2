@@ -3,7 +3,9 @@ import { intArray, useRef } from 'ts2';
 import { ScrollbarVertical } from '../lib/scrollbar-vertical.component';
 import { Cell, Ink, Panel, SlayerBar, SlayerFonts } from './slayer-rewards.constants';
 import { SlayerUnlockRow, SlayerUnlocks, UnlockList as UnlockSlice } from './slayer-rewards.data';
+import { openUnlockConfirm } from './slayer-rewards.confirm';
 import {
+  unlockOwned,
   unlockCaption,
   unlockCellHeight,
   unlockCellTop,
@@ -69,6 +71,11 @@ function UnlockCell({ from, index, count }: { from: Int; index: Int; count: Int 
         transparency={Cell.PLATE_REST}
         optionSubject={`<col=ff9040>${name}</col>`}
         options={[option]}
+        onOptionSelect={(event) => {
+          if (event.option === 1) {
+            openUnlockConfirm(from + index, unlockOwned(bit) ? 0 : 1);
+          }
+        }}
         onMouseEnter={(event) => {
           event.self.transparency = Cell.PLATE_HOVER;
         }}

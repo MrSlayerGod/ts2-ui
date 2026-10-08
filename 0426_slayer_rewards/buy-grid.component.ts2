@@ -1,0 +1,131 @@
+import { intArray, useRef } from 'ts2';
+
+import { itemName, playSound } from '../lib/lib.engine';
+import { flashFor } from '../lib/lib.components';
+import { groupDigits } from '../lib/lib.format';
+import { ScrollbarVertical } from '../lib/scrollbar-vertical.component';
+import { Ink, Panel, SlayerBar, SlayerFonts, SlayerSounds } from './slayer-rewards.constants';
+import { BuyItem, BuyItems } from './slayer-rewards.data';
+import { openBuyInfo } from './slayer-rewards.confirm';
+import { unlocksAreFree } from './slayer-rewards.helpers';
+
+export enum BuyGrid {
+  COLUMNS = 5,
+  CELL_W = 90,
+  ROW_H = 32 + 35,
+  ICON_W = 36,
+  ICON_H = 32,
+  ICON_X = 27,
+  PRICE_H = 15,
+  ICON_SHADOW = 0x333333,
+  PRESSED = 75,
+  REST = 0,
+  MAX_ITEMS = 10,
+}
+
+export function BuyPane(): Component {
+  const contents = useRef();
+  const count: Int = BuyItems.length;
+  const rows: Int = (count + BuyGrid.COLUMNS - 1) / BuyGrid.COLUMNS;
+  const extent: Int = count === 0 ? 0 : (rows - 1) * BuyGrid.ROW_H + BuyGrid.ICON_H + BuyGrid.PRICE_H;
+  const free: Boolean = unlocksAreFree();
+  const slots = intArray(BuyGrid.MAX_ITEMS);
+
+  return (
+    <>
+      <layer
+        ref={contents}
+        x={0}
+        y="center"
+        w={{ fill: Panel.BAR_W }}
+        h="fill"
+        scrollHeight={extent > Panel.CONTENTS_H ? extent : 0}
+      >
+        <layer x="center" y={0} w="fill" h={extent}>
+          {slots.map((_, index) => index < count && <BuyIcon index={index} free={free} />)}
+        </layer>
+        <layer x="center" y={0} w="fill" h={extent}>
+          {slots.map((_, index) => index < count && <BuyPrice index={index} free={free} />)}
+        </layer>
+      </layer>
+      <layer x="right" y="center" w={Panel.BAR_W} h="fill">
+        <ScrollbarVertical
+          content={contents}
+          track={SlayerBar.TRACK}
+          capTopSprite={SlayerBar.CAP_TOP}
+          thumbSprite={SlayerBar.THUMB}
+          capBottomSprite={SlayerBar.CAP_BOTTOM}
+          arrowUp={SlayerBar.ARROW_UP}
+          arrowDown={SlayerBar.ARROW_DOWN}
+        />
+      </layer>
+    </>
+  );
+}
+
+function BuyIcon({ index, free }: { index: Int; free: Boolean }): Component {
+  const entry: BuyItem | null = BuyItems.at(index);
+  const item: Item = entry === null ? -1 : entry.item;
+  const quantity: Int = entry === null ? 1 : entry.quantity;
+  const price: Int = entry === null ? 0 : entry.price;
+  const single: Boolean = entry === null ? false : entry.single;
+  const description: String = entry === null ? '' : entry.description;
+  const name: String = itemName(item);
+  const x: Int = index % BuyGrid.COLUMNS * BuyGrid.CELL_W + BuyGrid.ICON_X;
+  const y: Int = index / BuyGrid.COLUMNS * BuyGrid.ROW_H;
+  const sets: Boolean = quantity !== 1;
+  const buy1: String = single || !sets ? 'Buy 1' : 'Buy 1 set';
+  const buy5: String = single ? '' : (sets ? 'Buy 5 sets' : 'Buy 5');
+  const buy10: String = single ? '' : (sets ? 'Buy 10 sets' : 'Buy 10');
+  const buy50: String = single ? '' : (sets ? 'Buy 50 sets' : 'Buy 50');
+
+  return (
+    <sprite
+      x={x}
+      y={y}
+      w={BuyGrid.ICON_W}
+      h={BuyGrid.ICON_H}
+      item={item}
+      itemCount={quantity}
+      outline={1}
+      shadowColor={BuyGrid.ICON_SHADOW}
+      transparency={BuyGrid.REST}
+      options={['Info', buy1, buy5, buy10, buy50, '', '', '', '', 'Examine']}
+      optionSubject={`<col=ff9040>${name}</col>`}
+      onOptionSelect={(event) => {
+        if (event.option <= 1) {
+          openBuyInfo(item, name, description, free && single ? 0 : price, quantity);
+          return;
+        }
+        if (event.option >= 10) {
+          return;
+        }
+        playSound(SlayerSounds.SELECT);
+        flashFor(event.self, BuyGrid.PRESSED, BuyGrid.REST);
+      }}
+    />
+  );
+}
+
+function BuyPrice({ index, free }: { index: Int; free: Boolean }): Component {
+  const entry: BuyItem | null = BuyItems.at(index);
+  const price: Int = entry === null ? 0 : entry.price;
+  const single: Boolean = entry === null ? false : entry.single;
+  const x: Int = index % BuyGrid.COLUMNS * BuyGrid.CELL_W;
+  const y: Int = index / BuyGrid.COLUMNS * BuyGrid.ROW_H + BuyGrid.ICON_H;
+
+  return (
+    <text
+      x={x}
+      y={y}
+      w={BuyGrid.CELL_W}
+      h={BuyGrid.PRICE_H}
+      text={free && single ? 'Free' : groupDigits(price, ',')}
+      font={SlayerFonts.NAME}
+      color={Ink.AMBER}
+      shadow
+      align="center"
+      valign="middle"
+    />
+  );
+}

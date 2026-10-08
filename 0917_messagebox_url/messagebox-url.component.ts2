@@ -1,5 +1,7 @@
+import { createRef, onMounted, onUpdated, useState } from 'ts2';
 import { Fonts } from '../lib/game/fonts';
 import { closeInterface } from '../lib/lib.helpers';
+import { messageboxUrlLabel, messageboxUrlOpen } from './messagebox-url.state';
 
 const LABEL = Fonts.Q8_FULL;
 
@@ -33,6 +35,8 @@ export function MessageBoxUrl(): Component {
       />
 
       <text
+        static
+        ref={urlLine}
         x={0}
         y={58}
         w={479}
@@ -41,9 +45,22 @@ export function MessageBoxUrl(): Component {
         color={UrlBoxColor.LINE}
         align="center"
         options={['Information']}
+        onOptionSelect={() => messageboxUrlOpen()}
         onMouseEnter={(event) => textColourSwapper(event.component, UrlBoxColor.LINE_HOVER)}
         onMouseLeave={(event) => textColourSwapper(event.component, UrlBoxColor.LINE)}
       />
+
+      <UrlOption />
     </>
   );
+}
+
+const urlLine = createRef('messagebox_url_url');
+
+function UrlOption(): Component {
+  const [label] = useState(messageboxUrlLabel);
+  const shown: String = label;
+  onMounted(() => urlLine.options = [shown]);
+  onUpdated(() => urlLine.options = [shown]);
+  return <layer x={0} y={0} w={0} h={0} />;
 }

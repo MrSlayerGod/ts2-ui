@@ -1,11 +1,35 @@
 import { useState } from 'ts2';
-import { playSound } from '../lib/lib.engine';
+import { chatMessage, playSound } from '../lib/lib.engine';
 import { ConfirmOpen, ConfirmPressed, RewardBuying, RewardSounds, SelectedReward } from './league-rewards.constants';
 
 export function selectReward(index: Int): void {
   playSound(RewardSounds.SELECT);
   const [, setSelected] = useState(SelectedReward);
   setSelected(index);
+}
+
+export function rewardShopRefuse(
+  a0: Int,
+  a1: Int,
+  a2: Int,
+  a3: Int,
+  a4: Int,
+  a5: Int,
+  a6: Int,
+  a7: Int,
+  a8: Int,
+  a9: Int,
+  a10: Int,
+  a11: Int,
+  a12: Int,
+  a13: Int,
+  a14: Int,
+  message: String,
+): void {
+  playSound(RewardSounds.REFUSE);
+  chatMessage(message);
+  const [, setSelected] = useState(SelectedReward);
+  setSelected(-1);
 }
 
 export function openRewardConfirm(): void {

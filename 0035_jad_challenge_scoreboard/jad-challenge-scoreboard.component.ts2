@@ -1,11 +1,17 @@
+import { onMounted, useRef, useState } from 'ts2';
+
+import { textLineCount } from '../lib/lib.engine';
 import { closeInterface, graphicSwapperUnlessMobile } from '../lib/lib.helpers';
+import { ScrollbarVertical } from '../lib/scrollbar-vertical.component';
 import {
   Layout,
   ScoreboardArt,
+  ScoreboardBar,
   ScoreboardColors,
   ScoreboardFonts,
   ScoreboardModels,
 } from './jad-challenge-scoreboard.constants';
+import { jadScoreboardCalls, jadScoreboardText, resetJadScoreboard } from './jad-challenge-scoreboard.state';
 
 export function JadChallengeScoreboard(): Component {
   return (
@@ -38,30 +44,67 @@ export function JadChallengeScoreboard(): Component {
         />
       </layer>
 
-      <layer
-        x={{ center: Layout.SCROLLBAR_DX }}
-        y={{ center: Layout.SCROLLBAR_DY }}
-        w={Layout.SCROLLBAR_W}
-        h={Layout.SCROLLBAR_H}
-      />
+      <layer x={0} y={0} w="fill" h="fill">
+        <ScoreboardBoard />
+      </layer>
+    </>
+  );
+}
 
+function ScoreboardBoard(): Component {
+  const [text] = useState(jadScoreboardText);
+  const [calls] = useState(jadScoreboardCalls);
+  const pane = useRef();
+  onMounted(() => {
+    resetJadScoreboard();
+  });
+  const width: Int = Layout.CONTENT_W - Layout.BODY_INSET_W;
+  const extent: Int = textLineCount(text, width, ScoreboardFonts.BODY) * Layout.BODY_LINE_HEIGHT + Layout.BODY_LINE_PAD;
+  const called: Boolean = calls > 0;
+
+  return (
+    <>
       <layer
+        ref={pane}
         x={{ center: Layout.CONTENT_DX }}
         y={{ center: Layout.CONTENT_DY }}
         w={Layout.CONTENT_W}
         h={Layout.CONTENT_H}
+        scrollHeight={called ? extent : 0}
+        scrollY={0}
       >
         <text
           x={{ center: Layout.BODY_DX }}
           y={Layout.BODY_Y}
           w={{ fill: Layout.BODY_INSET_W }}
-          h={Layout.BODY_H}
+          h={called ? extent : Layout.BODY_H}
+          text={text}
           font={ScoreboardFonts.BODY}
           color={ScoreboardColors.BODY}
           align="center"
           shadow
           lineHeight={Layout.BODY_LINE_HEIGHT}
         />
+      </layer>
+
+      <layer
+        x={{ center: Layout.SCROLLBAR_DX }}
+        y={{ center: Layout.SCROLLBAR_DY }}
+        w={Layout.SCROLLBAR_W}
+        h={Layout.SCROLLBAR_H}
+        rebuildOn={calls}
+      >
+        {called ? (
+          <ScrollbarVertical
+            content={pane}
+            track={ScoreboardBar.TRACK}
+            capTopSprite={ScoreboardBar.CAP_TOP}
+            thumbSprite={ScoreboardBar.THUMB}
+            capBottomSprite={ScoreboardBar.CAP_BOTTOM}
+            arrowUp={ScoreboardBar.ARROW_UP}
+            arrowDown={ScoreboardBar.ARROW_DOWN}
+          />
+        ) : null}
       </layer>
     </>
   );

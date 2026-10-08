@@ -1,40 +1,327 @@
-import { sessionState, useState } from 'ts2';
+import { CS2, sessionState, useState } from 'ts2';
 
-import { clientClock } from '../lib/lib.engine';
+import { onEnhancedMobile } from '../0134_settings/settings.helpers';
+import { tooltipBuilt, tooltipTime } from '../lib/game/varcs';
+import { Fonts } from '../lib/game/fonts';
+import { mouseoverTooltipSetup } from '../lib/enhanced/mouseover';
+import { clientClock, textLineCount, textWidth } from '../lib/lib.engine';
+import { pipeHead, pipeTail } from '../lib/lib.format';
 import { onMobile } from '../lib/lib.helpers';
+import { enhancedAny } from '../lib/lib.overlay';
+import { TooltipBox, tooltipDown, tooltipDwellElapsed, tooltipMark, tooltipStale } from '../lib/tooltip.component';
+import { popoutBodyRef, popoutTipRef } from './popout.refs';
 
-export const popoutTipLeft = sessionState('');
-export const popoutTipRight = sessionState('');
-export const popoutTipAnchorY = sessionState(-1);
-export const popoutTipDeadline = sessionState(-1);
+export const popoutTipText = sessionState('');
+export const popoutTipSplit = sessionState(-1);
+export const popoutTipX = sessionState(-1);
+export const popoutTipY = sessionState(-1);
+export const popoutTipW = sessionState(-1);
+export const popoutTipH = sessionState(-1);
 
-export function showPopoutTip(left: String, right: String, anchorY: Int): void {
-  clearPopoutTip();
-  const [, setLeft] = useState(popoutTipLeft);
-  const [, setRight] = useState(popoutTipRight);
-  const [, setAnchor] = useState(popoutTipAnchorY);
-  const [, setDeadline] = useState(popoutTipDeadline);
-  setLeft(left);
-  setRight(right);
-  setAnchor(anchorY);
+const WRAP = 512;
+const PHONE_HOLD = 240;
+
+const enum TwoColumn {
+  LINE = 12,
+  GAP = 4,
+  PAD = 4,
+}
+
+const UNWRAPPED = 2147483647;
+
+export function popoutTooltipHookIf(component: Int): void {
+  hookTip(component as ComponentId);
+}
+
+function hookTip(target: ComponentId): void {
   if (onMobile()) {
-    setDeadline(clientClock() + 240);
+    target.noClickThrough = true;
+    target.onMouseRepeat = null;
+    target.onMouseLeave = null;
+  } else {
+    target.onMouseLeave = () => {
+      clearPopoutTip();
+    };
+    target.onClick = null;
+    target.noClickThrough = false;
+  }
+}
+
+export function popoutTooltipHookIfClear(component: Int): void {
+  popoutTooltipHookClear(component as ComponentId);
+}
+
+export function popoutTooltipHookClear(target: ComponentId): void {
+  target.onMouseRepeat = null;
+  target.onMouseLeave = null;
+  target.noClickThrough = false;
+  target.onClick = null;
+  clearPopoutTip();
+}
+
+export function popoutTooltipBuild(component: Int, sub: Int, text: String): void {
+  showPopoutTipLine(component as ComponentId, sub, text);
+}
+
+export function showPopoutTipLine(anchor: ComponentId, sub: Int, text: String): void {
+  clearPopoutTip();
+  if (onMobile()) {
+    buildLine(anchor, sub, text);
+    const deadline: Int = clientClock() + PHONE_HOLD;
+    CS2.if_on_timer_set(() => popoutTipRemoveDelayed(deadline), popoutTipRef);
+    return;
+  }
+  if (onEnhancedMobile()) {
+    return;
+  }
+  if (!enhancedAny()) {
+    tooltipMark();
+    if (!tooltipDwellElapsed(0)) {
+      return;
+    }
+  } else {
+    holdTooltipTime();
+  }
+  if (tooltipDown() && !CS2.if_hide_get(popoutTipRef)) {
+    buildLine(anchor, sub, text);
+  }
+}
+
+export function showPopoutTip(anchor: ComponentId, sub: Int, left: String, right: String): void {
+  clearPopoutTip();
+  if (onMobile()) {
+    buildColumns(anchor, sub, left, right);
+    const deadline: Int = clientClock() + PHONE_HOLD;
+    CS2.if_on_timer_set(() => popoutTipRemoveDelayed(deadline), popoutTipRef);
+    return;
+  }
+  if (onEnhancedMobile()) {
+    return;
+  }
+  if (!enhancedAny()) {
+    if (!tooltipDwellElapsed(0)) {
+      return;
+    }
+  } else {
+    holdTooltipTime();
+  }
+  if (tooltipDown() && !CS2.if_hide_get(popoutTipRef)) {
+    buildColumns(anchor, sub, left, right);
+  }
+}
+
+function holdTooltipTime(): void {
+  const [, setTime] = useState(tooltipTime);
+  setTime(clientClock() + 10);
+}
+
+function buildLine(anchor: ComponentId, sub: Int, text: String): void {
+  if (enhancedAny()) {
+    mouseoverTooltipSetup(text, '', CS2.mouse_x_get(), CS2.mouse_y_get(), popoutTipRef, anchor, sub, 0, 0, 1);
+    return;
+  }
+  CS2.if_on_timer_set(() => popoutTipStale(), popoutTipRef);
+
+  const hostW: Int = CS2.if_width_get(popoutBodyRef);
+  const hostH: Int = CS2.if_height_get(popoutBodyRef);
+  let wrap: Int = WRAP;
+  if (wrap > hostW) {
+    wrap = hostW;
+  }
+  wrap = wrap - TooltipBox.padX;
+  const boxW: Int = TooltipBox.padX + textWidth(text, wrap, TooltipBox.font);
+  const boxH: Int = TooltipBox.padY + TooltipBox.line * textLineCount(text, wrap, TooltipBox.font);
+
+  let left: Int = -1;
+  let top: Int = -1;
+  let right: Int = -1;
+  let bottom: Int = -1;
+  let found: Boolean = false;
+  if (sub !== -1 && CS2.cc_find(anchor, sub)) {
+    found = true;
+    left = CS2.cc_x_get();
+    top = CS2.cc_y_get();
+    right = left + CS2.cc_width_get();
+    bottom = top + CS2.cc_height_get();
+    while (CS2.cc_find(anchor, CS2.cc_parentsubid())) {
+      const scrollX: Int = CS2.cc_scroll_x_get();
+      const scrollY: Int = CS2.cc_scroll_y_get();
+      const w: Int = CS2.cc_width_get();
+      const h: Int = CS2.cc_height_get();
+      const ox: Int = CS2.cc_x_get();
+      const oy: Int = CS2.cc_y_get();
+      left = Math.min(Math.max(0, left - scrollX), w) + ox;
+      right = Math.min(Math.max(0, right - scrollX), w) + ox;
+      top = Math.min(Math.max(0, top - scrollY), h) + oy;
+      bottom = Math.min(Math.max(0, bottom - scrollY), h) + oy;
+    }
+  } else if (sub === -1) {
+    found = true;
+    left = CS2.if_x_get(anchor);
+    top = CS2.if_y_get(anchor);
+    right = left + CS2.if_width_get(anchor);
+    bottom = top + CS2.if_height_get(anchor);
+  }
+  if (found) {
+    let layer: ComponentId = sub === -1 ? CS2.if_layer_get(anchor) : anchor;
+    while (layer !== -1) {
+      const scrollX: Int = CS2.if_scroll_x_get(layer);
+      const scrollY: Int = CS2.if_scroll_y_get(layer);
+      const w: Int = CS2.if_width_get(layer);
+      const h: Int = CS2.if_height_get(layer);
+      const ox: Int = CS2.if_x_get(layer);
+      const oy: Int = CS2.if_y_get(layer);
+      left = Math.min(Math.max(0, left - scrollX), w) + ox;
+      right = Math.min(Math.max(0, right - scrollX), w) + ox;
+      top = Math.min(Math.max(0, top - scrollY), h) + oy;
+      bottom = Math.min(Math.max(0, bottom - scrollY), h) + oy;
+      layer = CS2.if_layer_get(layer);
+    }
+  }
+
+  let x: Int = left + TooltipBox.nudge;
+  let y: Int = bottom + TooltipBox.nudge;
+  if (x > hostW - boxW) {
+    x = hostW - boxW;
+  }
+  if (y > hostH - boxH) {
+    y = top - boxH - TooltipBox.nudge;
+  }
+  placeBox(text, '', x, y, boxW, boxH);
+}
+
+function buildColumns(anchor: ComponentId, sub: Int, leftText: String, rightText: String): void {
+  if (enhancedAny()) {
+    mouseoverTooltipSetup(
+      leftText,
+      rightText,
+      CS2.mouse_x_get(),
+      CS2.mouse_y_get(),
+      popoutTipRef,
+      anchor,
+      sub,
+      0,
+      0,
+      1,
+    );
+    return;
+  }
+  let joinedL: String = '';
+  let joinedR: String = '';
+  let widest: Int = 0;
+  let rows: Int = 0;
+  let headL: String = pipeHead(leftText);
+  let tailL: String = pipeTail(leftText);
+  let headR: String = pipeHead(rightText);
+  let tailR: String = pipeTail(rightText);
+  let lenL: Int = headL.length;
+  let lenR: Int = headR.length;
+  while (lenL > 0 || lenR > 0) {
+    const wL: Int = lenL > 0 ? textWidth(headL, UNWRAPPED, Fonts.P12_FULL) : 0;
+    const wR: Int = lenR > 0 ? textWidth(headR, UNWRAPPED, Fonts.P12_FULL) : 0;
+    widest = Math.max(widest, wL + TwoColumn.GAP + wR);
+    if (rows > 0) {
+      joinedL = `${joinedL}<br>${headL}`;
+      joinedR = `${joinedR}<br>${headR}`;
+    } else {
+      joinedL = `${joinedL}${headL}`;
+      joinedR = `${joinedR}${headR}`;
+    }
+    rows = rows + 1;
+    if (tailL.length > 0 || tailR.length > 0) {
+      const nextL: String = tailL;
+      const nextR: String = tailR;
+      headL = pipeHead(nextL);
+      tailL = pipeTail(nextL);
+      headR = pipeHead(nextR);
+      tailR = pipeTail(nextR);
+      lenL = headL.length;
+      lenR = headR.length;
+    } else {
+      lenL = 0;
+      lenR = 0;
+    }
+  }
+  const boxW: Int = widest + TwoColumn.PAD;
+  const boxH: Int = rows * TwoColumn.LINE + (TwoColumn.GAP - 1) + TwoColumn.PAD;
+
+  let ax: Int = CS2.if_x_get(anchor);
+  let ay: Int = CS2.if_y_get(anchor);
+  let ah: Int = 0;
+  if (sub !== -1 && CS2.cc_find(anchor, sub)) {
+    const cx: Int = CS2.cc_x_get();
+    const cy: Int = CS2.cc_y_get();
+    ah = CS2.cc_height_get();
+    ax = ax + cx - CS2.if_scroll_x_get(anchor);
+    ay = ay + cy - CS2.if_scroll_y_get(anchor);
+  } else {
+    ah = CS2.if_height_get(anchor);
+  }
+  let layer: ComponentId = CS2.if_layer_get(anchor);
+  while (layer !== -1) {
+    ax = ax + CS2.if_x_get(layer) - CS2.if_scroll_x_get(layer);
+    ay = ay + CS2.if_y_get(layer) - CS2.if_scroll_y_get(layer);
+    layer = CS2.if_layer_get(layer);
+  }
+  let x: Int = ax + 5;
+  let y: Int = ay + ah + 5;
+  const hostW: Int = CS2.if_width_get(popoutBodyRef);
+  const hostH: Int = CS2.if_height_get(popoutBodyRef);
+  if (x > hostW - boxW) {
+    x = hostW - boxW;
+  }
+  if (y > hostH - boxH) {
+    y = ay - boxH - 5;
+  }
+  placeBox(joinedL, joinedR, x, y, boxW, boxH);
+}
+
+function placeBox(left: String, right: String, x: Int, y: Int, w: Int, h: Int): void {
+  const [, setText] = useState(popoutTipText);
+  const [, setSplit] = useState(popoutTipSplit);
+  const [, setX] = useState(popoutTipX);
+  const [, setY] = useState(popoutTipY);
+  const [, setW] = useState(popoutTipW);
+  const [, setH] = useState(popoutTipH);
+  const [, setBuilt] = useState(tooltipBuilt);
+  setX(x);
+  setY(y);
+  setW(w);
+  setH(h);
+  setSplit(left.length);
+  setText(`${left}${right}`);
+  setBuilt(1);
+}
+
+export function popoutTipRemoveDelayed(deadline: Int): void {
+  if (clientClock() < deadline) {
+    return;
+  }
+  clearPopoutTip();
+}
+
+function popoutTipStale(): void {
+  if (!enhancedAny() && tooltipStale()) {
+    deltooltipAction();
   }
 }
 
 export function clearPopoutTip(): void {
-  const [, setLeft] = useState(popoutTipLeft);
-  const [, setRight] = useState(popoutTipRight);
-  const [, setDeadline] = useState(popoutTipDeadline);
-  setLeft('');
-  setRight('');
-  setDeadline(-1);
+  deltooltipAction();
+  CS2.if_on_timer_set(null, popoutTipRef);
 }
 
-export function tickPopoutTip(): void {
-  const [deadline] = useState(popoutTipDeadline);
-  if (deadline < 0 || clientClock() < deadline) {
-    return;
+function deltooltipAction(): void {
+  if (!enhancedAny()) {
+    CS2.if_on_timer_set(null, popoutTipRef);
   }
-  clearPopoutTip();
+  const [text, setText] = useState(popoutTipText);
+  const [, setBuilt] = useState(tooltipBuilt);
+  if (text.length > 0) {
+    setText('');
+  }
+  setBuilt(0);
+  if (enhancedAny()) {
+    mouseoverTooltipSetup('', '', -1, -1, popoutTipRef, -1 as ComponentId, -1, 0, 0, 1);
+  }
 }

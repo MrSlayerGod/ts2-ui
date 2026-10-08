@@ -743,7 +743,7 @@ export function BingoPulse({ skin, armed }: { skin: Int; armed: Boolean }): Comp
     }
     let next: Int = 0;
     if (clientClock() > frozenAt + 1) {
-      const wave: Int = Trig.sinDeg((PULSE_SPEED * (clientClock() % PULSE_UNIT)) % PULSE_UNIT);
+      const wave: Int = Trig.sinDeg(PULSE_SPEED * (clientClock() % PULSE_UNIT) % PULSE_UNIT);
       next = 255 - CS2.scale(wave + PULSE_UNIT, PULSE_UNIT * 2, 255);
     }
     if (next !== transparency) {

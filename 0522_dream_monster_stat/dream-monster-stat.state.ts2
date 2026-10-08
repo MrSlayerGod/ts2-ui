@@ -1,10 +1,46 @@
-import { sessionState, useState } from 'ts2';
+import { CS2, sessionState, useState } from 'ts2';
 
-import { Tab } from './dream-monster-stat.constants';
+import { pipeHead, pipeTail } from '../lib/lib.format';
+
+import { truncateToWidth } from '../0704_clans_events_create/clans-events-create.helpers';
+import { DreamMonsterFonts, Tab } from './dream-monster-stat.constants';
 
 export const dreamMonsterTab = sessionState(Tab.NONE);
 
 export function selectDreamTab(tab: Tab): void {
   const [, setTab] = useState(dreamMonsterTab);
   setTab(tab);
+}
+
+export const dreamMonsterData = sessionState('');
+export const dreamMonsterPopulated = sessionState(0);
+
+export function populatedField(data: String, index: Int): String {
+  let rest: String = data;
+  let i: Int = 0;
+  while (i < index) {
+    rest = pipeTail(rest);
+    i = i + 1;
+  }
+  if (index >= 4) {
+    return rest;
+  }
+  return pipeHead(rest);
+}
+
+export function dreamMonsterPopulate(data: String): void {
+  const [, setData] = useState(dreamMonsterData);
+  const [, setPopulated] = useState(dreamMonsterPopulated);
+  setData(data);
+  setPopulated(1);
+  selectDreamTab(Tab.MONSTER);
+}
+
+export function resetDreamMonster(): void {
+  const [, setPopulated] = useState(dreamMonsterPopulated);
+  setPopulated(0);
+}
+
+export function populatedName(data: String, width: Int): String {
+  return truncateToWidth(CS2.tags_remove(populatedField(data, 4)), width, DreamMonsterFonts.TITLE);
 }

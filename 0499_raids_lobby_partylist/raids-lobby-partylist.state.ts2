@@ -1,0 +1,105 @@
+import { CS2, sessionState, useState } from 'ts2';
+
+import { GameframeSlot, gameframeSlot } from '../lib/lib.gameframe';
+import {
+  partylistBlankKeys,
+  partylistField,
+  partylistKeyCell,
+  partylistRecordStart,
+  partylistWithoutSlot,
+} from '../lib/raids-partylist';
+import { raidsCount, raidsListsortList } from '../lib/game/varcs';
+import { ListKey, SLOT_COUNT } from './raids-lobby-partylist.constants';
+
+export const raidsListData = sessionState('');
+
+export const raidsListBuilt = sessionState(0);
+
+export const raidsListPressedSlot = sessionState(-1);
+export const raidsListPressedUntil = sessionState(0);
+
+export const raidsListDeadLow = sessionState(0);
+export const raidsListDeadHigh = sessionState(0);
+
+export function slotBit(low: Int, high: Int, slot: Int): Boolean {
+  if (slot < 0) {
+    return false;
+  }
+  return slot < ListKey.BITS ? CS2.testbit(low, slot) : CS2.testbit(high, slot - ListKey.BITS);
+}
+
+export function sortedRun(data: String): Int {
+  let n: Int = 0;
+  while (n < SLOT_COUNT && partylistRecordStart(data, n) !== -1) {
+    n = n + 1;
+  }
+  return n;
+}
+
+function panelOpen(): Boolean {
+  return CS2.if_sub_has(gameframeSlot(GameframeSlot.VIEWPORT));
+}
+
+function numberKey(field: String, width: Int, slot: Int): String {
+  return partylistKeyCell(`${field.padStart(width, '0')}${slot}`);
+}
+
+function slotKeys(line: String, slot: Int, fill: Int): String {
+  return `${numberKey(partylistField(line, 2), 3, slot)}` +
+    `${partylistKeyCell(CS2.tags_remove(partylistField(line, 0)))}` +
+    `${numberKey(partylistField(line, 3), 3, slot)}` +
+    `${numberKey(partylistField(line, 4), 4, slot)}` +
+    `${numberKey(partylistField(line, 5), 3, slot)}` +
+    `${partylistKeyCell(CS2.tags_remove(partylistField(line, 6)))}` +
+    `${partylistKeyCell(partylistField(line, 7).padStart(10, '0'))}` +
+    `${partylistKeyCell(`${fill}`)}`;
+}
+
+function knownSort(sort: Int): Boolean {
+  return (sort >= 0 && sort <= 13) || sort === 24 || sort === 25;
+}
+
+export function raidsPartylistAddline(slot: Int, line: String): void {
+  if (!panelOpen()) {
+    return;
+  }
+  if (slot < 0 || slot >= SLOT_COUNT) {
+    return;
+  }
+  const [data, setData] = useState(raidsListData);
+  const [count, setCount] = useState(raidsCount);
+  const [pressed, setPressed] = useState(raidsListPressedSlot);
+  const [, setPressedUntil] = useState(raidsListPressedUntil);
+  const [low, setLow] = useState(raidsListDeadLow);
+  const [high, setHigh] = useState(raidsListDeadHigh);
+
+  const block: Int = SLOT_COUNT * ListKey.SLOT_W;
+  const full: String = data.length >= block ? data : partylistBlankKeys(block);
+  let kept: String = partylistWithoutSlot(full, slot);
+  if (pressed === slot) {
+    setPressed(-1);
+    setPressedUntil(0);
+  }
+  if (slot < ListKey.BITS) {
+    setLow(CS2.bit_clear(low, slot));
+  } else {
+    setHigh(CS2.bit_clear(high, slot - ListKey.BITS));
+  }
+
+  if (line.length > 0) {
+    kept =
+      `${kept.substring(0, slot * ListKey.SLOT_W)}${slotKeys(line, slot, count)}` +
+      `${kept.substring((slot + 1) * ListKey.SLOT_W, kept.length)}^${slot}~${line}`;
+    setCount(count + 1);
+  }
+  setData(kept);
+
+  if (slot >= SLOT_COUNT - 1) {
+    const [sort, setSort] = useState(raidsListsortList);
+    if (!knownSort(sort)) {
+      setSort(1);
+    }
+    const [, setBuilt] = useState(raidsListBuilt);
+    setBuilt(1);
+  }
+}

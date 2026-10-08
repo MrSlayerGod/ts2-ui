@@ -106,3 +106,7 @@ export function debugWarn(source: String, text: String): void {
   }
   debugMessage(`[${source}-CLIENT]<col=ffe600>[WARN]</col> ${text}`);
 }
+
+export function jigsawPieceSnap(row: Int, piece: Int, unusedA: Int, unusedB: Int): void {
+  playSound(JigsawSounds.SNAP);
+}

@@ -218,15 +218,15 @@ export function SharedBankGrid(): Component {
       }
       if (searching) {
         if (held !== -1 && bankmainFilterItem(held, searching, filter)) {
-          xs[slot] = (placed % Grid.COLUMNS) * pitch;
-          ys[slot] = (placed / Grid.COLUMNS) * pitch;
+          xs[slot] = placed % Grid.COLUMNS * pitch;
+          ys[slot] = placed / Grid.COLUMNS * pitch;
           placed = placed + 1;
           lastItemY = ys[slot];
           lastSlotY = ys[slot];
         }
       } else {
-        xs[slot] = (slot % Grid.COLUMNS) * pitch;
-        ys[slot] = (slot / Grid.COLUMNS) * pitch;
+        xs[slot] = slot % Grid.COLUMNS * pitch;
+        ys[slot] = slot / Grid.COLUMNS * pitch;
         if (held !== -1) {
           lastItemY = ys[slot];
         }
@@ -271,7 +271,7 @@ export function SharedBankGrid(): Component {
   itemsRef.scrollHeight = scrollExtent;
 
   return (
-    <layer x={0} y={0} w="fill" h={(Grid.MAX_SLOTS / Grid.COLUMNS) * pitch + Grid.H}>
+    <layer x={0} y={0} w="fill" h={Grid.MAX_SLOTS / Grid.COLUMNS * pitch + Grid.H}>
       {bag.map(
         (item, index) =>
           index < capacity && (

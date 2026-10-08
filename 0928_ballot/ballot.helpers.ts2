@@ -103,10 +103,8 @@ export function ballotQuestionAnswersTop(
   markerText: String,
   paneWidth: Int,
 ): Int {
-  return (
-    ballotQuestionTextHeight(index, text, wide, paneWidth) +
-    ballotQuestionMarkerHeight(index, text, wide, marked, markerText, paneWidth)
-  );
+  return ballotQuestionTextHeight(index, text, wide, paneWidth) +
+    ballotQuestionMarkerHeight(index, text, wide, marked, markerText, paneWidth);
 }
 
 export function ballotQuestionRowHeight(
@@ -121,7 +119,7 @@ export function ballotQuestionRowHeight(
 ): Int {
   const textHeight: Int = ballotQuestionTextHeight(index, text, wide, paneWidth);
   const markerHeight: Int = ballotQuestionMarkerHeight(index, text, wide, marked, markerText, paneWidth);
-  const answers: Int = hasAnswers ? answersHeight : wide ? -1 : 0;
+  const answers: Int = hasAnswers ? answersHeight : (wide ? -1 : 0);
 
   if (wide) {
     return Math.max(textHeight, markerHeight + answers);

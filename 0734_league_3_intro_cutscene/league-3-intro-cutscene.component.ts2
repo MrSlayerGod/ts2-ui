@@ -1,5 +1,13 @@
+import { createRef, onMounted, onUpdated, useState } from 'ts2';
 import { IntroMuteToggle } from './mute-toggle.component';
-import { IntroColor, IntroFonts, IntroLayout, IntroModels, IntroProps } from './league-3-intro-cutscene.constants';
+import {
+  IntroColor,
+  IntroFonts,
+  IntroLayout,
+  IntroModels,
+  IntroProps,
+  introReframed,
+} from './league-3-intro-cutscene.constants';
 
 export function LeagueIntroCutscene(): Component {
   return (
@@ -13,6 +21,8 @@ export function LeagueIntroCutscene(): Component {
           w={IntroLayout.BACKDROP_W}
           h={IntroLayout.BACKDROP_H}
           model={IntroModels.BACKDROP_LEFT}
+          static
+          ref={backdropLeft}
           orthogonal
           pitch={IntroLayout.BACKDROP_PITCH}
           zoom={IntroLayout.BACKDROP_LEFT_ZOOM}
@@ -33,6 +43,8 @@ export function LeagueIntroCutscene(): Component {
         </layer>
 
         <text
+          static
+          ref={caption}
           x="center"
           y={IntroLayout.CAPTION_Y}
           w="fill"
@@ -64,6 +76,33 @@ export function LeagueIntroCutscene(): Component {
       >
         <IntroMuteToggle />
       </layer>
+
+      <IntroReframe />
     </>
   );
+}
+
+const caption = createRef('league_3_intro_cutscene_caption');
+const backdropLeft = createRef('league_3_intro_cutscene_backdrop_left');
+
+function IntroReframe(): Component {
+  const [reframed] = useState(introReframed);
+  const captionY: Int = reframed === 1 ? IntroLayout.CAPTION_Y_REFRAMED : IntroLayout.CAPTION_Y;
+  const offsetY: Int = reframed === 1 ? IntroLayout.BACKDROP_REFRAMED_OFFSET_Y : 0;
+  const zoom: Int = reframed === 1 ? IntroLayout.BACKDROP_REFRAMED_ZOOM : IntroLayout.BACKDROP_LEFT_ZOOM;
+  onMounted(() => placeReframe(captionY, offsetY, zoom));
+  onUpdated(() => placeReframe(captionY, offsetY, zoom));
+  return <layer x={0} y={0} w={0} h={0} />;
+}
+
+function placeReframe(captionY: Int, offsetY: Int, zoom: Int): void {
+  caption.props = { x: 'center', y: captionY, w: 'fill', h: IntroLayout.CAPTION_H };
+  backdropLeft.props = {
+    offsetX: 0,
+    offsetY: offsetY,
+    pitch: IntroLayout.BACKDROP_PITCH,
+    yaw: 0,
+    roll: 0,
+    zoom: zoom,
+  };
 }

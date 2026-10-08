@@ -27,6 +27,10 @@ enum DialogueGate {
 
 const continueLine = createRef('chat_right_continue');
 
+const head = createRef('chat_right_head');
+const speaker = createRef('chat_right_name');
+const body = createRef('chat_right_text');
+
 function advanceFeedback(line: ComponentId): void {
   if (CS2.if_text_get(line).length === 0) {
     return;
@@ -40,10 +44,10 @@ export function ChatRight(): Component {
   return (
     <layer x={{ center: 1 }} y="center" w={506} h={129}>
       <layer x={{ center: -1 }} y={{ center: 1 }} w={481} h={110}>
-        <model x={415} y={43} w={32} h={32} zoom={796} pitch={40} yaw={166} />
+        <model ref={head} x={415} y={43} w={32} h={32} zoom={796} pitch={40} yaw={166} />
 
         <layer x="center" y="center" w={479} h={96}>
-          <text x={5} y={0} w={380} h={17} font={LABEL} color={ChatColors.NAME} align="center" />
+          <text ref={speaker} x={5} y={0} w={380} h={17} font={LABEL} color={ChatColors.NAME} align="center" />
           <text
             ref={continueLine}
             x={5}
@@ -57,6 +61,7 @@ export function ChatRight(): Component {
             hover={{ color: ChatColors.CONTINUE_HOVER }}
           />
           <text
+            ref={body}
             x={5}
             y={16}
             w={380}

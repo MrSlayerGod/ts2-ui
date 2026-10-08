@@ -1,10 +1,14 @@
-import { Layout, raidsLobbyPartydetailsRef, tooltipRef } from './raids-lobby-partydetails.constants';
+import { BoardAnchors } from '../lib/board-button.component';
+import { boardAnchorsRef, Layout, raidsLobbyPartydetailsRef, tooltipRef } from './raids-lobby-partydetails.constants';
 import { RaidsLobbyPartydetails } from './raids-lobby-partydetails.component';
 
 export const raidsLobbyPartydetailsUi = (): UI => (
   <ui ref={raidsLobbyPartydetailsRef} x="center" y="center">
     <RaidsLobbyPartydetails />
     <PartydetailsTooltipAnchor />
+    <layer ref={boardAnchorsRef} x={0} y={0} w={0} h={0}>
+      <BoardAnchors universe={boardAnchorsRef} count={11} />
+    </layer>
   </ui>
 );
 

@@ -1,0 +1,8 @@
+import { sessionState, useState } from 'ts2';
+
+export const settingsRedraws = sessionState(0);
+
+export function adventurePathSettingsRedraw(): void {
+  const [redraws, setRedraws] = useState(settingsRedraws);
+  setRedraws(redraws + 1);
+}

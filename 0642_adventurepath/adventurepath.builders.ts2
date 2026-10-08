@@ -2,6 +2,9 @@ import { CS2, predictServerState, useServerState } from 'ts2';
 
 import { onMobile } from '../lib/lib.helpers';
 import { Varps } from '../lib/game/varps';
+import { Varbits } from '../lib/game/varbits';
+import { AdventureTasks } from '../0644_adventurepath_side/adventure-tasks.data';
+import { setInfo, taskInitOp } from './adventurepath.task-page';
 import { AdventurePathCards } from './adventure-path-cards.data';
 import {
   Art,
@@ -50,7 +53,7 @@ export function adventurePathInit(): Int {
   if (column === 0) {
     row = row - 1;
   }
-  return (Layout.ROW_H / 2) * (row + 1);
+  return Layout.ROW_H / 2 * (row + 1);
 }
 
 function drawPathCard(
@@ -65,8 +68,8 @@ function drawPathCard(
   column: Int,
   row: Int,
 ): Int {
-  const cellX: Int = (paneW / 2) * column;
-  const cellY: Int = (rowH / 2) * row;
+  const cellX: Int = paneW / 2 * column;
+  const cellY: Int = rowH / 2 * row;
   const artX: Int = cellX + (paneW / 4 - cardW / 2);
 
   const artIndex: Int = index;
@@ -88,7 +91,7 @@ function drawPathCard(
     paneW / 2 - Layout.UNIT * 2,
     Layout.UNIT * 7,
     cellX + Layout.UNIT,
-    (rowH / 2) * (row + 1) - Layout.UNIT * 8,
+    rowH / 2 * (row + 1) - Layout.UNIT * 8,
     name,
     Colour.CAPTION,
     Colour.WHITE,
@@ -106,7 +109,7 @@ function drawPathCard(
     cardW - Layout.BAR_INSET,
     Layout.BAR_H,
     artX,
-    (rowH / 2) * (row + 1) - Layout.CARD_ART_H,
+    rowH / 2 * (row + 1) - Layout.CARD_ART_H,
     done,
     total,
     0,
@@ -115,7 +118,7 @@ function drawPathCard(
   next = stoneBorderFree(paths, next, paneW / 2, rowH / 2, cellX, cellY);
 
   const cornerX: Int = cellX + (paneW / 4 + cardW / 2 - 30);
-  const cornerY: Int = (rowH / 2) * (row + 1) - Layout.CARD_ART_H;
+  const cornerY: Int = rowH / 2 * (row + 1) - Layout.CARD_ART_H;
   if (pathComplete(pathId)) {
     return iconButtonFree(
       paths,
@@ -182,6 +185,7 @@ export function selectPath(pathId: Int): void {
     predictServerState(Varps.ADVENTUREPATH_SELECTED_TASK, 0);
   }
   predictServerState(Varps.ADVENTUREPATH_SELECTED_PATH, pathId);
+  taskInitOp(pathId);
 }
 
 export function adventurePathChangePage(page: Int): void {
@@ -209,7 +213,34 @@ export function adventurePathInitEntrypoint(): void {
   } else {
     CS2.if_scroll_size_set(0, 0, pathsRef);
   }
+  const tab: Int = useServerState(Varbits.ADVENTUREPATH_MAIN_IF_TAB);
+  const path: Int = useServerState(Varps.ADVENTUREPATH_SELECTED_PATH);
+  if (tab === 1) {
+    taskInitOp(path);
+    adventurePathChangePage(1);
+    return;
+  }
+  if (tab === 2 && pathHasTasks(path)) {
+    taskInitOp(path);
+    setInfo(useServerState(Varps.ADVENTUREPATH_SELECTED_TASK));
+    adventurePathChangePage(2);
+    return;
+  }
   adventurePathChangePage(0);
+}
+
+function pathHasTasks(path: Int): Boolean {
+  let i1: Int = 0;
+  while (i1 < AdventureTasks.length) {
+    const task = AdventureTasks.at(i1);
+    if (task !== null) {
+      if (task.path === path) {
+        return true;
+      }
+    }
+    i1 = i1 + 1;
+  }
+  return false;
 }
 
 export function adventurePathRebuild(): void {

@@ -75,7 +75,7 @@ export function gridExtent(total: Int): Int {
   if (total <= 0) {
     return Layout.CELL_H;
   }
-  return ((total - 1) / Layout.COLUMNS) * Layout.ROW_STEP + Layout.CELL_H;
+  return (total - 1) / Layout.COLUMNS * Layout.ROW_STEP + Layout.CELL_H;
 }
 
 export function searchCaption(term: String): String {

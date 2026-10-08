@@ -1,0 +1,98 @@
+import { Layout } from './skillmulti.constants';
+
+export function isGrid(count: Int): Boolean {
+  return count > Layout.ROW_MAX;
+}
+
+function columnsFor(count: Int): Int {
+  return isGrid(count) ? Layout.GRID_COLUMNS : count;
+}
+
+function reserveFor(count: Int): Int {
+  return isGrid(count) ? Layout.GRID_RESERVE : 0;
+}
+
+export function slotWidthFor(count: Int): Int {
+  if (count <= 1) {
+    return Layout.SLOT_WIDTH;
+  }
+  const columns: Int = columnsFor(count);
+  const gaps: Int = columns - 1;
+  const reserve: Int = reserveFor(count);
+  if (Layout.SLOT_WIDTH * columns + Layout.GAP * gaps <= Layout.USABLE_WIDTH) {
+    return Layout.SLOT_WIDTH;
+  }
+  const gap: Int = (Layout.USABLE_WIDTH - Layout.SLOT_WIDTH * columns - reserve) / gaps;
+  const floor: Int = gapFloor(columns);
+  if (gap < floor) {
+    return (Layout.USABLE_WIDTH - floor * gaps - reserve) / columns;
+  }
+  return Layout.SLOT_WIDTH;
+}
+
+export function gapFor(count: Int): Int {
+  if (count <= 1) {
+    return Layout.GAP;
+  }
+  const columns: Int = columnsFor(count);
+  const gaps: Int = columns - 1;
+  if (Layout.SLOT_WIDTH * columns + Layout.GAP * gaps <= Layout.USABLE_WIDTH) {
+    return Layout.GAP;
+  }
+  const gap: Int = (Layout.USABLE_WIDTH - Layout.SLOT_WIDTH * columns - reserveFor(count)) / gaps;
+  const floor: Int = gapFloor(columns);
+  if (gap < floor) {
+    return floor;
+  }
+  return gap;
+}
+
+function gapFloor(columns: Int): Int {
+  const short: Int = 7 - columns;
+  if (short > 0) {
+    return Layout.MIN_GAP + 2 * short;
+  }
+  return Layout.MIN_GAP;
+}
+
+export function rowWidthFor(count: Int): Int {
+  if (count <= 0) {
+    return 0;
+  }
+  const columns: Int = columnsFor(count);
+  return columns * slotWidthFor(count) + (columns - 1) * gapFor(count);
+}
+
+export function rowLeftFor(count: Int): Int {
+  return (Layout.ROOT_WIDTH - rowWidthFor(count)) / 2 + 1;
+}
+
+export function slotLeftFor(count: Int, index: Int): Int {
+  const pitch: Int = slotWidthFor(count) + gapFor(count);
+  if (isGrid(count)) {
+    return index % Layout.GRID_COLUMNS * pitch;
+  }
+  return rowLeftFor(count) + index * pitch;
+}
+
+export function slotTopFor(count: Int, index: Int): Int {
+  if (isGrid(count)) {
+    return index / Layout.GRID_COLUMNS * Layout.GRID_PITCH;
+  }
+  return Layout.SLOT_TOP;
+}
+
+export function gridExtentFor(count: Int): Int {
+  if (isGrid(count)) {
+    return Layout.GRID_PITCH + Layout.GRID_PITCH * ((count - 1) / Layout.GRID_COLUMNS);
+  }
+  return 0;
+}
+
+export function clampGridScroll(count: Int, y: Int): Int {
+  const range: Int = gridExtentFor(count) - Layout.HOLDER_HEIGHT;
+  if (range <= 0) {
+    return 0;
+  }
+  return Math.clamp(0, range, y);
+}

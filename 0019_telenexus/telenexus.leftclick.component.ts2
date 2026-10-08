@@ -26,7 +26,7 @@ export function LeftClickPanel(): Component {
     selected > SCRY_OFFSET ? selected - SCRY_OFFSET : selected,
   );
   const row: TelenexusTeleport | null =
-    base === null ? null : (TelenexusTeleports.get(base.baseTeleport ?? -1) ?? base);
+    base === null ? null : TelenexusTeleports.get(base.baseTeleport ?? -1) ?? base;
 
   const radio: Boolean = row !== null && isRadio(selected);
 
@@ -99,7 +99,7 @@ function TickBox({ radio, chosen }: { radio: Boolean; chosen: Boolean }): Compon
       w={Layout.TICK_SIZE}
       h={Layout.TICK_SIZE}
       sprite={
-        hovered === 1 ? (set ? Sprites.CHECKBOX_5 : Sprites.CHECKBOX_3) : set ? Sprites.CHECKBOX_2 : Sprites.CHECKBOX_0
+        hovered === 1 ? (set ? Sprites.CHECKBOX_5 : Sprites.CHECKBOX_3) : (set ? Sprites.CHECKBOX_2 : Sprites.CHECKBOX_0)
       }
       onMouseRepeat={() => setHovered(1)}
       onMouseLeave={() => setHovered(0)}

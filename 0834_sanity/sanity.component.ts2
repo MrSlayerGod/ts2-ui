@@ -29,15 +29,24 @@ import {
   Snap,
 } from './sanity.helpers';
 import { sanityBarPx, sanityGlyphAlpha, sanityLaidOutAt, sanityMeasuredPx } from './sanity.state';
+import { FadeOverlay } from '../lib/fade-overlay.component';
+import {
+  sanityFadeCycles,
+  sanityFadeEnd,
+  sanityFadeFrom,
+  sanityFadeFromAlpha,
+  sanityFadeKeepHidden,
+  sanityFadeShown,
+  sanityFadeTo,
+  sanityFadeToAlpha,
+} from './sanity-fade.state';
 
 export function Sanity_(): Component {
   useInterval(() => publishBreakpoint(), universe);
 
   return (
     <layer ref={universe} w={ROOT_W} h={ROOT_H}>
-      <layer w="fill" h="fill" hide>
-        <rect w="fill" h="fill" fill color={SanityColor.FADE} />
-      </layer>
+      <SanityFadeHolder />
 
       <layer w="fill" h="fill" ref={dodger}>
         <layer static ref={overlay} x={Layout.CARD_X} y={Layout.CARD_Y} w={Layout.CARD_W} h={Layout.CARD_H}>
@@ -161,5 +170,29 @@ function SanityCard(): Component {
         />
       </layer>
     </>
+  );
+}
+
+function SanityFadeHolder(): Component {
+  const [shown] = useState(sanityFadeShown);
+  const [from] = useState(sanityFadeFrom);
+  const [fromAlpha] = useState(sanityFadeFromAlpha);
+  const [to] = useState(sanityFadeTo);
+  const [toAlpha] = useState(sanityFadeToAlpha);
+  const [cycles] = useState(sanityFadeCycles);
+  const [end] = useState(sanityFadeEnd);
+  const [keepHidden] = useState(sanityFadeKeepHidden);
+  return (
+    <layer w="fill" h="fill" hide={shown === 0}>
+      <FadeOverlay
+        from={from}
+        fromAlpha={fromAlpha}
+        to={to}
+        toAlpha={toAlpha}
+        cycles={cycles}
+        end={end}
+        keepHidden={keepHidden}
+      />
+    </layer>
   );
 }

@@ -214,8 +214,8 @@ function ShopCard({
   mobile: Int;
   expanded: Int;
 }): Component {
-  const left: Int = (visible % columns) * (cellWidth + Card.GAP) + Card.GAP;
-  const top: Int = (visible / columns) * (height + Card.GAP) + Card.GAP;
+  const left: Int = visible % columns * (cellWidth + Card.GAP) + Card.GAP;
+  const top: Int = visible / columns * (height + Card.GAP) + Card.GAP;
   const rest: Int = selected === 1 ? ShopColors.ORANGE : ShopColors.CARD;
   const hovered: Int = mobile === 1 || selected === 1 ? rest : ShopColors.CARD_HOVER;
   const item: Item = slotObj(shopIndex, inventory, slot);

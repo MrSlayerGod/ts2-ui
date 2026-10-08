@@ -67,8 +67,8 @@ export function PvpStore(): Component {
       >
         {PvpShopItems.map((item, index) => (
           <sprite
-            x={(index % Grid.PER_ROW) * Grid.STRIDE}
-            y={(index / Grid.PER_ROW) * Grid.ROW_H}
+            x={index % Grid.PER_ROW * Grid.STRIDE}
+            y={index / Grid.PER_ROW * Grid.ROW_H}
             w={Grid.ITEM_W}
             h={Grid.ITEM_H}
             item={shopIcon(item, SWAP_ROGUE_HAT)}
@@ -86,8 +86,8 @@ export function PvpStore(): Component {
         <layer x="center" y={shopHeight} w="fill" h={rewardHeight} hide>
           {PrestigeRewards.map((item, index) => (
             <sprite
-              x={(index % Grid.PER_ROW) * Grid.STRIDE}
-              y={Prestige.TOP + (index / Grid.PER_ROW) * Grid.ROW_H}
+              x={index % Grid.PER_ROW * Grid.STRIDE}
+              y={Prestige.TOP + index / Grid.PER_ROW * Grid.ROW_H}
               w={Grid.ITEM_W}
               h={Grid.ITEM_H}
               item={item}
@@ -117,7 +117,7 @@ export function PvpStore(): Component {
 
           {PrestigeRewards.map((item, index) => (
             <text
-              x={(index % Grid.PER_ROW) * Grid.STRIDE}
+              x={index % Grid.PER_ROW * Grid.STRIDE}
               y={Prestige.TOP + (index / Grid.PER_ROW + 1) * Grid.ROW_H - Prestige.PRICE_H}
               w={Prestige.PRICE_W}
               h={Prestige.PRICE_H}

@@ -1,0 +1,126 @@
+import { CS2, sessionState, useInterval, useRef, useState } from 'ts2';
+
+import { chatMessage, clientClock } from '../lib/lib.engine';
+import { GauntletClock, GauntletColor, GauntletFont, Layout } from './gauntlet-overlay.constants';
+
+export const gauntletClockRunning = sessionState(0);
+export const gauntletClockDeadline = sessionState(0);
+export const gauntletClockText = sessionState('Time Left: 10:00');
+export const gauntletClockColour = sessionState(GauntletColor.CLOCK);
+export const gauntletClockFinal = sessionState(0);
+
+export function gauntletTimerUpdate(ticks: Int, unused: Int): void {
+  const [, setDeadline] = useState(gauntletClockDeadline);
+  const [, setRunning] = useState(gauntletClockRunning);
+  setDeadline(CS2.clientclock() + ticks * GauntletClock.CYCLES_PER_TICK);
+  setRunning(1);
+}
+
+export function gauntletTimerEnd(): void {
+  const [, setRunning] = useState(gauntletClockRunning);
+  const [, setText] = useState(gauntletClockText);
+  const [, setColour] = useState(gauntletClockColour);
+  const [, setFinal] = useState(gauntletClockFinal);
+  setRunning(0);
+  setFinal(1);
+  setText('Final Encounter');
+  setColour(GauntletColor.CLOCK);
+}
+
+export function resetGauntletClock(): void {
+  const [, setRunning] = useState(gauntletClockRunning);
+  const [, setText] = useState(gauntletClockText);
+  const [, setColour] = useState(gauntletClockColour);
+  const [, setFinal] = useState(gauntletClockFinal);
+  setRunning(0);
+  setFinal(0);
+  setText('Time Left: 10:00');
+  setColour(GauntletColor.CLOCK);
+}
+
+function gauntletTimer(): void {
+  const [running, setRunning] = useState(gauntletClockRunning);
+  if (running === 0) {
+    return;
+  }
+  const [deadline] = useState(gauntletClockDeadline);
+  const [, setText] = useState(gauntletClockText);
+  const [, setColour] = useState(gauntletClockColour);
+  const remaining: Int = deadline - clientClock();
+  if (remaining <= 0) {
+    setRunning(0);
+    return;
+  }
+  const seconds: Int = remaining / GauntletClock.CYCLES_PER_SECOND;
+  const minutes: Int = seconds / 60;
+  const rest: Int = seconds % 60;
+  let text: String = `Time Left: ${minutes}:${rest}`;
+  if (rest < 10) {
+    text = `Time Left: ${minutes}:0${rest}`;
+  }
+  setText(text);
+  if (clientClock() % 20 < 10 && seconds <= 10) {
+    setColour(GauntletClock.FLASH);
+  } else {
+    setColour(GauntletColor.CLOCK);
+  }
+  if (remaining % GauntletClock.CYCLES_PER_SECOND !== 0) {
+    return;
+  }
+  if (seconds === 451) {
+    chatMessage('<col=ef1020>Time remaining: 7:30');
+  }
+  if (seconds === 301) {
+    chatMessage('<col=ef1020>Time remaining: 5:00');
+  }
+  if (seconds === 151) {
+    chatMessage('<col=ef1020>Time remaining: 2:30');
+  }
+  if (seconds === 61) {
+    chatMessage('<col=ef1020>Time remaining: 1:00');
+  }
+  if (seconds === 31) {
+    chatMessage('<col=ef1020>Time remaining: 0:30');
+  }
+  if (seconds === 11) {
+    chatMessage('<col=ef1020>Time remaining: 0:10');
+  }
+}
+
+export function GauntletTimerStrip(): Component {
+  const [text] = useState(gauntletClockText);
+  const [colour] = useState(gauntletClockColour);
+  const [final] = useState(gauntletClockFinal);
+  const self = useRef();
+  useInterval(() => gauntletTimer(), self);
+  return (
+    <layer ref={self} x="center" y={Layout.STRIP_Y} w={{ fill: Layout.STRIP_INSET }} h={Layout.STRIP_H}>
+      {final === 1 ? (
+        <text
+          x="center"
+          y={Layout.CLOCK_Y}
+          w="fill"
+          h={Layout.CLOCK_H}
+          font={GauntletFont.CLOCK}
+          text={text}
+          align="center"
+          valign="middle"
+          shadow
+          color={colour}
+        />
+      ) : (
+        <text
+          x={Layout.CLOCK_X}
+          y={Layout.CLOCK_Y}
+          w={Layout.CLOCK_W}
+          h={Layout.CLOCK_H}
+          font={GauntletFont.CLOCK}
+          text={text}
+          valign="middle"
+          shadow
+          color={colour}
+        />
+      )}
+    </layer>
+  );
+}

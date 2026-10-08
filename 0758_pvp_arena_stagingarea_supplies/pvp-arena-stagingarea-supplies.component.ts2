@@ -1,20 +1,12 @@
-import { useWatch } from 'ts2';
-import { Varps } from '../lib/game/varps';
 import { ThinStoneBoxEntrypoint } from '../lib/thin-stone-box.component';
 import { InventoryGrid } from '../lib/pvp-arena/inventory-grid.component';
 import { ItemList, ItemListScrollbar } from '../lib/pvp-arena/item-list.component';
-import {
-  BIN_LABEL,
-  binClicked,
-  SeekButton,
-  SpellbookControl,
-  WipeButton,
-} from '../lib/pvp-arena/loadout-chrome.component';
+import { binClicked, SeekButton, SpellbookControl, WipeButton } from '../lib/pvp-arena/loadout-chrome.component';
 import { KitSheet } from '../lib/pvp-arena/kit-sheet.component';
 import { KitWarning } from '../lib/pvp-arena/kit-warning.component';
-import { binHover } from './bin-hover';
+import { BinLabelA, BinLabelB, BinLabelC, binHover } from './bin-hover';
 import { ReadyToggle } from './ready-toggle.component';
-import { StatsDisplay, paintStatsStatus } from './stats-display.component';
+import { StatsDisplay } from './stats-display.component';
 import { SuppliesFrame } from './supplies-frame.component';
 import { SuppliesTabStrip } from './supplies-tab.component';
 import { suppliesInit } from './supplies-tabs';
@@ -33,9 +25,6 @@ import {
   binA,
   binB,
   binC,
-  binLabelA,
-  binLabelB,
-  binLabelC,
   displayA,
   displayB,
   displayC,
@@ -92,8 +81,6 @@ import {
 } from './pvp-arena-stagingarea-supplies.refs';
 
 export function PvpArenaStagingareaSupplies(): Component {
-  useWatch(Varps.PVPA_TEMP_TRANSMIT_1, () => paintStatsStatus(), statsDisplay);
-
   return (
     <>
       <SuppliesFrame />
@@ -129,16 +116,7 @@ export function PvpArenaStagingareaSupplies(): Component {
           <DisplayC />
         </layer>
 
-        <layer
-          static
-          ref={statsDisplay}
-          x="center"
-          y="bottom"
-          w="fill"
-          h={{ fill: Layout.display.drop }}
-          hide
-          onLoad={() => paintStatsStatus()}
-        >
+        <layer static ref={statsDisplay} x="center" y="bottom" w="fill" h={{ fill: Layout.display.drop }} hide>
           <StatsDisplay />
         </layer>
       </layer>
@@ -178,20 +156,7 @@ function DisplayA(): Component {
           h={Layout.bin.iconH}
           sprite={SuppliesSprites.BIN}
         />
-        <text
-          static
-          ref={binLabelA}
-          x="right"
-          y="center"
-          w={{ fill: Layout.bin.textInset }}
-          h="fill"
-          color={SuppliesColor.LABEL}
-          font={SuppliesFonts.BODY}
-          shadow
-          align="center"
-          valign="middle"
-          text={BIN_LABEL}
-        />
+        <BinLabelA />
       </layer>
 
       <layer static x={0} y={0} w={Layout.equipment.w} h={{ fill: Layout.equipment.drop }}>
@@ -670,20 +635,7 @@ function DisplayB(): Component {
           h={Layout.bin.iconH}
           sprite={SuppliesSprites.BIN}
         />
-        <text
-          static
-          ref={binLabelB}
-          x="right"
-          y="center"
-          w={{ fill: Layout.bin.textInset }}
-          h="fill"
-          color={SuppliesColor.LABEL}
-          font={SuppliesFonts.BODY}
-          shadow
-          align="center"
-          valign="middle"
-          text={BIN_LABEL}
-        />
+        <BinLabelB />
       </layer>
 
       <layer static x={0} y={0} w={Layout.equipment.w} h={{ fill: Layout.equipment.drop }}>
@@ -1162,20 +1114,7 @@ function DisplayC(): Component {
           h={Layout.bin.iconH}
           sprite={SuppliesSprites.BIN}
         />
-        <text
-          static
-          ref={binLabelC}
-          x="right"
-          y="center"
-          w={{ fill: Layout.bin.textInset }}
-          h="fill"
-          color={SuppliesColor.LABEL}
-          font={SuppliesFonts.BODY}
-          shadow
-          align="center"
-          valign="middle"
-          text={BIN_LABEL}
-        />
+        <BinLabelC />
       </layer>
 
       <layer static x={0} y={0} w={Layout.equipment.w} h={{ fill: Layout.equipment.drop }}>

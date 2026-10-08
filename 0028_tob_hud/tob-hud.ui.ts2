@@ -1,4 +1,4 @@
-import { Layout, tobHudRef, tooltipHostRef } from './tob-hud.constants';
+import { tobHudRef, tooltipHostRef } from './tob-hud.constants';
 import { TobHudSafezone, TobHudScreenFlash } from './tob-hud.component';
 import { TobHudTooltip } from './tob-hud-tooltip.component';
 
@@ -12,7 +12,7 @@ export const tobHudUi = (): UI => (
 
 function TobHudTooltipAnchor(): Component {
   return (
-    <layer ref={tooltipHostRef} x={0} y={0} w={Layout.TOOLTIP} h={Layout.TOOLTIP}>
+    <layer ref={tooltipHostRef} x={0} y={0} w="fill" h="fill">
       <TobHudTooltip />
     </layer>
   );

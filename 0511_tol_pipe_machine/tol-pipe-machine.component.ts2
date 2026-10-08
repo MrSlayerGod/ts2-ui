@@ -1,5 +1,6 @@
 import { closeInterface, graphicSwapper, opsound } from '../lib/lib.helpers';
 import { Layout, PipeArt, PipeModel } from './tol-pipe-machine.constants';
+import { pipeButtonOp } from './tol-pipe-machine.helpers';
 
 export function modelSwapper(component: ComponentId, model: Model): void {
   component.model = model;
@@ -91,7 +92,7 @@ export function TolPipeMachine(): Component {
         onMouseLeave={(event) => graphicSwapper(event.component, PipeArt.CLOSE)}
       />
 
-      <layer x={237} y={280} w={42} h={45} options={['Rotate']}>
+      <layer x={237} y={280} w={42} h={45} options={['Rotate']} onOptionSelect={(event) => pipeButtonOp(event.option)}>
         <model
           x={4}
           y={3}
@@ -106,7 +107,14 @@ export function TolPipeMachine(): Component {
         />
       </layer>
 
-      <layer x={101} y={275} w={56} h={34} options={['Move left']}>
+      <layer
+        x={101}
+        y={275}
+        w={56}
+        h={34}
+        options={['Move left']}
+        onOptionSelect={(event) => pipeButtonOp(event.option)}
+      >
         <model
           x={15}
           y={1}
@@ -119,7 +127,14 @@ export function TolPipeMachine(): Component {
         />
       </layer>
 
-      <layer x={103} y={308} w={56} h={29} options={['Move right']}>
+      <layer
+        x={103}
+        y={308}
+        w={56}
+        h={29}
+        options={['Move right']}
+        onOptionSelect={(event) => pipeButtonOp(event.option)}
+      >
         <model
           x={24}
           y={-5}
@@ -132,7 +147,7 @@ export function TolPipeMachine(): Component {
         />
       </layer>
 
-      <layer x={167} y={276} w={30} h={55} options={['Move up']}>
+      <layer x={167} y={276} w={30} h={55} options={['Move up']} onOptionSelect={(event) => pipeButtonOp(event.option)}>
         <model
           x={1}
           y={15}
@@ -145,7 +160,14 @@ export function TolPipeMachine(): Component {
         />
       </layer>
 
-      <layer x={199} y={277} w={29} h={56} options={['Move down']}>
+      <layer
+        x={199}
+        y={277}
+        w={29}
+        h={56}
+        options={['Move down']}
+        onOptionSelect={(event) => pipeButtonOp(event.option)}
+      >
         <model
           x={-4}
           y={12}

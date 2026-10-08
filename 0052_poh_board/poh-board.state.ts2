@@ -1,0 +1,116 @@
+import { CS2, sessionState, useServerState, useState } from 'ts2';
+
+import { Varbits } from '../lib/game/varbits';
+import { lastNamedialog, pohBoardListsort } from '../lib/game/varcs';
+import { GameframeSlot, gameframeSlot } from '../lib/lib.gameframe';
+import { clientClock, playSound } from '../lib/lib.engine';
+import { tooltipDown, tooltipDwellElapsed, tooltipHide, tooltipMark, tooltipRaise } from '../lib/tooltip.component';
+import { meslayerInitLastNames } from '../0007_chatchannel_current/meslayer-mode10';
+import { BoardSounds, Heading, LAST_SLOT, SEND_DELAY, SLOTS } from './poh-board.constants';
+import { normalisedSort, recordCount, withRecord } from './poh-board.helpers';
+
+export const pohBoardLines = sessionState('');
+
+export const pohBoardLoaded = sessionState(0);
+
+export const pohBoardStacked = sessionState(0);
+
+export function markBoardRedrawn(): void {
+  const [lines] = useState(pohBoardLines);
+  const [, setStacked] = useState(pohBoardStacked);
+  setStacked(recordCount(lines));
+}
+
+export const pohBoardSendName = sessionState('');
+export const pohBoardSendAt = sessionState(-1);
+
+export function pohBoardAddline(slot: Int, line: String, portal: Int): void {
+  if (!CS2.if_sub_has(gameframeSlot(GameframeSlot.VIEWPORT))) {
+    return;
+  }
+  if (slot < 0 || slot >= SLOTS) {
+    return;
+  }
+  const [lines, setLines] = useState(pohBoardLines);
+  const next: String = withRecord(lines, slot, line, portal);
+  setLines(next);
+  if (slot >= LAST_SLOT) {
+    const [sortSetting, setSort] = useState(pohBoardListsort);
+    if (normalisedSort(sortSetting) !== sortSetting) {
+      setSort(normalisedSort(sortSetting));
+    }
+    const [, setLoaded] = useState(pohBoardLoaded);
+    setLoaded(1);
+    const [, setStacked] = useState(pohBoardStacked);
+    setStacked(recordCount(next));
+  }
+}
+
+export function resetPohBoard(): void {
+  const [, setLines] = useState(pohBoardLines);
+  const [, setLoaded] = useState(pohBoardLoaded);
+  const [, setSendAt] = useState(pohBoardSendAt);
+  setLines('');
+  setLoaded(0);
+  const [, setStacked] = useState(pohBoardStacked);
+  setStacked(0);
+  setSendAt(-1);
+}
+
+export function pohBoardClicksort(mode: Int): void {
+  const [, setSort] = useState(pohBoardListsort);
+  playSound(BoardSounds.CLICK);
+  setSort(mode);
+  markBoardRedrawn();
+}
+
+export function pohBoardSetLastName(name: String): void {
+  meslayerInitLastNames();
+  const [, setLast] = useState(lastNamedialog);
+  const [, setName] = useState(pohBoardSendName);
+  const [, setSendAt] = useState(pohBoardSendAt);
+  setLast(name);
+  setName(name);
+  setSendAt(clientClock() + SEND_DELAY);
+}
+
+export const boardTip = sessionState(-1);
+
+function onEnhancedMobile(): Boolean {
+  const type: Int = CS2.clienttype();
+  if (useServerState(Varbits.OSM_SIMULATE) === 1) {
+    if (type === 4 || type === 5 || type === 10) {
+      return true;
+    }
+  }
+  if (type === 7 || type === 8) {
+    return true;
+  }
+  return false;
+}
+
+export function hoverHeading(tip: Int): void {
+  if (onEnhancedMobile()) {
+    return;
+  }
+  const [current, setTip] = useState(boardTip);
+  tooltipMark();
+  if (current !== tip && !tooltipDown()) {
+    tooltipHide();
+    setTip(-1);
+  }
+  if (!tooltipDwellElapsed(Heading.TIP_DWELL)) {
+    return;
+  }
+  if (!tooltipDown()) {
+    return;
+  }
+  setTip(tip);
+  tooltipRaise();
+}
+
+export function hideBoardTip(): void {
+  const [, setTip] = useState(boardTip);
+  tooltipHide();
+  setTip(-1);
+}

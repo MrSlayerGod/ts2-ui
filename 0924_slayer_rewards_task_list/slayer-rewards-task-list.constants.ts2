@@ -16,3 +16,37 @@ export const Fader = {
   COLOR: 0x000000,
   TRANSPARENCY: 255,
 };
+
+export enum Modal {
+  CLAMP_INSET_X = 12,
+  CLAMP_INSET_Y = 41,
+  CLAMP_BOTTOM = 6,
+  WINDOW_W = 300,
+  WINDOW_H = 252,
+}
+
+export enum Fade {
+  CLEAR = 255,
+  DIM = 150,
+  CYCLES = 30,
+}
+
+export enum Row {
+  H = 22,
+  STRIPE_EVEN = 200,
+  STRIPE_ODD = 220,
+  HOVER_LIFT = 30,
+  MIN_ROWS = 11,
+  INSET = 4,
+  TOGGLE = 18,
+  WEIGHT_RIGHT = 28,
+  INK = 0xff981f,
+  BOSS_TASK = 98,
+}
+
+export const TaskSlots = [
+  0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31,
+  32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45,
+];
+
+export const FillerSlots = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];

@@ -1,4 +1,5 @@
-import { Layout, toaPartydetailsRef, tooltipRef } from './toa-partydetails.constants';
+import { BoardAnchors } from '../lib/board-button.component';
+import { Layout, pausebuttonsRef, toaPartydetailsRef, tooltipRef } from './toa-partydetails.constants';
 import { ToaPanelResizer, ToaPartydetails } from './toa-partydetails.component';
 
 export const toaPartydetailsUi = (): UI => (
@@ -7,11 +8,14 @@ export const toaPartydetailsUi = (): UI => (
     <ToaPausebuttons />
     <ToaPartydetails />
     <ToaPartydetailsTooltipAnchor />
+    <layer x={0} y={0} w={0} h={0}>
+      <BoardAnchors universe={pausebuttonsRef} count={Layout.PAUSEBUTTONS} />
+    </layer>
   </ui>
 );
 
 function ToaPausebuttons(): Component {
-  return <layer x={0} y={0} w={Layout.PIN} h={Layout.PIN} />;
+  return <layer ref={pausebuttonsRef} x={0} y={0} w={Layout.PIN} h={Layout.PIN} />;
 }
 
 function ToaPartydetailsTooltipAnchor(): Component {

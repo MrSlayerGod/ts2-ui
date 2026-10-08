@@ -38,7 +38,7 @@ export const Share = {
 };
 
 export function proportionPx(fraction: Int, parentPx: Int): Int {
-  return (fraction * parentPx) / Bar.FULL;
+  return fraction * parentPx / Bar.FULL;
 }
 
 export function healthFraction(hp: Int, maxHp: Int): Int {

@@ -41,3 +41,11 @@ export const Layout = {
 export enum UpassBattleDodge {
   FLAGS = 52968,
 }
+
+export enum Clock {
+  CYCLES_PER_TICK = 30,
+  CYCLES_PER_SECOND = 50,
+  HEALTH_MAX = 600,
+}
+
+export const CLOCK_CACHE_TEXT = 'Time Left: 4:00';

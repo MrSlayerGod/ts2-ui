@@ -1,4 +1,6 @@
+import { createRef, onMounted, onUpdated, useState } from 'ts2';
 import { closeInterface, graphicSwapperUnlessMobile } from '../lib/lib.helpers';
+import { btRankIcon } from './sailing-bt-statistics.state';
 import {
   Layout,
   StatsColor,
@@ -26,6 +28,8 @@ export function SailingBtStatistics(): Component {
 
       <layer x="center" y={{ center: Layout.CONTENT_Y }} w={Layout.CONTENT_W} h={Layout.CONTENT_H}>
         <sprite
+          static
+          ref={rankIcon}
           x={{ right: Layout.RANK_ICON_INSET_X }}
           y={Layout.RANK_ICON_Y}
           w={Layout.RANK_ICON}
@@ -98,6 +102,18 @@ export function SailingBtStatistics(): Component {
           onMouseLeave={(event) => graphicSwapperUnlessMobile(event.component, StatsSprites.CLOSE_REST)}
         />
       </layer>
+
+      <RankIcon />
     </>
   );
+}
+
+const rankIcon = createRef('sailing_bt_statistics_rank_icon');
+
+function RankIcon(): Component {
+  const [rank] = useState(btRankIcon);
+  const icon: Sprite = rank as Sprite;
+  onMounted(() => rankIcon.props = { sprite: icon });
+  onUpdated(() => rankIcon.props = { sprite: icon });
+  return <layer x={0} y={0} w={0} h={0} />;
 }

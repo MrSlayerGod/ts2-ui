@@ -288,8 +288,8 @@ function ScoreboardLabels(): Component {
   const zamorakScore: Int = useServerState(Varbits.CASTLEWARS_ZAMORAK_SCORE);
   const minutes: string = `${stringOf(useServerState(Varps.CASTLEWARS_TIMER))} Min`;
 
-  onMounted(() => (timer.props = { text: minutes }));
-  onUpdated(() => (timer.props = { text: minutes }));
+  onMounted(() => timer.props = { text: minutes });
+  onUpdated(() => timer.props = { text: minutes });
 
   return (
     <>

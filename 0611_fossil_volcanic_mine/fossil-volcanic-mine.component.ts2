@@ -1,15 +1,20 @@
-import { createRef, useServerState } from 'ts2';
+import { createRef, useServerState, useWatch } from 'ts2';
+
+import { Varps } from '../lib/game/varps';
 
 import { Anchor, overlayInit } from '../lib/lib.overlay';
 import { Layout, MineColor, MineDodge, MineFonts, MineVarbits, MineWash } from './fossil-volcanic-mine.constants';
 import { chamberLabel, pointsLabel, stabilityLabel, ventLabel } from './fossil-volcanic-mine.helpers';
 import { mainInfo, ventChambersInfo } from './fossil-volcanic-mine.refs';
+import { mineTimerReset, mineTimerTransmit, time, timeTitle } from './fossil-volcanic-mine.timer';
 
 const timerHost2 = createRef('0611_fossil_volcanic_mine_timer_host2');
 
 const timerHost3 = createRef('0611_fossil_volcanic_mine_timer_host3');
 
 export function FossilVolcanicMine(): Component {
+  useWatch(Varps.FOSSIL_TEMP_TRANSMIT3, () => mineTimerTransmit(), time);
+
   return (
     <layer x="center" y="center" w="fill" h="fill">
       <rect x="center" y="center" w="fill" h="fill" color={MineColor.FADE} fill transparency={MineWash.FADE} hide />
@@ -34,6 +39,7 @@ export function FossilVolcanicMine(): Component {
             />
 
             <text
+              ref={timeTitle}
               x={Layout.ROW_INSET}
               y={Layout.TIME_TITLE_Y}
               w="fill"
@@ -44,6 +50,8 @@ export function FossilVolcanicMine(): Component {
               color={MineColor.HEADING}
             />
             <text
+              ref={time}
+              onLoad={() => mineTimerReset()}
               x={Layout.ROW_INSET}
               y={Layout.TIME_Y}
               w="fill"

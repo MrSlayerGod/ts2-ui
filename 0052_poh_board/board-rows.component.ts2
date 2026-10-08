@@ -1,0 +1,302 @@
+import { CS2, intArray, useServerState, useState, useUniverse } from 'ts2';
+
+import { pohBoardListsort } from '../lib/game/varcs';
+import { onMobile } from '../lib/lib.helpers';
+import {
+  BestTier,
+  BoardVarbits,
+  Field,
+  RowColor,
+  RowFonts,
+  RowHeight,
+  RowLayout,
+  RowSprites,
+  SLOTS,
+  SORT_STACK,
+  SortCopy,
+} from './poh-board.constants';
+import { boardLoc, explainLocation, lineField, normalisedSort, sortDescending, sortKey } from './poh-board.helpers';
+import { pohBoardLines, pohBoardSetLastName, pohBoardStacked } from './poh-board.state';
+
+export function BoardRows(): Component {
+  const box = useUniverse();
+  const [board] = useState(pohBoardLines);
+  const [stackedCount] = useState(pohBoardStacked);
+  const [sortSetting] = useState(pohBoardListsort);
+  const filtered: Int = useServerState(BoardVarbits.FILTERED);
+  const lastLoc: Int = useServerState(BoardVarbits.LAST_LOC);
+  const rowHeight: Int = onMobile() ? RowHeight.MOBILE : RowHeight.DESKTOP;
+  const sort: Int = normalisedSort(sortSetting);
+  const here: String = boardLoc(`${lastLoc}`);
+
+  const lineStart = intArray(SLOTS);
+  const lineEnd = intArray(SLOTS);
+  const slotOf = intArray(SLOTS);
+  const portalOf = intArray(SLOTS);
+  let records: Int = 0;
+  let at: Int = board.indexOf('^', 0);
+  while (at !== -1 && records < SLOTS) {
+    const slotEnd: Int = board.indexOf('~', at);
+    const portalEnd: Int = board.indexOf('~', slotEnd + 1);
+    const next: Int = board.indexOf('^', portalEnd);
+    slotOf[records] = parseInt(board.substring(at + 1, slotEnd));
+    portalOf[records] = parseInt(board.substring(slotEnd + 1, portalEnd));
+    lineStart[records] = portalEnd + 1;
+    lineEnd[records] = next === -1 ? board.length : next;
+    records = records + 1;
+    at = next;
+  }
+
+  const rowTop = intArray(SLOTS);
+  const shown = intArray(SLOTS);
+  const arrow = intArray(SLOTS);
+  const arrowAt = intArray(SLOTS);
+  const placedArrowY: Int = (box.height - RowLayout.BUTTON_H) / 2 - (box.height - rowHeight) / 2;
+  let top: Int = 0;
+  const stacked: Int = Math.min(stackedCount, records);
+
+  const bySlot = intArray(SLOTS);
+  let slot: Int = 0;
+  while (slot < SLOTS) {
+    bySlot[slot] = -1;
+    slot = slot + 1;
+  }
+  let rec: Int = 0;
+  while (rec < stacked) {
+    bySlot[slotOf[rec]] = rec;
+    rec = rec + 1;
+  }
+  const order = intArray(SLOTS);
+  const keyStart = intArray(SLOTS);
+  const keyEnd = intArray(SLOTS);
+  let keys: String = '';
+  let filled: Int = 0;
+  slot = 0;
+  while (slot < SLOTS) {
+    const found: Int = bySlot[slot];
+    if (found !== -1) {
+      const line: String = board.substring(lineStart[found], lineEnd[found]);
+      if (lineField(line, Field.NAME).length > 0) {
+        order[filled] = found;
+        filled = filled + 1;
+      }
+      keyStart[found] = keys.length;
+      keys = `${keys}${sortKey(line, sort)}`;
+      keyEnd[found] = keys.length;
+    }
+    slot = slot + 1;
+  }
+
+  const stackLo = intArray(SORT_STACK);
+  const stackHi = intArray(SORT_STACK);
+  let pending: Int = 0;
+  if (filled >= 2) {
+    stackLo[0] = 0;
+    stackHi[0] = filled - 1;
+    pending = 1;
+  }
+  while (pending > 0) {
+    pending = pending - 1;
+    const lo: Int = stackLo[pending];
+    const hi: Int = stackHi[pending];
+    const mid: Int = (lo + hi) / 2;
+    const pivot: Int = order[mid];
+    order[mid] = order[hi];
+    order[hi] = pivot;
+    const pivotKey: String = keys.substring(keyStart[pivot], keyEnd[pivot]);
+    let store: Int = lo;
+    let scan: Int = lo;
+    while (scan < hi) {
+      if (CS2.compare(keys.substring(keyStart[order[scan]], keyEnd[order[scan]]), pivotKey) <= 0) {
+        const moved: Int = order[scan];
+        order[scan] = order[store];
+        order[store] = moved;
+        store = store + 1;
+      }
+      scan = scan + 1;
+    }
+    order[hi] = order[store];
+    order[store] = pivot;
+    if (lo < store - 1) {
+      stackLo[pending] = lo;
+      stackHi[pending] = store - 1;
+      pending = pending + 1;
+    }
+    if (store + 1 < hi) {
+      stackLo[pending] = store + 1;
+      stackHi[pending] = hi;
+      pending = pending + 1;
+    }
+  }
+
+  const backwards: Boolean = sortDescending(sort);
+  let step: Int = 0;
+  while (step < filled) {
+    const found: Int = backwards ? order[filled - 1 - step] : order[step];
+    const tag: String = boardLoc(lineField(board.substring(lineStart[found], lineEnd[found]), Field.LOCATION));
+    const matches: Boolean = CS2.compare(here, tag) === 0;
+    if (filtered === 1 && !matches) {
+      shown[found] = 0;
+    } else {
+      shown[found] = 1;
+      rowTop[found] = top;
+      arrow[found] = matches ? 1 : 0;
+      arrowAt[found] = RowLayout.BUTTON_DROP;
+      top = top + rowHeight;
+    }
+    step = step + 1;
+  }
+  let count: Int = 0;
+  let seen: Int = 0;
+  while (seen < stacked) {
+    if (shown[seen] === 1) {
+      count = count + 1;
+    }
+    seen = seen + 1;
+  }
+  let late: Int = stacked;
+  while (late < records) {
+    const line: String = board.substring(lineStart[late], lineEnd[late]);
+    rowTop[late] = (box.height - rowHeight) / 2 + count * rowHeight;
+    shown[late] = 1;
+    arrow[late] = CS2.compare(`${portalOf[late]}`, lineField(line, Field.LOCATION)) === 0 ? 1 : 0;
+    arrowAt[late] = placedArrowY;
+    count = count + 1;
+    late = late + 1;
+  }
+
+  const extent: Int = Math.max(box.height, top);
+
+  return (
+    <layer x={0} y={0} w="fill" h={extent}>
+      {slotOf.map(
+        (slot, rec) =>
+          rec < records &&
+          shown[rec] === 1 && (
+            <BoardRow
+              line={board.substring(lineStart[rec], lineEnd[rec])}
+              portal={portalOf[rec]}
+              top={rowTop[rec]}
+              height={rowHeight}
+              arrow={arrow[rec] === 1}
+              arrowY={arrowAt[rec]}
+            />
+          ),
+      )}
+    </layer>
+  );
+}
+
+function TierCell({ x, value, best }: { x: Int; value: String; best: String }): Component {
+  return (
+    <text
+      x={x}
+      y={0}
+      w={RowLayout.CELL_W}
+      h="fill"
+      text={value}
+      font={RowFonts.CELL}
+      color={CS2.compare(value, best) === 0 ? RowColor.BEST : RowColor.CELL}
+      align="left"
+      valign="middle"
+      shadow
+    />
+  );
+}
+
+function BoardRow({
+  line,
+  portal,
+  top,
+  height,
+  arrow,
+  arrowY,
+}: {
+  line: String;
+  portal: Int;
+  top: Int;
+  height: Int;
+  arrow: Boolean;
+  arrowY: Int;
+}): Component {
+  const name: String = lineField(line, Field.NAME);
+  const code: String = lineField(line, Field.LOCATION);
+  const atPortal: Boolean = CS2.compare(`${portal}`, code) === 0;
+  const tierX: Int = RowLayout.LEVEL_X + RowLayout.CELL_W;
+  const buttonX: Int = RowLayout.LEVEL_X + RowLayout.CELL_W * 7;
+
+  return (
+    <layer x={0} y={top} w="fill" h={height}>
+      <text
+        x={RowLayout.NAME_X}
+        y={0}
+        w={RowLayout.NAME_W}
+        h="fill"
+        text={name}
+        font={RowFonts.CELL}
+        color={RowColor.CELL}
+        align="left"
+        valign="middle"
+        shadow
+      />
+      {!arrow && (
+        <text
+          x={buttonX}
+          y={0}
+          w={RowLayout.CELL_W}
+          h="fill"
+          text={boardLoc(code)}
+          font={RowFonts.CELL}
+          color={RowColor.CELL}
+          align="left"
+          valign="middle"
+          shadow
+          onClick={atPortal ? null : () => explainLocation(code)}
+        />
+      )}
+      <text
+        x={RowLayout.LEVEL_X}
+        y={0}
+        w={RowLayout.CELL_W}
+        h="fill"
+        text={lineField(line, Field.LEVEL)}
+        font={RowFonts.CELL}
+        color={RowColor.CELL}
+        align="left"
+        valign="middle"
+        shadow
+      />
+      <TierCell x={tierX} value={lineField(line, Field.ALTAR)} best={BestTier.ALTAR} />
+      <TierCell x={tierX + RowLayout.CELL_W} value={lineField(line, Field.NEXUS)} best={BestTier.NEXUS} />
+      <TierCell x={tierX + RowLayout.CELL_W * 2} value={lineField(line, Field.GLORY)} best={BestTier.GLORY} />
+      <TierCell x={tierX + RowLayout.CELL_W * 3} value={lineField(line, Field.POOL)} best={BestTier.POOL} />
+      <TierCell x={tierX + RowLayout.CELL_W * 4} value={lineField(line, Field.SPELLBOOK)} best={BestTier.SPELLBOOK} />
+      <TierCell x={tierX + RowLayout.CELL_W * 5} value={lineField(line, Field.ARMOUR)} best={BestTier.ARMOUR} />
+      {arrow && (
+        <sprite
+          x={buttonX}
+          y={arrowY}
+          w={RowLayout.BUTTON_W}
+          h={RowLayout.BUTTON_H}
+          sprite={RowSprites.ENTER}
+          options={atPortal ? [SortCopy.ENTER] : []}
+          onOptionSelect={atPortal ? () => pohBoardSetLastName(name) : null}
+          onMouseRepeat={
+            atPortal
+              ? (event) => {
+                  event.self.sprite = RowSprites.ENTER_HOVER;
+                }
+              : null
+          }
+          onMouseLeave={
+            atPortal
+              ? (event) => {
+                  event.self.sprite = RowSprites.ENTER;
+                }
+              : null
+          }
+        />
+      )}
+    </layer>
+  );
+}

@@ -1,0 +1,150 @@
+import { sessionState, useServerState, useState } from 'ts2';
+
+import { Varbits } from '../lib/game/varbits';
+import { pipeHead, pipeTail } from '../lib/lib.format';
+import { timeConvertOption } from '../0512_trailblazer_areas/time.shared';
+import { Challenge, ChallengeColors, ChallengeFonts, ChallengeText } from './raids-challenge.constants';
+
+export const raidsScoreText = sessionState('');
+export const raidsScoreGlobalLength = sessionState(0);
+export const raidsScoreTargetLength = sessionState(0);
+export const raidsScoreTimesLength = sessionState(0);
+export const raidsScoreFilled = sessionState(0);
+
+function unsetTime(): String {
+  if (useServerState(Varbits.OPTION_PRECISE_TIMING) === 1) {
+    return '<col=aaaaaa>00:00:00.00</col>';
+  }
+  return '<col=aaaaaa>00:00:00</col>';
+}
+
+function scoreTime(ticks: Int): String {
+  if (ticks === 0 || ticks === -1) {
+    return unsetTime();
+  }
+  return timeConvertOption(ticks);
+}
+
+function scoreTeam(ticks: Int, team: String): String {
+  if (ticks === 0 || ticks === -1) {
+    return 'Grab a team and get Raiding!';
+  }
+  return `Team: ${team}`;
+}
+
+export function raidsScoreDisplay(
+  global: Int,
+  target: Int,
+  t1: Int,
+  t2: Int,
+  t3: Int,
+  t4: Int,
+  t5: Int,
+  teams: String,
+): void {
+  const [, setText] = useState(raidsScoreText);
+  const [, setGlobalLength] = useState(raidsScoreGlobalLength);
+  const [, setTargetLength] = useState(raidsScoreTargetLength);
+  const [, setTimesLength] = useState(raidsScoreTimesLength);
+  const [, setFilled] = useState(raidsScoreFilled);
+  const n1: String = pipeHead(teams);
+  const r1: String = pipeTail(teams);
+  const n2: String = pipeHead(r1);
+  const r2: String = pipeTail(r1);
+  const n3: String = pipeHead(r2);
+  const r3: String = pipeTail(r2);
+  const n4: String = pipeHead(r3);
+  const r4: String = pipeTail(r3);
+  const n5: String = pipeHead(r4);
+  const times: String = `${scoreTime(t1)}<br>${scoreTime(t2)}<br>${scoreTime(t3)}<br>${scoreTime(t4)}<br>${scoreTime(t5)}`;
+  const names: String = `1. ${scoreTeam(t1, n1)}<br>2. ${scoreTeam(t2, n2)}<br>3. ${scoreTeam(t3, n3)}<br>4. ${scoreTeam(t4, n4)}<br>5. ${scoreTeam(t5, n5)}`;
+  const globalText: String = timeConvertOption(global);
+  const targetText: String = timeConvertOption(target);
+  setGlobalLength(globalText.length);
+  setTargetLength(targetText.length);
+  setTimesLength(times.length);
+  setText(`${globalText}${targetText}${times}${names}`);
+  setFilled(1);
+}
+
+export function resetRaidsScore(): void {
+  const [, setFilled] = useState(raidsScoreFilled);
+  setFilled(0);
+}
+
+export function RaidsScoreBoard(): Component {
+  const [filled] = useState(raidsScoreFilled);
+  const [text] = useState(raidsScoreText);
+  const [globalLength] = useState(raidsScoreGlobalLength);
+  const [targetLength] = useState(raidsScoreTargetLength);
+  const [timesLength] = useState(raidsScoreTimesLength);
+  const a: Int = globalLength;
+  const b: Int = a + targetLength;
+  const c: Int = b + timesLength;
+  const globalTime: String = filled === 1 ? text.substring(0, a) : ChallengeText.ZERO_TIME;
+  const targetTime: String = filled === 1 ? text.substring(a, b) : ChallengeText.ZERO_TIME;
+  const times: String = filled === 1 ? text.substring(b, c) : ChallengeText.FIVE_TIMES;
+  const names: String = filled === 1 ? text.substring(c, text.length) : '';
+  return (
+    <>
+      <text
+        x="right"
+        y={0}
+        w={Challenge.GLOBAL_TIME_W}
+        h={Challenge.LABEL_H}
+        font={ChallengeFonts.LABEL}
+        color={ChallengeColors.LABEL}
+        shadow
+        valign="middle"
+        text={globalTime}
+      />
+      <text
+        x={Challenge.TARGET_X}
+        y={0}
+        w={Challenge.TARGET_W}
+        h={Challenge.LABEL_H}
+        font={ChallengeFonts.LABEL}
+        color={ChallengeColors.LABEL}
+        shadow
+        valign="middle"
+        text={ChallengeText.TARGET_TIME}
+      />
+      <text
+        x={Challenge.TARGET_TIME_X}
+        y={0}
+        w={Challenge.TARGET_TIME_W}
+        h={Challenge.LABEL_H}
+        font={ChallengeFonts.LABEL}
+        color={ChallengeColors.LABEL}
+        shadow
+        valign="middle"
+        text={targetTime}
+      />
+      <text
+        x={{ right: Challenge.TIMES_RIGHT_X }}
+        y={Challenge.TIMES_Y}
+        w={Challenge.TIMES_RIGHT_W}
+        h={Challenge.TIMES_H}
+        font={ChallengeFonts.BODY}
+        color={ChallengeColors.LABEL}
+        shadow
+        align="right"
+        valign="middle"
+        lineHeight={Challenge.TIMES_LINE}
+        text={times}
+      />
+      <text
+        x={Challenge.TIMES_LEFT_X}
+        y={Challenge.TIMES_Y}
+        w={Challenge.TIMES_LEFT_W}
+        h={Challenge.TIMES_H}
+        font={ChallengeFonts.BODY}
+        color={ChallengeColors.LABEL}
+        shadow
+        valign="middle"
+        lineHeight={Challenge.TIMES_LINE}
+        text={names}
+      />
+    </>
+  );
+}

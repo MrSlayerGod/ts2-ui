@@ -138,15 +138,15 @@ function VoteRankRow({
 
   const wash: Int = live
     ? VoteRankAlpha.WASH_ODD
-    : (slot + 1) % 2 === 0
+    : ((slot + 1) % 2 === 0
       ? VoteRankAlpha.WASH_ODD
-      : VoteRankAlpha.WASH_EVEN;
+      : VoteRankAlpha.WASH_EVEN);
 
   const painted: Int = !enabled
     ? VoteRankColour.LABEL_DISABLED
-    : locked
+    : (locked
       ? VoteRankColour.LABEL_LOCKED
-      : VoteRankColour.LABEL;
+      : VoteRankColour.LABEL);
 
   const subject: String = `<col=ff9040>${label}</col>`;
 

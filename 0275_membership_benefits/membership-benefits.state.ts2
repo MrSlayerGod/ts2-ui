@@ -18,3 +18,15 @@ export function closeBenefit(): void {
   const [, setOpen] = useState(openBenefit);
   setOpen(-1);
 }
+
+export const bondsHiddenByServer = sessionState(0);
+
+export function membershipBenefitsHideBonds(): void {
+  const [, setHidden] = useState(bondsHiddenByServer);
+  setHidden(1);
+}
+
+export function resetBondsHidden(): void {
+  const [, setHidden] = useState(bondsHiddenByServer);
+  setHidden(0);
+}

@@ -1,4 +1,4 @@
-import { useRef, useState, useUniverse } from 'ts2';
+import { useState, useUniverse } from 'ts2';
 
 import { clanBoardSort } from '../lib/game/varcs';
 import { playSound, textWidth } from '../lib/lib.engine';
@@ -12,6 +12,7 @@ import {
   Layout,
 } from './clans-board.constants';
 import { normalisedSort } from './clans-board.helpers';
+import { clanBoardLoaded } from './clans-board.state';
 
 export function ClanBoardSortButton({
   label,
@@ -23,8 +24,9 @@ export function ClanBoardSortButton({
   descending: Int;
 }): Component {
   const column = useUniverse();
-  const arrow = useRef();
+  const [lit, setLit] = useState(0);
   const [sortSetting, setSort] = useState(clanBoardSort);
+  const [loaded] = useState(clanBoardLoaded);
   const sort: Int = normalisedSort(sortSetting);
 
   const state: Int = sort === descending ? 2 : sort === ascending ? 1 : 0;
@@ -32,20 +34,19 @@ export function ClanBoardSortButton({
   const hover: Int = state === 0 ? ArrowTransparency.INACTIVE_HOVER : ArrowTransparency.ACTIVE_HOVER;
   const next: Int = state === 1 ? descending : ascending;
 
-  return (
+  return loaded === 0 ? null : (
     <layer
       w="fill"
       h="fill"
       onMouseRepeat={() => {
         if (!onMobile()) {
-          arrow.transparency = hover;
+          setLit(1);
         }
       }}
-      onMouseLeave={() => {
-        arrow.transparency = rest;
-      }}
+      onMouseLeave={() => setLit(0)}
       onClick={() => {
         playSound(ClanBoardSounds.CLICK);
+        setLit(0);
         setSort(next);
       }}
     >
@@ -62,13 +63,12 @@ export function ClanBoardSortButton({
         shadow
       />
       <sprite
-        ref={arrow}
         x={{ center: textWidth(label, column.width, ClanBoardFonts.BODY) / 2 + Layout.ARROW_GAP }}
         y="center"
         w={Layout.ARROW_W}
         h={Layout.ARROW_H}
         sprite={state === 2 ? ClanBoardSprites.SORT_DESC : ClanBoardSprites.SORT_ASC}
-        transparency={rest}
+        transparency={lit === 1 ? hover : rest}
       />
     </layer>
   );

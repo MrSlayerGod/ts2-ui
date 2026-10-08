@@ -7,6 +7,8 @@ import { Sprites } from '../lib/game/sprites';
 
 export const introMuted = sessionState(0);
 
+export const introReframed = sessionState(0);
+
 export enum IntroGameOption {
   MIDI_VOLUME = 7,
 }
@@ -57,6 +59,9 @@ export const IntroLayout = {
   PROP_ZOOM_NEAR: 279,
   CAPTION_Y: 470,
   CAPTION_H: 120,
+  CAPTION_Y_REFRAMED: 424,
+  BACKDROP_REFRAMED_OFFSET_Y: -20,
+  BACKDROP_REFRAMED_ZOOM: 819,
   MUTE_RIGHT: 13,
   MUTE_BOTTOM: 5,
   MUTE_W: 32,

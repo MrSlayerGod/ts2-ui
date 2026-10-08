@@ -5,6 +5,6 @@ const wornitemsRef = createRef('wornitems');
 
 export const wornitemsUi = (): UI => (
   <ui ref={wornitemsRef} w={190} h={261}>
-    <Equipment />
+    <Equipment host={wornitemsRef} />
   </ui>
 );

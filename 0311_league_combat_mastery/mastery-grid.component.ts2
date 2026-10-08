@@ -184,7 +184,7 @@ export function MasteryLines(): Component {
       <rect x={vx} y={row * 2 + 2 - row / 2} w={2} h={row - 1} fill color={pathColour(masteryState(TIERS * 2))} />
       <sprite
         x={5}
-        y={(row * 3) / 2 - start / 2 - lift}
+        y={row * 3 / 2 - start / 2 - lift}
         w={start}
         h={start}
         sprite={large(bp) ? MasterySprites.START_LARGE : MasterySprites.START}
@@ -243,7 +243,7 @@ function PulsingFrame({ x, y, w, h, sprite }: { x: Int; y: Int; w: Int; h: Int; 
   const [fires, setFires] = useState(0);
   useInterval(() => setFires(fires + 1));
   const step: Int = fires === 0 ? 0 : triangle(fires - 1);
-  return <sprite x={x} y={y} w={w} h={h} sprite={sprite} transparency={(step * 255) / 30} />;
+  return <sprite x={x} y={y} w={w} h={h} sprite={sprite} transparency={step * 255 / 30} />;
 }
 
 function triangle(n: Int): Int {
@@ -305,7 +305,7 @@ export function MasteryPips(): Component {
           y={cellY(index, box.height) + row / 2 + scaled(72, 100, size)}
           w={size}
           h={size}
-          sprite={pip((index % TIERS) + 1, lit(masteryState(index), hover === index), bp)}
+          sprite={pip(index % TIERS + 1, lit(masteryState(index), hover === index), bp)}
         />
       ))}
     </>
@@ -335,7 +335,7 @@ export function MasterySparks(): Component {
         </layer>
       ))}
       <layer x={0} y={0} w="fill" h="fill">
-        <Spark x={start / 2 - 10} y={(row * 3) / 2 - start / 2 - (large(bp) ? -12 : 2)} slot={18} tutorial />
+        <Spark x={start / 2 - 10} y={row * 3 / 2 - start / 2 - (large(bp) ? -12 : 2)} slot={18} tutorial />
       </layer>
     </>
   );

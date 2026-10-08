@@ -4,7 +4,7 @@ import { closeInterface } from '../lib/lib.helpers';
 import { Facts, QuetzalSounds } from './quetzalwhistle-menu.constants';
 import { Quetzals } from './quetzalwhistle-menu.data';
 
-export function soundSynth(synth: Int, repeats: Int, delay: Int): void {
+export function soundSynth(synth: Sound, repeats: Int, delay: Int): void {
   CS2.sound_effect(synth, repeats, delay);
 }
 

@@ -202,7 +202,7 @@ function MasterySummary(): Component {
       >
         {MASTERIES.map(
           (index) =>
-            masteryUnlocked(index) && (
+            (masteryUnlocked(index) && (
               <SummaryRow
                 y={rowH * masteriesBefore(index)}
                 h={rowH}
@@ -211,7 +211,7 @@ function MasterySummary(): Component {
                 faded={masteriesBefore(index) % 2 === 0}
                 text={masteryDescription(index)}
               />
-            ),
+            )),
         )}
         {count <= 0 && (
           <text
@@ -308,7 +308,7 @@ function PassiveSummary(): Component {
       >
         {PASSIVES.map(
           (key) =>
-            passiveActive(key) && (
+            (passiveActive(key) && (
               <SummaryRow
                 y={rowH * passivesBefore(key)}
                 h={rowH}
@@ -317,7 +317,7 @@ function PassiveSummary(): Component {
                 faded={key % 2 > 0}
                 text={passiveDescription(key)}
               />
-            ),
+            )),
         )}
         {count <= 0 && (
           <text

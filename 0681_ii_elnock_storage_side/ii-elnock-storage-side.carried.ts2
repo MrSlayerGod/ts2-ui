@@ -43,7 +43,7 @@ export function elnockGetCarried(item: Item): [Int, Item] {
   return [0, -1];
 }
 
-export function storageGetCarried(table: Enum, item: Item): [Int, Item] {
+export function storageGetCarried(table: QuantityTable, item: Item): [Int, Item] {
   if (table === QuantityTable.ELNOCK_STORAGE) {
     return elnockGetCarried(item);
   }

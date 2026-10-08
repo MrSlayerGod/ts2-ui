@@ -50,7 +50,7 @@ export function BookList(): Component {
             {bookRead(read0, read1, read2, read3, read4, book.bit) ? (
               <sprite
                 x={index % Layout.COLUMNS === 0 ? 0 : Layout.COLUMN_2_X}
-                y={(index / Layout.COLUMNS) * Layout.ROW_STEP}
+                y={index / Layout.COLUMNS * Layout.ROW_STEP}
                 w={Layout.COLUMN_W}
                 h={Layout.ROW_H}
                 sprite={BookcaseArt.ROW}
@@ -83,7 +83,7 @@ export function BookList(): Component {
             ) : (
               <sprite
                 x={index % Layout.COLUMNS === 0 ? 0 : Layout.COLUMN_2_X}
-                y={(index / Layout.COLUMNS) * Layout.ROW_STEP}
+                y={index / Layout.COLUMNS * Layout.ROW_STEP}
                 w={Layout.COLUMN_W}
                 h={Layout.ROW_H}
                 sprite={BookcaseArt.ROW}
@@ -97,7 +97,7 @@ export function BookList(): Component {
 
             <text
               x={(index % Layout.COLUMNS === 0 ? 0 : Layout.COLUMN_2_X) + Layout.TITLE_X}
-              y={(index / Layout.COLUMNS) * Layout.ROW_STEP}
+              y={index / Layout.COLUMNS * Layout.ROW_STEP}
               w={Layout.TITLE_W}
               h={Layout.ROW_H}
               text={book.title}
@@ -112,7 +112,7 @@ export function BookList(): Component {
 
             <sprite
               x={(index % Layout.COLUMNS === 0 ? 0 : Layout.COLUMN_2_X) + Layout.ICON_DX}
-              y={(index / Layout.COLUMNS) * Layout.ROW_STEP + Layout.ICON_DY}
+              y={index / Layout.COLUMNS * Layout.ROW_STEP + Layout.ICON_DY}
               w={Layout.ICON_W}
               h={Layout.ICON_H}
               item={book.item}
@@ -126,7 +126,7 @@ export function BookList(): Component {
             {index % Layout.COLUMNS === 1 && index < Books.length - 1 && (
               <sprite
                 x="center"
-                y={(index / Layout.COLUMNS) * Layout.ROW_STEP + Layout.SEPARATOR_DY}
+                y={index / Layout.COLUMNS * Layout.ROW_STEP + Layout.SEPARATOR_DY}
                 w="fill"
                 h={Layout.SEPARATOR_H}
                 sprite={BookcaseArt.SEPARATOR}

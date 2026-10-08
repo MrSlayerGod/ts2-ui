@@ -16,9 +16,11 @@ import {
   chatboxClickBox,
   chatboxRepaint,
   chatboxStripAlpha,
+  chatboxRebuild,
   chatboxStripPlate,
   chatInputTransparent,
   chatPaneExtent,
+  chatPaneTransparent,
 } from './chatbox.state';
 import { CS2, useServerState, useState } from 'ts2';
 
@@ -28,6 +30,8 @@ import { universeRef as fixedFrameRef } from '../0548_toplevel/toplevel.constant
 import {
   chatBackgroundInvisibleTimeout,
   chatHighlight,
+  chatInittime,
+  chatLastscrollpos,
   chatView,
   chatinput,
   chatboxMode,
@@ -39,7 +43,7 @@ import { graphicSwapper, onMobile, opsound, toplevelComponents } from '../lib/li
 import { mobileGameframe } from '../lib/lib.overlay';
 import { isGroupIronman } from '../0551_raids_storage_side/raids-storage-side.helpers';
 import { accountIcon, groupPrefixed } from './chatbox.helpers';
-import { chatButtonHover, chatAlertSet, chatSetFilter } from './chat-buttons';
+import { chatAlertRepaint, chatButtonHover, chatAlertSet, chatSetFilter } from './chat-buttons';
 import { CHAT_VIEW_COLLAPSED, ChatTab } from './chatbox.data';
 import {
   ChatboxAlpha,
@@ -243,11 +247,39 @@ export function mobileChatboxResize(): void {
   }
   CS2.if_position_set(0, 0, 2, 2, chatareaRef);
   CS2.if_size_set(Layout.CHATAREA_W, height, 0, 0, chatareaRef);
+  const [initTime] = useState(chatInittime);
+  if (was !== height || initTime === CS2.clientclock()) {
+    pinPaneToNewest();
+  }
   settleEmptyPaneExtent();
+  rebuildChatbox();
+}
+
+function pinPaneToNewest(): void {
+  const extent: Int = line0Ref.scrollHeight!;
+  const limit: Int = Math.max(extent - line0Ref.height!, 1);
+  const wanted: Int = Math.max(extent - line0Ref.height!, 0);
+  line0Ref.scrollY = Math.max(Math.min(wanted, limit), 0);
+  const [, setLastPos] = useState(chatLastscrollpos);
+  setLastPos(line0Ref.scrollY!);
+}
+
+export function rebuildChatbox(): void {
+  publishPaneTransparent();
+  const [count, setCount] = useState(chatboxRebuild);
+  setCount(count + 1);
+}
+
+export function publishPaneTransparent(): void {
+  const [, setTransparent] = useState(chatPaneTransparent);
+  setTransparent(chatboxMakeTransparent() ? 1 : 0);
 }
 
 export function settleEmptyPaneExtent(): void {
-  const paneExtent: Int = Math.max(EMPTY_PANE_EXTENT, line0Ref.height!);
+  settlePaneExtent(Math.max(EMPTY_PANE_EXTENT, line0Ref.height!));
+}
+
+export function settlePaneExtent(paneExtent: Int): void {
   CS2.if_scroll_size_set(0, paneExtent, line0Ref);
   const [, setPaneExtent] = useState(chatPaneExtent);
   setPaneExtent(paneExtent);
@@ -362,6 +394,8 @@ export function chatboxRelayout(): void {
     chatSetFilter(ChatTab.PRIVATE, useServerState(Varbits.CHAT_FILTER_PRIVATE));
   }
 
+  chatAlertRepaint();
+  rebuildChatbox();
   redrawChatInput();
 }
 

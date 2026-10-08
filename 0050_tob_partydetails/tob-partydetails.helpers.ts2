@@ -1,27 +1,40 @@
 import { CS2, useServerState, useState } from 'ts2';
 
-import { pipeHead } from '../lib/lib.format';
+import { pipeHead, pipeTail } from '../lib/lib.format';
 import { clientClock, playSound } from '../lib/lib.engine';
+import { GameframeSlot, gameframeSlot } from '../lib/lib.gameframe';
 import { tooltipDown, tooltipDwellElapsed, tooltipHide, tooltipMark, tooltipRaise } from '../lib/tooltip.component';
 import { raidsCount, raidsListsortDetails } from '../lib/game/varcs';
 import { Varbits } from '../lib/game/varbits';
 import { Sounds } from '../lib/game/sounds';
-import { AutoRefresh, BUSY_CYCLES, Copy, Layout, PartyRole, TobPartydetailsColor } from './tob-partydetails.constants';
 import {
+  Anchor,
+  AutoRefresh,
+  BUSY_CYCLES,
+  Copy,
+  Layout,
+  PartyRole,
+  TobPartydetailsColor,
+  anchorsRef,
+} from './tob-partydetails.constants';
+import {
+  applicantLines,
   arrowsPlaced,
   autorefreshStart,
   boardBuilt,
+  boardLevel,
+  boardMode,
+  boardRole,
+  boardSize,
   dialRemaining,
+  forcedAt,
+  forcedButton,
+  memberLines,
+  partyLeader,
   partyTitled,
   tipIndex,
 } from './tob-partydetails.state';
-import {
-  APPLICANT_COUNT,
-  BoardPacket,
-  MEMBER_COUNT,
-  MODE_DEFAULT,
-  TobPartydetailsModes,
-} from './tob-partydetails.data';
+import { MODE_DEFAULT, TobPartydetailsModes } from './tob-partydetails.data';
 
 export function loadTobPartydetails(): void {
   const [, setArrows] = useState(arrowsPlaced);
@@ -37,36 +50,170 @@ export function resetTobPartydetails(): void {
   const [, setTip] = useState(tipIndex);
   const [, setStart] = useState(autorefreshStart);
   const [, setRemaining] = useState(dialRemaining);
+  const [, setMembers] = useState(memberLines);
+  const [, setApplicants] = useState(applicantLines);
+  const [, setForced] = useState(forcedButton);
+  const [, setForcedAt] = useState(forcedAt);
   setCount(0);
+  setMembers('');
+  setApplicants('');
   setBuilt(0);
   setTip(-1);
+  setForced(-1);
+  setForcedAt(0);
   setRemaining(AutoRefresh.CYCLES);
   setStart(-1);
 }
 
-export function tobPartydetailsBuild(): void {
+function panelOpen(): Boolean {
+  return CS2.if_sub_has(gameframeSlot(GameframeSlot.VIEWPORT));
+}
+
+export function tobPartydetailsAddmember(role: Int, line: String): void {
+  if (!panelOpen()) {
+    return;
+  }
+  const [lines, setLines] = useState(memberLines);
+  const [count, setCount] = useState(raidsCount);
+  const [, setLeader] = useState(partyLeader);
+  const [, setTitled] = useState(partyTitled);
+  const name: String = pipeHead(line);
+  if (count === 0) {
+    setLeader(name);
+  }
+  setLines(`${lines}${role}~${line}^`);
+  if (role === PartyRole.LEADER && name.length > 0) {
+    tobPartydetailsPlaceArrows(count);
+  }
+  setTitled(1);
+  setCount(count + 1);
+}
+
+export function tobPartydetailsAddapplicant(line: String): void {
+  if (!panelOpen()) {
+    return;
+  }
+  const [lines, setLines] = useState(applicantLines);
+  const [count, setCount] = useState(raidsCount);
+  setLines(`${lines}${line}^`);
+  setCount(count + 1);
+}
+
+export function tobPartydetailsBuild(role: Int, size: Int, level: Int, mode: Int): void {
+  if (!panelOpen()) {
+    return;
+  }
+  const [count] = useState(raidsCount);
+  const [sort, setSort] = useState(raidsListsortDetails);
+  const [, setRole] = useState(boardRole);
+  const [, setSize] = useState(boardSize);
+  const [, setLevel] = useState(boardLevel);
+  const [, setMode] = useState(boardMode);
   const [, setBuilt] = useState(boardBuilt);
-  const [, setSort] = useState(raidsListsortDetails);
-  const [, setCount] = useState(raidsCount);
   const [, setStart] = useState(autorefreshStart);
   const [, setRemaining] = useState(dialRemaining);
-  const [, setArrows] = useState(arrowsPlaced);
-  const [, setTitled] = useState(partyTitled);
+  if (count - 5 > 0 && !knownSort(sort)) {
+    setSort(0);
+  }
+  setRole(role);
+  setSize(size);
+  setLevel(level);
+  setMode(mode);
   setBuilt(1);
-  setCount(MEMBER_COUNT + APPLICANT_COUNT);
-
-  setSort(0);
-
-  if (MEMBER_COUNT > 0) {
-    setTitled(1);
-  }
-
-  if (BoardPacket.role === PartyRole.LEADER) {
-    setArrows(1);
-  }
-
   setRemaining(AutoRefresh.CYCLES);
   setStart(clientClock());
+}
+
+function knownSort(sort: Int): Boolean {
+  if (sort >= 0 && sort <= 3) {
+    return true;
+  }
+  return sort >= 6 && sort <= 21;
+}
+
+export function tobPartydetailsForcebutton(target: Int, label: String): void {
+  if (!panelOpen()) {
+    return;
+  }
+  let which: Int = 1;
+  if (CS2.compare(label, Copy.REFRESH) === 0) {
+    which = 0;
+  } else if (CS2.compare(label, Copy.UNBLOCK) === 0) {
+    which = 2;
+  }
+  const [, setForced] = useState(forcedButton);
+  const [, setForcedAt] = useState(forcedAt);
+  playSound(Sounds.INTERFACE_SELECT1);
+  setForced(which);
+  setForcedAt(clientClock());
+  resumeAnchor(buttonAnchor(which));
+}
+
+export function buttonAnchor(which: Int): Int {
+  if (which === 1) {
+    return Anchor.ACTION;
+  }
+  if (which === 2) {
+    return Anchor.UNBLOCK;
+  }
+  return Anchor.REFRESH;
+}
+
+export function resumeAnchor(index: Int): void {
+  if (CS2.cc_find(anchorsRef, index) === true) {
+    CS2.cc_resume_pausebutton();
+  }
+}
+
+export function recordAt(lines: String, n: Int): String {
+  let start: Int = 0;
+  let skipped: Int = 0;
+  while (skipped < n) {
+    const end: Int = lines.indexOf('^', start);
+    if (end === -1) {
+      return '';
+    }
+    start = end + 1;
+    skipped = skipped + 1;
+  }
+  const end: Int = lines.indexOf('^', start);
+  if (end === -1) {
+    return '';
+  }
+  return lines.substring(start, end);
+}
+
+export function recordCount(lines: String): Int {
+  let count: Int = 0;
+  let at: Int = lines.indexOf('^', 0);
+  while (at !== -1) {
+    count = count + 1;
+    at = lines.indexOf('^', at + 1);
+  }
+  return count;
+}
+
+export function recordRole(record: String): Int {
+  const tilde: Int = record.indexOf('~', 0);
+  if (tilde <= 0) {
+    return 0;
+  }
+  return parseInt(record.substring(0, tilde));
+}
+
+export function recordLine(record: String): String {
+  const tilde: Int = record.indexOf('~', 0);
+  return record.substring(tilde + 1, record.length);
+}
+
+export function lineField(line: String, n: Int): String {
+  let rest: String = line;
+  let skipped: Int = 0;
+  while (skipped < n) {
+    rest = pipeTail(rest);
+    skipped = skipped + 1;
+  }
+  return pipeHead(rest);
 }
 
 export function tobPartydetailsAutorefresh(): void {
@@ -92,18 +239,41 @@ export function tobPartydetailsAutorefresh(): void {
   setRemaining(remaining);
 }
 
+export function tobPartydetailsTick(): void {
+  const [start] = useState(autorefreshStart);
+  const [pressedAt, setForcedAt] = useState(forcedAt);
+  const [, setForced] = useState(forcedButton);
+  if (pressedAt !== 0 && clientClock() >= pressedAt + BUSY_CYCLES) {
+    setForcedAt(0);
+    setForced(-1);
+  }
+  if (start >= 0) {
+    tobPartydetailsAutorefresh();
+  }
+}
+
 export function tobPartydetailsHideArrows(): void {
   const [, setArrows] = useState(arrowsPlaced);
   setArrows(0);
 }
 
-export function tobPartydetailsPlaceArrows(): void {
-  const [, setArrows] = useState(arrowsPlaced);
-  if (BoardPacket.role !== PartyRole.LEADER) {
-    setArrows(0);
+export function tobPartydetailsPlaceArrows(slot: Int): void {
+  const [placed, setArrows] = useState(arrowsPlaced);
+  if (CS2.testbit(placed, slot)) {
     return;
   }
-  setArrows(1);
+  let bit: Int = 1;
+  let at: Int = 0;
+  while (at < slot) {
+    bit = bit * 2;
+    at = at + 1;
+  }
+  setArrows(placed + bit);
+}
+
+export function clickTobPartydetailsSort(key: Int): void {
+  playSound(Sounds.INTERFACE_SELECT1);
+  setTobPartydetailsSort(key);
 }
 
 export function setTobPartydetailsSort(key: Int): void {

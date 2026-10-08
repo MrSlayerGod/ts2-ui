@@ -1,3 +1,6 @@
+import { PohRoomId } from './poh-viewer.rooms.ids.data';
+import { PohRoomRow, PohRooms } from './poh-viewer.rooms.data';
+
 export const RoomSprites = mapOf<Int, Sprite>([
   [1, 1368],
   [2, 1369],
@@ -30,66 +33,28 @@ export const RoomSprites = mapOf<Int, Sprite>([
   [29, 1394],
 ]);
 
-export function roomName(type: Int): String {
-  switch (type) {
-    case 1:
-      return 'Parlour';
-    case 2:
-      return 'Garden';
-    case 3:
-      return 'Kitchen';
-    case 4:
-      return 'Dining room';
-    case 5:
-      return 'Bedroom';
-    case 6:
-      return 'Games room';
-    case 7:
-      return 'Skill hall';
-    case 8:
-      return 'Skill hall';
-    case 9:
-      return 'Quest hall';
-    case 10:
-      return 'Quest hall';
-    case 11:
-      return 'Chapel';
-    case 12:
-      return 'Workshop';
-    case 13:
-      return 'Study';
-    case 14:
-      return 'Portal room';
-    case 15:
-      return 'Throne room';
-    case 16:
-      return 'Oubliette';
-    case 17:
-      return 'Dungeon corridor';
-    case 18:
-      return 'Dungeon cross';
-    case 19:
-      return 'Dungeon stairs';
-    case 20:
-      return 'Treasure room';
-    case 21:
-      return 'Formal garden';
-    case 22:
-      return 'Combat room';
-    case 23:
-      return 'Costume room';
-    case 24:
-      return 'Menagerie';
-    case 25:
-      return 'Menagerie outdoors';
-    case 26:
-      return 'Superior garden';
-    case 27:
-      return 'Achievement gallery';
-    case 28:
-      return 'Portal nexus';
-    case 29:
-      return 'League hall';
+export function roomRow(type: Int): PohRoomRow | null {
+  let fallback: PohRoomRow | null = null;
+  let i: Int = 0;
+  while (i < PohRooms.length) {
+    const row: PohRoomRow | null = PohRooms.at(i);
+    if (row !== null) {
+      if (row.roomType === type) {
+        return row;
+      }
+      if (row.id === PohRoomId.PARLOUR) {
+        fallback = row;
+      }
+    }
+    i = i + 1;
   }
-  return '';
+  return fallback;
+}
+
+export function roomName(type: Int): String {
+  const row: PohRoomRow | null = roomRow(type);
+  if (row === null) {
+    return '';
+  }
+  return row.nameUppercase;
 }

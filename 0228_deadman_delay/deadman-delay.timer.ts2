@@ -1,0 +1,43 @@
+import { CS2, createRef, resumePauseButton } from 'ts2';
+
+import { clientClock } from '../lib/lib.engine';
+
+export const headline = createRef('deadman_delay_text');
+export const countHolder = createRef('deadman_delay_hide_count');
+export const countLine = createRef('deadman_delay_count');
+export const continueLine = createRef('deadman_delay_continue');
+
+function remainingText(seconds: Int, suffix: String): String {
+  if (seconds === 1) {
+    return `There is 1 second remaining ${suffix}`;
+  }
+  return `There are ${seconds} seconds remaining ${suffix}`;
+}
+
+export function deadmanDelay(suffix: String, text: String, seconds: Int, logoutFlag: Int): void {
+  const cycles: Int = seconds * 30;
+  countLine.text = remainingText((49 + cycles) / 50, suffix);
+  headline.text = text;
+  countHolder.hide = false;
+  const start: Int = clientClock();
+  headline.onTimer = () => deadmanDelayTimer(suffix, start, cycles, logoutFlag);
+  CS2.if_on_dialog_abort_set(() => deadmanDelayAbortion(), headline);
+}
+
+function deadmanDelayTimer(suffix: String, start: Int, cycles: Int, logoutFlag: Int): void {
+  const left: Int = cycles - (clientClock() - start);
+  if (left <= 0) {
+    headline.onTimer = null;
+    if (logoutFlag !== -1) {
+      CS2.logout();
+    }
+    resumePauseButton(continueLine);
+    return;
+  }
+  countLine.text = remainingText((49 + left) / 50, suffix);
+}
+
+function deadmanDelayAbortion(): void {
+  headline.onTimer = null;
+  CS2.if_on_dialog_abort_set(null, headline);
+}

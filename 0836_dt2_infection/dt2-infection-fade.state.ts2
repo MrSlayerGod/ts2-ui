@@ -1,0 +1,39 @@
+import { CS2, sessionState, useState } from 'ts2';
+
+import { fadeAlpha, fadeHiddenBefore } from '../lib/fade-overlay.component';
+
+export const dt2InfectionFadeShown = sessionState(0);
+export const dt2InfectionFadeCalled = sessionState(0);
+export const dt2InfectionFadeFrom = sessionState(0);
+export const dt2InfectionFadeFromAlpha = sessionState(0);
+export const dt2InfectionFadeTo = sessionState(0);
+export const dt2InfectionFadeToAlpha = sessionState(0);
+export const dt2InfectionFadeCycles = sessionState(0);
+export const dt2InfectionFadeEnd = sessionState(0);
+export const dt2InfectionFadeKeepHidden = sessionState(0);
+
+export function dt2InfectionFade(from: Int, fromAlpha: Int, to: Int, toAlpha: Int, cycles: Int): void {
+  const [called, setCalled] = useState(dt2InfectionFadeCalled);
+  const [lastToAlpha, setToAlpha] = useState(dt2InfectionFadeToAlpha);
+  const [lastCycles, setCycles] = useState(dt2InfectionFadeCycles);
+  const [lastEnd, setEnd] = useState(dt2InfectionFadeEnd);
+  const [lastKeep, setKeep] = useState(dt2InfectionFadeKeepHidden);
+  const [, setShown] = useState(dt2InfectionFadeShown);
+  const [, setFrom] = useState(dt2InfectionFadeFrom);
+  const [, setFromAlpha] = useState(dt2InfectionFadeFromAlpha);
+  const [, setTo] = useState(dt2InfectionFadeTo);
+  setKeep(fadeHiddenBefore(called, lastToAlpha, lastCycles, lastEnd, lastKeep));
+  setShown(1);
+  setCalled(1);
+  setFrom(from);
+  setFromAlpha(fadeAlpha(fromAlpha));
+  setTo(to);
+  setToAlpha(fadeAlpha(toAlpha));
+  setCycles(cycles);
+  setEnd(CS2.clientclock() + cycles);
+}
+
+export function dt2InfectionFadeClear(): void {
+  const [, setShown] = useState(dt2InfectionFadeShown);
+  setShown(0);
+}

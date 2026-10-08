@@ -1,14 +1,17 @@
 import { useRef, useServerState } from 'ts2';
+import { meslayerClose } from '../0162_chatbox/meslayer';
+import { groupDigits } from '../lib/lib.format';
 import { StoneButtonEntrypoint } from '../lib/stone-button-entrypoint.component';
 import { StoneButtonPressedEntrypoint } from '../lib/stone-button-pressed-entrypoint.component';
 import { DepositAllButton } from './deposit-all-button.component';
 import { QtyButton } from './qty-button.component';
 import { SearchButton } from './search-button.component';
 import { Colors, Fonts, Qty, Varps } from './seed-vault.constants';
-import { customQtyColor } from './seed-vault.helpers';
+import { customQtyColor, seedVaultSearching } from './seed-vault.helpers';
 
 export function QuantityToolbar(): Component {
   const selected = useServerState(Varps.SELECTED_QTY);
+  const requested = useServerState(Varps.DEFAULT_QTY);
   const pressedX = useRef();
 
   return (
@@ -24,7 +27,12 @@ export function QuantityToolbar(): Component {
         y="center"
         w={30}
         h={30}
-        options={['*', 'Set custom quantity']}
+        options={[requested > 0 ? `Default quantity: ${groupDigits(requested, ',')}` : '', 'Set custom quantity']}
+        onOptionSelect={() => {
+          if (seedVaultSearching()) {
+            meslayerClose(true, true, true);
+          }
+        }}
         onMouseEnter={() => {
           pressedX.hide = false;
         }}

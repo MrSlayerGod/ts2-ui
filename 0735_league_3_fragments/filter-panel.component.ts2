@@ -1,8 +1,26 @@
-import { FragmentColors, FragmentFonts, FragmentSprites } from './league-3-fragments.constants';
+import { useRef, useState } from 'ts2';
+import {
+  league3FragmentFilterCategory,
+  league3FragmentFilterEffect,
+  league3FragmentFilterLevel,
+  league3FragmentFilterLock,
+} from '../lib/game/varcs';
+import { ThinBoxOutline } from '../lib/thin-box.component';
+import { onMobile } from '../lib/lib.helpers';
+import { Sprites } from '../lib/game/sprites';
+import { FragmentColors, FragmentFonts, FragmentSprites, LEAGUE_3 } from './league-3-fragments.constants';
+import { leagueColour } from './league-3-fragments.helpers';
+import { FilterCategoryLabels, FilterLevelLabels, FilterLockLabels, FilterSetLabels } from './filter-labels.data';
+import { FilterKind, fragmentFiltersShown, openFilter } from './league-3-fragments.state';
 
 export function FilterPanel(): Component {
+  const [shown] = useState(fragmentFiltersShown);
+  const [category] = useState(league3FragmentFilterCategory);
+  const [effect] = useState(league3FragmentFilterEffect);
+  const [level] = useState(league3FragmentFilterLevel);
+  const [lock] = useState(league3FragmentFilterLock);
   return (
-    <layer x={12} y={{ bottom: 12 }} w={225} h={171} hide noClickThrough>
+    <layer x={12} y={{ bottom: 12 }} w={225} h={171} hide={shown === 1 ? false : true} noClickThrough>
       <sprite w="fill" h="fill" sprite={FragmentSprites.FILTER_BACKDROP} tiling />
       <rect w="fill" h="fill" fill transparency={200} color={0} />
 
@@ -68,10 +86,63 @@ export function FilterPanel(): Component {
         color={FragmentColors.LABEL}
       />
 
-      <layer right={10} y={35} w={150} h={20} />
-      <layer right={10} y={67} w={150} h={20} />
-      <layer right={10} y={99} w={150} h={20} />
-      <layer right={10} y={131} w={150} h={20} />
+      <layer right={10} y={35} w={150} h={20}>
+        <FilterValueBox kind={FilterKind.CATEGORY} label={FilterCategoryLabels.at(category) ?? 'All'} />
+      </layer>
+      <layer right={10} y={67} w={150} h={20}>
+        <FilterValueBox kind={FilterKind.LEVEL} label={FilterLevelLabels.at(level) ?? 'All'} />
+      </layer>
+      <layer right={10} y={99} w={150} h={20}>
+        <FilterValueBox kind={FilterKind.SET} label={FilterSetLabels.at(effect) ?? 'All'} />
+      </layer>
+      <layer right={10} y={131} w={150} h={20}>
+        <FilterValueBox kind={FilterKind.LOCK} label={FilterLockLabels.at(lock) ?? 'All'} />
+      </layer>
+
+      <ThinBoxOutline />
+    </layer>
+  );
+}
+
+function FilterValueBox({ kind, label }: { kind: Int; label: String }): Component {
+  const arrow = useRef();
+  const mobile: Boolean = onMobile();
+  return (
+    <layer
+      w="fill"
+      h="fill"
+      options={['Expand']}
+      onOptionSelect={() => openFilter(kind)}
+      onMouseEnter={
+        mobile
+          ? null
+          : () => {
+              arrow.transparency = 125;
+            }
+      }
+      onMouseLeave={
+        mobile
+          ? null
+          : () => {
+              arrow.transparency = 0;
+            }
+      }
+    >
+      <sprite w="fill" h="fill" sprite={Sprites.TRADEBACKING} tiling />
+      <ThinBoxOutline />
+      <sprite ref={arrow} x={{ right: 2 }} y={2} w={16} h={16} sprite={Sprites.SCROLLBAR_V2_1} tiling />
+      <text
+        x={2}
+        y={{ bottom: 2 }}
+        w={{ fill: 20 }}
+        h={{ fill: 4 }}
+        text={label}
+        font={FragmentFonts.LABEL}
+        color={leagueColour(LEAGUE_3)}
+        shadow
+        align="center"
+        valign="middle"
+      />
     </layer>
   );
 }

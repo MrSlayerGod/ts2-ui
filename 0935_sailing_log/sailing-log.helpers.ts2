@@ -99,9 +99,10 @@ export function sailingLogMeasured(width: Int, height: Int): void {
   if (seenW === width && seenH === height) {
     return;
   }
+  const first: Boolean = seenW === -1;
   setSeenW(width);
   setSeenH(height);
-  if (seenW === -1 && toplevelComponents() === ToplevelComponents.DISPLAY) {
+  if (first && toplevelComponents() === ToplevelComponents.DISPLAY) {
     return;
   }
   sailingLogBuild();

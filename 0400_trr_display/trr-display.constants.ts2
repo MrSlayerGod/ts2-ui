@@ -1,3 +1,5 @@
+import { sessionState } from 'ts2';
+
 import { Fonts } from '../lib/game/fonts';
 import { Sprites } from '../lib/game/sprites';
 
@@ -50,4 +52,20 @@ export const Layout = {
 
 export const DisplayCopy = {
   FRAME_TITLE: '',
+};
+
+export const displayTitle = sessionState('');
+export const displayText = sessionState('');
+export const displayModel = sessionState(-1);
+export const displayOffsetX = sessionState(0);
+export const displayOffsetY = sessionState(400);
+export const displayPitch = sessionState(0);
+export const displayYaw = sessionState(1938);
+export const displayRoll = sessionState(0);
+export const displayZoom = sessionState(900);
+export const displaySpin = sessionState(0);
+
+export const SpinStep = {
+  YAW: -1,
+  TURN: 2048,
 };

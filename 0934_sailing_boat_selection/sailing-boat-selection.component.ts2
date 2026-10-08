@@ -1149,7 +1149,7 @@ function CargoPanel({ slot }: { slot: Int }): Component {
   }
   let lastRowY: Int = 0;
   if (drawn > 0) {
-    lastRowY = Layout.CARGO_TOP + ((drawn - 1) / Layout.CARGO_COLUMNS) * Layout.CARGO_STEP_Y;
+    lastRowY = Layout.CARGO_TOP + (drawn - 1) / Layout.CARGO_COLUMNS * Layout.CARGO_STEP_Y;
   }
   let capacity: Int = 0;
   let title: String = '';
@@ -1210,8 +1210,8 @@ function CargoPanel({ slot }: { slot: Int }): Component {
           (item, rank) =>
             rank < drawn && (
               <sprite
-                x={Layout.CARGO_LEFT + (rank % Layout.CARGO_COLUMNS) * Layout.CARGO_STEP_X}
-                y={Layout.CARGO_TOP + (rank / Layout.CARGO_COLUMNS) * Layout.CARGO_STEP_Y}
+                x={Layout.CARGO_LEFT + rank % Layout.CARGO_COLUMNS * Layout.CARGO_STEP_X}
+                y={Layout.CARGO_TOP + rank / Layout.CARGO_COLUMNS * Layout.CARGO_STEP_Y}
                 w={Layout.CARGO_CELL_W}
                 h={Layout.CARGO_CELL_H}
                 outline={1}

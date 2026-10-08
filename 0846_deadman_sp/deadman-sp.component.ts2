@@ -1,9 +1,10 @@
 import { ThinBoxEntrypoint } from '../lib/thin-box-entrypoint.component';
 import { Layout, SpArt, SpColor, SpFonts } from './deadman-sp.constants';
+import { RefreshBadge, SpBox, SpStoneClick, SpStoneSkin, resetDeadmanSp } from './deadman-sp-boxes.component';
 
 export function DeadmanSp(): Component {
   return (
-    <layer x="center" y="center" w={Layout.CONTENT_W} h={Layout.CONTENT_H}>
+    <layer x="center" y="center" w={Layout.CONTENT_W} h={Layout.CONTENT_H} onLoad={() => resetDeadmanSp()}>
       <text
         x={Layout.HEADER_X}
         y={0}
@@ -20,7 +21,9 @@ export function DeadmanSp(): Component {
       <layer x="center" y={Layout.BORDER_Y} w="fill" h={{ fill: Layout.BORDER_H_INSET }}>
         <layer x="center" y="center" w={{ fill: Layout.INNER_W_INSET }} h={{ fill: Layout.INNER_H_INSET }}>
           <layer x={0} y={0} w={Layout.POINTS_W} h={Layout.POINTS_H}>
-            <layer x="center" y={Layout.BAND_Y} w={{ fill: Layout.BAND_W_INSET }} h={Layout.BAND_H} />
+            <layer x="center" y={Layout.BAND_Y} w={{ fill: Layout.BAND_W_INSET }} h={Layout.BAND_H}>
+              <SpBox />
+            </layer>
 
             <text
               x={0}
@@ -36,7 +39,9 @@ export function DeadmanSp(): Component {
             />
 
             <layer x={{ right: Layout.BADGE_RIGHT }} y={Layout.BADGE_Y} w={Layout.BADGE} h={Layout.BADGE}>
-              <layer x={0} y={0} w="fill" h="fill" />
+              <layer x={0} y={0} w="fill" h="fill">
+                <RefreshBadge option="Refresh" subject="Points" />
+              </layer>
 
               <sprite
                 x={Layout.ICON_XY}
@@ -61,12 +66,17 @@ export function DeadmanSp(): Component {
             />
 
             <layer x="center" y={Layout.POINTS_BUTTON_Y} w={Layout.BUTTON_W} h={Layout.BUTTON_H}>
-              <layer x={0} y={0} w="fill" h="fill" />
+              <layer x={0} y={0} w="fill" h="fill">
+                <SpStoneSkin label="Points Info" />
+              </layer>
+              <SpStoneClick label="Points Info" />
             </layer>
           </layer>
 
           <layer x={0} y={Layout.DURATION_Y} w={Layout.DURATION_W} h={Layout.DURATION_H}>
-            <layer x="center" y={Layout.BAND_Y} w={{ fill: Layout.BAND_W_INSET }} h={Layout.BAND_H} />
+            <layer x="center" y={Layout.BAND_Y} w={{ fill: Layout.BAND_W_INSET }} h={Layout.BAND_H}>
+              <SpBox />
+            </layer>
 
             <text
               x="center"
@@ -102,7 +112,10 @@ export function DeadmanSp(): Component {
       <layer x={0} y={Layout.OTHER_Y} w="fill" h={Layout.OTHER_H}>
         <layer x="right" y={0} w="fill" h="fill">
           <layer x={Layout.INFO_BUTTON_X} y={Layout.INFO_BUTTON_Y} w={Layout.BUTTON_W} h={Layout.BUTTON_H}>
-            <layer x={0} y={0} w="fill" h="fill" />
+            <layer x={0} y={0} w="fill" h="fill">
+              <SpStoneSkin label="Sigils Info" />
+            </layer>
+            <SpStoneClick label="Sigils Info" />
           </layer>
         </layer>
       </layer>

@@ -1,11 +1,15 @@
+import { createRef, useState } from 'ts2';
+
 import { closeInterface, graphicSwapper } from '../lib/lib.helpers';
 import { ThinStoneBoxEntrypoint } from '../lib/thin-stone-box.component';
+import { SecondinvGrid, secondinvArm } from './secondinv-grid.component';
 import { Layout, SecondInvColors, SecondInvFonts, SecondInvSprites } from './league-secondinv.constants';
 
 export function LeagueSecondinv(): Component {
   return (
     <>
       <text
+        ref={secondinvTitleRef}
         x={0}
         y={0}
         w="fill"
@@ -38,7 +42,9 @@ export function LeagueSecondinv(): Component {
           sprite={SecondInvSprites.PANE_BACKING}
           tiling
         />
-        <layer x="center" y="center" w={{ fill: Layout.ITEMS_INSET }} h={{ fill: Layout.ITEMS_INSET }} />
+        <layer x="center" y="center" w={{ fill: Layout.ITEMS_INSET }} h={{ fill: Layout.ITEMS_INSET }}>
+          <SecondinvGrid />
+        </layer>
         <ThinStoneBoxEntrypoint />
       </layer>
 
@@ -57,4 +63,12 @@ export function LeagueSecondinv(): Component {
       <layer x={0} y={0} w={Layout.SPACER} h={Layout.SPACER} />
     </>
   );
+}
+
+const secondinvTitleRef = createRef();
+
+export function leagueSecondinvOpen(carried: Int, title: String): void {
+  const [, setArm] = useState(secondinvArm);
+  secondinvTitleRef.text = title;
+  setArm(carried === 1 ? 1 : 0);
 }

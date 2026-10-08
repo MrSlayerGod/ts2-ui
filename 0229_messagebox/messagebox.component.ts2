@@ -1,9 +1,10 @@
-import { CS2, createRef, useState } from 'ts2';
+import { CS2, createRef, stopTimer, useState } from 'ts2';
 
 import { clientClock } from '../lib/lib.engine';
 import { dialogueMayAdvance } from '../lib/lib.dialogue';
 import { Fonts } from '../lib/game/fonts';
-import { onMobile } from '../lib/lib.helpers';
+import { onMobile, textDevice } from '../lib/lib.helpers';
+import { chatBackgroundInvisibleTimeout } from '../lib/game/varcs';
 
 const LABEL = Fonts.Q8_FULL;
 
@@ -41,10 +42,11 @@ function advanceFeedback(line: ComponentId): void {
 
 export function MessageBox(): Component {
   return (
-    <layer x={{ center: 1 }} y="center" w={506} h={129}>
+    <layer ref={universeRef} x={{ center: 1 }} y="center" w={506} h={129}>
       <layer x={{ center: -1 }} y={{ center: 1 }} w={481} h={110}>
         <layer x="center" y="center" w={479} h={96}>
           <text
+            ref={bodyText}
             x="center"
             y={0}
             w="fill"
@@ -128,3 +130,95 @@ export function MessageBoxAdvance(): Component {
     />
   );
 }
+
+const bodyText = createRef('messagebox_text');
+const universeRef = createRef('messagebox_universe');
+
+const STORE_DOT_CYCLES = 20;
+const STORE_TIMEOUT_CYCLES = 500;
+
+export function messageboxOpenStore(kind: Int, name: String): void {
+  CS2.native_federated_login(name, 'check');
+  CS2.if_text_align_set(1, 1, 16, bodyText);
+  bodyText.text = `Opening the ${name} store, please wait.`;
+  continueLine.text = `${textDevice('Click', 'Tap')} here to cancel`;
+  armStoreTimer(name, kind, 0, 2);
+}
+
+function armStoreTimer(name: String, kind: Int, ticks: Int, dots: Int): void {
+  bodyText.onTimer = () => storeTimerStep(name, kind, ticks, dots);
+}
+
+function storeTimerStep(name: String, kind: Int, before: Int, dotsBefore: Int): void {
+  const ticks: Int = before + 1;
+  let dots: Int = dotsBefore;
+  if (ticks % STORE_DOT_CYCLES === 0) {
+    if (dots === 1) {
+      dots = 2;
+      bodyText.text = `Opening the ${name} store, please wait.`;
+    } else if (dots === 2) {
+      dots = 3;
+      bodyText.text = `Opening the ${name} store, please wait..`;
+    } else {
+      dots = 1;
+      bodyText.text = `Opening the ${name} store, please wait...`;
+    }
+    if (storeLoginSettled(name, kind)) {
+      return;
+    }
+    if (ticks >= STORE_TIMEOUT_CYCLES) {
+      stopTimer(bodyText);
+      bodyText.text = `Timed out while opening the ${name} store, please try again.`;
+      continueLine.text = `${textDevice('Click', 'Tap')} here to continue`;
+      return;
+    }
+  }
+  armStoreTimer(name, kind, ticks, dots);
+}
+
+function storeLoginSettled(name: String, kind: Int): Boolean {
+  const state: Int = CS2.native_federated_login_state();
+  if (state === 20) {
+    if (kind === 1) {
+      CS2.native_federated_shop(name, 'store/oldschool/bonds');
+    } else if (kind === 3) {
+      CS2.native_federated_shop(name, 'store/oldschool/membership');
+    } else {
+      CS2.native_federated_shop(name, 'store/oldschool');
+    }
+    stopTimer(bodyText);
+    CS2.if_resume_pausebutton(continueLine);
+    return true;
+  }
+  if (state >= 21 && state <= 26) {
+    stopTimer(bodyText);
+    bodyText.text = `Unable to open the ${name} store.`;
+    continueLine.text = `${textDevice('Click', 'Tap')} here to continue`;
+    return true;
+  }
+  return false;
+}
+
+export function messageboxStopStore(): void {
+  stopTimer(bodyText);
+}
+
+export function messageboxBackground(text: String): void {
+  const [until, setUntil] = useState(chatBackgroundInvisibleTimeout);
+  if (text.length <= 0 || (text.length === 1 && text.startsWith(' '))) {
+    setUntil(clientClock() + INVISIBLE_CYCLES);
+    universeRef.onTimer = () => messageboxKeepInvisible();
+    return;
+  }
+  if (until > clientClock()) {
+    setUntil(0);
+  }
+  stopTimer(universeRef);
+}
+
+function messageboxKeepInvisible(): void {
+  const [, setUntil] = useState(chatBackgroundInvisibleTimeout);
+  setUntil(clientClock() + INVISIBLE_CYCLES);
+}
+
+const INVISIBLE_CYCLES = 20;

@@ -135,12 +135,12 @@ export function QuestJournalOverview(): Component {
             <text
               x={
                 speedrun
-                  ? switchShown
+                  ? (switchShown
                     ? Page.TITLE_X_BOTH
-                    : Page.TITLE_X_ONE
-                  : switchShown
+                    : Page.TITLE_X_ONE)
+                  : (switchShown
                     ? Page.TITLE_X_ONE
-                    : Page.TITLE_X_NEITHER
+                    : Page.TITLE_X_NEITHER)
               }
               y={Page.TITLE_Y}
               w={{ fill: Page.TITLE_W_INSET }}

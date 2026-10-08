@@ -1,6 +1,7 @@
-import { CS2, useServerState, useState } from 'ts2';
+import { CS2, partOf, useServerState, useState } from 'ts2';
 
 import { Varbits } from '../lib/game/varbits';
+import { accountRef } from '../0109_account/account.ui';
 import { broadcastClearedTime, chatForceChatboxRebuild, snapshotName } from '../lib/game/varcs';
 import { FixedSlots } from '../lib/game/gameframe-1129.data';
 import { StretchSlots } from '../lib/game/gameframe-1130.data';
@@ -34,6 +35,8 @@ import {
   POLL_LINK,
 } from './pm-chat.constants';
 import { pmChatLinesHeight } from './pm-chat.state';
+
+const pollButtonBroadcasts = partOf(accountRef, 'poll_button_broadcasts');
 
 const SELECT_SOUND = 2266;
 
@@ -179,7 +182,7 @@ export function broadcastLink(body: String): Int {
 }
 
 export function rebootLine(timer: Int): String {
-  const seconds: Int = (timer / 50) % 60;
+  const seconds: Int = timer / 50 % 60;
   const minutes: Int = timer / 3000;
   if (seconds < 10) {
     return `System update in: ${minutes}:0${seconds}`;
@@ -320,7 +323,7 @@ export function broadcastOp(op: Int, clearOp: Int, url: String, link: Int): void
     if (op === PmOp.OPEN) {
       const mount: ComponentId = layoutSlot(toplevelComponents(), componentOf(161, 84));
       if (mount !== -1 && CS2.if_sub_has(mount)) {
-        CS2.if_triggerop(componentOf(109, 60), -1, 1);
+        CS2.if_triggerop(pollButtonBroadcasts, -1, 1);
       } else {
         CS2.message("You can't open the poll menu at the moment.");
       }

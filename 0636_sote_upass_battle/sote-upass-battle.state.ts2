@@ -1,0 +1,23 @@
+import { sessionState, useState } from 'ts2';
+
+import { clientClock } from '../lib/lib.engine';
+import { Clock, Layout } from './sote-upass-battle.constants';
+
+export const upassBarrier = sessionState(Layout.BAR_W);
+export const upassDeadline = sessionState(0);
+
+export function soteUpassBattleUpdate(health: Int, ticks: Int): void {
+  const [, setDeadline] = useState(upassDeadline);
+  const [, setBarrier] = useState(upassBarrier);
+  setDeadline(clientClock() + ticks * Clock.CYCLES_PER_TICK);
+  setBarrier(health * 100 / Clock.HEALTH_MAX * Layout.BAR_W / 100);
+}
+
+export function upassClockLabel(seconds: Int): String {
+  const minutes: Int = seconds / 60;
+  const rest: Int = seconds % 60;
+  if (rest < 10) {
+    return `Time Left: ${minutes}:0${rest}`;
+  }
+  return `Time Left: ${minutes}:${rest}`;
+}

@@ -192,13 +192,13 @@ export function GimLeaveText(): Component {
 
   const body: String =
     choice === GimChoice.UNRANKED
-      ? ironman === Ironman.UNRANKED_GIM
+      ? (ironman === Ironman.UNRANKED_GIM
         ? Prose.UNRANKED_RETAIN
-        : Prose.UNRANKED_BECOME
+        : Prose.UNRANKED_BECOME)
       : choice === GimChoice.RANKED
-        ? members
+        ? (members
           ? Prose.RANKED_MEMBERS
-          : Prose.RANKED_F2P
+          : Prose.RANKED_F2P)
         : Prose.MAIN;
 
   return (

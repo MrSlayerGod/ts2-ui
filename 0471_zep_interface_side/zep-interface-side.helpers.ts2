@@ -1,7 +1,7 @@
 import { Layout, Tip } from './zep-interface-side.constants';
 
 function wideButton(panelWidth: Int): Int {
-  return (panelWidth * Layout.WIDE_PROPORTION) / Layout.PROPORTION_SCALE;
+  return panelWidth * Layout.WIDE_PROPORTION / Layout.PROPORTION_SCALE;
 }
 
 export function zepAnchorX(tip: Tip, panelWidth: Int): Int {

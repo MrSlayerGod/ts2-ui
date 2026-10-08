@@ -12,8 +12,8 @@ export function DreamBankGrid(): Component {
         (item, slot) =>
           item !== -1 && (
             <sprite
-              x={Grid.X0 + (slot % Grid.COLUMNS) * Grid.DX}
-              y={Grid.Y0 + (slot / Grid.COLUMNS) * Grid.DY}
+              x={Grid.X0 + slot % Grid.COLUMNS * Grid.DX}
+              y={Grid.Y0 + slot / Grid.COLUMNS * Grid.DY}
               w={Grid.SLOT_W}
               h={Grid.SLOT_H}
               item={item}

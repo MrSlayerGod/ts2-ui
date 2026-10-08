@@ -11,9 +11,7 @@ const DODGE_MOBILE = 32770;
 const DODGE_DESKTOP = 28672;
 
 function desktopFrame(frame: Int): Boolean {
-  return (
-    frame === ToplevelComponents.STRETCH || frame === ToplevelComponents.PRE_EOC || frame === ToplevelComponents.FIXED
-  );
+  return frame === ToplevelComponents.STRETCH || frame === ToplevelComponents.PRE_EOC || frame === ToplevelComponents.FIXED;
 }
 
 export function contentDodges(frame: Int): Boolean {

@@ -18,15 +18,18 @@ import {
 } from './clans-board.constants';
 import { ClanInterests } from './clans-board.data';
 import { filtersScrollHeight } from './clans-board.helpers';
+import { clanBoardLines, clanBoardLoaded } from './clans-board.state';
 
 export function ClanBoardFilters(): Component {
   const pane = useUniverse();
+  const [board] = useState(clanBoardLines);
+  const [loaded] = useState(clanBoardLoaded);
   const rowHeightEach: Int = onMobile() ? Layout.FILTER_ROW_H_MOBILE : Layout.FILTER_ROW_H;
   const labelWidth: Int = pane.width - Layout.FILTER_LABEL_INSET;
 
-  filtersRef.scrollHeight = filtersScrollHeight(clansBoardRef.height, rowHeightEach);
+  filtersRef.scrollHeight = filtersScrollHeight(board, clansBoardRef.height, rowHeightEach);
 
-  return (
+  return loaded === 0 ? null : (
     <>
       {FilterIndices.map((index) => (
         <layer x="center" y={index * rowHeightEach} w="fill" h={rowHeightEach}>
@@ -49,6 +52,7 @@ export function ClanBoardFilterRow({
   labelWidth: Int;
 }): Component {
   const [readyAt, setReadyAt] = useState(0);
+  const [lit, setLit] = useState(0);
   useInterval(() => {
     if (readyAt !== 0 && clientClock() >= readyAt) {
       setReadyAt(0);
@@ -69,31 +73,28 @@ export function ClanBoardFilterRow({
         h={rowHeightEach}
         fill
         color={ClanBoardColor.WHITE}
-        transparency={flashing === 1 ? FilterTransparency.PRESSED : FilterTransparency.REST}
+        transparency={
+          flashing === 1 ? FilterTransparency.PRESSED : lit === 1 ? FilterTransparency.HOVER : FilterTransparency.REST
+        }
         options={[Copy.CHANGE_FILTER]}
         optionSubject={`<col=ff9040>${label}</col>`}
         onMouseRepeat={
           flashing === 1
             ? undefined
-            : (event) => {
+            : () => {
                 if (!onMobile()) {
-                  event.self.transparency = FilterTransparency.HOVER;
+                  setLit(1);
                 }
               }
         }
-        onMouseLeave={
-          flashing === 1
-            ? undefined
-            : (event) => {
-                event.self.transparency = FilterTransparency.REST;
-              }
-        }
+        onMouseLeave={flashing === 1 ? undefined : () => setLit(0)}
         onOptionSelect={(event) => {
           if (readyAt !== 0) {
             return;
           }
           playSound(ClanBoardSounds.CLICK);
           CS2.if_resume_pausebutton(event.component);
+          setLit(0);
           setReadyAt(clientClock() + FLASH_CYCLES);
         }}
       />

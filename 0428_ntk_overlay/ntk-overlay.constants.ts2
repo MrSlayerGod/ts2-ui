@@ -1,3 +1,6 @@
+import { createRef } from 'ts2';
+import { Varps } from '../lib/game/varps';
+
 export enum Models {
   ROOM_ICON = 16350,
 }
@@ -16,4 +19,17 @@ export declare const Varbits: {
   readonly NTK_PLAYER_TIMER_COUNT: VarbitRef<2375, 821>;
   readonly NTK_ROOM_NUMBER: VarbitRef<2377, 822>;
   readonly NTK_THIEVING_REQUIRED: VarbitRef<2376, 822>;
+};
+
+export const dodgerRef = createRef('ntk_overlay_dodger');
+export const contentRef = createRef('ntk_overlay_content');
+
+export enum NtkDodge {
+  FIXED = 36582,
+  OTHER = 52968,
+}
+
+export declare const NtkLayoutVarps: {
+  readonly CHAT_FILTER_ASSIST: typeof Varps.CHAT_FILTER_ASSIST;
+  readonly XPDROPS_OPTIONS: typeof Varps.XPDROPS_OPTIONS;
 };

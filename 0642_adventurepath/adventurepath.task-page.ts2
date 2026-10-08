@@ -1,0 +1,1178 @@
+import { CS2, predictServerState, useServerState } from 'ts2';
+
+import { onMobile, textDevice } from '../lib/lib.helpers';
+import { Varps } from '../lib/game/varps';
+import { Sprites } from '../lib/game/sprites';
+import { Fonts } from '../lib/game/fonts';
+import { AdventureTasks } from '../0644_adventurepath_side/adventure-tasks.data';
+import { taskDone, taskFocus } from '../0644_adventurepath_side/adventurepath-side.helpers';
+import { PathTaskBase, SideVarbits } from '../0644_adventurepath_side/adventurepath-side.constants';
+import { stringFindAndReplace } from '../0491_barbassault_reward_shop/string-find-and-replace';
+import { scrollbarVertical } from '../0458_poh_furniture_creation/scrollbar-vertical.skins';
+import { TaskInfo, TaskRewards } from './adventure-task-info.data';
+import {
+  Art,
+  Colour,
+  ComponentType,
+  PosMode,
+  SizeMode,
+  Sound,
+  TextAlign,
+  backRef,
+  extraDescriptionRef,
+  extraHintRef,
+  extraImageRef,
+  extraImageTextRef,
+  extraLinkRef,
+  extraTaskNameRef,
+  filtersRef,
+  pathRewardRef,
+  rewardListRef,
+  rewardsScrollbarRef,
+  scrollbarTaskRef,
+  taskDescriptionRef,
+  taskFocusRef,
+  taskHintRef,
+  taskInfoRef,
+  taskListRef,
+  taskNameRef,
+  tasksDoneRef,
+  tasksRef,
+  toolbarRef,
+} from './adventurepath.constants';
+import { adventurePathChangePage, adventurePathDoNothing } from './adventurepath.builders';
+import { pathAvailable, pathLength, pathRewardFree, pathRewardMembers, pathTasksDone } from './adventurepath.helpers';
+import { createGraphic, stonePanel } from './adventurepath.skins';
+
+const enum TaskColour {
+  LOCKED = 0xff0000,
+  WHITE = 0xffffff,
+  OPEN = 0xffff00,
+  DONE_UNCLAIMED = 0x32dbe9,
+  DONE = 0x0dc10d,
+  LINK = 0xf4f4f4,
+  LINK_HOVER = 0xbebebe,
+}
+
+const enum Pos {
+  RIGHT = 2,
+  BOTTOM = 2,
+  TOP = 0,
+}
+
+const BANK_FILLER = 20594;
+
+function infoRow(taskId: Int): Int {
+  let i1: Int = 0;
+  while (i1 < TaskInfo.length) {
+    const r = TaskInfo.at(i1);
+    if (r !== null) {
+      if (r.taskId === taskId) {
+        return i1;
+      }
+    }
+    i1 = i1 + 1;
+  }
+  return -1;
+}
+
+function infoPrereq(row: Int): Int {
+  const r = TaskInfo.at(row);
+  return r === null ? 0 : r.prereq;
+}
+
+function taskRow(taskId: Int): Int {
+  let i2: Int = 0;
+  while (i2 < AdventureTasks.length) {
+    const r = AdventureTasks.at(i2);
+    if (r !== null) {
+      if (r.taskId === taskId) {
+        return i2;
+      }
+    }
+    i2 = i2 + 1;
+  }
+  return -1;
+}
+
+function hasRewardColumn(taskId: Int, column: Int): Boolean {
+  let i3: Int = 0;
+  while (i3 < TaskRewards.length) {
+    const r = TaskRewards.at(i3);
+    if (r !== null) {
+      if (r.taskId === taskId && r.column === column) {
+        return true;
+      }
+    }
+    i3 = i3 + 1;
+  }
+  return false;
+}
+
+function adventurePathReplace(text: String): String {
+  return stringFindAndReplace(text, '@control_leftclick_caps', textDevice('Click', 'Tap'));
+}
+
+export function firstOpenTask(taskId: Int, path: Int): Int {
+  const start: Int = infoRow(taskId);
+  if (start === -1 || path < 0) {
+    return taskId;
+  }
+  let result: Int = taskId;
+  let prereq: Int = infoPrereq(start);
+  let steps: Int = 0;
+  while (steps < AdventureTasks.length) {
+    if (prereq === 0) {
+      return result;
+    }
+    if (taskDone(prereq)) {
+      return result;
+    }
+    result = prereq;
+    const next: Int = infoRow(prereq);
+    if (next === -1) {
+      return result;
+    }
+    prereq = infoPrereq(next);
+    steps = steps + 1;
+  }
+  return result;
+}
+
+function filledButton(target: ComponentId, style: Int): Int {
+  CS2.cc_all_delete(target);
+  const w: Int = CS2.if_width_get(target);
+  const h: Int = CS2.if_height_get(target);
+  let backing: Sprite = Sprites.TRADEBACKING;
+  let first: Sprite = Art.RAISED_TOP_LEFT;
+  if (style === 1) {
+    backing = Sprites.TRADEBACKING_DARK;
+    first = Art.PRESSED_TOP_LEFT;
+  } else if (style === 2) {
+    backing = Sprites.TRADEBACKING_LIGHT;
+    first = Sprites.V2_STONE_BUTTON_OUT_0;
+  }
+  createGraphic(
+    target,
+    0,
+    backing,
+    0,
+    0,
+    PosMode.ABS_CENTRE,
+    PosMode.ABS_CENTRE,
+    2,
+    2,
+    SizeMode.MINUS,
+    SizeMode.MINUS,
+    true,
+  );
+  createGraphic(target, 1, first, 0, 0, PosMode.ABS_LEFT, PosMode.ABS_TOP, 9, 9, SizeMode.ABS, SizeMode.ABS, true);
+  createGraphic(
+    target,
+    2,
+    first + 1,
+    w - 9,
+    0,
+    PosMode.ABS_LEFT,
+    PosMode.ABS_TOP,
+    9,
+    9,
+    SizeMode.ABS,
+    SizeMode.ABS,
+    true,
+  );
+  createGraphic(
+    target,
+    3,
+    first + 2,
+    0,
+    h - 9,
+    PosMode.ABS_LEFT,
+    PosMode.ABS_TOP,
+    9,
+    9,
+    SizeMode.ABS,
+    SizeMode.ABS,
+    true,
+  );
+  createGraphic(
+    target,
+    4,
+    first + 3,
+    w - 9,
+    h - 9,
+    PosMode.ABS_LEFT,
+    PosMode.ABS_TOP,
+    9,
+    9,
+    SizeMode.ABS,
+    SizeMode.ABS,
+    true,
+  );
+  createGraphic(
+    target,
+    5,
+    first + 4,
+    0,
+    9,
+    PosMode.ABS_LEFT,
+    PosMode.ABS_TOP,
+    9,
+    h - 18,
+    SizeMode.ABS,
+    SizeMode.ABS,
+    true,
+  );
+  createGraphic(
+    target,
+    6,
+    first + 5,
+    9,
+    0,
+    PosMode.ABS_LEFT,
+    PosMode.ABS_TOP,
+    w - 18,
+    9,
+    SizeMode.ABS,
+    SizeMode.ABS,
+    true,
+  );
+  createGraphic(
+    target,
+    7,
+    first + 6,
+    w - 9,
+    9,
+    PosMode.ABS_LEFT,
+    PosMode.ABS_TOP,
+    9,
+    h - 18,
+    SizeMode.ABS,
+    SizeMode.ABS,
+    true,
+  );
+  createGraphic(
+    target,
+    8,
+    first + 7,
+    9,
+    h - 9,
+    PosMode.ABS_LEFT,
+    PosMode.ABS_TOP,
+    w - 18,
+    9,
+    SizeMode.ABS,
+    SizeMode.ABS,
+    true,
+  );
+  return 9;
+}
+
+function stoneFilled(target: ComponentId): Int {
+  return filledButton(target, 0);
+}
+
+function stoneInFilled(target: ComponentId): Int {
+  return filledButton(target, 1);
+}
+
+function stoneOutFilled(target: ComponentId): Int {
+  return filledButton(target, 2);
+}
+
+function reskin(target: ComponentId, index: Int, pressed: Boolean, colour: Int): void {
+  let backing: Sprite = Sprites.TRADEBACKING;
+  let first: Sprite = Art.RAISED_TOP_LEFT;
+  if (pressed) {
+    backing = Sprites.TRADEBACKING_DARK;
+    first = Art.PRESSED_TOP_LEFT;
+  }
+  if (CS2.cc_find(target, index)) {
+    CS2.cc_sprite_set(backing);
+  }
+  let i4: Int = 0;
+  while (i4 < 8) {
+    if (CS2.cc_find(target, index + 1 + i4)) {
+      CS2.cc_sprite_set(first + i4);
+    }
+    i4 = i4 + 1;
+  }
+  if (colour !== -1 && CS2.cc_find(target, index + 10)) {
+    CS2.cc_colour_set(colour);
+  }
+}
+
+function taskButton(
+  container: ComponentId,
+  index: Int,
+  w: Int,
+  h: Int,
+  x: Int,
+  y: Int,
+  label: String,
+  colour: Int,
+  hoverColour: Int,
+  taskId: Int,
+  pressed: Int,
+  icon: Sprite,
+): Int {
+  const right: Int = w - 9 + x;
+  const bottom: Int = h - 9 + y;
+  const spanW: Int = w - 18;
+  const spanH: Int = h - 18;
+  let backing: Sprite = Sprites.TRADEBACKING;
+  let first: Sprite = Art.RAISED_TOP_LEFT;
+  if (pressed !== 0) {
+    backing = Sprites.TRADEBACKING_DARK;
+    first = Art.PRESSED_TOP_LEFT;
+  }
+  createGraphic(
+    container,
+    index,
+    backing,
+    x,
+    y,
+    PosMode.ABS_LEFT,
+    PosMode.ABS_TOP,
+    w,
+    h,
+    SizeMode.ABS,
+    SizeMode.ABS,
+    true,
+  );
+  createGraphic(
+    container,
+    index + 1,
+    first,
+    x,
+    y,
+    PosMode.ABS_LEFT,
+    PosMode.ABS_TOP,
+    9,
+    9,
+    SizeMode.ABS,
+    SizeMode.ABS,
+    true,
+  );
+  createGraphic(
+    container,
+    index + 2,
+    first + 1,
+    right,
+    y,
+    PosMode.ABS_LEFT,
+    PosMode.ABS_TOP,
+    9,
+    9,
+    SizeMode.ABS,
+    SizeMode.ABS,
+    true,
+  );
+  createGraphic(
+    container,
+    index + 3,
+    first + 2,
+    x,
+    bottom,
+    PosMode.ABS_LEFT,
+    PosMode.ABS_TOP,
+    9,
+    9,
+    SizeMode.ABS,
+    SizeMode.ABS,
+    true,
+  );
+  createGraphic(
+    container,
+    index + 4,
+    first + 3,
+    right,
+    bottom,
+    PosMode.ABS_LEFT,
+    PosMode.ABS_TOP,
+    9,
+    9,
+    SizeMode.ABS,
+    SizeMode.ABS,
+    true,
+  );
+  createGraphic(
+    container,
+    index + 5,
+    first + 4,
+    x,
+    9 + y,
+    PosMode.ABS_LEFT,
+    PosMode.ABS_TOP,
+    9,
+    spanH,
+    SizeMode.ABS,
+    SizeMode.ABS,
+    true,
+  );
+  createGraphic(
+    container,
+    index + 6,
+    first + 5,
+    x + 9,
+    y,
+    PosMode.ABS_LEFT,
+    PosMode.ABS_TOP,
+    spanW,
+    9,
+    SizeMode.ABS,
+    SizeMode.ABS,
+    true,
+  );
+  createGraphic(
+    container,
+    index + 7,
+    first + 6,
+    right,
+    9 + y,
+    PosMode.ABS_LEFT,
+    PosMode.ABS_TOP,
+    9,
+    spanH,
+    SizeMode.ABS,
+    SizeMode.ABS,
+    true,
+  );
+  createGraphic(
+    container,
+    index + 8,
+    first + 7,
+    x + 9,
+    bottom,
+    PosMode.ABS_LEFT,
+    PosMode.ABS_TOP,
+    spanW,
+    9,
+    SizeMode.ABS,
+    SizeMode.ABS,
+    true,
+  );
+
+  CS2.cc_create(container, ComponentType.SPRITE, index + 9, false);
+  CS2.cc_size_set(25, 25, SizeMode.ABS, SizeMode.ABS);
+  CS2.cc_position_set(3, h / 2 - 25 / 2 + y, PosMode.ABS_LEFT, PosMode.ABS_TOP);
+  CS2.cc_sprite_set(icon);
+
+  CS2.cc_create(container, ComponentType.TEXT, index + 10, false);
+  CS2.cc_size_set(w - 25 - 10, h - 6, SizeMode.ABS, SizeMode.ABS);
+  CS2.cc_position_set(5 + 25 + x, 3 + y, PosMode.ABS_LEFT, PosMode.ABS_TOP);
+  CS2.cc_text_set(label);
+  CS2.cc_text_font_set(Fonts.P12_FULL);
+  CS2.cc_text_shadow_set(true);
+  CS2.cc_colour_set(colour);
+  CS2.cc_text_align_set(TextAlign.CENTRE, TextAlign.CENTRE, 20);
+
+  CS2.cc_create(container, ComponentType.SPRITE, index + 11, false);
+  CS2.cc_size_set(w, h, SizeMode.ABS, SizeMode.ABS);
+  CS2.cc_position_set(x, y, PosMode.ABS_LEFT, PosMode.ABS_TOP);
+  if (taskId !== 0) {
+    CS2.cc_op_set(1, `Show task: <col=ff9040>${label}`);
+  }
+  if (pressed === 0) {
+    if (onMobile()) {
+      CS2.cc_on_mouseover_set(() => reskin(container, index, true, colour));
+    } else {
+      CS2.cc_on_mouseover_set(() => reskin(container, index, true, hoverColour));
+    }
+    CS2.cc_on_mouseleave_set(() => reskin(container, index, false, colour));
+  }
+  return index + 12;
+}
+
+function buttonText(target: ComponentId, index: Int, text: String): Int {
+  CS2.cc_create(target, ComponentType.TEXT, index, false);
+  CS2.cc_size_set(0, 0, SizeMode.MINUS, SizeMode.MINUS);
+  CS2.cc_position_set(0, 0, PosMode.ABS_CENTRE, PosMode.ABS_CENTRE);
+  CS2.cc_text_set(text);
+  CS2.cc_text_font_set(Fonts.P12_FULL);
+  CS2.cc_text_shadow_set(true);
+  CS2.cc_colour_set(Colour.CAPTION);
+  CS2.cc_text_align_set(TextAlign.CENTRE, TextAlign.CENTRE, 0);
+  return index + 1;
+}
+
+function backButtonText(index: Int): Int {
+  CS2.cc_create(backRef, ComponentType.TEXT, index, false);
+  CS2.cc_size_set(0, 0, SizeMode.MINUS, SizeMode.MINUS);
+  CS2.cc_position_set(0, 0, PosMode.ABS_CENTRE, PosMode.ABS_CENTRE);
+  CS2.cc_text_set('<lt><lt>   Back');
+  CS2.cc_op_set(1, 'Back');
+  CS2.cc_onop_set(() => backToPaths());
+  CS2.cc_text_font_set(Fonts.P12_FULL);
+  CS2.cc_text_shadow_set(true);
+  CS2.cc_colour_set(Colour.CAPTION);
+  CS2.cc_text_align_set(TextAlign.CENTRE, TextAlign.CENTRE, 0);
+  return index + 1;
+}
+
+function backMouseover(): void {
+  stoneInFilled(backRef);
+  backButtonText(9);
+}
+
+function backMouseleave(): void {
+  stoneOutFilled(backRef);
+  backButtonText(9);
+}
+
+function backToPaths(): void {
+  CS2.sound_effect(Sound.SELECT, 1, 0);
+  CS2.cc_all_delete(tasksRef);
+  adventurePathChangePage(0);
+}
+
+function selectSound(): void {
+  CS2.sound_effect(Sound.SELECT, 1, 0);
+}
+
+function pathRewardSkin(pressed: Boolean): void {
+  if (pressed) {
+    stoneInFilled(pathRewardRef);
+  } else {
+    stoneOutFilled(pathRewardRef);
+  }
+  buttonText(pathRewardRef, 9, 'Show path reward');
+  CS2.cc_op_set(1, 'Show <col=ff9040>path reward');
+  CS2.cc_onop_set(() => selectSound());
+}
+
+function childTrans(target: ComponentId, index: Int, transparency: Int): void {
+  if (CS2.cc_find(target, index)) {
+    CS2.cc_transparency_set(transparency);
+  }
+}
+
+function childColour(target: ComponentId, index: Int, colour: Int): void {
+  if (CS2.cc_find(target, index)) {
+    CS2.cc_colour_set(colour);
+  }
+}
+
+export function taskInitOp(path: Int): void {
+  taskInit(path);
+  adventurePathChangePage(1);
+  CS2.if_scroll_pos_set(0, 0, tasksRef);
+  scrollbarVertical(
+    scrollbarTaskRef,
+    tasksRef,
+    Art.SCROLL_DRAGGER_MID,
+    Art.SCROLL_DRAGGER_TOP,
+    Art.SCROLL_DRAGGER_BOTTOM,
+    Art.SCROLL_DRAGGER_BODY,
+    Art.SCROLL_GUTTER_TOP,
+    Art.SCROLL_GUTTER_BOTTOM,
+    0,
+  );
+}
+
+export function taskInitTransmit(): void {
+  taskInit(useServerState(Varps.ADVENTUREPATH_SELECTED_PATH));
+}
+
+export function taskInit(pathArg: Int): void {
+  CS2.cc_all_delete(taskListRef);
+  CS2.cc_all_delete(tasksRef);
+  CS2.cc_all_delete(rewardListRef);
+  CS2.cc_all_delete(toolbarRef);
+  CS2.cc_all_delete(backRef);
+  CS2.cc_all_delete(pathRewardRef);
+  CS2.cc_all_delete(tasksDoneRef);
+  CS2.cc_all_delete(taskInfoRef);
+  const paneW: Int = CS2.if_width_get(tasksRef);
+  let path: Int = pathArg;
+  if (!pathAvailable(path)) {
+    path = 1;
+  }
+  let index: Int = 0;
+  let row: Int = 0;
+  let i5: Int = 0;
+  while (i5 < AdventureTasks.length) {
+    const task = AdventureTasks.at(i5);
+    if (task !== null) {
+      if (task.path === path) {
+        const taskId: Int = task.taskId;
+        const name: String = task.name;
+        const info = TaskInfo.at(infoRow(taskId));
+        const icon: Sprite = info === null ? -1 : info.icon;
+        if (useServerState(Varps.ADVENTUREPATH_SELECTED_TASK) === 0) {
+          predictServerState(Varps.ADVENTUREPATH_SELECTED_TASK, taskId);
+        }
+        let selected: Int = 0;
+        if (taskId !== 0 && taskId === useServerState(Varps.ADVENTUREPATH_SELECTED_TASK)) {
+          selected = 1;
+        }
+        let colour: Int = TaskColour.OPEN;
+        if (firstOpenTask(taskId, path) !== taskId) {
+          colour = TaskColour.LOCKED;
+        } else if (taskDone(taskId)) {
+          if (!pathRewardFree(taskId) || !pathRewardMembers(taskId)) {
+            colour = TaskColour.DONE_UNCLAIMED;
+          } else {
+            colour = TaskColour.DONE;
+          }
+        }
+        index = taskButton(
+          tasksRef,
+          index,
+          paneW,
+          50,
+          0,
+          55 * row,
+          name,
+          colour,
+          TaskColour.WHITE,
+          taskId,
+          selected,
+          icon,
+        );
+        CS2.cc_onop_set(() => setInfoEntrypoint(taskId, path));
+        if (useServerState(Varps.ADVENTUREPATH_SELECTED_TASK) === taskId) {
+          setInfo(taskId);
+        }
+        row = row + 1;
+      }
+    }
+    i5 = i5 + 1;
+  }
+  const extent: Int = 55 * row - 5;
+  if (extent > CS2.if_height_get(tasksRef)) {
+    CS2.if_scroll_size_set(0, extent, tasksRef);
+  } else {
+    CS2.if_scroll_size_set(0, 0, tasksRef);
+  }
+
+  backButtonText(stoneOutFilled(backRef));
+  CS2.if_on_mouseover_set(() => backMouseover(), backRef);
+  CS2.if_on_mouseleave_set(() => backMouseleave(), backRef);
+
+  buttonText(pathRewardRef, stoneOutFilled(pathRewardRef), 'Show path reward');
+  CS2.if_on_mouserepeat_set(() => pathRewardSkin(true), pathRewardRef);
+  CS2.if_on_mouseleave_set(() => pathRewardSkin(false), pathRewardRef);
+  CS2.cc_op_set(1, 'Show <col=ff9040>path reward');
+  CS2.cc_onop_set(() => selectSound());
+
+  const selectedPath: Int = useServerState(Varps.ADVENTUREPATH_SELECTED_PATH);
+  const total: Int = pathLength(selectedPath);
+  const done: Int = pathTasksDone(selectedPath);
+  if (total <= 0) {
+    return;
+  }
+  CS2.cc_create(tasksDoneRef, ComponentType.TEXT, 0, false);
+  CS2.cc_size_set(0, 0, SizeMode.MINUS, SizeMode.MINUS);
+  CS2.cc_position_set(0, 0, PosMode.ABS_CENTRE, PosMode.ABS_CENTRE);
+  CS2.cc_text_set(`Completed ${done}/${total} tasks`);
+  CS2.cc_text_font_set(Fonts.P12_FULL);
+  CS2.cc_text_shadow_set(true);
+  CS2.cc_colour_set(Colour.CAPTION);
+  CS2.cc_text_align_set(TextAlign.CENTRE, TextAlign.CENTRE, 0);
+
+  const infoW: Int = CS2.if_width_get(taskInfoRef);
+  const next: Int = stonePanel(0, taskInfoRef, 0);
+  CS2.cc_create(taskInfoRef, ComponentType.SPRITE, next, false);
+  CS2.cc_sprite_set(Art.PANEL_TOP);
+  CS2.cc_position_set(0, 118, PosMode.ABS_CENTRE, PosMode.ABS_TOP);
+  CS2.cc_size_set(infoW, 32, SizeMode.ABS, SizeMode.ABS);
+  CS2.cc_create(taskInfoRef, ComponentType.SPRITE, next + 1, false);
+  CS2.cc_sprite_set(Art.PANEL_DIVIDER_LEFT);
+  CS2.cc_position_set(0, 116, PosMode.ABS_LEFT, PosMode.ABS_TOP);
+  CS2.cc_size_set(32, 32, SizeMode.ABS, SizeMode.ABS);
+  CS2.cc_create(taskInfoRef, ComponentType.SPRITE, next + 2, false);
+  CS2.cc_sprite_set(Art.PANEL_DIVIDER_RIGHT);
+  CS2.cc_position_set(0, 116, Pos.RIGHT, PosMode.ABS_TOP);
+  CS2.cc_size_set(32, 32, SizeMode.ABS, SizeMode.ABS);
+}
+
+function setInfoEntrypoint(taskId: Int, path: Int): void {
+  CS2.sound_effect(Sound.SELECT, 1, 0);
+  predictServerState(Varps.ADVENTUREPATH_SELECTED_TASK, taskId);
+  taskInit(path);
+  setInfo(taskId);
+}
+
+export function setInfoTransmit(): void {
+  if (useServerState(Varps.ADVENTUREPATH_SELECTED_TASK) === 0) {
+    return;
+  }
+}
+
+function showMoreInfo(): void {
+  CS2.sound_effect(Sound.SELECT, 1, 0);
+  adventurePathChangePage(2);
+}
+
+function openUrl(url: String): void {
+  CS2.sound_effect(Sound.SELECT, 1, 0);
+  CS2.url_open(url, true);
+}
+
+function sayItem(item: Int, count: Int, members: Int): void {
+  CS2.sound_effect(Sound.SELECT, 1, 0);
+  if (item === BANK_FILLER) {
+    CS2.message('There are no rewards of this type.');
+  } else if (members === 1) {
+    CS2.message(`Members: ${CS2.item_name(item as Item)} x${count}`);
+  } else {
+    CS2.message(`Non Members: ${CS2.item_name(item as Item)} x${count}`);
+  }
+}
+
+function rewardHeading(index: Int, text: String, rowOffset: Int, y: Int, column: Int): void {
+  const w: Int = CS2.if_width_get(rewardListRef);
+  CS2.cc_create(rewardListRef, ComponentType.TEXT, index, false);
+  CS2.cc_size_set(w, 15, SizeMode.ABS, SizeMode.ABS);
+  CS2.cc_position_set(w / 2 * column + 3, 32 * rowOffset + y + 2, PosMode.ABS_LEFT, PosMode.ABS_TOP);
+  CS2.cc_text_set(text);
+  CS2.cc_text_font_set(Fonts.P12_FULL);
+  CS2.cc_text_shadow_set(true);
+  CS2.cc_colour_set(Colour.CAPTION);
+  CS2.cc_text_align_set(TextAlign.LEFT, TextAlign.CENTRE, 0);
+}
+
+function spawnItem(
+  index: Int,
+  item: Int,
+  count: Int,
+  column: Int,
+  row: Int,
+  paneW: Int,
+  y: Int,
+  members: Int,
+  claimed: Int,
+): void {
+  CS2.cc_create(rewardListRef, ComponentType.SPRITE, index, false);
+  CS2.cc_size_set(36, 32, SizeMode.ABS, SizeMode.ABS);
+  if (members === 0) {
+    CS2.cc_position_set(paneW / 6 * column + 5, 32 * row + y + 10, PosMode.ABS_LEFT, PosMode.ABS_TOP);
+  } else {
+    CS2.cc_position_set(paneW / 6 * (column + 3) + 5, 32 * row + y + 10, PosMode.ABS_LEFT, PosMode.ABS_TOP);
+  }
+  CS2.cc_item_set(CS2.item_uncert(item as Item), count);
+  CS2.cc_outline_set(1);
+  CS2.cc_onop_set(() => sayItem(item, count, members));
+  if (claimed === 0) {
+    if (!onMobile()) {
+      CS2.cc_on_mouserepeat_set(() => childTrans(rewardListRef, index, 80));
+      CS2.cc_on_mouseleave_set(() => childTrans(rewardListRef, index, 0));
+    } else {
+      CS2.cc_transparency_set(0);
+    }
+  } else {
+    CS2.cc_transparency_set(150);
+  }
+  CS2.cc_op_set(1, 'Check reward');
+}
+
+function hintList(hints: String): void {
+  CS2.cc_all_delete(extraHintRef);
+  let rest: String = hints;
+  let cut: Int = CS2.string_indexof_string(rest, '|', 0);
+  let y: Int = 0;
+  let index: Int = 0;
+  const w: Int = CS2.if_width_get(extraHintRef) - 15;
+  let line: String = '';
+  let done: Boolean = false;
+  while (!done) {
+    if (cut === -1) {
+      line = rest;
+      done = true;
+    } else {
+      line = CS2.substring(rest, 0, cut);
+      rest = CS2.substring(rest, cut + 1, rest.length);
+    }
+    CS2.cc_create(extraHintRef, ComponentType.SPRITE, index, false);
+    index = index + 1;
+    CS2.cc_size_set(13, 13, SizeMode.ABS, SizeMode.ABS);
+    CS2.cc_position_set(1, 1 + y, PosMode.ABS_LEFT, PosMode.ABS_TOP);
+    CS2.cc_sprite_set(Sprites.MOD_ICONS_INTERFACE_14);
+    CS2.cc_create(extraHintRef, ComponentType.TEXT, index, false);
+    index = index + 1;
+    const text: String = adventurePathReplace(line);
+    CS2.cc_text_set(text);
+    CS2.cc_position_set(15, y, PosMode.ABS_LEFT, PosMode.ABS_TOP);
+    CS2.cc_text_align_set(TextAlign.LEFT, Pos.TOP, 15);
+    CS2.cc_text_font_set(Fonts.P12_FULL);
+    CS2.cc_colour_set(Colour.CAPTION);
+    CS2.cc_text_shadow_set(true);
+    const h: Int = CS2.paraheight(text, w, Fonts.P12_FULL) * 15;
+    CS2.cc_size_set(w, h, SizeMode.ABS, SizeMode.ABS);
+    y = y + h;
+    if (!done) {
+      cut = CS2.string_indexof_string(rest, '|', 0);
+    }
+  }
+}
+
+export function setInfo(taskId: Int): void {
+  CS2.cc_all_delete(taskHintRef);
+  CS2.cc_all_delete(extraLinkRef);
+  CS2.cc_all_delete(taskFocusRef);
+  CS2.cc_all_delete(rewardListRef);
+  CS2.cc_all_delete(filtersRef);
+  const task = AdventureTasks.at(taskRow(taskId));
+  const info = TaskInfo.at(infoRow(taskId));
+  if (task === null || info === null) {
+    return;
+  }
+  const name: String = task.name;
+  const description: String = task.description;
+  const path: Int = task.path;
+  CS2.if_text_set(name, taskNameRef);
+  CS2.if_colour_set(Colour.CAPTION, taskNameRef);
+  CS2.if_text_set(description, taskDescriptionRef);
+  CS2.if_colour_set(Colour.CAPTION, taskDescriptionRef);
+
+  let index: Int = 0;
+  if (!onMobile()) {
+    CS2.cc_create(taskHintRef, ComponentType.RECTANGLE, 0, false);
+    CS2.cc_size_set(0, 0, SizeMode.MINUS, SizeMode.MINUS);
+    CS2.cc_position_set(0, 0, PosMode.ABS_LEFT, PosMode.ABS_TOP);
+    CS2.cc_fill_set(true);
+    CS2.cc_transparency_set(255);
+    CS2.cc_colour_set(0);
+    CS2.cc_on_mouserepeat_set(() => childTrans(taskHintRef, 0, 200));
+    CS2.cc_on_mouseleave_set(() => childTrans(taskHintRef, 0, 255));
+    index = 1;
+  }
+  CS2.cc_create(taskHintRef, ComponentType.TEXT, index, false);
+  CS2.cc_text_align_set(TextAlign.LEFT, Pos.TOP, 17);
+  CS2.cc_colour_set(Colour.CAPTION);
+  CS2.cc_text_set(adventurePathReplace(info.longText));
+  CS2.cc_text_shadow_set(true);
+  CS2.cc_text_font_set(Fonts.P12_FULL);
+  CS2.cc_size_set(0, 0, SizeMode.MINUS, SizeMode.MINUS);
+  CS2.cc_position_set(0, 0, PosMode.ABS_LEFT, PosMode.ABS_TOP);
+  index = index + 1;
+  CS2.cc_create(taskHintRef, ComponentType.TEXT, index, false);
+  CS2.cc_text_align_set(Pos.RIGHT, Pos.BOTTOM, 13);
+  CS2.cc_colour_set(Colour.CAPTION);
+  CS2.cc_text_set(`${textDevice('Click', 'Tap')} here for more information.<img=15>`);
+  CS2.cc_text_shadow_set(true);
+  CS2.cc_text_font_set(Fonts.P12_FULL);
+  CS2.cc_size_set(0, 0, SizeMode.MINUS, SizeMode.MINUS);
+  CS2.cc_position_set(0, 0, PosMode.ABS_LEFT, PosMode.ABS_TOP);
+  CS2.cc_op_set(1, 'More info');
+  CS2.cc_onop_set(() => showMoreInfo());
+
+  const prereq: Int = info.prereq;
+  let globe: Int = 0;
+  if ((prereq === 0 || taskDone(prereq)) && !taskDone(taskId) && task.hint !== -1) {
+    CS2.if_op_set(1, 'Show<col=ff9040> Hint', filtersRef);
+    CS2.if_op_set(2, 'Remove<col=ff9040> Hint arrow', filtersRef);
+    globe = stoneFilled(filtersRef);
+    CS2.if_on_mouserepeat_set(() => reskin(filtersRef, 0, true, -1), filtersRef);
+    CS2.if_on_mouseleave_set(() => reskin(filtersRef, 0, false, -1), filtersRef);
+    CS2.if_onop_set(() => selectSound(), filtersRef);
+  } else {
+    CS2.if_op_set(1, '', filtersRef);
+    CS2.if_op_set(2, '', filtersRef);
+    globe = stoneInFilled(filtersRef);
+    CS2.if_on_mouserepeat_set(null, filtersRef);
+    CS2.if_on_mouseleave_set(null, filtersRef);
+    CS2.if_onop_set(null, filtersRef);
+  }
+  CS2.cc_create(filtersRef, ComponentType.SPRITE, globe, false);
+  CS2.cc_size_set(22, 22, SizeMode.ABS, SizeMode.ABS);
+  CS2.cc_position_set(0, 0, PosMode.ABS_CENTRE, PosMode.ABS_CENTRE);
+  CS2.cc_sprite_set(Sprites.WORLDMAP_ICON_0);
+
+  index = 0;
+  const paneW: Int = CS2.if_width_get(rewardListRef);
+  let col: Int = 0;
+  let row: Int = 0;
+  let rowsMain: Int = 0;
+  let rowsReclaim: Int = 0;
+  let y: Int = 0;
+  if (hasRewardColumn(taskId, 0) || hasRewardColumn(taskId, 1)) {
+    rewardHeading(index, 'Free:', 0, y, 0);
+    index = index + 1;
+    rewardHeading(index, 'Members:', 0, y, 1);
+    index = index + 1;
+    y = y + 16;
+    let column6: Int = 0;
+    while (column6 < 2) {
+      if (hasRewardColumn(taskId, column6)) {
+        let claimed: Int = 0;
+        if (column6 === 0 && pathRewardFree(taskId)) {
+          claimed = 1;
+        }
+        if (column6 === 1 && pathRewardMembers(taskId)) {
+          claimed = 1;
+        }
+        let i7: Int = 0;
+        while (i7 < TaskRewards.length) {
+          const reward = TaskRewards.at(i7);
+          if (reward !== null) {
+            if (reward.taskId === taskId && reward.column === column6) {
+              if (col >= 3) {
+                col = 0;
+                row = row + 1;
+                y = y + 5;
+              }
+              spawnItem(index, reward.item, reward.count, col, row, paneW, y, column6, claimed);
+              index = index + 1;
+              col = col + 1;
+            }
+          }
+          i7 = i7 + 1;
+        }
+        if (column6 === 0) {
+          rowsMain = row;
+          col = 0;
+          row = 0;
+        } else {
+          if (row > rowsMain) {
+            rowsMain = row;
+          }
+          col = 0;
+          row = rowsMain + 1;
+        }
+      }
+      column6 = column6 + 1;
+    }
+    y = y + 16;
+  }
+  if (hasRewardColumn(taskId, 2) || hasRewardColumn(taskId, 3)) {
+    rewardHeading(index, 'Reclaimable Free:', row, y, 0);
+    index = index + 1;
+    rewardHeading(index, 'Reclaimable Members:', row, y, 1);
+    index = index + 1;
+    y = y + 16;
+    let column8: Int = 2;
+    while (column8 < 4) {
+      if (hasRewardColumn(taskId, column8)) {
+        let i9: Int = 0;
+        while (i9 < TaskRewards.length) {
+          const reward = TaskRewards.at(i9);
+          if (reward !== null) {
+            if (reward.taskId === taskId && reward.column === column8) {
+              if (col >= 3) {
+                col = 0;
+                row = row + 1;
+                y = y + 5;
+              }
+              spawnItem(index, reward.item, reward.count, col, row, paneW, y, column8 - 2, 0);
+              index = index + 1;
+              col = col + 1;
+            }
+          }
+          i9 = i9 + 1;
+        }
+        if (column8 === 2) {
+          rowsReclaim = row;
+          col = 0;
+          row = rowsMain + 1;
+        } else {
+          if (row > rowsReclaim) {
+            rowsReclaim = row;
+          }
+          rowsReclaim = rowsReclaim + 1;
+        }
+      }
+      column8 = column8 + 1;
+    }
+  }
+  const paneH: Int = CS2.if_height_get(rewardListRef);
+  CS2.cc_create(rewardListRef, ComponentType.SPRITE, index, false);
+  CS2.cc_sprite_set(Art.PANEL_LEFT);
+  y = 16 + y;
+  const extent: Int = 32 * rowsReclaim + y;
+  if (extent > paneH) {
+    CS2.cc_size_set(32, extent - 15, SizeMode.ABS, SizeMode.ABS);
+    CS2.cc_position_set(paneW / 2 - 18, 10, PosMode.ABS_LEFT, PosMode.ABS_TOP);
+    CS2.if_scroll_size_set(0, extent, rewardListRef);
+    CS2.if_hide_set(false, rewardsScrollbarRef);
+  } else {
+    CS2.cc_size_set(32, paneH - 20, SizeMode.ABS, SizeMode.ABS);
+    CS2.cc_position_set(paneW / 2 - 18, 10, PosMode.ABS_LEFT, PosMode.ABS_TOP);
+    CS2.if_scroll_size_set(0, 0, rewardListRef);
+    CS2.if_hide_set(true, rewardsScrollbarRef);
+  }
+  CS2.if_scroll_pos_set(0, 0, rewardListRef);
+  scrollbarVertical(
+    rewardsScrollbarRef,
+    rewardListRef,
+    Art.SCROLL_DRAGGER_MID,
+    Art.SCROLL_DRAGGER_TOP,
+    Art.SCROLL_DRAGGER_BOTTOM,
+    Art.SCROLL_DRAGGER_BODY,
+    Art.SCROLL_GUTTER_TOP,
+    Art.SCROLL_GUTTER_BOTTOM,
+    0,
+  );
+
+  CS2.if_text_set(name, extraTaskNameRef);
+  CS2.if_colour_set(Colour.CAPTION, extraTaskNameRef);
+  hintList(info.hints);
+  CS2.if_sprite_set(info.image, extraImageRef);
+  CS2.if_text_set(adventurePathReplace(info.imageText), extraImageTextRef);
+  CS2.if_colour_set(Colour.CAPTION, extraImageTextRef);
+  CS2.if_text_set(description, extraDescriptionRef);
+  CS2.if_colour_set(Colour.CAPTION, extraDescriptionRef);
+  if (info.hasUrl === 1) {
+    const url: String = info.url;
+    CS2.cc_create(extraLinkRef, ComponentType.TEXT, 0, false);
+    CS2.cc_text_align_set(TextAlign.LEFT, Pos.TOP, 13);
+    CS2.cc_colour_set(TaskColour.LINK);
+    CS2.cc_text_set(`<img=13>${textDevice('Click', 'Tap')} here to go to a helpful web page.`);
+    CS2.cc_outline_set(2);
+    CS2.cc_text_shadow_set(true);
+    CS2.cc_text_font_set(Fonts.P12_FULL);
+    CS2.cc_size_set(0, 0, SizeMode.MINUS, SizeMode.MINUS);
+    CS2.cc_position_set(0, 0, PosMode.ABS_LEFT, PosMode.ABS_TOP);
+    CS2.cc_onop_set(() => openUrl(url));
+    CS2.cc_op_set(1, 'Open link');
+    if (!onMobile()) {
+      CS2.cc_on_mouserepeat_set(() => childColour(extraLinkRef, 0, TaskColour.LINK_HOVER));
+      CS2.cc_on_mouseleave_set(() => childColour(extraLinkRef, 0, TaskColour.LINK));
+    }
+  }
+
+  const focus: Int = taskFocus(path);
+  if (firstOpenTask(taskId, path) !== taskId) {
+    const at: Int = stoneInFilled(taskFocusRef);
+    CS2.cc_create(taskFocusRef, ComponentType.SPRITE, at, false);
+    CS2.cc_size_set(17, 17, SizeMode.ABS, SizeMode.ABS);
+    CS2.cc_position_set(0, 0, PosMode.ABS_CENTRE, PosMode.ABS_CENTRE);
+    CS2.cc_sprite_set(Sprites.CLICKCROSS_5);
+    CS2.cc_op_set(1, 'Set<col=ff9040> Focus');
+    CS2.cc_onop_set(() => selectSound());
+    CS2.cc_create(taskFocusRef, ComponentType.RECTANGLE, at + 1, false);
+    CS2.cc_size_set(0, 0, SizeMode.MINUS, SizeMode.MINUS);
+    CS2.cc_transparency_set(255);
+    CS2.if_on_mouserepeat_set(() => adventurePathDoNothing(), taskFocusRef);
+    CS2.if_on_mouseleave_set(() => adventurePathDoNothing(), taskFocusRef);
+  } else if (focus === taskId) {
+    const at: Int = stoneFilled(taskFocusRef);
+    CS2.cc_create(taskFocusRef, ComponentType.SPRITE, at, false);
+    CS2.cc_size_set(2, 2, SizeMode.MINUS, SizeMode.MINUS);
+    CS2.cc_sprite_set(Sprites.ADVENTUREPATH_IN_FOCUS_SMALL_0);
+    CS2.cc_create(taskFocusRef, ComponentType.RECTANGLE, at + 1, false);
+    CS2.cc_size_set(0, 0, SizeMode.MINUS, SizeMode.MINUS);
+    CS2.cc_transparency_set(255);
+    CS2.cc_op_set(1, 'Remove<col=ff9040> Focus');
+    CS2.cc_onop_set(() => toggleFocus(taskId, path));
+    CS2.if_on_mouserepeat_set(() => focusSkin(true, focus, taskId), taskFocusRef);
+    CS2.if_on_mouseleave_set(() => focusSkin(false, focus, taskId), taskFocusRef);
+  } else if (taskDone(taskId)) {
+    const at: Int = stoneInFilled(taskFocusRef);
+    CS2.cc_create(taskFocusRef, ComponentType.SPRITE, at, false);
+    CS2.cc_size_set(17, 17, SizeMode.ABS, SizeMode.ABS);
+    CS2.cc_position_set(0, 0, PosMode.ABS_CENTRE, PosMode.ABS_CENTRE);
+    CS2.cc_sprite_set(Sprites.TICK);
+    CS2.cc_create(taskFocusRef, ComponentType.RECTANGLE, at + 1, false);
+    CS2.cc_size_set(0, 0, SizeMode.MINUS, SizeMode.MINUS);
+    CS2.cc_transparency_set(255);
+    CS2.if_on_mouserepeat_set(() => adventurePathDoNothing(), taskFocusRef);
+    CS2.if_on_mouseleave_set(() => adventurePathDoNothing(), taskFocusRef);
+  } else {
+    const at: Int = stoneFilled(taskFocusRef);
+    CS2.cc_create(taskFocusRef, ComponentType.SPRITE, at, false);
+    CS2.cc_size_set(2, 2, SizeMode.MINUS, SizeMode.MINUS);
+    CS2.cc_sprite_set(Sprites.ADVENTUREPATH_IN_FOCUS_SMALL_1);
+    CS2.cc_create(taskFocusRef, ComponentType.RECTANGLE, at + 1, false);
+    CS2.cc_size_set(0, 0, SizeMode.MINUS, SizeMode.MINUS);
+    CS2.cc_transparency_set(255);
+    CS2.cc_op_set(1, 'Set<col=ff9040> Focus');
+    CS2.cc_onop_set(() => toggleFocus(taskId, path));
+    CS2.if_on_mouserepeat_set(() => focusSkin(true, focus, taskId), taskFocusRef);
+    CS2.if_on_mouseleave_set(() => focusSkin(false, focus, taskId), taskFocusRef);
+  }
+}
+
+function focusSkin(pressed: Boolean, focus: Int, taskId: Int): void {
+  reskin(taskFocusRef, 0, pressed, -1);
+  if (CS2.cc_find(taskFocusRef, 9)) {
+    if (focus === taskId) {
+      CS2.cc_sprite_set(Sprites.ADVENTUREPATH_IN_FOCUS_SMALL_0);
+    } else {
+      CS2.cc_sprite_set(Sprites.ADVENTUREPATH_IN_FOCUS_SMALL_1);
+    }
+  }
+}
+
+function setTaskFocus(taskId: Int, path: Int): void {
+  let base: Int = 0;
+  if (path === 1) {
+    base = PathTaskBase.P1;
+  } else if (path === 2) {
+    base = PathTaskBase.P2;
+  } else if (path === 3) {
+    base = PathTaskBase.P3;
+  } else if (path === 4) {
+    base = PathTaskBase.P4;
+  }
+  let value: Int = taskId;
+  if (value !== 0) {
+    value = value - base;
+  }
+  if (path === 0) {
+    predictServerState(SideVarbits.COMBAT_TASK_FOCUS, value);
+  } else if (path === 1) {
+    predictServerState(SideVarbits.GATHERER_TASK_FOCUS, value);
+  } else if (path === 2) {
+    predictServerState(SideVarbits.WARRIOR_TASK_FOCUS, value);
+  } else if (path === 3) {
+    predictServerState(SideVarbits.WIZARD_TASK_FOCUS, value);
+  } else if (path === 4) {
+    predictServerState(SideVarbits.RANGER_TASK_FOCUS, value);
+  }
+}
+
+function toggleFocus(taskId: Int, path: Int): void {
+  CS2.sound_effect(Sound.SELECT, 1, 0);
+  let focus: Int = taskFocus(path);
+  if (focus === taskId) {
+    setTaskFocus(0, path);
+    focus = 0;
+  } else {
+    setTaskFocus(taskId, path);
+    focus = taskId;
+  }
+  taskFocusRedraw(focus, taskId, path);
+}
+
+export function taskFocusTransmit(): void {
+  const path: Int = useServerState(Varps.ADVENTUREPATH_SELECTED_PATH);
+  taskFocusRedraw(taskFocus(path), useServerState(Varps.ADVENTUREPATH_SELECTED_TASK), path);
+}
+
+function taskFocusRedraw(focus: Int, taskId: Int, path: Int): void {
+  if (firstOpenTask(taskId, path) !== taskId) {
+    if (CS2.cc_find(taskFocusRef, 9)) {
+      CS2.cc_size_set(17, 17, SizeMode.ABS, SizeMode.ABS);
+      CS2.cc_sprite_set(Sprites.CLICKCROSS_5);
+      CS2.cc_position_set(0, 0, PosMode.ABS_CENTRE, PosMode.ABS_CENTRE);
+    }
+    CS2.if_on_mouserepeat_set(() => adventurePathDoNothing(), taskFocusRef);
+    CS2.if_on_mouseleave_set(() => adventurePathDoNothing(), taskFocusRef);
+  } else if (focus === taskId) {
+    if (CS2.cc_find(taskFocusRef, 9)) {
+      CS2.cc_size_set(2, 2, SizeMode.MINUS, SizeMode.MINUS);
+      CS2.cc_sprite_set(Sprites.ADVENTUREPATH_IN_FOCUS_SMALL_0);
+      CS2.cc_position_set(0, 0, PosMode.ABS_LEFT, PosMode.ABS_TOP);
+    }
+    CS2.if_on_mouserepeat_set(() => focusSkin(true, focus, taskId), taskFocusRef);
+    CS2.if_on_mouseleave_set(() => focusSkin(false, focus, taskId), taskFocusRef);
+  } else if (taskDone(taskId)) {
+    if (CS2.cc_find(taskFocusRef, 9)) {
+      CS2.cc_size_set(17, 17, SizeMode.ABS, SizeMode.ABS);
+      CS2.cc_sprite_set(Sprites.TICK);
+      CS2.cc_position_set(0, 0, PosMode.ABS_CENTRE, PosMode.ABS_CENTRE);
+    }
+    CS2.if_on_mouserepeat_set(() => adventurePathDoNothing(), taskFocusRef);
+    CS2.if_on_mouseleave_set(() => adventurePathDoNothing(), taskFocusRef);
+  } else {
+    if (CS2.cc_find(taskFocusRef, 9)) {
+      CS2.cc_size_set(2, 2, SizeMode.MINUS, SizeMode.MINUS);
+      CS2.cc_sprite_set(Sprites.ADVENTUREPATH_IN_FOCUS_SMALL_1);
+      CS2.cc_position_set(0, 0, PosMode.ABS_LEFT, PosMode.ABS_TOP);
+    }
+    CS2.if_on_mouserepeat_set(() => focusSkin(true, focus, taskId), taskFocusRef);
+    CS2.if_on_mouseleave_set(() => focusSkin(false, focus, taskId), taskFocusRef);
+  }
+}

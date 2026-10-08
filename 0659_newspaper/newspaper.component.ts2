@@ -1,10 +1,33 @@
+import { sessionState, useRef, useState } from 'ts2';
+
+import { Fonts } from '../lib/game/fonts';
+import { textLineCount } from '../lib/lib.engine';
 import { closeInterface, graphicSwapper } from '../lib/lib.helpers';
-import { CloseSprites, Layout, NewspaperModel } from './newspaper.constants';
+import { ScrollbarVertical } from '../lib/scrollbar-vertical.component';
+import { CloseSprites, Layout, NewspaperModel, NewspaperScrollbar, NewspaperText } from './newspaper.constants';
+
+export const newspaperStory = sessionState('');
+export const newspaperLeftLength = sessionState(0);
+export const newspaperFilled = sessionState(0);
+
+export function newspaperContent(left: String, right: String): void {
+  const [, setStory] = useState(newspaperStory);
+  const [, setLeftLength] = useState(newspaperLeftLength);
+  const [, setFilled] = useState(newspaperFilled);
+  setStory(`${left}${right}`);
+  setLeftLength(left.length);
+  setFilled(1);
+}
+
+function newspaperReset(): void {
+  const [, setFilled] = useState(newspaperFilled);
+  setFilled(0);
+}
 
 export function Newspaper(): Component {
   return (
     <>
-      <layer x="center" y="center" w="fill" h="fill">
+      <layer x="center" y="center" w="fill" h="fill" onLoad={() => newspaperReset()}>
         <model
           x="center"
           y="center"
@@ -19,31 +42,7 @@ export function Newspaper(): Component {
       <layer x={0} y={0} w="fill" h="fill">
         <layer x={Layout.SLOT_3.x} y={{ bottom: Layout.SLOT_3.bottom }} w={Layout.SLOT_3.w} h={Layout.SLOT_3.h} />
 
-        <layer
-          x={Layout.LEFT_CONTENT.x}
-          y={{ bottom: Layout.LEFT_CONTENT.bottom }}
-          w={Layout.LEFT_CONTENT.w}
-          h={Layout.LEFT_CONTENT.h}
-        />
-        <layer
-          x={Layout.LEFT_SCROLL.x}
-          y={{ bottom: Layout.LEFT_SCROLL.bottom }}
-          w={Layout.LEFT_SCROLL.w}
-          h={Layout.LEFT_SCROLL.h}
-        />
-
-        <layer
-          x={{ right: Layout.RIGHT_CONTENT.right }}
-          y={{ bottom: Layout.RIGHT_CONTENT.bottom }}
-          w={Layout.RIGHT_CONTENT.w}
-          h={Layout.RIGHT_CONTENT.h}
-        />
-        <layer
-          x={{ right: Layout.RIGHT_SCROLL.right }}
-          y={{ bottom: Layout.RIGHT_SCROLL.bottom }}
-          w={Layout.RIGHT_SCROLL.w}
-          h={Layout.RIGHT_SCROLL.h}
-        />
+        <NewspaperColumns />
 
         <layer x={{ right: Layout.CLOSE.right }} y={Layout.CLOSE.y} w={Layout.CLOSE.w} h={Layout.CLOSE.h}>
           <sprite
@@ -58,6 +57,105 @@ export function Newspaper(): Component {
             onMouseLeave={(event) => graphicSwapper(event.component, CloseSprites.REST)}
           />
         </layer>
+      </layer>
+    </>
+  );
+}
+
+function columnHeight(text: String): Int {
+  return textLineCount(text, Layout.LEFT_CONTENT.w, Fonts.Q8_FULL) * NewspaperText.LINE_H + NewspaperText.PAD;
+}
+
+function NewspaperColumns(): Component {
+  const [filled] = useState(newspaperFilled);
+  const [story] = useState(newspaperStory);
+  const [leftLength] = useState(newspaperLeftLength);
+  const left: String = story.substring(0, leftLength);
+  const right: String = story.substring(leftLength, story.length);
+  const leftPane = useRef();
+  const rightPane = useRef();
+  const leftH: Int = columnHeight(left);
+  const rightH: Int = columnHeight(right);
+  return (
+    <>
+      <layer
+        ref={leftPane}
+        x={Layout.LEFT_CONTENT.x}
+        y={{ bottom: Layout.LEFT_CONTENT.bottom }}
+        w={Layout.LEFT_CONTENT.w}
+        h={Layout.LEFT_CONTENT.h}
+        scrollHeight={filled === 1 && leftH > Layout.LEFT_CONTENT.h ? leftH : 0}
+      >
+        {filled === 1 && (
+          <text
+            x={0}
+            y={0}
+            w="fill"
+            h={leftH}
+            text={left}
+            font={Fonts.Q8_FULL}
+            color={NewspaperText.COLOUR}
+            lineHeight={NewspaperText.LINE_H}
+          />
+        )}
+      </layer>
+      <layer
+        x={Layout.LEFT_SCROLL.x}
+        y={{ bottom: Layout.LEFT_SCROLL.bottom }}
+        w={Layout.LEFT_SCROLL.w}
+        h={Layout.LEFT_SCROLL.h}
+      >
+        {filled === 1 && (
+          <ScrollbarVertical
+            content={leftPane}
+            track={NewspaperScrollbar.TRACK}
+            capTopSprite={NewspaperScrollbar.CAP_TOP}
+            thumbSprite={NewspaperScrollbar.THUMB}
+            capBottomSprite={NewspaperScrollbar.CAP_BOTTOM}
+            arrowUp={NewspaperScrollbar.ARROW_UP}
+            arrowDown={NewspaperScrollbar.ARROW_DOWN}
+          />
+        )}
+      </layer>
+
+      <layer
+        ref={rightPane}
+        x={{ right: Layout.RIGHT_CONTENT.right }}
+        y={{ bottom: Layout.RIGHT_CONTENT.bottom }}
+        w={Layout.RIGHT_CONTENT.w}
+        h={Layout.RIGHT_CONTENT.h}
+        scrollHeight={filled === 1 && rightH > Layout.RIGHT_CONTENT.h ? rightH : 0}
+      >
+        {filled === 1 && (
+          <text
+            x={0}
+            y={0}
+            w="fill"
+            h={rightH}
+            text={right}
+            font={Fonts.Q8_FULL}
+            color={NewspaperText.COLOUR}
+            lineHeight={NewspaperText.LINE_H}
+          />
+        )}
+      </layer>
+      <layer
+        x={{ right: Layout.RIGHT_SCROLL.right }}
+        y={{ bottom: Layout.RIGHT_SCROLL.bottom }}
+        w={Layout.RIGHT_SCROLL.w}
+        h={Layout.RIGHT_SCROLL.h}
+      >
+        {filled === 1 && (
+          <ScrollbarVertical
+            content={rightPane}
+            track={NewspaperScrollbar.TRACK}
+            capTopSprite={NewspaperScrollbar.CAP_TOP}
+            thumbSprite={NewspaperScrollbar.THUMB}
+            capBottomSprite={NewspaperScrollbar.CAP_BOTTOM}
+            arrowUp={NewspaperScrollbar.ARROW_UP}
+            arrowDown={NewspaperScrollbar.ARROW_DOWN}
+          />
+        )}
       </layer>
     </>
   );

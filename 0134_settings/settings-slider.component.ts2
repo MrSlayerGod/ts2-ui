@@ -19,6 +19,7 @@ import type { SettingsRow } from './settings-rows.data';
 import { rowDescription, rowTitle } from './settings-layout';
 import { rowLockedMessage, settingEnabled } from './settings.helpers';
 import { cameraDoZoom } from '../0016_oculus/oculus.camera';
+import { deadzoneRelayout } from '../0601_toplevel_osm/toplevel-osm.deadzone';
 import { hideRowTooltip, showRowTooltip } from './settings-tooltip.component';
 
 export function SettingsSlider({
@@ -66,11 +67,11 @@ export function SettingsSlider({
   const thumbSprite: Sprite =
     muted === 1
       ? SliderArt.THUMB_MUTED
-      : enabled && enabledFlag === 1
-        ? draggable
+      : (enabled && enabledFlag === 1
+        ? (draggable
           ? SliderArt.THUMB_DRAG
-          : SliderArt.THUMB_ON
-        : SliderArt.THUMB_OFF;
+          : SliderArt.THUMB_ON)
+        : SliderArt.THUMB_OFF);
 
   const stepZones = intArray(STEP_SLOTS);
 
@@ -401,12 +402,12 @@ export function sliderThumbX(row: SettingsRow, width: Int): Int {
       if (bigMax - bigMin === 0) {
         return first;
       }
-      return first + ((big - bigMin) * travel) / (bigMax - bigMin);
+      return first + (big - bigMin) * travel / (bigMax - bigMin);
     }
     if (smallMax - smallMin === 0) {
       return first;
     }
-    return first + ((small - smallMin) * travel) / (smallMax - smallMin);
+    return first + (small - smallMin) * travel / (smallMax - smallMin);
   }
 
   if (settingId === SettingId.DEADZONE) {
@@ -523,11 +524,13 @@ function sliderPointer(row: SettingsRow, step: Int, mouseX: Int, phase: Int, hos
   if (settingId === SettingId.DEADZONE) {
     if (phase === Phase.CLICK) {
       setDeadzoneFromTrack(Math.min(mouseX, Slider.TRAVEL));
+      deadzoneRelayout();
       return;
     }
     setDeadzoneFromTrack(mouseX);
     if (phase === Phase.DROP) {
       playSound(Sounds.TAB_SELECT);
+      deadzoneRelayout();
     }
     return;
   }
@@ -625,8 +628,8 @@ function setCameraZoomFromTrack(mouseX: Int): void {
   const [smallMax] = useState(cameraZoomSmallMax);
 
   const at: Int = Math.clamp(0, Slider.TRAVEL, mouseX);
-  const big: Int = (at * (bigMax - bigMin)) / Slider.TRAVEL + bigMin;
-  const small: Int = (at * (smallMax - smallMin)) / Slider.TRAVEL + smallMin;
+  const big: Int = at * (bigMax - bigMin) / Slider.TRAVEL + bigMin;
+  const small: Int = at * (smallMax - smallMin) / Slider.TRAVEL + smallMin;
   cameraDoZoom(small, big);
 }
 

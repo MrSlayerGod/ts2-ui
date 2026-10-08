@@ -4,27 +4,19 @@ import { Layout, SharedVarbits, StorageColors, StorageFonts } from './raids-stor
 
 function noticeLine(ironman: Int, sharing: Int): String {
   if (ironman === IronmanType.NONE) {
-    return (
-      'Items donated here may be retrieved by <col=ff0000>other</col> party-members,<br>' +
-      'or <col=ff0000>may be lost</col> if the party dissolves.'
-    );
+    return 'Items donated here may be retrieved by <col=ff0000>other</col> party-members,<br>' +
+      'or <col=ff0000>may be lost</col> if the party dissolves.';
   }
   if (ironman === IronmanType.ULTIMATE || sharing === 0) {
-    return (
-      'As an <col=ff0000>Ironman</col> you <col=ff0000>cannot retrieve</col> items<br>' +
-      'once you have donated them to the party.'
-    );
+    return 'As an <col=ff0000>Ironman</col> you <col=ff0000>cannot retrieve</col> items<br>' +
+      'once you have donated them to the party.';
   }
   if (isGroupIronman(ironman)) {
-    return (
-      'As an <col=ff0000>Ironman</col> you <col=ff0000>may retrieve</col> items<br>' +
-      'as everyone present is in your group.'
-    );
+    return 'As an <col=ff0000>Ironman</col> you <col=ff0000>may retrieve</col> items<br>' +
+      'as everyone present is in your group.';
   }
-  return (
-    'As an <col=ff0000>Ironman</col> you <col=ff0000>may retrieve</col> items<br>' +
-    'as you have embarked on this raid alone.'
-  );
+  return 'As an <col=ff0000>Ironman</col> you <col=ff0000>may retrieve</col> items<br>' +
+    'as you have embarked on this raid alone.';
 }
 
 export function SharedNotice(): Component {

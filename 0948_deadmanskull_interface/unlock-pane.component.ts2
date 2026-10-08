@@ -43,8 +43,8 @@ export function UnlockPane(): Component {
                 sigil={sigil}
                 mode={0}
                 list={list}
-                x={Grid.X_FIRST + (i % Grid.PER_ROW) * Grid.X_PITCH}
-                y={(i / Grid.PER_ROW) * Grid.ROW_PITCH + TabExtents.PERMANENT_COMBAT_Y + Grid.HEADING_H}
+                x={Grid.X_FIRST + i % Grid.PER_ROW * Grid.X_PITCH}
+                y={i / Grid.PER_ROW * Grid.ROW_PITCH + TabExtents.PERMANENT_COMBAT_Y + Grid.HEADING_H}
               />
             ))}
             <CategoryHeading title="Skilling Sigils" top={TabExtents.PERMANENT_SKILLING_Y} />
@@ -53,8 +53,8 @@ export function UnlockPane(): Component {
                 sigil={sigil}
                 mode={0}
                 list={list}
-                x={Grid.X_FIRST + (i % Grid.PER_ROW) * Grid.X_PITCH}
-                y={(i / Grid.PER_ROW) * Grid.ROW_PITCH + TabExtents.PERMANENT_SKILLING_Y + Grid.HEADING_H}
+                x={Grid.X_FIRST + i % Grid.PER_ROW * Grid.X_PITCH}
+                y={i / Grid.PER_ROW * Grid.ROW_PITCH + TabExtents.PERMANENT_SKILLING_Y + Grid.HEADING_H}
               />
             ))}
             <CategoryHeading title="Utility Sigils" top={TabExtents.PERMANENT_UTILITY_Y} />
@@ -63,8 +63,8 @@ export function UnlockPane(): Component {
                 sigil={sigil}
                 mode={0}
                 list={list}
-                x={Grid.X_FIRST + (i % Grid.PER_ROW) * Grid.X_PITCH}
-                y={(i / Grid.PER_ROW) * Grid.ROW_PITCH + TabExtents.PERMANENT_UTILITY_Y + Grid.HEADING_H}
+                x={Grid.X_FIRST + i % Grid.PER_ROW * Grid.X_PITCH}
+                y={i / Grid.PER_ROW * Grid.ROW_PITCH + TabExtents.PERMANENT_UTILITY_Y + Grid.HEADING_H}
               />
             ))}
           </>
@@ -78,8 +78,8 @@ export function UnlockPane(): Component {
                 sigil={sigil}
                 mode={1}
                 list={list}
-                x={Grid.X_FIRST + (i % Grid.PER_ROW) * Grid.X_PITCH}
-                y={(i / Grid.PER_ROW) * Grid.ROW_PITCH + TabExtents.TOGGLE_SKILLING_Y + Grid.HEADING_H}
+                x={Grid.X_FIRST + i % Grid.PER_ROW * Grid.X_PITCH}
+                y={i / Grid.PER_ROW * Grid.ROW_PITCH + TabExtents.TOGGLE_SKILLING_Y + Grid.HEADING_H}
               />
             ))}
             <CategoryHeading title="Utility Sigils" top={TabExtents.TOGGLE_UTILITY_Y} />
@@ -88,8 +88,8 @@ export function UnlockPane(): Component {
                 sigil={sigil}
                 mode={1}
                 list={list}
-                x={Grid.X_FIRST + (i % Grid.PER_ROW) * Grid.X_PITCH}
-                y={(i / Grid.PER_ROW) * Grid.ROW_PITCH + TabExtents.TOGGLE_UTILITY_Y + Grid.HEADING_H}
+                x={Grid.X_FIRST + i % Grid.PER_ROW * Grid.X_PITCH}
+                y={i / Grid.PER_ROW * Grid.ROW_PITCH + TabExtents.TOGGLE_UTILITY_Y + Grid.HEADING_H}
               />
             ))}
           </>
@@ -103,8 +103,8 @@ export function UnlockPane(): Component {
                 sigil={sigil}
                 mode={2}
                 list={list}
-                x={Grid.X_FIRST + (i % Grid.PER_ROW) * Grid.X_PITCH}
-                y={(i / Grid.PER_ROW) * Grid.ROW_PITCH + TabExtents.ATTUNE_COMBAT_Y + Grid.HEADING_H}
+                x={Grid.X_FIRST + i % Grid.PER_ROW * Grid.X_PITCH}
+                y={i / Grid.PER_ROW * Grid.ROW_PITCH + TabExtents.ATTUNE_COMBAT_Y + Grid.HEADING_H}
               />
             ))}
           </>

@@ -26,9 +26,9 @@ export function DestinationList(): Component {
       >
         {Destinations.scan(
           (row, index, top) =>
-            charterListed(here, index) ? (
+            (charterListed(here, index) ? (
               <DestinationRow label={charterRowText(index, row.name)} name={row.name} top={top} dark={darkRow(top)} />
-            ) : null,
+            ) : null),
           (row, index) => (charterListed(here, index) ? Layout.ROW_H : 0),
           0,
         )}

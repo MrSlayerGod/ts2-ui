@@ -1,4 +1,4 @@
-import { CS2, useRef, useServerState, useState, useUniverse } from 'ts2';
+import { CS2, intArray, useRef, useServerState, useState, useUniverse } from 'ts2';
 
 import { settingColourOrDefault } from '../0399_questlist/settings-colour';
 import { DropdownButton } from '../0891_hotkey_settings_new/dropdown-button.component';
@@ -24,6 +24,8 @@ import {
   trackListRef,
 } from './music.constants';
 import { MusicRow, MusicTracks } from './music.data';
+import { playlistSlot } from './music.playlists';
+import { MusicHolidayRow, MusicHolidayTracks, MusicTrackByUnlock } from './music.tracks';
 
 export function Music(): Component {
   return (
@@ -79,16 +81,33 @@ export function Music(): Component {
 function TrackName(): Component {
   const colour: Int = settingColourOrDefault(MusicColourSetting.PLAYING);
   const shadow: Boolean = useServerState(MusicState.DISABLE_TEXT_SHADOW) === 0;
+  const playing: Int = useServerState(MusicState.NOW_PLAYING);
+  const row: MusicRow | null = trackById(playing);
+  const name: String = row !== null ? row.name : holidayName(playing);
+  const key: Int = row !== null ? row.varp * 100 + row.bit : 0;
+  const known: Boolean = row !== null || name.length > 0;
   return (
     <text
       y={Layout.trackName.y}
       w={Layout.trackName.w}
       h={Layout.trackName.h}
+      text={playing === -1 ? ' ' : name}
       font={MusicFont.PLAYING}
       color={colour}
       shadow={shadow}
       valign="middle"
-      options={['', '*', '*', '*', '*']}
+      options={
+        !known
+          ? ['', '', '', '', '']
+          : [
+              '',
+              'Unlock hint',
+              playlistHolds(1, key) ? 'Remove from playlist 1' : 'Add to playlist 1',
+              playlistHolds(2, key) ? 'Remove from playlist 2' : 'Add to playlist 2',
+              playlistHolds(3, key) ? 'Remove from playlist 3' : 'Add to playlist 3',
+            ]
+      }
+      optionSubject={known ? `<col=ff9040>${name}</col>` : ''}
       onMouseEnter={(event) => {
         event.self.color = MusicColor.WHITE;
       }}
@@ -97,6 +116,48 @@ function TrackName(): Component {
       }}
     />
   );
+}
+
+function trackById(id: Int): MusicRow | null {
+  let i: Int = 0;
+  while (i < MusicTracks.length) {
+    const row: MusicRow | null = MusicTracks.at(i);
+    if (row !== null) {
+      if (row.id === id) {
+        return row;
+      }
+    }
+    i = i + 1;
+  }
+  return null;
+}
+
+function holidayName(id: Int): String {
+  let i: Int = 0;
+  while (i < MusicHolidayTracks.length) {
+    const row: MusicHolidayRow | null = MusicHolidayTracks.at(i);
+    if (row !== null) {
+      if (row.id === id) {
+        return row.name;
+      }
+    }
+    i = i + 1;
+  }
+  return '';
+}
+
+function playlistHolds(playlist: Int, key: Int): Boolean {
+  if (key <= 0) {
+    return false;
+  }
+  let slot: Int = 1;
+  while (slot <= MusicCount.PLAYLIST_SLOTS) {
+    if (playlistSlot(playlist, slot) === key) {
+      return true;
+    }
+    slot = slot + 1;
+  }
+  return false;
 }
 
 function Unlocked(): Component {
@@ -130,6 +191,21 @@ function TrackPane(): Component {
   const mobile: Boolean = onMobile();
   const shadow: Boolean = useServerState(MusicState.DISABLE_TEXT_SHADOW) === 0;
   const pitch: Int = mobile ? Row.PITCH_MOBILE : Row.PITCH;
+  const playing: Int = useServerState(MusicState.NOW_PLAYING);
+
+  const lists = intArray(MusicCount.TRACK_IDS);
+  let list: Int = 1;
+  while (list <= MusicCount.PLAYLISTS_OWNED) {
+    let slot: Int = 1;
+    while (slot <= MusicCount.PLAYLIST_SLOTS) {
+      const track: Int = MusicTrackByUnlock.get(playlistSlot(list, slot)) ?? 0;
+      if (track > 0) {
+        lists[track] = CS2.bit_set(lists[track], list - 1);
+      }
+      slot = slot + 1;
+    }
+    list = list + 1;
+  }
 
   const box = useUniverse();
   const pane = useRef();
@@ -139,8 +215,10 @@ function TrackPane(): Component {
   let i: Int = 0;
   while (i < MusicTracks.length) {
     const row: MusicRow | null = MusicTracks.at(i);
-    if (row !== null && trackShown(row)) {
-      shown = shown + 1;
+    if (row !== null) {
+      if (trackShown(row, lists[row.id])) {
+        shown = shown + 1;
+      }
     }
     i = i + 1;
   }
@@ -159,9 +237,17 @@ function TrackPane(): Component {
         <layer w="fill" h="fill" />
 
         <layer ref={trackListRef} w="fill" h="fill">
-          {MusicTracks.filter((row) => trackShown(row)).scan(
+          {MusicTracks.filter((row) => trackShown(row, lists[row.id])).scan(
             (row, index, y) => (
-              <TrackRow row={row} y={y} pitch={pitch} shadow={shadow} mobile={mobile} />
+              <TrackRow
+                row={row}
+                y={y}
+                pitch={pitch}
+                shadow={shadow}
+                mobile={mobile}
+                lists={lists[row.id]}
+                colour={rowColour(row, playing)}
+              />
             ),
             () => pitch,
             Row.TOP,
@@ -190,14 +276,17 @@ function TrackRow({
   pitch,
   shadow,
   mobile,
+  lists,
+  colour,
 }: {
   row: MusicRow;
   y: Int;
   pitch: Int;
   shadow: Boolean;
   mobile: Boolean;
+  lists: Int;
+  colour: Int;
 }): Component {
-  const colour: Int = rowColour(row);
   return (
     <text
       x="center"
@@ -210,6 +299,13 @@ function TrackRow({
       shadow={shadow}
       align="left"
       valign="middle"
+      options={[
+        'Play',
+        'Unlock hint',
+        CS2.testbit(lists, 0) ? 'Remove from playlist 1' : 'Add to playlist 1',
+        CS2.testbit(lists, 1) ? 'Remove from playlist 2' : 'Add to playlist 2',
+        CS2.testbit(lists, 2) ? 'Remove from playlist 3' : 'Add to playlist 3',
+      ]}
       optionSubject={`<col=ff9040>${row.name}</col>`}
       onMouseEnter={(event) => {
         event.self.color = MusicColor.WHITE;
@@ -221,13 +317,17 @@ function TrackRow({
   );
 }
 
-function trackShown(row: MusicRow): Boolean {
+function trackShown(row: MusicRow, lists: Int): Boolean {
   const filter: Int = useServerState(MusicState.LOCK_FILTER);
   const unlocked: Boolean = trackUnlocked(row);
   if (!unlocked && filter === 1) {
     return false;
   }
   if (unlocked && filter === 2) {
+    return false;
+  }
+  const playlist: Int = useServerState(MusicState.PLAYLIST);
+  if (playlist >= 1 && playlist <= MusicCount.PLAYLISTS_OWNED && !CS2.testbit(lists, playlist - 1)) {
     return false;
   }
   return true;
@@ -313,9 +413,12 @@ function trackAvailable(row: MusicRow): Int {
   return row.available;
 }
 
-function rowColour(row: MusicRow): Int {
+function rowColour(row: MusicRow, playing: Int): Int {
   if (trackAvailable(row) !== 1) {
     return settingColourOrDefault(MusicColourSetting.UNAVAILABLE);
+  }
+  if (row.id === playing) {
+    return settingColourOrDefault(MusicColourSetting.PLAYING);
   }
   if (trackUnlocked(row)) {
     return settingColourOrDefault(MusicColourSetting.UNLOCKED);

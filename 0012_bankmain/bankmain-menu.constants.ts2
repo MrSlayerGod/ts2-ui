@@ -1,0 +1,120 @@
+import { Fonts } from '../lib/game/fonts';
+import { Sprites } from '../lib/game/sprites';
+import { Varbits } from '../lib/game/varbits';
+import { Varps } from '../lib/game/varps';
+
+export declare const MenuVars: {
+  readonly HIDE_BANK_TUT: typeof Varbits.BANK_HIDEBANKTUT;
+  readonly HIDE_SIDE_OPS: typeof Varbits.BANK_HIDESIDEOPS;
+  readonly FORGET_POPUP: typeof Varbits.BANK_SETTING_FORGET_POPUP;
+  readonly DEPOSIT_POTION: typeof Varbits.BANK_DEPOSITPOTION;
+  readonly CHUGGING_FILL_OPEN: typeof Varbits.BANK_CHUGGING_FILL_OPEN;
+  readonly FILLER_MODE: typeof Varbits.BANK_FILLERMODE;
+  readonly IGNORE_INV_LOCKS: typeof Varbits.BANK_SIDE_SLOT_IGNOREINVLOCKS;
+  readonly TUTORIAL: typeof Varps.TUTORIAL;
+  readonly TUTORIAL_2: typeof Varps.TUTORIAL_2;
+};
+
+export declare const MenuSprites: {
+  readonly RADIO_OFF: typeof Sprites.OPTIONS_RADIO_BUTTONS_1;
+  readonly RADIO_ON: typeof Sprites.OPTIONS_RADIO_BUTTONS_2;
+  readonly FILLER_OFF: typeof Sprites.MISCGRAPHICS_0;
+  readonly FILLER_ON: typeof Sprites.MISCGRAPHICS_9;
+  readonly RED_MIDDLE: typeof Sprites.MISCGRAPHICS_BUTTONMIDDLE_RED;
+  readonly RED_LEFT: typeof Sprites.MISCGRAPHICS_7;
+  readonly RED_RIGHT: typeof Sprites.MISCGRAPHICS_8;
+  readonly PLACEHOLDER: typeof Sprites.BANKBUTTONS_7;
+  readonly LOCK: typeof Sprites.ACC_MAN_ICONS_7;
+  readonly TUTORIAL: typeof Sprites.MENU_BUTTONS_2;
+  readonly TUTORIAL_HOVER: typeof Sprites.MENU_BUTTONS_3;
+  readonly BACKING: typeof Sprites.TRADEBACKING;
+  readonly ARROW_UP: typeof Sprites.SCROLLBAR_V2_0;
+  readonly ARROW_DOWN: typeof Sprites.SCROLLBAR_V2_1;
+};
+
+export declare const MenuFonts: {
+  readonly SMALL: typeof Fonts.P11_FULL;
+  readonly BODY: typeof Fonts.P12_FULL;
+  readonly BOLD: typeof Fonts.B12_FULL;
+};
+
+export enum MenuColors {
+  ORANGE = 0xff981f,
+  WHITE = 0xffffff,
+  RED = 0xff0000,
+  GREY = 0x8f8f8f,
+  CREAM = 0xf7f0df,
+  CREAM_HOVER = 0xd8b5a1,
+  RULE_OUTER = 0x2e2b23,
+  RULE_INNER = 0x726451,
+  THIN_OUTER = 0x0e0e0c,
+  THIN_INNER = 0x474745,
+}
+
+export enum ToggleKind {
+  HIDE = 0,
+  SHOW = 1,
+  ENABLE = 2,
+}
+
+export enum MenuToggle {
+  INCINERATOR = 0,
+  BANK_TUT = 1,
+  SIDE_OPS = 2,
+  BANK_OPS = 3,
+  DEPOSIT_INV = 4,
+  DEPOSIT_WORN = 5,
+  DEPOSIT_CONTAINERS = 6,
+  FORGET_POPUP = 7,
+  DEPOSIT_POTION = 8,
+  CHUGGING = 9,
+}
+
+export type ToggleRow = {
+  label: String;
+  left: Int;
+  y: Int;
+  top: Int;
+  kind: Int;
+};
+
+export const ToggleRows = listOf<ToggleRow>([
+  { label: 'Incinerator', left: 0, y: -108, top: 0, kind: ToggleKind.SHOW },
+  { label: "'Bank tutorial' button", left: 1, y: -108, top: 0, kind: ToggleKind.HIDE },
+  { label: 'Inventory item options', left: 0, y: -80, top: 0, kind: ToggleKind.HIDE },
+  { label: 'Bank item options', left: 1, y: -80, top: 0, kind: ToggleKind.ENABLE },
+  { label: "'Deposit inventory' button", left: 1, y: -52, top: 0, kind: ToggleKind.HIDE },
+  { label: "'Deposit worn items' button", left: 0, y: -52, top: 0, kind: ToggleKind.HIDE },
+  { label: "'Empty containers' button", left: 1, y: 107, top: 1, kind: ToggleKind.HIDE },
+  { label: 'Forget storage tab status on bank open', left: 0, y: 107, top: 1, kind: ToggleKind.ENABLE },
+  { label: 'Always deposit to potion storage', left: 1, y: 135, top: 1, kind: ToggleKind.ENABLE },
+  {
+    label: 'Chugging Barrel only fills from currently opened storage',
+    left: 0,
+    y: 135,
+    top: 1,
+    kind: ToggleKind.ENABLE,
+  },
+]);
+
+export const TabDisplayLabels = listOf<String>([
+  'First item in tab',
+  'Digit (1, 2, 3)',
+  'Roman numeral (I, II, III)',
+  'Hide tab bar',
+]);
+
+export const FillerModes = listOf<Int>([1, 2, 3, 4, 0]);
+export const FillerLabels = listOf<String>(['1', '10', '50', 'X', 'All']);
+
+export enum MenuLayout {
+  LABEL_WRAP = 207,
+  COLUMN = 251,
+  ROW_H = 28,
+  RADIO = 17,
+  LABEL_INSET = 22,
+  DROPDOWN_ROW = 14,
+  DROPDOWN_ROW_MOBILE = 26,
+  DROPDOWN_W = 198,
+  DROPDOWN_H = 20,
+}

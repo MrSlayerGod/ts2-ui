@@ -18,8 +18,8 @@ export function RewardShelf(): Component {
     <layer w="fill" h="fill">
       {MagicTrainingRewards.map((reward, index) => (
         <sprite
-          x={cellW / 2 - Layout.CELL_W / 2 + (index % Layout.SHELF_COLUMNS) * cellW}
-          y={cellH / 2 - Layout.CELL_H / 2 + (index / Layout.SHELF_COLUMNS) * cellH}
+          x={cellW / 2 - Layout.CELL_W / 2 + index % Layout.SHELF_COLUMNS * cellW}
+          y={cellH / 2 - Layout.CELL_H / 2 + index / Layout.SHELF_COLUMNS * cellH}
           w={Layout.CELL_W}
           h={Layout.CELL_H}
           item={reward}

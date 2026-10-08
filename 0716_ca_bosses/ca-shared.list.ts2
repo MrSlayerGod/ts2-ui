@@ -30,7 +30,7 @@ export function CaBossCards({ query, visible, mobile }: { query: String; visible
       <layer w="fill" h={caBossesExtentOf(visible)}>
         {CaBossKeys.scan(
           (bossKey, i, seen) =>
-            caBossShown(bossKey, query) === 1 ? (
+            (caBossShown(bossKey, query) === 1 ? (
               <CaBossCard
                 name={caBossName(bossKey)}
                 combatLevel={caBossLevel(bossKey)}
@@ -40,7 +40,7 @@ export function CaBossCards({ query, visible, mobile }: { query: String; visible
                 x={CaBossCardBox.GAP + (seen % CaBossCardBox.COLUMNS) * CaBossCardBox.PITCH_X}
                 y={(seen / CaBossCardBox.COLUMNS) * CaBossCardBox.PITCH_Y}
               />
-            ) : null,
+            ) : null),
           (bossKey) => caBossShown(bossKey, query),
           0,
         )}

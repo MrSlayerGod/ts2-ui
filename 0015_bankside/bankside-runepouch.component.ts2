@@ -471,8 +471,8 @@ function PickerRune({
 }): Component {
   return (
     <sprite
-      x={left + (index % Pouch.PICKER_COLUMNS) * (Grid.W + gapX)}
-      y={(index / Pouch.PICKER_COLUMNS) * (Grid.H + gapY)}
+      x={left + index % Pouch.PICKER_COLUMNS * (Grid.W + gapX)}
+      y={index / Pouch.PICKER_COLUMNS * (Grid.H + gapY)}
       w={Grid.W}
       h={Grid.H}
       item={rune}
@@ -496,7 +496,7 @@ export function RunePicker(): Component {
   const gapX: Int = (width - Pouch.PICKER_COLUMNS * Grid.W) / (Pouch.PICKER_COLUMNS - 1);
   const left: Int = (width - (Pouch.PICKER_COLUMNS * Grid.W + (Pouch.PICKER_COLUMNS - 1) * gapX)) / 2;
   const gapY: Int = scaled(Pouch.PICKER_ROW_NUM, Pouch.PICKER_ROW_DEN, gapX);
-  const extent: Int = (Pouch.RUNES / Pouch.PICKER_COLUMNS) * (Grid.H + gapY) + Grid.H;
+  const extent: Int = Pouch.RUNES / Pouch.PICKER_COLUMNS * (Grid.H + gapY) + Grid.H;
   runepouchSelectList.scrollHeight = extent > universe.height ? extent : 0;
   runepouchSelectList.scrollY = 0;
 
@@ -506,8 +506,8 @@ export function RunePicker(): Component {
         <PickerRune rune={rune} index={index} left={left} gapX={gapX} gapY={gapY} />
       ))}
       <sprite
-        x={left + (Pouch.RUNES % Pouch.PICKER_COLUMNS) * (Grid.W + gapX)}
-        y={(Pouch.RUNES / Pouch.PICKER_COLUMNS) * (Grid.H + gapY)}
+        x={left + Pouch.RUNES % Pouch.PICKER_COLUMNS * (Grid.W + gapX)}
+        y={Pouch.RUNES / Pouch.PICKER_COLUMNS * (Grid.H + gapY)}
         w={Grid.W}
         h={Grid.H}
         item={BanksideItems.LIME_DUMMY}

@@ -1,9 +1,12 @@
 import { CS2, useServerState, useState } from 'ts2';
 
 import { Varbits } from '../lib/game/varbits';
-import { skillGuideV2X, skillGuideV2Y } from '../lib/game/varcs';
+import { skillGuideV2CurrentSkill, skillGuideV2CurrentTab, skillGuideV2X, skillGuideV2Y } from '../lib/game/varcs';
+import { Sounds } from '../lib/game/sounds';
+import { playSound } from '../lib/lib.engine';
 import { onMobile } from '../lib/lib.helpers';
 import { GuideChrome, GuideDrag } from './skill-guide.constants';
+import { guideFrom, guideSkill, guideTab, guideTo } from './skill-guide.state';
 
 export function textColourSwapper(component: ComponentId, colour: Int): void {
   component.color = colour;
@@ -60,3 +63,32 @@ export function dragGuideWindow(window: ComponentId, root: ComponentId, mouseX: 
   setX(x);
   setY(y);
 }
+
+export function skillGuideShow(skill: Int, tab: Int, from: Int, to: Int): void {
+  const [, setSkill] = useState(guideSkill);
+  const [, setTab] = useState(guideTab);
+  const [, setFrom] = useState(guideFrom);
+  const [, setTo] = useState(guideTo);
+  const [, setSharedSkill] = useState(skillGuideV2CurrentSkill);
+  const [, setSharedTab] = useState(skillGuideV2CurrentTab);
+  let first: Int = from;
+  let last: Int = to;
+  if (tab !== LEVEL_UP_TAB) {
+    first = 0;
+    last = 0;
+  }
+  setSharedSkill(skill);
+  setSharedTab(tab);
+  setSkill(skill);
+  setTab(tab);
+  setFrom(first);
+  setTo(last);
+}
+
+export function skillGuideCategory(index: Int): void {
+  const [skill] = useState(guideSkill);
+  playSound(Sounds.INTERFACE_SELECT1);
+  skillGuideShow(skill, index, 0, 0);
+}
+
+export const LEVEL_UP_TAB = 31;

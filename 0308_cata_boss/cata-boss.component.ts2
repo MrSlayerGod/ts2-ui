@@ -1,7 +1,16 @@
-import { createRef } from 'ts2';
+import { createRef, useState } from 'ts2';
 
 import { Anchor, overlayInit } from '../lib/lib.overlay';
-import { CataBossDodge, CataBossModel, CataBossSprite, Layout } from './cata-boss.constants';
+import {
+  CataBossDodge,
+  CataBossModel,
+  CataBossSprite,
+  Layout,
+  altarEastDark,
+  altarNorthDark,
+  altarSouthDark,
+  altarWestDark,
+} from './cata-boss.constants';
 
 const timerHost = createRef('0308_cata_boss_timer_host');
 
@@ -38,39 +47,63 @@ export function CataBoss_(): Component {
             offsetY={Layout.MODEL_OFFSET_Y}
           />
 
-          <sprite
-            x={Layout.MARKER_SIDE_INSET}
-            y="center"
-            w={Layout.MARKER_BOX}
-            h={Layout.MARKER_BOX}
-            sprite={CataBossSprite.MARKER}
-          />
-
-          <sprite
-            x={{ right: Layout.MARKER_SIDE_INSET }}
-            y="center"
-            w={Layout.MARKER_BOX}
-            h={Layout.MARKER_BOX}
-            sprite={CataBossSprite.MARKER}
-          />
-
-          <sprite
-            x="center"
-            y={{ bottom: Layout.MARKER_END_INSET }}
-            w={Layout.MARKER_BOX}
-            h={Layout.MARKER_BOX}
-            sprite={CataBossSprite.MARKER}
-          />
-
-          <sprite
-            x="center"
-            y={Layout.MARKER_END_INSET}
-            w={Layout.MARKER_BOX}
-            h={Layout.MARKER_BOX}
-            sprite={CataBossSprite.MARKER}
-          />
+          <AltarMarkers />
         </layer>
       </layer>
     </layer>
   );
+}
+
+function AltarMarkers(): Component {
+  const [westDark] = useState(altarWestDark);
+  const [eastDark] = useState(altarEastDark);
+  const [southDark] = useState(altarSouthDark);
+  const [northDark] = useState(altarNorthDark);
+
+  return (
+    <>
+      <sprite
+        x={Layout.MARKER_SIDE_INSET}
+        y="center"
+        w={Layout.MARKER_BOX}
+        h={Layout.MARKER_BOX}
+        sprite={westDark === 1 ? CataBossSprite.MARKER_OFF : CataBossSprite.MARKER}
+      />
+
+      <sprite
+        x={{ right: Layout.MARKER_SIDE_INSET }}
+        y="center"
+        w={Layout.MARKER_BOX}
+        h={Layout.MARKER_BOX}
+        sprite={eastDark === 1 ? CataBossSprite.MARKER_OFF : CataBossSprite.MARKER}
+      />
+
+      <sprite
+        x="center"
+        y={{ bottom: Layout.MARKER_END_INSET }}
+        w={Layout.MARKER_BOX}
+        h={Layout.MARKER_BOX}
+        sprite={southDark === 1 ? CataBossSprite.MARKER_OFF : CataBossSprite.MARKER}
+      />
+
+      <sprite
+        x="center"
+        y={Layout.MARKER_END_INSET}
+        w={Layout.MARKER_BOX}
+        h={Layout.MARKER_BOX}
+        sprite={northDark === 1 ? CataBossSprite.MARKER_OFF : CataBossSprite.MARKER}
+      />
+    </>
+  );
+}
+
+export function cataAltarUpdate(west: Boolean, east: Boolean, south: Boolean, north: Boolean): void {
+  const [, setWest] = useState(altarWestDark);
+  const [, setEast] = useState(altarEastDark);
+  const [, setSouth] = useState(altarSouthDark);
+  const [, setNorth] = useState(altarNorthDark);
+  setWest(west ? 0 : 1);
+  setEast(east ? 0 : 1);
+  setSouth(south ? 0 : 1);
+  setNorth(north ? 0 : 1);
 }

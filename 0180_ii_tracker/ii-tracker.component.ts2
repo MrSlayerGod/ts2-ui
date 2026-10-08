@@ -1,15 +1,20 @@
-import { useState } from 'ts2';
+import { Animations } from '../lib/game/animations';
+import { useRef, useState, useUniverse } from 'ts2';
+import { ScrollbarVertical } from '../lib/scrollbar-vertical.component';
 import { SteelBorderEntrypoint } from '../lib/steel-border-entrypoint.component';
 import {
   II_TRACKER_TITLE,
   IiTrackerColor,
   IiTrackerFonts,
   IiTrackerTab,
+  ImplingCell,
+  ImplingSlots,
   Layout,
+  ParchmentBar,
   TabSprites,
 } from './ii-tracker.constants';
-import { iiTrackerTabSelect } from './ii-tracker.helpers';
-import { iiTrackerSelectedTab } from './ii-tracker.state';
+import { cellX, cellY, gridScroll, iiTrackerTabSelect, implingModel, nameAt, nameCount } from './ii-tracker.helpers';
+import { iiTrackerBuilt, iiTrackerNames, iiTrackerSelectedTab, iiTrackerSplit } from './ii-tracker.state';
 
 export function IiTracker(): Component {
   return (
@@ -22,49 +27,23 @@ export function IiTracker(): Component {
 }
 
 function IiTrackerContents(): Component {
+  const universe = useUniverse();
   const [tab] = useState(iiTrackerSelectedTab);
+  const [names] = useState(iiTrackerNames);
+  const [split] = useState(iiTrackerSplit);
+  const surfaceNames: String = names.substring(0, split);
+  const puroNames: String = names.substring(split, names.length);
+  const [built] = useState(iiTrackerBuilt);
+  const gridW: Int = universe.width - Layout.GRID_W_INSET;
+  const gridH: Int = universe.height - Layout.GRID_H_INSET;
   const puro: Boolean = tab === IiTrackerTab.PURO;
   const surface: Boolean = tab === IiTrackerTab.SURFACE;
 
   return (
     <layer x="center" y={Layout.CONTENTS_Y} w={{ fill: Layout.CONTENTS_W_INSET }} h={{ fill: Layout.CONTENTS_H_INSET }}>
-      <layer
-        x={{ right: Layout.SCROLLBAR_RIGHT }}
-        y={Layout.SCROLLBAR_Y}
-        w={Layout.SCROLLBAR_W}
-        h={{ fill: Layout.SCROLLBAR_H_INSET }}
-        hide={puro}
-      />
+      <ImplingPane names={surfaceNames} built={built} hidden={puro} barHidden={puro} width={gridW} height={gridH} />
 
-      <layer
-        x={Layout.GRID_X}
-        y={Layout.GRID_Y}
-        w={{ fill: Layout.GRID_W_INSET }}
-        h={{ fill: Layout.GRID_H_INSET }}
-        hide={puro}
-      >
-        <layer w="fill" h="fill" />
-        <layer w="fill" h="fill" />
-      </layer>
-
-      <layer
-        x={{ right: Layout.SCROLLBAR_RIGHT }}
-        y={Layout.SCROLLBAR_Y}
-        w={Layout.SCROLLBAR_W}
-        h={{ fill: Layout.SCROLLBAR_H_INSET }}
-        hide={surface}
-      />
-
-      <layer
-        x={Layout.GRID_X}
-        y={Layout.GRID_Y}
-        w={{ fill: Layout.GRID_W_INSET }}
-        h={{ fill: Layout.GRID_H_INSET }}
-        hide={!puro}
-      >
-        <layer w="fill" h="fill" />
-        <layer w="fill" h="fill" />
-      </layer>
+      <ImplingPane names={puroNames} built={built} hidden={!puro} barHidden={surface} width={gridW} height={gridH} />
 
       <layer x="center" y={0} w="fill" h={Layout.TABS_H}>
         <rect x="right" y="bottom" w={{ fill: Layout.RULE_W_INSET }} h={Layout.RULE_H} color={IiTrackerColor.RULE} />
@@ -158,5 +137,93 @@ function IiTrackerContents(): Component {
         </layer>
       </layer>
     </layer>
+  );
+}
+
+function ImplingPane({
+  names,
+  built,
+  hidden,
+  barHidden,
+  width,
+  height,
+}: {
+  names: String;
+  built: Int;
+  hidden: Boolean;
+  barHidden: Boolean;
+  width: Int;
+  height: Int;
+}): Component {
+  const grid = useRef();
+  const count: Int = built === 1 ? nameCount(names) : 0;
+  const scroll: Int = built === 1 ? gridScroll(names, width, height) : 0;
+
+  return (
+    <>
+      <layer
+        ref={grid}
+        x={Layout.GRID_X}
+        y={Layout.GRID_Y}
+        w={{ fill: Layout.GRID_W_INSET }}
+        h={{ fill: Layout.GRID_H_INSET }}
+        scrollHeight={scroll}
+        hide={hidden}
+      >
+        <layer w="fill" h="fill">
+          {ImplingSlots.map(
+            (i) =>
+              i < count && (
+                <model
+                  x={cellX(i, width)}
+                  y={cellY(i, width)}
+                  w={ImplingCell.MODEL_W}
+                  h={ImplingCell.MODEL_H}
+                  model={implingModel(i)}
+                  offsetY={ImplingCell.OFFSET_Y}
+                  yaw={ImplingCell.YAW}
+                  zoom={ImplingCell.ZOOM}
+                  anim={Animations.II_IMPLING_READY}
+                />
+              ),
+          )}
+        </layer>
+        <layer w="fill" h="fill">
+          {ImplingSlots.map(
+            (i) =>
+              i < count && (
+                <text
+                  x={cellX(i, width) + ImplingCell.MODEL_W + ImplingCell.NAME_GAP}
+                  y={cellY(i, width)}
+                  w={ImplingCell.NAME_W}
+                  h={ImplingCell.MODEL_H}
+                  font={IiTrackerFonts.NAME}
+                  color={IiTrackerColor.NAME}
+                  text={nameAt(names, i)}
+                />
+              ),
+          )}
+        </layer>
+      </layer>
+      <layer
+        x={{ right: Layout.SCROLLBAR_RIGHT }}
+        y={Layout.SCROLLBAR_Y}
+        w={Layout.SCROLLBAR_W}
+        h={{ fill: Layout.SCROLLBAR_H_INSET }}
+        hide={barHidden}
+      >
+        {scroll > 0 && (
+          <ScrollbarVertical
+            content={grid}
+            track={ParchmentBar.TRACK}
+            capTopSprite={ParchmentBar.CAP_TOP}
+            thumbSprite={ParchmentBar.THUMB}
+            capBottomSprite={ParchmentBar.CAP_BOTTOM}
+            arrowUp={ParchmentBar.ARROW_UP}
+            arrowDown={ParchmentBar.ARROW_DOWN}
+          />
+        )}
+      </layer>
+    </>
   );
 }

@@ -1,6 +1,11 @@
+import { createRef } from 'ts2';
 import { ThinBoxEntrypoint } from '../lib/thin-box-entrypoint.component';
 import { Layout, ViewerColor, ViewerFonts } from './deadman-tournament-viewer.constants';
 import { RefreshButton } from './refresh-button.component';
+import { TournamentNames } from './tournament-names.component';
+
+const survivorsRef = createRef('deadman_tournament_viewer_survivors');
+const fogRef = createRef('deadman_tournament_viewer_fog');
 
 export function DeadmanTournamentViewer(): Component {
   return (
@@ -19,7 +24,9 @@ export function DeadmanTournamentViewer(): Component {
       />
 
       <layer x="center" y={Layout.LIST_Y} w={Layout.LIST_W} h={Layout.LIST_H}>
-        <layer x="center" y="center" w={{ fill: Layout.NAMES_INSET }} h={{ fill: Layout.NAMES_INSET }} />
+        <layer x="center" y="center" w={{ fill: Layout.NAMES_INSET }} h={{ fill: Layout.NAMES_INSET }}>
+          <TournamentNames />
+        </layer>
 
         <ThinBoxEntrypoint />
       </layer>
@@ -49,6 +56,7 @@ export function DeadmanTournamentViewer(): Component {
       />
 
       <text
+        ref={survivorsRef}
         x={{ right: Layout.VALUE_RIGHT }}
         y={{ bottom: Layout.ROW_1_BOTTOM }}
         w={{ fill: Layout.VALUE_W_INSET }}
@@ -60,6 +68,7 @@ export function DeadmanTournamentViewer(): Component {
       />
 
       <text
+        ref={fogRef}
         x={{ right: Layout.VALUE_RIGHT }}
         y={{ bottom: Layout.ROW_2_BOTTOM }}
         w={{ fill: Layout.VALUE_W_INSET }}

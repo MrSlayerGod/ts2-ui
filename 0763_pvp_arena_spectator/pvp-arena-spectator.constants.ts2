@@ -1,4 +1,5 @@
 import { Fonts } from '../lib/game/fonts';
+import { Inventories } from '../lib/game/inventories';
 import { Sprites } from '../lib/game/sprites';
 
 export const PvpaSprites = {
@@ -98,4 +99,20 @@ export const Bar = {
 export const Combo = {
   HOLD_CYCLES: 50,
   STEP: 75,
+};
+
+export const InvGrid = {
+  COLUMNS: 4,
+  LEFT: 10,
+  TOP: 8,
+  STEP_X: 42,
+  STEP_Y: 36,
+  W: 36,
+  H: 32,
+  SHADOW: 0x333333,
+  OUTLINE: 1,
+};
+
+export const PvpaInventories = {
+  SPECTATOR: Inventories.SPECTATOR_INVENTORY,
 };

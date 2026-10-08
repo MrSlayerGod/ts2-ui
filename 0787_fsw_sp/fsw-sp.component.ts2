@@ -1,9 +1,10 @@
 import { SteelFrameEntrypoint } from '../lib/steel-frame-entrypoint.component';
 import { FswArt, FswColor, FswFonts, Layout } from './fsw-sp.constants';
+import { FswSpBadge, FswSpBox, FswSpButton, resetFswSp } from './fsw-sp-boxes.component';
 
 export function FswSp(): Component {
   return (
-    <layer x="center" y="center" w={Layout.CONTENT_W} h={Layout.CONTENT_H}>
+    <layer x="center" y="center" w={Layout.CONTENT_W} h={Layout.CONTENT_H} onLoad={() => resetFswSp()}>
       <text
         x={Layout.HEADER_X}
         y={0}
@@ -29,7 +30,9 @@ export function FswSp(): Component {
 
         <layer x="center" y="center" w={{ fill: Layout.INNER_INSET }} h={{ fill: Layout.INNER_INSET }}>
           <layer x={0} y={0} w={Layout.BAND_W} h={Layout.BAND_H}>
-            <layer x="center" y={Layout.BOX_Y} w={{ fill: Layout.BOX_W_INSET }} h={Layout.BOX_H} />
+            <layer x="center" y={Layout.BOX_Y} w={{ fill: Layout.BOX_W_INSET }} h={Layout.BOX_H}>
+              <FswSpBox />
+            </layer>
 
             <text
               x={Layout.POINTS_TITLE_X}
@@ -45,7 +48,9 @@ export function FswSp(): Component {
             />
 
             <layer x={{ right: Layout.BADGE_RIGHT }} y={Layout.BADGE_Y} w={Layout.BADGE} h={Layout.BADGE}>
-              <layer x={0} y={0} w="fill" h="fill" />
+              <layer x={0} y={0} w="fill" h="fill">
+                <FswSpBadge />
+              </layer>
 
               <sprite
                 x={Layout.ICON_XY}
@@ -69,11 +74,15 @@ export function FswSp(): Component {
               valign="middle"
             />
 
-            <layer x="center" y={Layout.BUTTON_Y} w={{ fill: Layout.BUTTON_W_INSET }} h={Layout.BUTTON_H} />
+            <layer x="center" y={Layout.BUTTON_Y} w={{ fill: Layout.BUTTON_W_INSET }} h={Layout.BUTTON_H}>
+              <FswSpButton label="How to earn" option="Select <col=ff981f>How to earn</col>" />
+            </layer>
           </layer>
 
           <layer x={0} y={Layout.OPTOUT_Y} w={Layout.BAND_W} h={Layout.BAND_H}>
-            <layer x="center" y={Layout.BOX_Y} w={{ fill: Layout.BOX_W_INSET }} h={Layout.BOX_H} />
+            <layer x="center" y={Layout.BOX_Y} w={{ fill: Layout.BOX_W_INSET }} h={Layout.BOX_H}>
+              <FswSpBox />
+            </layer>
 
             <text
               x="center"
@@ -101,7 +110,9 @@ export function FswSp(): Component {
               valign="middle"
             />
 
-            <layer x="center" y={Layout.BUTTON_Y} w={{ fill: Layout.BUTTON_W_INSET }} h={Layout.BUTTON_H} />
+            <layer x="center" y={Layout.BUTTON_Y} w={{ fill: Layout.BUTTON_W_INSET }} h={Layout.BUTTON_H}>
+              <FswSpButton label="Manage" option="Select <col=ff981f>Manage</col>" />
+            </layer>
           </layer>
         </layer>
 
@@ -141,7 +152,9 @@ export function FswSp(): Component {
             y={Layout.INFO_BUTTON_Y}
             w={{ fill: Layout.INFO_BUTTON_INSET }}
             h={{ fill: Layout.INFO_BUTTON_INSET }}
-          />
+          >
+            <FswSpButton label="Mode Info" option="Select <col=ff981f>Mode Info</col>" />
+          </layer>
         </layer>
       </layer>
 

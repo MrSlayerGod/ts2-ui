@@ -1,4 +1,4 @@
-import { createRef, stopTimer, useServerState, useState, useWatch } from 'ts2';
+import { useInterval, useServerState, useServerStateOnce, useState, useWatch } from 'ts2';
 import { SteelborderColor, SteelborderFont, SteelborderSprite } from '../lib/lib.constants';
 import { closeInterface, onMobile } from '../lib/lib.helpers';
 import { scaled } from '../lib/lib.engine';
@@ -14,11 +14,49 @@ import {
   SuppliesVarps,
 } from './pvp-arena-stagingarea-supplies.constants';
 
-const titleText = createRef('pvp_arena_stagingarea_supplies:title');
+export enum TitleKind {
+  NONE = 0,
+}
 
-export function paintCountdownTitle(prefix: String): void {
+export function suppliesTitleSync(): Int {
+  const battleType: Int = useServerState(SuppliesVarbits.BATTLE_TYPE);
+  if (
+    battleType !== BattleType.TOURNAMENT_UNRANKED &&
+    battleType !== BattleType.TOURNAMENT_RANKED &&
+    battleType !== BattleType.DUEL_UNRANKED &&
+    battleType !== BattleType.DUEL_RANKED
+  ) {
+    return TitleKind.NONE;
+  }
+  const [previous, setCountdown] = useState(pvpaCountdown);
+  let ticks: Int = Math.max(0, previous);
+  const fromServer: Int = useServerState(SuppliesVarbits.TIME_REMAINING) * Countdown.UNIT;
+  if (fromServer > ticks + Countdown.RESYNC || fromServer < ticks - Countdown.RESYNC) {
+    ticks = fromServer;
+  }
+  setCountdown(ticks);
+  return battleType;
+}
+
+export function countdownNow(): Int {
   const [ticks] = useState(pvpaCountdown);
-  const seconds: Int = (ticks % Countdown.PER_MINUTE) / Countdown.PER_SECOND;
+  return ticks;
+}
+
+export function titleText(kind: Int, ticks: Int): String {
+  let prefix: String = '';
+  if (kind === BattleType.TOURNAMENT_UNRANKED) {
+    prefix = Copy.TITLE_1001;
+  } else if (kind === BattleType.TOURNAMENT_RANKED) {
+    prefix = Copy.TITLE_1002;
+  } else if (kind === BattleType.DUEL_UNRANKED) {
+    prefix = Copy.TITLE_1005;
+  } else if (kind === BattleType.DUEL_RANKED) {
+    prefix = Copy.TITLE_1006;
+  } else {
+    return Copy.TITLE_DEFAULT;
+  }
+  const seconds: Int = ticks % Countdown.PER_MINUTE / Countdown.PER_SECOND;
   const minutes: Int = ticks / Countdown.PER_MINUTE;
   let clock: String = '';
   if (seconds >= Countdown.TWO_DIGITS) {
@@ -35,59 +73,39 @@ export function paintCountdownTitle(prefix: String): void {
     ),
     'col',
   );
-  titleText.text = `${prefix} - ${tag}${clock}</col>`;
+  return `${prefix} - ${tag}${clock}</col>`;
 }
 
-export function suppliesTitleInit(): void {
-  const battleType: Int = useServerState(SuppliesVarbits.BATTLE_TYPE);
-  let prefix: String = '';
-  if (battleType === BattleType.TOURNAMENT_UNRANKED) {
-    prefix = Copy.TITLE_1001;
-  } else if (battleType === BattleType.TOURNAMENT_RANKED) {
-    prefix = Copy.TITLE_1002;
-  } else if (battleType === BattleType.DUEL_UNRANKED) {
-    prefix = Copy.TITLE_1005;
-  } else if (battleType === BattleType.DUEL_RANKED) {
-    prefix = Copy.TITLE_1006;
-  } else {
-    titleText.text = Copy.TITLE_DEFAULT;
-    stopTimer(titleText);
-    return;
-  }
-
-  const [previous, setCountdown] = useState(pvpaCountdown);
-  let ticks: Int = Math.max(0, previous);
-  const fromServer: Int = useServerState(SuppliesVarbits.TIME_REMAINING) * Countdown.UNIT;
-  if (fromServer > ticks + Countdown.RESYNC || fromServer < ticks - Countdown.RESYNC) {
-    ticks = fromServer;
-  }
-  setCountdown(ticks);
-
-  paintCountdownTitle(prefix);
-  titleText.onTimer = () => paintCountdownTitle(prefix);
+export function SuppliesTitle(): Component {
+  const [kind, setKind] = useState(useServerStateOnce(() => suppliesTitleSync()));
+  const [ticks, setTicks] = useState(useServerStateOnce(() => countdownNow()));
+  useWatch([SuppliesVarps.TEMP_TRANSMIT_0, SuppliesVarps.TEMP_TRANSMIT_1], () => {
+    setKind(suppliesTitleSync());
+    setTicks(countdownNow());
+  });
+  useInterval(kind === TitleKind.NONE ? undefined : () => setTicks(countdownNow()));
+  return (
+    <text
+      x="center"
+      y={6}
+      w={{ fill: 12 }}
+      h={24}
+      text={titleText(kind, ticks)}
+      align="center"
+      valign="middle"
+      shadow
+      color={SteelborderColor.TITLE}
+      font={SteelborderFont.TITLE}
+    />
+  );
 }
 
 export function SuppliesFrame(): Component {
-  useWatch([SuppliesVarps.TEMP_TRANSMIT_0, SuppliesVarps.TEMP_TRANSMIT_1], () => suppliesTitleInit(), frame);
-
   return (
-    <layer static ref={frame} x="center" y="center" w="fill" h="fill" onLoad={() => suppliesTitleInit()}>
+    <layer static ref={frame} x="center" y="center" w="fill" h="fill">
       <sprite static x="center" y="center" w={{ fill: 2 }} h={{ fill: 2 }} sprite={SteelborderSprite.BACKDROP} tiling />
 
-      <text
-        static
-        ref={titleText}
-        x="center"
-        y={6}
-        w={{ fill: 12 }}
-        h={24}
-        text=""
-        align="center"
-        valign="middle"
-        shadow
-        color={SteelborderColor.TITLE}
-        font={SteelborderFont.TITLE}
-      />
+      <SuppliesTitle />
 
       <sprite static x="left" y="top" w={25} h={30} sprite={SteelborderSprite.CORNER_TL} tiling />
       <sprite static x="right" y="top" w={25} h={30} sprite={SteelborderSprite.CORNER_TR} tiling />

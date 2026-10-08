@@ -1,32 +1,44 @@
-import { createRef } from 'ts2';
+import { createRef, useInterval, useWatch } from 'ts2';
 
 import { Anchor, overlayInit } from '../lib/lib.overlay';
-import { Layout, ToaHudDodge } from './toa-hud.constants';
+import { Varps } from '../lib/game/varps';
+import { Layout, ToaHudDodge, ToaHudSkills } from './toa-hud.constants';
 import { ToaHudDraw } from './toa-hud-draw.component';
 import { ToaHudTooltip } from './toa-hud-tooltip.component';
 import { content, tooltipHost } from './toa-hud.refs';
+import { drawToaHud, toaHudDrawTick } from './toa-hud.state';
+import { resetRaidClock } from './toa-hud-raid-timer.component';
 
 const timerHost = createRef('0481_toa_hud_timer_host');
 
+const universe = createRef('0481_toa_hud_universe');
+
+function toaHudLoad(): void {
+  overlayInit(timerHost, content, ToaHudDodge.WORD, Anchor.LEFT, Anchor.TOP, 0);
+  drawToaHud();
+  resetRaidClock();
+}
+
 export function ToaHud(): Component {
+  useWatch(
+    [Varps.TOA_TEMP_TRANSMIT_1, Varps.TOA_TEMP_TRANSMIT_2, Varps.TOA_TEMP_TRANSMIT_3, Varps.TOA_TEMP_TRANSMIT_5],
+    () => drawToaHud(),
+    universe,
+  );
+  useWatch(ToaHudSkills.HITPOINTS, () => drawToaHud(), universe);
+  useInterval(() => toaHudDrawTick(), universe);
+
   return (
-    <layer x="center" y="center" w="fill" h="fill">
+    <layer ref={universe} x="center" y="center" w="fill" h="fill">
       <layer x="center" y="center" w="fill" h="fill" />
 
-      <layer
-        x="center"
-        y="center"
-        w="fill"
-        h="fill"
-        ref={timerHost}
-        onLoad={() => overlayInit(timerHost, content, ToaHudDodge.WORD, Anchor.LEFT, Anchor.TOP, 0)}
-      >
+      <layer x="center" y="center" w="fill" h="fill" ref={timerHost} onLoad={() => toaHudLoad()}>
         <layer static ref={content} x={Layout.CONTENT_X} y={Layout.CONTENT_Y} w={Layout.CONTENT_W} h={Layout.CONTENT_H}>
           <ToaHudDraw />
         </layer>
       </layer>
 
-      <layer static ref={tooltipHost} x={0} y={0} w={Layout.TOOLTIP} h={Layout.TOOLTIP}>
+      <layer static ref={tooltipHost} x={0} y={0} w="fill" h="fill">
         <ToaHudTooltip />
       </layer>
     </layer>

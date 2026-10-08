@@ -1,6 +1,8 @@
-import { useState } from 'ts2';
+import { CS2, useState } from 'ts2';
 import { xpdropsFake6 } from '../lib/game/varcs';
-import { displayA, displayB, displayC, statsDisplay } from './pvp-arena-stagingarea-supplies.refs';
+import { GameframeSlot, gameframeSlot } from '../lib/lib.gameframe';
+import { binHot } from './bin-hover';
+import { suppliesTabUnpainted } from '../lib/pvp-arena/kit-tab.component';
 import { BattleType, Build, Layout, STATS_TAB } from './pvp-arena-stagingarea-supplies.constants';
 
 export function battleSettled(battleType: Int): Boolean {
@@ -41,14 +43,23 @@ export function kitTabX(settled: Boolean, which: Int): Int {
   return Layout.tabs.statsW;
 }
 
-export function selectDisplays(tab: Int): void {
-  displayA.hide = tab !== Build.MAX_MED;
-  displayB.hide = tab !== Build.ZERKER;
-  displayC.hide = tab !== Build.PURE;
-  statsDisplay.hide = tab === Build.MAX_MED || tab === Build.ZERKER || tab === Build.PURE;
-}
-
 export function suppliesInit(): void {
   const [, setTab] = useState(xpdropsFake6);
+  const [, setBinHot] = useState(binHot);
+  const [, setUnpainted] = useState(suppliesTabUnpainted);
   setTab(STATS_TAB);
+  setBinHot(-1);
+  setUnpainted(0);
+}
+
+export function suppliesDefaultTab(): void {
+  if (CS2.if_sub_has(gameframeSlot(GameframeSlot.VIEWPORT)) === false) {
+    return;
+  }
+  const [tab, setTab] = useState(xpdropsFake6);
+  const [, setUnpainted] = useState(suppliesTabUnpainted);
+  if (tab === STATS_TAB) {
+    setTab(Build.MAX_MED);
+    setUnpainted(1);
+  }
 }

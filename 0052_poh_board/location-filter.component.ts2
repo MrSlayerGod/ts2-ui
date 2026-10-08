@@ -1,10 +1,12 @@
-import { predictServerState, useRef, useServerState } from 'ts2';
+import { predictServerState, useRef, useServerState, useWatch } from 'ts2';
 
-import { BoardColor, BoardFonts, BoardVarbits, CheckBox, Copy, Layout } from './poh-board.constants';
+import { BoardColor, BoardFonts, BoardVarbits, BoardVarps, CheckBox, Copy, Layout } from './poh-board.constants';
+import { markBoardRedrawn } from './poh-board.state';
 
 export function toggleBoardFilter(): void {
   const on: Int = useServerState(BoardVarbits.FILTERED);
   predictServerState(BoardVarbits.FILTERED, on === 1 ? 0 : 1);
+  markBoardRedrawn();
 }
 
 export function LocationFilter(): Component {
@@ -12,6 +14,7 @@ export function LocationFilter(): Component {
   const on: Int = useServerState(BoardVarbits.FILTERED);
   const rest: Sprite = on === 1 ? CheckBox.ON : CheckBox.OFF;
   const lit: Sprite = on === 1 ? CheckBox.ON_HOVER : CheckBox.OFF_HOVER;
+  useWatch(BoardVarps.HOUSE_DATA, () => markBoardRedrawn());
 
   return (
     <layer

@@ -30,7 +30,7 @@ export function MemberPane({
   const thumbH: Int = thumbHeightOf(paneH, paneH, measured, false);
   const travel: Int = paneH - ARROW * 2 - thumbH;
   const key: Int = measured * 1024 + paneH;
-  const thumbY: Int = thumbKey === key && current ? thumbAt : ARROW + (travel * at) / Math.max(1, range);
+  const thumbY: Int = thumbKey === key && current ? thumbAt : ARROW + travel * at / Math.max(1, range);
 
   return (
     <>
@@ -45,7 +45,7 @@ export function MemberPane({
           const next: Int = scrolls ? Math.clamp(0, range, at + event.mouseY * WHEEL) : 0;
           setDrawn(next);
           setDrawnGen(fitGen);
-          setThumbAt(ARROW + (travel * next) / Math.max(1, range));
+          setThumbAt(ARROW + travel * next / Math.max(1, range));
           setThumbKey(key);
         }}
       >
@@ -69,16 +69,16 @@ export function MemberPane({
             const next: Int = scrolls ? Math.clamp(0, range, at + event.mouseY * WHEEL) : 0;
             setDrawn(next);
             setDrawnGen(fitGen);
-            setThumbAt(ARROW + (travel * next) / Math.max(1, range));
+            setThumbAt(ARROW + travel * next / Math.max(1, range));
             setThumbKey(key);
           }}
           onClick={(event) => {
             const span: Int = Math.max(1, travel);
             const offset: Int = Math.clamp(0, span, event.mouseY - thumbH / 2);
-            const next: Int = scrolls ? Math.clamp(0, range, (offset * range) / span) : 0;
+            const next: Int = scrolls ? Math.clamp(0, range, offset * range / span) : 0;
             setDrawn(next);
             setDrawnGen(fitGen);
-            setThumbAt(ARROW + (travel * next) / Math.max(1, range));
+            setThumbAt(ARROW + travel * next / Math.max(1, range));
             setThumbKey(key);
           }}
         />
@@ -92,7 +92,7 @@ export function MemberPane({
           dragMoves
           onDrag={(event) => {
             const offset: Int = event.mouseY;
-            const next: Int = scrolls ? Math.clamp(0, range, (offset * range) / Math.max(1, travel)) : 0;
+            const next: Int = scrolls ? Math.clamp(0, range, offset * range / Math.max(1, travel)) : 0;
             setDrawn(next);
             setDrawnGen(fitGen);
             setThumbAt(offset + ARROW);
@@ -111,7 +111,7 @@ export function MemberPane({
             const next: Int = scrolls ? Math.clamp(0, range, at - STEP) : 0;
             setDrawn(next);
             setDrawnGen(fitGen);
-            setThumbAt(ARROW + (travel * next) / Math.max(1, range));
+            setThumbAt(ARROW + travel * next / Math.max(1, range));
             setThumbKey(key);
           }}
         />
@@ -125,7 +125,7 @@ export function MemberPane({
             const next: Int = scrolls ? Math.clamp(0, range, at + STEP) : 0;
             setDrawn(next);
             setDrawnGen(fitGen);
-            setThumbAt(ARROW + (travel * next) / Math.max(1, range));
+            setThumbAt(ARROW + travel * next / Math.max(1, range));
             setThumbKey(key);
           }}
         />

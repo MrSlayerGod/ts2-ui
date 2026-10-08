@@ -57,6 +57,13 @@ export enum SoulWarsColor {
   TEAM_RED = 0xff3232,
 }
 
+export enum SoulWarsClock {
+  CYCLES_PER_TICK = 30,
+  CYCLES_PER_SECOND = 50,
+  CAP = 1500,
+  FLASH = 0xfc0000,
+}
+
 export const Layout = {
   CONTENT_X: 2,
   CONTENT_W: 252,

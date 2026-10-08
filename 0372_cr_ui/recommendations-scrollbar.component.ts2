@@ -38,13 +38,13 @@ export function RecommendationsScrollbar({ extent, paneHeight }: { extent: Int; 
           const travel: Int = Math.max(1, gutter.height - thumb.height);
           const offset: Int = Math.clamp(0, travel, event.mouseY - thumb.height / 2);
           const range: Int = recommendationsRef.scrollHeight - recommendationsRef.height;
-          recommendationsRef.scrollY = (offset * range) / travel;
+          recommendationsRef.scrollY = offset * range / travel;
           trackScroll(gutter, thumb, capTop, capBottom, recommendationsRef);
         }}
       />
       <sprite
         ref={thumb}
-        y={ARROW + ((barHeight - ARROW * 2 - thumbH) * recommendationsRef.scrollY) / Math.max(1, extent - paneHeight)}
+        y={ARROW + (barHeight - ARROW * 2 - thumbH) * recommendationsRef.scrollY / Math.max(1, extent - paneHeight)}
         w="fill"
         h={thumbH}
         sprite={CrSprite.SCROLL_THUMB}
@@ -58,7 +58,7 @@ export function RecommendationsScrollbar({ extent, paneHeight }: { extent: Int; 
           capBottom.y = offset + ARROW + thumb.height - CAP;
           const travel: Int = Math.max(1, gutter.height - thumb.height);
           const range: Int = recommendationsRef.scrollHeight - recommendationsRef.height;
-          recommendationsRef.scrollY = (offset * range) / travel;
+          recommendationsRef.scrollY = offset * range / travel;
         }}
       />
       <sprite ref={capTop} y={thumb.y} w="fill" h={CAP} sprite={CrSprite.SCROLL_CAP_TOP} />

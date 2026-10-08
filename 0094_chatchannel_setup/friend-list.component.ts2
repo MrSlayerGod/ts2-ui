@@ -1,4 +1,4 @@
-import { CS2, intArray } from 'ts2';
+import { CS2, Engine, intArray, useRerenderOn, useServerStateOnce, useState, useWatch } from 'ts2';
 
 import { onMobile } from '../lib/lib.helpers';
 import { scaled } from '../lib/lib.engine';
@@ -24,13 +24,18 @@ function heightOf(component: ComponentId): Int {
 }
 
 export function FriendRows(): Component {
+  useRerenderOn(Engine.FRIENDS);
+
+  const [heardCount, setHeardCount] = useState(useServerStateOnce(() => CS2.friend_count()));
+  useWatch(Engine.FRIENDS, () => setHeardCount(CS2.friend_count()));
+
   const listWidth: Int = widthOf(friendList);
   const listHeight: Int = heightOf(friendList);
 
   const mobile: Boolean = onMobile();
   const rowHeight: Int = mobile ? scaled(8, 5, FriendRowLayout.HEIGHT) : FriendRowLayout.HEIGHT;
 
-  const count: Int = CS2.friend_count();
+  const count: Int = heardCount;
 
   let state: Int = 0;
   if (count <= FriendListState.UNREQUESTED) {

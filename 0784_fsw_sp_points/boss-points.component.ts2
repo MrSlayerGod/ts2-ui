@@ -36,16 +36,16 @@ export function BossPointsView({
                 <rect x={0} y={stripeY} w={bgW} h={rowH} fill color={FswColor.BLACK} transparency={fswStripe(index)} />
               ) : null}
               <sprite
-                x={(index % cols) * colW + BossGrid.ICON_X}
-                y={(index / cols) * rowH + rowH / 2 - BossGrid.ICON / 2}
+                x={index % cols * colW + BossGrid.ICON_X}
+                y={index / cols * rowH + rowH / 2 - BossGrid.ICON / 2}
                 w={BossGrid.ICON}
                 h={BossGrid.ICON}
                 sprite={row.icon}
                 shadowColor={FswColor.BLACK}
               />
               <text
-                x={(index % cols) * colW + BossGrid.TEXT_X}
-                y={(index / cols) * rowH - lineH}
+                x={index % cols * colW + BossGrid.TEXT_X}
+                y={index / cols * rowH - lineH}
                 w={colW}
                 h={rowH}
                 text={row.name}
@@ -57,8 +57,8 @@ export function BossPointsView({
                 lineHeight={rowH}
               />
               <text
-                x={(index % cols) * colW + BossGrid.TEXT_X}
-                y={(index / cols) * rowH + lineH}
+                x={index % cols * colW + BossGrid.TEXT_X}
+                y={index / cols * rowH + lineH}
                 w={colW}
                 h={rowH}
                 text={stringOf(row.points)}

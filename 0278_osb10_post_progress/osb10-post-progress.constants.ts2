@@ -1,3 +1,4 @@
+import { createRef } from 'ts2';
 import { Fonts } from '../lib/game/fonts';
 import { Sprites } from '../lib/game/sprites';
 
@@ -37,24 +38,39 @@ export const Layout = {
   right: { SLOT_X: 170, TEXT_X: 8 },
 };
 
+export const G1 = createRef();
+export const G2 = createRef();
+export const G3 = createRef();
+export const G4 = createRef();
+export const G5 = createRef();
+export const G6 = createRef();
+export const G7 = createRef();
+export const G8 = createRef();
+export const G9 = createRef();
+export const G10 = createRef();
+export const G11 = createRef();
+export const G12 = createRef();
+export const G13 = createRef();
+export const G14 = createRef();
+
 export const LeftRows = [
-  { name: 'Crystal Chunks', y: 4 },
-  { name: 'Casket Pieces', y: 38 },
-  { name: 'Hallowed Bricks', y: 72 },
-  { name: 'Tempoross Remnants', y: 106 },
-  { name: 'Chunks of Barronite', y: 140 },
-  { name: "Osmumten's Coins", y: 174 },
-  { name: 'Muspah Spikes', y: 208 },
+  { name: 'Crystal Chunks', y: 4, item: 10648 },
+  { name: 'Casket Pieces', y: 38, item: 10654 },
+  { name: 'Hallowed Bricks', y: 72, item: 10651 },
+  { name: 'Tempoross Remnants', y: 106, item: 10661 },
+  { name: 'Chunks of Barronite', y: 140, item: 10657 },
+  { name: "Osmumten's Coins", y: 174, item: 10649 },
+  { name: 'Muspah Spikes', y: 208, item: 10646 },
 ] as const;
 
 export const RightRows = [
-  { name: 'Sarachnis Chitin', y: 4 },
-  { name: "Death's Fabric", y: 38 },
-  { name: 'Vampiric Essence', y: 72 },
-  { name: 'Star Shards', y: 106 },
-  { name: 'Abyssal-tainted Essence', y: 140 },
-  { name: 'Zarosian Emblems', y: 174 },
-  { name: 'Forinthry Sigils', y: 208 },
+  { name: 'Sarachnis Chitin', y: 4, item: 10639 },
+  { name: "Death's Fabric", y: 38, item: 10658 },
+  { name: 'Vampiric Essence', y: 72, item: 10641 },
+  { name: 'Star Shards', y: 106, item: 10659 },
+  { name: 'Abyssal-tainted Essence', y: 140, item: 10652 },
+  { name: 'Zarosian Emblems', y: 174, item: 10647 },
+  { name: 'Forinthry Sigils', y: 208, item: 10644 },
 ] as const;
 
 export enum ProgressText {

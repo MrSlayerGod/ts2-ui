@@ -47,6 +47,20 @@ export declare const DeadmanVarbits: {
   readonly PAUSED: typeof Varbits.DEADMAN_TOURNAMENT_PAUSED_PL;
 };
 
+export declare const StyleVars: {
+  readonly ENABLED: typeof Varbits.ATTACK_STYLE_ENABLED;
+  readonly CATEGORY: typeof Varbits.COMBAT_WEAPON_CATEGORY;
+  readonly AUTOCAST_DEFMODE: typeof Varbits.AUTOCAST_DEFMODE;
+  readonly COM_MODE: typeof Varps.COM_MODE;
+};
+
+export declare const StyleWatchVarps: {
+  readonly SETTINGS_VARP_2: typeof Varps.SETTINGS_VARP_2;
+  readonly COM_MODE: typeof Varps.COM_MODE;
+  readonly RANDOMHITSOUND: typeof Varps.RANDOMHITSOUND;
+  readonly TOPLEVEL_TEMP: typeof Varps.TOPLEVEL_TEMP;
+};
+
 export declare const LayoutVarps: {
   readonly DEADMAN: typeof Varps.DEADMAN;
   readonly DEADMAN2: typeof Varps.DEADMAN2;

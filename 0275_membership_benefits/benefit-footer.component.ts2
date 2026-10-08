@@ -1,13 +1,18 @@
-import { useServerState, useState } from 'ts2';
+import { onMounted, useServerState, useState } from 'ts2';
 import { membersWorld } from '../lib/lib.engine';
 import { onMobile } from '../lib/lib.helpers';
 import { bondsHidden } from '../0589_displayname/displayname.helpers';
 import { playermember } from '../lib/game/varcs';
 import { BenefitButton } from './benefit-button.component';
 import { BenefitVarbits, Layout } from './membership-benefits.constants';
+import { bondsHiddenByServer, resetBondsHidden } from './membership-benefits.state';
 
 export function BenefitFooter(): Component {
   const [member] = useState(playermember);
+  const [serverHid] = useState(bondsHiddenByServer);
+  onMounted(() => {
+    resetBondsHidden();
+  });
   const hasBonds: Int = useServerState(BenefitVarbits.HAS_BONDS);
   const mobile: Boolean = onMobile();
   const blocked: Boolean = bondsHidden();
@@ -24,6 +29,19 @@ export function BenefitFooter(): Component {
           <BenefitButton label={storeLabel} />
         </layer>
         <layer x="right" y={0} w={Layout.BUTTON_W} h="fill" hide />
+      </layer>
+    );
+  }
+
+  if (serverHid === 1) {
+    return (
+      <layer x={0} y="bottom" w="fill" h={Layout.FOOTER_H}>
+        <layer x="center" y="center" w={Layout.BUTTON_W} h="fill">
+          <BenefitButton label={storeLabel} />
+        </layer>
+        <layer x="right" y={0} w={Layout.BUTTON_W} h="fill" hide>
+          <BenefitButton label="Bond Pouch" />
+        </layer>
       </layer>
     );
   }

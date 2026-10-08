@@ -1,10 +1,10 @@
 import { BoardAlpha, BoardColor } from './poh-board.constants';
-import { BoardRows } from './poh-board.data';
+import { StripeRows } from './poh-board.data';
 
 export function BoardStripes({ rowHeight }: { rowHeight: Int }): Component {
   return (
     <layer w="fill" h="fill">
-      {BoardRows.map((row) => (
+      {StripeRows.map((row) => (
         <rect
           x={0}
           y={row * rowHeight}
@@ -14,26 +14,6 @@ export function BoardStripes({ rowHeight }: { rowHeight: Int }): Component {
           color={row % 2 === 1 ? BoardColor.STRIPE_ODD : BoardColor.STRIPE_EVEN}
           transparency={row % 2 === 1 ? BoardAlpha.STRIPE_ODD : BoardAlpha.STRIPE_EVEN}
         />
-      ))}
-    </layer>
-  );
-}
-
-export function BoardTextColumn(): Component {
-  return (
-    <layer w="fill" h="fill">
-      {BoardRows.map(() => (
-        <text hide font={-1} />
-      ))}
-    </layer>
-  );
-}
-
-export function BoardSpriteColumn(): Component {
-  return (
-    <layer w="fill" h="fill">
-      {BoardRows.map(() => (
-        <sprite hide />
       ))}
     </layer>
   );

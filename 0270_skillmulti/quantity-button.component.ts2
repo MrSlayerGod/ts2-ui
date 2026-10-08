@@ -1,20 +1,75 @@
+import { useInterval, useState } from 'ts2';
+
 import { Frame } from '../lib/frame.component';
+import { smXPending } from './skillmulti.cells';
 import { SkillMultiFonts, SlotColors, SlotSkinIn, SlotSkinOut } from './skillmulti.constants';
+import { quantityPick, quantityXEnd, quantityXStart } from './skillmulti.state';
 
 export function QuantityButton({
   label,
   x,
+  amount,
   selected = false,
+  isX = false,
   w = 30,
 }: {
   label: String;
   x: Int;
+  amount: Int;
   selected?: Boolean;
+  isX?: Boolean;
   w?: Int;
 }): Component {
+  const [hover, setHover] = useState(0);
+  const [xPending] = useState(smXPending);
+
+  useInterval(
+    isX && xPending === 1
+      ? () => {
+          if (quantityXEnd()) {
+            setHover(0);
+          }
+        }
+      : undefined,
+  );
+
+  let opText: String = label;
+  if (isX) {
+    opText = 'Other quantity';
+  }
+  const pressed: Boolean = selected || hover === 1;
+
   return (
-    <layer x={x} y="center" w={w} h={30}>
-      {selected ? (
+    <layer
+      x={x}
+      y="center"
+      w={w}
+      h={30}
+      options={selected ? undefined : [opText]}
+      onMouseEnter={() => {
+        if (!selected) {
+          setHover(1);
+        }
+      }}
+      onMouseLeave={() => {
+        setHover(0);
+      }}
+      onOptionSelect={(event) => {
+        if (selected) {
+          return;
+        }
+        if (event.option !== 1) {
+          return;
+        }
+        if (isX) {
+          quantityXStart();
+        } else {
+          setHover(0);
+          quantityPick(amount);
+        }
+      }}
+    >
+      {pressed ? (
         <>
           <rect x="center" y="center" w={{ fill: 2 }} h={{ fill: 2 }} color={SlotColors.PRESSED_FILL} fill />
           <Frame

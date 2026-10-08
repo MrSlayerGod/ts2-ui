@@ -106,14 +106,14 @@ function XpdropsSkillRow({ index }: { index: Int }): Component {
         y={top}
         w={XpdropsLayout.row.iconSize}
         h={XpdropsLayout.row.iconSize}
-        sprite={total ? XpdropsSprite.TOTAL_XP : (SkillIcons.get(skill) ?? -1)}
+        sprite={total ? XpdropsSprite.TOTAL_XP : SkillIcons.get(skill) ?? -1}
       />
       <text
         x={XpdropsLayout.row.nameX}
         y={top}
         w={XpdropsLayout.row.nameW}
         h={XpdropsLayout.row.h}
-        text={total ? 'Total XP' : (SkillNames.get(skill) ?? 'Skill')}
+        text={total ? 'Total XP' : SkillNames.get(skill) ?? 'Skill'}
         font={XpdropsFont.VALUE}
         color={XpdropsColor.LABEL_HOT}
         align="left"

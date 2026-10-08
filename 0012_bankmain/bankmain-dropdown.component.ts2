@@ -1,0 +1,204 @@
+import { predictServerState, useRef, useServerState, useState, useUniverse } from 'ts2';
+import { playSound } from '../lib/lib.engine';
+import { onMobile } from '../lib/lib.helpers';
+import { ScrollbarVertical } from '../lib/scrollbar-vertical.component';
+import { BankSounds, BankSprites, BankVars, Frame } from './bankmain.constants';
+import { MenuColors, MenuFonts, MenuLayout, MenuSprites, TabDisplayLabels } from './bankmain-menu.constants';
+import { bankTabDropdown } from './bankmain.state';
+
+export function BankTabDropdown(): Component {
+  const [open, setOpen] = useState(bankTabDropdown);
+  const t1: Int = useServerState(BankVars.TAB_1);
+  const t2: Int = useServerState(BankVars.TAB_2);
+  const t3: Int = useServerState(BankVars.TAB_3);
+  const t4: Int = useServerState(BankVars.TAB_4);
+  const t5: Int = useServerState(BankVars.TAB_5);
+  const t6: Int = useServerState(BankVars.TAB_6);
+  const t7: Int = useServerState(BankVars.TAB_7);
+  const t8: Int = useServerState(BankVars.TAB_8);
+  const t9: Int = useServerState(BankVars.TAB_9);
+  const root = useUniverse();
+  const content = useRef();
+  const mobile: Boolean = onMobile();
+  const shown: Boolean = open === 1;
+
+  const anyTab: Boolean = t1 > 0 || t2 > 0 || t3 > 0 || t4 > 0 || t5 > 0 || t6 > 0 || t7 > 0 || t8 > 0 || t9 > 0;
+  const count: Int = anyTab ? 3 : 4;
+  const rowH: Int = mobile ? MenuLayout.DROPDOWN_ROW_MOBILE : MenuLayout.DROPDOWN_ROW;
+  let listH: Int = rowH * count + 4;
+  if (listH > 212) {
+    listH = 212;
+  }
+  const scrollSpace: Boolean = !mobile;
+
+  const clamped: Boolean = root.height > Frame.CLAMP_ABOVE ? true : false;
+  const frameTop: Int = clamped
+    ? root.height - (root.height - Frame.MAX_H) / 2 - Frame.MAX_H
+    : root.height - (root.height - Frame.INSET) - Frame.SHORT_OFFSET;
+  const selectX: Int = (root.width - Frame.W) / 2 + 5 + (Frame.W - 10 - 278) / 2 + 278 - MenuLayout.DROPDOWN_W;
+  const selectY: Int = frameTop + 35 + 2;
+  const selectH: Int = MenuLayout.DROPDOWN_H;
+  const boxW: Int = MenuLayout.DROPDOWN_W;
+  const below: Boolean = selectY + selectH + listH <= root.height;
+  const contentH: Int = listH - 4;
+  const contentW: Int = boxW - (scrollSpace ? 20 : 0);
+  const arrowInset: Int = (selectH - 16) / 2;
+
+  return (
+    <layer
+      x={0}
+      y={0}
+      w="fill"
+      h="fill"
+      hide={!shown}
+      onMouseRepeat={shown && !mobile ? () => setOpen(0) : null}
+      onClick={shown && mobile ? () => setOpen(0) : null}
+    >
+      <layer x={selectX} y={below ? selectY : selectY - listH + 1} w={boxW} h={listH + selectH - 1} noClickThrough>
+        <layer
+          ref={content}
+          x={2}
+          y={below ? { bottom: 2 } : 2}
+          w={{ fill: scrollSpace ? 20 : 0 }}
+          h={contentH}
+          scrollHeight={count * rowH}
+          scrollY={0}
+        >
+          <sprite x={0} y={0} w="fill" h="fill" sprite={MenuSprites.BACKING} tiling />
+          {TabDisplayLabels.map(
+            (label, i) =>
+              shown &&
+              i < count && <TabDisplayRow value={i} label={label} y={i * rowH} w={contentW} h={rowH} hover={!mobile} />,
+          )}
+        </layer>
+        <layer x={{ right: 2 }} y={below ? { bottom: 2 } : 2} w={16} h={contentH}>
+          {scrollSpace && (
+            <ScrollbarVertical
+              content={content}
+              track={BankSprites.BAR_TRACK}
+              capTopSprite={BankSprites.BAR_CAP_TOP}
+              thumbSprite={BankSprites.BAR_THUMB}
+              capBottomSprite={BankSprites.BAR_CAP_BOTTOM}
+              arrowUp={BankSprites.BAR_ARROW_UP}
+              arrowDown={BankSprites.BAR_ARROW_DOWN}
+            />
+          )}
+        </layer>
+        <rect x={0} y={below ? selectH - 1 : 0} w={boxW} h={listH} color={MenuColors.THIN_OUTER} />
+        <rect x={1} y={below ? selectH : 1} w={boxW - 2} h={listH - 2} color={MenuColors.THIN_INNER} />
+        <CloseStrip
+          below={below}
+          height={selectH}
+          inset={arrowInset}
+          arrowX={contentW - selectH + arrowInset}
+          mobile={mobile}
+        />
+      </layer>
+    </layer>
+  );
+}
+
+function CloseStrip({
+  below,
+  height,
+  inset,
+  arrowX,
+  mobile,
+}: {
+  below: Boolean;
+  height: Int;
+  inset: Int;
+  arrowX: Int;
+  mobile: Boolean;
+}): Component {
+  const [, setOpen] = useState(bankTabDropdown);
+  const [over, setOver] = useState(0);
+  return (
+    <>
+      <rect
+        x={0}
+        y={below ? 0 : { bottom: 0 }}
+        w="fill"
+        h={height + 1}
+        color={MenuColors.WHITE}
+        fill
+        transparency={255}
+        noClickThrough
+        options={['Close']}
+        onOptionSelect={() => setOpen(0)}
+        onMouseEnter={mobile ? null : () => setOver(1)}
+        onMouseLeave={mobile ? null : () => setOver(0)}
+      />
+      <sprite
+        x={mobile ? arrowX : { right: inset }}
+        y={below ? inset : { bottom: inset }}
+        w={16}
+        h={16}
+        sprite={MenuSprites.BACKING}
+        tiling
+      />
+      <sprite
+        x={mobile ? arrowX : { right: inset }}
+        y={below ? inset : { bottom: inset }}
+        w={16}
+        h={16}
+        sprite={MenuSprites.ARROW_UP}
+        tiling
+        transparency={over === 1 ? 125 : 0}
+      />
+    </>
+  );
+}
+
+function TabDisplayRow({
+  value,
+  label,
+  y,
+  w,
+  h,
+  hover,
+}: {
+  value: Int;
+  label: String;
+  y: Int;
+  w: Int;
+  h: Int;
+  hover: Boolean;
+}): Component {
+  const [, setOpen] = useState(bankTabDropdown);
+  const [lit, setLit] = useState(0);
+  return (
+    <>
+      <rect
+        x={0}
+        y={y}
+        w={w}
+        h={h}
+        color={MenuColors.WHITE}
+        fill
+        transparency={lit === 1 ? 220 : 255}
+        options={['Select']}
+        optionSubject={`<col=ff9040>${label}</col>`}
+        onOptionSelect={() => {
+          playSound(BankSounds.SELECT);
+          predictServerState(BankVars.TAB_DISPLAY, value);
+          setOpen(0);
+        }}
+        onMouseEnter={hover ? () => setLit(1) : null}
+        onMouseLeave={hover ? () => setLit(0) : null}
+      />
+      <text
+        x={0}
+        y={y}
+        w={w}
+        h={h}
+        text={label}
+        font={MenuFonts.SMALL}
+        color={MenuColors.ORANGE}
+        shadow
+        align="center"
+        valign="middle"
+      />
+    </>
+  );
+}

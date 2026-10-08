@@ -1,23 +1,26 @@
-import { CS2, useRef } from 'ts2';
+import { closeInterface } from '../lib/lib.helpers';
 import { CloseSprites, ListFonts, ListModels } from './mourning-deathalter-list.constants';
-import { QuestListScrollbar } from './quest-list-scrollbar.component';
+import {
+  LIST_CONTAINER,
+  LIST_SCROLLBAR,
+  LIST_TEXT,
+  mourningDeathalterListInit,
+} from './mourning-deathalter-list.state';
 
 export function NeededItemsList(): Component {
-  const listContainer = useRef();
-
   return (
-    <layer w={512} h={334}>
+    <layer w={512} h={334} onLoad={() => mourningDeathalterListInit()}>
       <layer x={37} y={37} w={387} h={287}>
         <model x={163} y={79} w={55} h={81} model={ListModels.BACKDROP} zoom={643} pitch={510} />
       </layer>
 
       <text x={53} y={56} w={297} h={17} text="List of needed items:" font={ListFonts.TITLE} />
 
-      <layer ref={listContainer} x={48} y={80} w={326} h={215}>
-        <text w="fill" h="fill" text="" font={ListFonts.LIST} align="center" />
+      <layer static ref={LIST_CONTAINER} x={48} y={80} w={326} h={215}>
+        <text static ref={LIST_TEXT} w="fill" h="fill" text="" font={ListFonts.LIST} align="center" />
       </layer>
 
-      <QuestListScrollbar x={383} y={80} w={16} h={218} content={listContainer} font={ListFonts.LIST} />
+      <layer static ref={LIST_SCROLLBAR} x={383} y={80} w={16} h={218} />
 
       <sprite
         x={378}
@@ -27,7 +30,7 @@ export function NeededItemsList(): Component {
         sprite={CloseSprites.DEFAULT}
         hover={{ sprite: CloseSprites.HOVER }}
         options={['Close']}
-        onOptionSelect={() => CS2.if_close()}
+        onOptionSelect={() => closeInterface()}
       />
     </layer>
   );

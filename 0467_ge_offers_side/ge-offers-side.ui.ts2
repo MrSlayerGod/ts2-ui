@@ -55,10 +55,10 @@ export function GeOffersSideItems(): Component {
   return (
     <layer x={0} y={0} w="fill" h="fill">
       {inv.map((item, slot) =>
-        item === -1 ? (
+        (item === -1 ? (
           <sprite
-            x={Grid.LEFT + (slot % Grid.COLUMNS) * Grid.PITCH_X}
-            y={Grid.TOP + (slot / Grid.COLUMNS) * Grid.PITCH_Y}
+            x={Grid.LEFT + slot % Grid.COLUMNS * Grid.PITCH_X}
+            y={Grid.TOP + slot / Grid.COLUMNS * Grid.PITCH_Y}
             w={Grid.CELL_W}
             h={Grid.CELL_H}
             outline={Grid.OUTLINE}
@@ -71,8 +71,8 @@ export function GeOffersSideItems(): Component {
           />
         ) : (
           <sprite
-            x={Grid.LEFT + (slot % Grid.COLUMNS) * Grid.PITCH_X}
-            y={Grid.TOP + (slot / Grid.COLUMNS) * Grid.PITCH_Y}
+            x={Grid.LEFT + slot % Grid.COLUMNS * Grid.PITCH_X}
+            y={Grid.TOP + slot / Grid.COLUMNS * Grid.PITCH_Y}
             w={Grid.CELL_W}
             h={Grid.CELL_H}
             outline={Grid.OUTLINE}
@@ -85,7 +85,7 @@ export function GeOffersSideItems(): Component {
             optionSubject={`<col=ff9040>${itemName(item)}</col>`}
             onOptionSelect={live ? (event) => flashFor(event.self, Flash.PRESSED, Flash.REST) : undefined}
           />
-        ),
+        )),
       )}
     </layer>
   );

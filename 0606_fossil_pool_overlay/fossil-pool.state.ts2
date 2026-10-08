@@ -1,0 +1,59 @@
+import { CS2, sessionState, useState } from 'ts2';
+
+import { rgbToHex } from '../0259_area_task/area-task.helpers';
+
+export const fossilCalcium = sessionState(-1);
+export const fossilPhosphate = sessionState(-1);
+export const fossilPool = sessionState(-1);
+export const fossilProgress = sessionState(-1);
+
+export const fossilPoolPanelShown = sessionState(0);
+
+export function resetFossilPoolPanel(): void {
+  const [, setShown] = useState(fossilPoolPanelShown);
+  setShown(0);
+}
+
+export function fossilPoolUpdate(a: Int, b: Int, c: Int, d: Int, calcium: Int, phosphate: Int): void {
+  const [, setCalcium] = useState(fossilCalcium);
+  const [, setPhosphate] = useState(fossilPhosphate);
+  const [, setPool] = useState(fossilPool);
+  setCalcium(calcium);
+  setPhosphate(phosphate);
+  setPool(a + b + c + d);
+  const [, setShown] = useState(fossilPoolPanelShown);
+  setShown(1);
+}
+
+export function fossilPoolProgressUpdate(level: Int): void {
+  const [, setProgress] = useState(fossilProgress);
+  setProgress(level);
+}
+
+export function resetFossilPool(): void {
+  const [, setCalcium] = useState(fossilCalcium);
+  const [, setPhosphate] = useState(fossilPhosphate);
+  const [, setProgress] = useState(fossilProgress);
+  setCalcium(-1);
+  setPhosphate(-1);
+  setProgress(-1);
+}
+
+export function proportionWidth(level: Int, max: Int, parent: Int): Int {
+  const raw: Int = CS2.interpolate(0, 16384, 0, max, level);
+  return raw * parent / 16384;
+}
+
+export function fossilBarColour(level: Int, low: Int, max: Int): Int {
+  if (level <= low) {
+    return rgbToHex(255, CS2.interpolate(0, level, 0, low, 255), 0);
+  }
+  return rgbToHex(CS2.interpolate(0, max - level, 0, max, 255), 255, 0);
+}
+
+export function fossilProgressColour(level: Int): Int {
+  if (level <= 2) {
+    return rgbToHex(255, CS2.interpolate(0, level, 0, 2, 255), 0);
+  }
+  return rgbToHex(CS2.interpolate(0, level, 0, 10, 255), 255, 0);
+}

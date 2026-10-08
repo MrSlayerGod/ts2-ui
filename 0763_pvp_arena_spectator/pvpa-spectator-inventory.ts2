@@ -1,0 +1,15 @@
+import { useState } from 'ts2';
+
+import { pvpaLeftInvStart, pvpaRightInvStart } from './pvp-arena-spectator.state';
+
+export const SPECTATOR_INV_SLOTS = 28;
+
+export function pvpaSpectatorInventory(side: Int, start: Int): void {
+  const [, setLeft] = useState(pvpaLeftInvStart);
+  const [, setRight] = useState(pvpaRightInvStart);
+  if (side === 1) {
+    setRight(start);
+  } else {
+    setLeft(start);
+  }
+}

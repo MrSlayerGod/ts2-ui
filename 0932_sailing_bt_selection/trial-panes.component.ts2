@@ -270,7 +270,7 @@ function BestTimeRow({ y, icon, best }: { y: Int; icon: Sprite; best: Int }): Co
         y={y + Layout.SLOT_TEXT_DY}
         w={Layout.SLOT_TEXT_W}
         h={Layout.SLOT_TEXT_H}
-        text={best > 0 ? `Best Time: ${formatDuration((best * Layout.TICK_NUMERATOR) / Layout.TICK_DENOMINATOR)}` : '-'}
+        text={best > 0 ? `Best Time: ${formatDuration(best * Layout.TICK_NUMERATOR / Layout.TICK_DENOMINATOR)}` : '-'}
         font={SailingFonts.SMALL}
         color={SailingColors.WHITE}
         align="center"

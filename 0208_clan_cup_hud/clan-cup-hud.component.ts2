@@ -1,24 +1,20 @@
-import { createRef, useInterval } from 'ts2';
+import { createRef, useState, useWatch } from 'ts2';
 
 import { Anchor, overlayInit } from '../lib/lib.overlay';
+import { Varbits } from '../lib/game/varbits';
 import { CLAN_CUP_TEXT, ClanCupDodge, ClanCupFonts, ClanCupSideways, Layout } from './clan-cup-hud.constants';
-import { clancupHudUpdate } from './clan-cup-hud.helpers';
-
-const timerHost1 = createRef('0208_clan_cup_hud_timer_host1');
+import { clanCupLabels, clanCupValues, clancupHudUpdate } from './clan-cup-hud.helpers';
+import { clanCupScoreMe, clanCupScoreThem, clanCupTimeRemaining } from './clan-cup-hud.state';
 
 const timerHost2 = createRef('0208_clan_cup_hud_timer_host2');
 
 const content = createRef('clan_cup_hud_content');
 
-const header = createRef('clan_cup_hud_header0');
-
-const results = createRef('clan_cup_hud_results1');
-
 export function ClanCupHud(): Component {
-  useInterval(() => clancupHudUpdate(header, results), timerHost1);
+  useWatch([Varbits.CLANCUP_SCORE_ME, Varbits.CLANCUP_TIME_REMAINING], () => clancupHudUpdate());
 
   return (
-    <layer x="center" y="center" w="fill" h="fill" ref={timerHost1}>
+    <layer x="center" y="center" w="fill" h="fill" onLoad={() => clancupHudUpdate()}>
       <layer
         w="fill"
         h="fill"
@@ -28,32 +24,44 @@ export function ClanCupHud(): Component {
         }
       >
         <layer ref={content} x={0} y={0} w={Layout.CONTENT_W} h={Layout.CONTENT_H}>
-          <text
-            ref={header}
-            x={Layout.TEXT_X}
-            y={Layout.TEXT_Y}
-            w={Layout.TEXT_W}
-            h={Layout.TEXT_H}
-            font={ClanCupFonts.BODY}
-            lineHeight={Layout.LINE_HEIGHT}
-            shadow
-            color={CLAN_CUP_TEXT}
-          />
-
-          <text
-            ref={results}
-            x={Layout.TEXT_X}
-            y={Layout.TEXT_Y}
-            w={Layout.TEXT_W}
-            h={Layout.TEXT_H}
-            font={ClanCupFonts.BODY}
-            align="right"
-            lineHeight={Layout.LINE_HEIGHT}
-            shadow
-            color={CLAN_CUP_TEXT}
-          />
+          <ClanCupColumns />
         </layer>
       </layer>
+    </layer>
+  );
+}
+
+export function ClanCupColumns(): Component {
+  const [me] = useState(clanCupScoreMe);
+  const [them] = useState(clanCupScoreThem);
+  const [remaining] = useState(clanCupTimeRemaining);
+
+  return (
+    <layer x={0} y={0} w="fill" h="fill">
+      <text
+        x={Layout.TEXT_X}
+        y={Layout.TEXT_Y}
+        w={Layout.TEXT_W}
+        h={Layout.TEXT_H}
+        font={ClanCupFonts.BODY}
+        lineHeight={Layout.LINE_HEIGHT}
+        shadow
+        color={CLAN_CUP_TEXT}
+        text={clanCupLabels(me, them, remaining)}
+      />
+
+      <text
+        x={Layout.TEXT_X}
+        y={Layout.TEXT_Y}
+        w={Layout.TEXT_W}
+        h={Layout.TEXT_H}
+        font={ClanCupFonts.BODY}
+        align="right"
+        lineHeight={Layout.LINE_HEIGHT}
+        shadow
+        color={CLAN_CUP_TEXT}
+        text={clanCupValues(me, them, remaining)}
+      />
     </layer>
   );
 }

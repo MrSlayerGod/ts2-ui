@@ -92,10 +92,10 @@ export function SideChannelTab({ index, dx }: { index: Int; dx: Int }): Componen
           glass === 1 ? (hovered === 1 ? TabSprites.GLASS_HOVER_MID : TabSprites.GLASS_IDLE_MID) : TabSprites.SOLID_MID
         }
         glowCap={
-          glass === 1 ? NoSprite.NONE : hovered === 1 ? TabSprites.SOLID_HOVER_GLOW_CAP : TabSprites.SOLID_IDLE_GLOW_CAP
+          glass === 1 ? NoSprite.NONE : (hovered === 1 ? TabSprites.SOLID_HOVER_GLOW_CAP : TabSprites.SOLID_IDLE_GLOW_CAP)
         }
         glowMid={
-          glass === 1 ? NoSprite.NONE : hovered === 1 ? TabSprites.SOLID_HOVER_GLOW_MID : TabSprites.SOLID_IDLE_GLOW_MID
+          glass === 1 ? NoSprite.NONE : (hovered === 1 ? TabSprites.SOLID_HOVER_GLOW_MID : TabSprites.SOLID_IDLE_GLOW_MID)
         }
         icon={icon}
       />

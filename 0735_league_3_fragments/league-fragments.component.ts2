@@ -1,4 +1,4 @@
-import { useServerState } from 'ts2';
+import { useServerState, useState } from 'ts2';
 
 import { Varbits } from '../lib/game/varbits';
 import { leagueColour } from './league-3-fragments.helpers';
@@ -12,47 +12,31 @@ import { FragmentLoadout } from './fragment-loadout.component';
 import { FragmentLoadoutIcons } from './fragment-loadout-icons.component';
 import { SteelBorder } from '../lib/steel-border.component';
 import { StoneTabButton } from './stone-tab-button.component';
+import { LeagueSwitcher } from './league-switcher.component';
+import { fragmentFiltersShown, fragmentPane, Pane, resetFragments, TabAction } from './league-3-fragments.state';
 
 export function LeagueFragments(): Component {
-  const league = useServerState(Varbits.LEAGUE_TYPE);
-
   return (
-    <layer w="fill" h="fill">
+    <layer w="fill" h="fill" onLoad={() => resetFragments()}>
       <layer x="center" y="center" w={480} h={314}>
-        <SteelBorder title="League Fragments" flags={1} titleColor={leagueColour(league)} />
+        <FragmentsBorder />
 
         <CloseButton />
 
-        <StoneTabButton
-          x={12}
-          y={99}
-          w={110}
-          h={30}
-          op="Show"
-          optionSubject="<col=ff9040>Filters</col>"
-          label="Show Filters"
-        />
+        <FiltersTab />
         <ClearFiltersButton />
+        <PaneTab x={243} label="Passive Effects" pane={Pane.PASSIVE} action={TabAction.PASSIVE} />
+        <PaneTab x={358} label="Active Effects" pane={Pane.ACTIVE} action={TabAction.ACTIVE} />
         <StoneTabButton
-          x={243}
-          y={99}
-          w={110}
-          h={30}
-          op="View"
-          optionSubject="<col=ff9040>Passive Effects</col>"
-          label="Passive Effects"
+          x={414}
+          y={41}
+          w={54}
+          h={51}
+          op="Unequip all"
+          optionSubject=""
+          label="Unequip all"
+          action={TabAction.ACTIVE}
         />
-        <StoneTabButton
-          x={358}
-          y={99}
-          w={110}
-          h={30}
-          selected
-          op="View"
-          optionSubject="<col=ff9040>Active Effects</col>"
-          label="Active Effects"
-        />
-        <StoneTabButton x={414} y={41} w={54} h={51} op="Unequip all" optionSubject="" label="Unequip all" />
 
         <FragmentList />
         <FilterPanel />
@@ -60,14 +44,50 @@ export function LeagueFragments(): Component {
         <FragmentLoadout />
         <FragmentLoadoutIcons />
 
-        <layer x={7} y={7} w={21} h={21} />
-        <layer w="fill" h="fill" hide noClickThrough />
-        <layer x={0} y={29} w={80} h={70} />
+        <LeagueSwitcher />
 
         <layer w="fill" h="fill" hide />
       </layer>
 
       <DropdownPopup />
     </layer>
+  );
+}
+
+function FragmentsBorder(): Component {
+  const league = useServerState(Varbits.LEAGUE_TYPE);
+  return <SteelBorder title="League Fragments" flags={1} titleColor={leagueColour(league)} />;
+}
+
+function FiltersTab(): Component {
+  const [shown] = useState(fragmentFiltersShown);
+  return (
+    <StoneTabButton
+      x={12}
+      y={99}
+      w={110}
+      h={30}
+      op={shown === 1 ? 'Hide' : 'Show'}
+      optionSubject="<col=ff9040>Filters</col>"
+      label={shown === 1 ? 'Hide Filters' : 'Show Filters'}
+      action={TabAction.FILTERS}
+    />
+  );
+}
+
+function PaneTab({ x, label, pane, action }: { x: Int; label: String; pane: Int; action: Int }): Component {
+  const [current] = useState(fragmentPane);
+  return (
+    <StoneTabButton
+      x={x}
+      y={99}
+      w={110}
+      h={30}
+      selected={current === pane}
+      op="View"
+      optionSubject={`<col=ff9040>${label}</col>`}
+      label={label}
+      action={action}
+    />
   );
 }

@@ -31,10 +31,12 @@ import { FifthTab } from '../0629_side_journal/side-journal.constants';
 import { fifthTab } from '../0629_side_journal/side-journal.helpers';
 import { StoneBoxSkin } from '../0721_gim_limited_sidepanel/gim-limited-sidepanel.constants';
 import { StoneBox } from '../0721_gim_limited_sidepanel/stone-box.component';
+import { PopoutArm, popoutArm } from '../0728_popout/popout.state';
 import { SideChannelIcons, SideChannelLabels } from '../0892_osm_hotkeys/side-channels.data';
 import { Sprites } from '../lib/game/sprites';
 import { Varbits } from '../lib/game/varbits';
 import { toplevelMainmodalBgColour, toplevelMainmodalBgTrans, toplevelPanel } from '../lib/game/varcs';
+import { MouseoverOps } from '../lib/enhanced/mouseover.component';
 import { ToplevelComponents } from '../lib/lib.constants';
 import { onMobile } from '../lib/lib.helpers';
 import {
@@ -119,13 +121,14 @@ import {
   preEocInsetRight,
   preEocLogoutOp,
   preEocTabOp,
-  preEocToplevelInit,
 } from './toplevel-pre-eoc.helpers';
+import { preEocToplevelLoad } from './toplevel-pre-eoc.keys';
+import { PopoutWidth, preEocPopoutWidth } from './toplevel-pre-eoc.popout';
 
 export function ToplevelPreEoc(): Component {
   return (
     <>
-      <layer static ref={gameframeRef} x={0} y={0} w="fill" h="fill" onLoad={() => preEocToplevelInit()}>
+      <layer static ref={gameframeRef} x={0} y={0} w="fill" h="fill" onLoad={() => preEocToplevelLoad()}>
         <layer static ref={viewportRef} x={0} y={0} w="fill" h="fill" contentType="worldView" />
 
         <layer static ref={viewportTrackerBackRef} x="center" y="center" w="fill" h="fill">
@@ -317,7 +320,9 @@ export function ToplevelPreEoc(): Component {
       <layer static ref={ehcListenerRef} x={0} y={0} w={1} h={1}>
         <EhcHooks />
       </layer>
-      <layer static ref={mouseoverRef} x={-3} y={-1} w="fill" h="fill" />
+      <layer static ref={mouseoverRef} x={-3} y={-1} w="fill" h="fill">
+        <MouseoverOps />
+      </layer>
       <layer static ref={uiHighlightsRef} x={0} y={0} w="fill" h="fill" />
 
       <layer x={0} y={0} w="fill" h="fill">
@@ -329,8 +334,38 @@ export function ToplevelPreEoc(): Component {
       <layer x={0} y={0} w="fill" h="fill">
         <SidePanelLayout />
       </layer>
+      <layer x={0} y={0} w="fill" h="fill">
+        <PopoutSlotLayout />
+      </layer>
     </>
   );
+}
+
+function PopoutSlotLayout(): Component {
+  const [arm] = useState(popoutArm);
+  const [width] = useState(preEocPopoutWidth);
+  let mode: Int = 0;
+  if (arm === PopoutArm.DESKTOP) {
+    mode = 1;
+  } else if (arm === PopoutArm.HIDDEN) {
+    mode = 2;
+  }
+  let slotW: Int = PopoutWidth.CLOSED;
+  if (width === PopoutWidth.OPEN) {
+    slotW = PopoutWidth.OPEN;
+  }
+  onMounted(() => placePopoutSlot(mode, slotW));
+  onUpdated(() => placePopoutSlot(mode, slotW));
+  return <layer x={0} y={0} w={0} h={0} />;
+}
+
+function placePopoutSlot(mode: Int, slotW: Int): void {
+  if (mode === 1) {
+    popoutRef.props = { w: slotW, h: 'fill' };
+    gameframeRef.props = { w: { fill: slotW }, h: 'fill' };
+  } else if (mode === 2) {
+    gameframeRef.props = { w: 'fill', h: 'fill' };
+  }
 }
 
 function CutsceneLayout(): Component {

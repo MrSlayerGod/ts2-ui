@@ -7,6 +7,7 @@ import {
   IntroVolume,
   MusicVolumeCurve,
   introMuted,
+  introReframed,
 } from './league-3-intro-cutscene.constants';
 
 export function leagueIntroMute(muted: Int): void {
@@ -29,4 +30,9 @@ export function leagueIntroMusicRadio(): void {
   const [, setOverride] = useState(optionAudioOverride);
   setOverride(1);
   leagueIntroMute(0);
+}
+
+export function leagueIntroReframe(): void {
+  const [, setReframed] = useState(introReframed);
+  setReframed(1);
 }

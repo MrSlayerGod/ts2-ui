@@ -1,11 +1,13 @@
-import { useOnResize, useRef, useUniverse } from 'ts2';
+import { useInterval, useOnResize, useRef, useState, useUniverse } from 'ts2';
 
 import { ccSetTrans } from '../0332_thormac/cc-settrans';
+import { clientClock } from '../lib/lib.engine';
 import { ScrollbarVertical } from '../lib/scrollbar-vertical.component';
 import { SteelBorder } from '../lib/steel-border.component';
 import { SteelborderColor } from '../lib/lib.constants';
 import { ThinStoneBoxEntrypoint } from '../lib/thin-stone-box.component';
 import { onMobile } from '../lib/lib.helpers';
+import { BracketCell, DetailsLine } from './bracket-cell.component';
 import { BracketLines, gapFor } from './bracket-lines.component';
 import { InfoCloseButton } from './close-button.component';
 import {
@@ -16,9 +18,16 @@ import {
   InfoScrollbarV,
   InfoSprites,
   Layout,
+  infoHeight,
+  infoWidth,
+  infoX,
+  infoY,
 } from './pvp-arena-1v1-info.constants';
 import {
   dodgerDrop,
+  dragBox,
+  handleX,
+  handleY,
   maxHeight,
   maxWidth,
   panelHeight,
@@ -27,7 +36,6 @@ import {
   panelY,
   rawHeight,
   rawWidth,
-  resizeDrag,
   roundCount,
 } from './pvp-arena-1v1-info.layout';
 import { ScrollbarHorizontal } from './scrollbar-horizontal.component';
@@ -38,6 +46,19 @@ export function PvpArena1v1Info(): Component {
   const scrolling = useRef();
   const display = useRef();
   const preview = useRef();
+
+  const [dragging, setDragging] = useState(-1);
+  const [previewX, setPreviewX] = useState(0);
+  const [previewY, setPreviewY] = useState(0);
+  const [previewW, setPreviewW] = useState(0);
+  const [previewH, setPreviewH] = useState(0);
+  const [commitAt, setCommitAt] = useState(-1);
+  const [storedW, setStoredW] = useState(infoWidth);
+  const [storedH, setStoredH] = useState(infoHeight);
+  const [storedX, setStoredX] = useState(infoX);
+  const [storedY, setStoredY] = useState(infoY);
+  const [seenW, setSeenW] = useState(Layout.UNSEEN);
+  const [seenH, setSeenH] = useState(Layout.UNSEEN);
 
   const universe = useUniverse();
   useOnResize(universe);
@@ -56,14 +77,55 @@ export function PvpArena1v1Info(): Component {
   const gridW: Int = maxWidth(rounds) - Layout.bracket.PAD_W;
   const gridH: Int = maxHeight(rounds) - Layout.bracket.PAD_H;
 
-  const w: Int = panelWidth(rounds, availW);
-  const h: Int = panelHeight(rounds, availH);
-  const x: Int = panelX(availW, rawWidth(), w);
-  const y: Int = panelY(top, dodgerH, availH, rawHeight(), h);
+  let nudgeW: Int = 0;
+  let nudgeH: Int = 0;
+  let nudgeX: Int = 0;
+  let nudgeY: Int = 0;
+  if (seenW !== Layout.UNSEEN && storedX + storedW >= seenW - Layout.GLUE) {
+    if (storedX <= Layout.GLUE) {
+      nudgeW = availW - seenW;
+    } else {
+      nudgeX = availW - seenW;
+    }
+  }
+  if (seenH !== Layout.UNSEEN && storedY + storedH >= seenH - Layout.GLUE) {
+    if (storedY <= top + Layout.GLUE) {
+      nudgeH = availH - seenH;
+    } else {
+      nudgeY = availH - seenH;
+    }
+  }
+  setSeenW(availW);
+  setSeenH(availH);
+
+  const w: Int = panelWidth(rounds, availW, nudgeW);
+  const h: Int = panelHeight(rounds, availH, nudgeH);
+  const x: Int = panelX(availW, rawWidth(nudgeW), w, nudgeX);
+  const y: Int = panelY(top, dodgerH, availH, rawHeight(nudgeH), h, nudgeY);
+  setStoredW(w);
+  setStoredH(h);
+  setStoredX(x);
+  setStoredY(y);
+
+  useInterval(
+    commitAt >= 0
+      ? () => {
+          if (clientClock() >= commitAt) {
+            setStoredW(previewW);
+            setStoredH(previewH);
+            setStoredX(previewX);
+            setStoredY(previewY);
+            setDragging(-1);
+            setCommitAt(-1);
+          }
+        }
+      : undefined,
+    dodger,
+  );
 
   return (
     <layer ref={dodger} x="center" y={mobile ? 'center' : 'bottom'} w="fill" h={mobile ? 'fill' : { fill: drop }}>
-      <layer ref={content} x={x} y={y} w={w} h={h}>
+      <layer ref={content} hide={dragging >= 0} x={x} y={y} w={w} h={h}>
         <SteelBorder title={Copy.TITLE} titleColor={SteelborderColor.TITLE} flags={SteelFlags.INFO} noClickThrough />
 
         <InfoCloseButton />
@@ -94,509 +156,446 @@ export function PvpArena1v1Info(): Component {
                 <BracketLines />
               </layer>
 
-              <layer
-                hide={hiddenRound(rounds, 6)}
-                x={{ center: cellX(pitch, 6, 0) }}
-                y={{ center: cellY(rounds, 6, 0) }}
-                w={Layout.bracket.SLOT_W}
-                h={Layout.bracket.SLOT_H}
-                options={['', '', '', '', '', '', '', '', '', '*']}
+              <BracketCell
+                round={6}
+                slot={0}
+                cx={cellX(pitch, 6, 0)}
+                cy={cellY(rounds, 6, 0)}
+                hidden={hiddenRound(rounds, 6)}
               />
-              <layer
-                hide={hiddenRound(rounds, 6)}
-                x={{ center: cellX(pitch, 6, 1) }}
-                y={{ center: cellY(rounds, 6, 1) }}
-                w={Layout.bracket.SLOT_W}
-                h={Layout.bracket.SLOT_H}
-                options={['', '', '', '', '', '', '', '', '', '*']}
+              <BracketCell
+                round={6}
+                slot={1}
+                cx={cellX(pitch, 6, 1)}
+                cy={cellY(rounds, 6, 1)}
+                hidden={hiddenRound(rounds, 6)}
               />
-              <layer
-                hide={hiddenRound(rounds, 6)}
-                x={{ center: cellX(pitch, 6, 2) }}
-                y={{ center: cellY(rounds, 6, 2) }}
-                w={Layout.bracket.SLOT_W}
-                h={Layout.bracket.SLOT_H}
-                options={['', '', '', '', '', '', '', '', '', '*']}
+              <BracketCell
+                round={6}
+                slot={2}
+                cx={cellX(pitch, 6, 2)}
+                cy={cellY(rounds, 6, 2)}
+                hidden={hiddenRound(rounds, 6)}
               />
-              <layer
-                hide={hiddenRound(rounds, 6)}
-                x={{ center: cellX(pitch, 6, 3) }}
-                y={{ center: cellY(rounds, 6, 3) }}
-                w={Layout.bracket.SLOT_W}
-                h={Layout.bracket.SLOT_H}
-                options={['', '', '', '', '', '', '', '', '', '*']}
+              <BracketCell
+                round={6}
+                slot={3}
+                cx={cellX(pitch, 6, 3)}
+                cy={cellY(rounds, 6, 3)}
+                hidden={hiddenRound(rounds, 6)}
               />
-              <layer
-                hide={hiddenRound(rounds, 6)}
-                x={{ center: cellX(pitch, 6, 5) }}
-                y={{ center: cellY(rounds, 6, 5) }}
-                w={Layout.bracket.SLOT_W}
-                h={Layout.bracket.SLOT_H}
-                options={['', '', '', '', '', '', '', '', '', '*']}
+              <BracketCell
+                round={6}
+                slot={5}
+                cx={cellX(pitch, 6, 5)}
+                cy={cellY(rounds, 6, 5)}
+                hidden={hiddenRound(rounds, 6)}
               />
-              <layer
-                hide={hiddenRound(rounds, 6)}
-                x={{ center: cellX(pitch, 6, 4) }}
-                y={{ center: cellY(rounds, 6, 4) }}
-                w={Layout.bracket.SLOT_W}
-                h={Layout.bracket.SLOT_H}
-                options={['', '', '', '', '', '', '', '', '', '*']}
+              <BracketCell
+                round={6}
+                slot={4}
+                cx={cellX(pitch, 6, 4)}
+                cy={cellY(rounds, 6, 4)}
+                hidden={hiddenRound(rounds, 6)}
               />
-              <layer
-                hide={hiddenRound(rounds, 6)}
-                x={{ center: cellX(pitch, 6, 6) }}
-                y={{ center: cellY(rounds, 6, 6) }}
-                w={Layout.bracket.SLOT_W}
-                h={Layout.bracket.SLOT_H}
-                options={['', '', '', '', '', '', '', '', '', '*']}
+              <BracketCell
+                round={6}
+                slot={6}
+                cx={cellX(pitch, 6, 6)}
+                cy={cellY(rounds, 6, 6)}
+                hidden={hiddenRound(rounds, 6)}
               />
-              <layer
-                hide={hiddenRound(rounds, 6)}
-                x={{ center: cellX(pitch, 6, 7) }}
-                y={{ center: cellY(rounds, 6, 7) }}
-                w={Layout.bracket.SLOT_W}
-                h={Layout.bracket.SLOT_H}
-                options={['', '', '', '', '', '', '', '', '', '*']}
+              <BracketCell
+                round={6}
+                slot={7}
+                cx={cellX(pitch, 6, 7)}
+                cy={cellY(rounds, 6, 7)}
+                hidden={hiddenRound(rounds, 6)}
               />
-              <layer
-                hide={hiddenRound(rounds, 6)}
-                x={{ center: cellX(pitch, 6, 8) }}
-                y={{ center: cellY(rounds, 6, 8) }}
-                w={Layout.bracket.SLOT_W}
-                h={Layout.bracket.SLOT_H}
-                options={['', '', '', '', '', '', '', '', '', '*']}
+              <BracketCell
+                round={6}
+                slot={8}
+                cx={cellX(pitch, 6, 8)}
+                cy={cellY(rounds, 6, 8)}
+                hidden={hiddenRound(rounds, 6)}
               />
-              <layer
-                hide={hiddenRound(rounds, 6)}
-                x={{ center: cellX(pitch, 6, 9) }}
-                y={{ center: cellY(rounds, 6, 9) }}
-                w={Layout.bracket.SLOT_W}
-                h={Layout.bracket.SLOT_H}
-                options={['', '', '', '', '', '', '', '', '', '*']}
+              <BracketCell
+                round={6}
+                slot={9}
+                cx={cellX(pitch, 6, 9)}
+                cy={cellY(rounds, 6, 9)}
+                hidden={hiddenRound(rounds, 6)}
               />
-              <layer
-                hide={hiddenRound(rounds, 6)}
-                x={{ center: cellX(pitch, 6, 10) }}
-                y={{ center: cellY(rounds, 6, 10) }}
-                w={Layout.bracket.SLOT_W}
-                h={Layout.bracket.SLOT_H}
-                options={['', '', '', '', '', '', '', '', '', '*']}
+              <BracketCell
+                round={6}
+                slot={10}
+                cx={cellX(pitch, 6, 10)}
+                cy={cellY(rounds, 6, 10)}
+                hidden={hiddenRound(rounds, 6)}
               />
-              <layer
-                hide={hiddenRound(rounds, 6)}
-                x={{ center: cellX(pitch, 6, 11) }}
-                y={{ center: cellY(rounds, 6, 11) }}
-                w={Layout.bracket.SLOT_W}
-                h={Layout.bracket.SLOT_H}
-                options={['', '', '', '', '', '', '', '', '', '*']}
+              <BracketCell
+                round={6}
+                slot={11}
+                cx={cellX(pitch, 6, 11)}
+                cy={cellY(rounds, 6, 11)}
+                hidden={hiddenRound(rounds, 6)}
               />
-              <layer
-                hide={hiddenRound(rounds, 6)}
-                x={{ center: cellX(pitch, 6, 12) }}
-                y={{ center: cellY(rounds, 6, 12) }}
-                w={Layout.bracket.SLOT_W}
-                h={Layout.bracket.SLOT_H}
-                options={['', '', '', '', '', '', '', '', '', '*']}
+              <BracketCell
+                round={6}
+                slot={12}
+                cx={cellX(pitch, 6, 12)}
+                cy={cellY(rounds, 6, 12)}
+                hidden={hiddenRound(rounds, 6)}
               />
-              <layer
-                hide={hiddenRound(rounds, 6)}
-                x={{ center: cellX(pitch, 6, 13) }}
-                y={{ center: cellY(rounds, 6, 13) }}
-                w={Layout.bracket.SLOT_W}
-                h={Layout.bracket.SLOT_H}
-                options={['', '', '', '', '', '', '', '', '', '*']}
+              <BracketCell
+                round={6}
+                slot={13}
+                cx={cellX(pitch, 6, 13)}
+                cy={cellY(rounds, 6, 13)}
+                hidden={hiddenRound(rounds, 6)}
               />
-              <layer
-                hide={hiddenRound(rounds, 6)}
-                x={{ center: cellX(pitch, 6, 14) }}
-                y={{ center: cellY(rounds, 6, 14) }}
-                w={Layout.bracket.SLOT_W}
-                h={Layout.bracket.SLOT_H}
-                options={['', '', '', '', '', '', '', '', '', '*']}
+              <BracketCell
+                round={6}
+                slot={14}
+                cx={cellX(pitch, 6, 14)}
+                cy={cellY(rounds, 6, 14)}
+                hidden={hiddenRound(rounds, 6)}
               />
-              <layer
-                hide={hiddenRound(rounds, 6)}
-                x={{ center: cellX(pitch, 6, 15) }}
-                y={{ center: cellY(rounds, 6, 15) }}
-                w={Layout.bracket.SLOT_W}
-                h={Layout.bracket.SLOT_H}
-                options={['', '', '', '', '', '', '', '', '', '*']}
+              <BracketCell
+                round={6}
+                slot={15}
+                cx={cellX(pitch, 6, 15)}
+                cy={cellY(rounds, 6, 15)}
+                hidden={hiddenRound(rounds, 6)}
               />
-              <layer
-                hide={hiddenRound(rounds, 6)}
-                x={{ center: cellX(pitch, 6, 16) }}
-                y={{ center: cellY(rounds, 6, 16) }}
-                w={Layout.bracket.SLOT_W}
-                h={Layout.bracket.SLOT_H}
-                options={['', '', '', '', '', '', '', '', '', '*']}
+              <BracketCell
+                round={6}
+                slot={16}
+                cx={cellX(pitch, 6, 16)}
+                cy={cellY(rounds, 6, 16)}
+                hidden={hiddenRound(rounds, 6)}
               />
-              <layer
-                hide={hiddenRound(rounds, 6)}
-                x={{ center: cellX(pitch, 6, 17) }}
-                y={{ center: cellY(rounds, 6, 17) }}
-                w={Layout.bracket.SLOT_W}
-                h={Layout.bracket.SLOT_H}
-                options={['', '', '', '', '', '', '', '', '', '*']}
+              <BracketCell
+                round={6}
+                slot={17}
+                cx={cellX(pitch, 6, 17)}
+                cy={cellY(rounds, 6, 17)}
+                hidden={hiddenRound(rounds, 6)}
               />
-              <layer
-                hide={hiddenRound(rounds, 6)}
-                x={{ center: cellX(pitch, 6, 18) }}
-                y={{ center: cellY(rounds, 6, 18) }}
-                w={Layout.bracket.SLOT_W}
-                h={Layout.bracket.SLOT_H}
-                options={['', '', '', '', '', '', '', '', '', '*']}
+              <BracketCell
+                round={6}
+                slot={18}
+                cx={cellX(pitch, 6, 18)}
+                cy={cellY(rounds, 6, 18)}
+                hidden={hiddenRound(rounds, 6)}
               />
-              <layer
-                hide={hiddenRound(rounds, 6)}
-                x={{ center: cellX(pitch, 6, 19) }}
-                y={{ center: cellY(rounds, 6, 19) }}
-                w={Layout.bracket.SLOT_W}
-                h={Layout.bracket.SLOT_H}
-                options={['', '', '', '', '', '', '', '', '', '*']}
+              <BracketCell
+                round={6}
+                slot={19}
+                cx={cellX(pitch, 6, 19)}
+                cy={cellY(rounds, 6, 19)}
+                hidden={hiddenRound(rounds, 6)}
               />
-              <layer
-                hide={hiddenRound(rounds, 6)}
-                x={{ center: cellX(pitch, 6, 20) }}
-                y={{ center: cellY(rounds, 6, 20) }}
-                w={Layout.bracket.SLOT_W}
-                h={Layout.bracket.SLOT_H}
-                options={['', '', '', '', '', '', '', '', '', '*']}
+              <BracketCell
+                round={6}
+                slot={20}
+                cx={cellX(pitch, 6, 20)}
+                cy={cellY(rounds, 6, 20)}
+                hidden={hiddenRound(rounds, 6)}
               />
-              <layer
-                hide={hiddenRound(rounds, 6)}
-                x={{ center: cellX(pitch, 6, 21) }}
-                y={{ center: cellY(rounds, 6, 21) }}
-                w={Layout.bracket.SLOT_W}
-                h={Layout.bracket.SLOT_H}
-                options={['', '', '', '', '', '', '', '', '', '*']}
+              <BracketCell
+                round={6}
+                slot={21}
+                cx={cellX(pitch, 6, 21)}
+                cy={cellY(rounds, 6, 21)}
+                hidden={hiddenRound(rounds, 6)}
               />
-              <layer
-                hide={hiddenRound(rounds, 6)}
-                x={{ center: cellX(pitch, 6, 22) }}
-                y={{ center: cellY(rounds, 6, 22) }}
-                w={Layout.bracket.SLOT_W}
-                h={Layout.bracket.SLOT_H}
-                options={['', '', '', '', '', '', '', '', '', '*']}
+              <BracketCell
+                round={6}
+                slot={22}
+                cx={cellX(pitch, 6, 22)}
+                cy={cellY(rounds, 6, 22)}
+                hidden={hiddenRound(rounds, 6)}
               />
-              <layer
-                hide={hiddenRound(rounds, 6)}
-                x={{ center: cellX(pitch, 6, 23) }}
-                y={{ center: cellY(rounds, 6, 23) }}
-                w={Layout.bracket.SLOT_W}
-                h={Layout.bracket.SLOT_H}
-                options={['', '', '', '', '', '', '', '', '', '*']}
+              <BracketCell
+                round={6}
+                slot={23}
+                cx={cellX(pitch, 6, 23)}
+                cy={cellY(rounds, 6, 23)}
+                hidden={hiddenRound(rounds, 6)}
               />
-              <layer
-                hide={hiddenRound(rounds, 6)}
-                x={{ center: cellX(pitch, 6, 24) }}
-                y={{ center: cellY(rounds, 6, 24) }}
-                w={Layout.bracket.SLOT_W}
-                h={Layout.bracket.SLOT_H}
-                options={['', '', '', '', '', '', '', '', '', '*']}
+              <BracketCell
+                round={6}
+                slot={24}
+                cx={cellX(pitch, 6, 24)}
+                cy={cellY(rounds, 6, 24)}
+                hidden={hiddenRound(rounds, 6)}
               />
-              <layer
-                hide={hiddenRound(rounds, 6)}
-                x={{ center: cellX(pitch, 6, 25) }}
-                y={{ center: cellY(rounds, 6, 25) }}
-                w={Layout.bracket.SLOT_W}
-                h={Layout.bracket.SLOT_H}
-                options={['', '', '', '', '', '', '', '', '', '*']}
+              <BracketCell
+                round={6}
+                slot={25}
+                cx={cellX(pitch, 6, 25)}
+                cy={cellY(rounds, 6, 25)}
+                hidden={hiddenRound(rounds, 6)}
               />
-              <layer
-                hide={hiddenRound(rounds, 6)}
-                x={{ center: cellX(pitch, 6, 26) }}
-                y={{ center: cellY(rounds, 6, 26) }}
-                w={Layout.bracket.SLOT_W}
-                h={Layout.bracket.SLOT_H}
-                options={['', '', '', '', '', '', '', '', '', '*']}
+              <BracketCell
+                round={6}
+                slot={26}
+                cx={cellX(pitch, 6, 26)}
+                cy={cellY(rounds, 6, 26)}
+                hidden={hiddenRound(rounds, 6)}
               />
-              <layer
-                hide={hiddenRound(rounds, 6)}
-                x={{ center: cellX(pitch, 6, 27) }}
-                y={{ center: cellY(rounds, 6, 27) }}
-                w={Layout.bracket.SLOT_W}
-                h={Layout.bracket.SLOT_H}
-                options={['', '', '', '', '', '', '', '', '', '*']}
+              <BracketCell
+                round={6}
+                slot={27}
+                cx={cellX(pitch, 6, 27)}
+                cy={cellY(rounds, 6, 27)}
+                hidden={hiddenRound(rounds, 6)}
               />
-              <layer
-                hide={hiddenRound(rounds, 6)}
-                x={{ center: cellX(pitch, 6, 28) }}
-                y={{ center: cellY(rounds, 6, 28) }}
-                w={Layout.bracket.SLOT_W}
-                h={Layout.bracket.SLOT_H}
-                options={['', '', '', '', '', '', '', '', '', '*']}
+              <BracketCell
+                round={6}
+                slot={28}
+                cx={cellX(pitch, 6, 28)}
+                cy={cellY(rounds, 6, 28)}
+                hidden={hiddenRound(rounds, 6)}
               />
-              <layer
-                hide={hiddenRound(rounds, 6)}
-                x={{ center: cellX(pitch, 6, 29) }}
-                y={{ center: cellY(rounds, 6, 29) }}
-                w={Layout.bracket.SLOT_W}
-                h={Layout.bracket.SLOT_H}
-                options={['', '', '', '', '', '', '', '', '', '*']}
+              <BracketCell
+                round={6}
+                slot={29}
+                cx={cellX(pitch, 6, 29)}
+                cy={cellY(rounds, 6, 29)}
+                hidden={hiddenRound(rounds, 6)}
               />
-              <layer
-                hide={hiddenRound(rounds, 6)}
-                x={{ center: cellX(pitch, 6, 30) }}
-                y={{ center: cellY(rounds, 6, 30) }}
-                w={Layout.bracket.SLOT_W}
-                h={Layout.bracket.SLOT_H}
-                options={['', '', '', '', '', '', '', '', '', '*']}
+              <BracketCell
+                round={6}
+                slot={30}
+                cx={cellX(pitch, 6, 30)}
+                cy={cellY(rounds, 6, 30)}
+                hidden={hiddenRound(rounds, 6)}
               />
-              <layer
-                hide={hiddenRound(rounds, 6)}
-                x={{ center: cellX(pitch, 6, 31) }}
-                y={{ center: cellY(rounds, 6, 31) }}
-                w={Layout.bracket.SLOT_W}
-                h={Layout.bracket.SLOT_H}
-                options={['', '', '', '', '', '', '', '', '', '*']}
+              <BracketCell
+                round={6}
+                slot={31}
+                cx={cellX(pitch, 6, 31)}
+                cy={cellY(rounds, 6, 31)}
+                hidden={hiddenRound(rounds, 6)}
               />
-              <layer
-                hide={hiddenRound(rounds, 5)}
-                x={{ center: cellX(pitch, 5, 0) }}
-                y={{ center: cellY(rounds, 5, 0) }}
-                w={Layout.bracket.SLOT_W}
-                h={Layout.bracket.SLOT_H}
-                options={['', '', '', '', '', '', '', '', '', '*']}
+              <BracketCell
+                round={5}
+                slot={0}
+                cx={cellX(pitch, 5, 0)}
+                cy={cellY(rounds, 5, 0)}
+                hidden={hiddenRound(rounds, 5)}
               />
-              <layer
-                hide={hiddenRound(rounds, 5)}
-                x={{ center: cellX(pitch, 5, 1) }}
-                y={{ center: cellY(rounds, 5, 1) }}
-                w={Layout.bracket.SLOT_W}
-                h={Layout.bracket.SLOT_H}
-                options={['', '', '', '', '', '', '', '', '', '*']}
+              <BracketCell
+                round={5}
+                slot={1}
+                cx={cellX(pitch, 5, 1)}
+                cy={cellY(rounds, 5, 1)}
+                hidden={hiddenRound(rounds, 5)}
               />
-              <layer
-                hide={hiddenRound(rounds, 5)}
-                x={{ center: cellX(pitch, 5, 2) }}
-                y={{ center: cellY(rounds, 5, 2) }}
-                w={Layout.bracket.SLOT_W}
-                h={Layout.bracket.SLOT_H}
-                options={['', '', '', '', '', '', '', '', '', '*']}
+              <BracketCell
+                round={5}
+                slot={2}
+                cx={cellX(pitch, 5, 2)}
+                cy={cellY(rounds, 5, 2)}
+                hidden={hiddenRound(rounds, 5)}
               />
-              <layer
-                hide={hiddenRound(rounds, 5)}
-                x={{ center: cellX(pitch, 5, 3) }}
-                y={{ center: cellY(rounds, 5, 3) }}
-                w={Layout.bracket.SLOT_W}
-                h={Layout.bracket.SLOT_H}
-                options={['', '', '', '', '', '', '', '', '', '*']}
+              <BracketCell
+                round={5}
+                slot={3}
+                cx={cellX(pitch, 5, 3)}
+                cy={cellY(rounds, 5, 3)}
+                hidden={hiddenRound(rounds, 5)}
               />
-              <layer
-                hide={hiddenRound(rounds, 5)}
-                x={{ center: cellX(pitch, 5, 4) }}
-                y={{ center: cellY(rounds, 5, 4) }}
-                w={Layout.bracket.SLOT_W}
-                h={Layout.bracket.SLOT_H}
-                options={['', '', '', '', '', '', '', '', '', '*']}
+              <BracketCell
+                round={5}
+                slot={4}
+                cx={cellX(pitch, 5, 4)}
+                cy={cellY(rounds, 5, 4)}
+                hidden={hiddenRound(rounds, 5)}
               />
-              <layer
-                hide={hiddenRound(rounds, 5)}
-                x={{ center: cellX(pitch, 5, 5) }}
-                y={{ center: cellY(rounds, 5, 5) }}
-                w={Layout.bracket.SLOT_W}
-                h={Layout.bracket.SLOT_H}
-                options={['', '', '', '', '', '', '', '', '', '*']}
+              <BracketCell
+                round={5}
+                slot={5}
+                cx={cellX(pitch, 5, 5)}
+                cy={cellY(rounds, 5, 5)}
+                hidden={hiddenRound(rounds, 5)}
               />
-              <layer
-                hide={hiddenRound(rounds, 5)}
-                x={{ center: cellX(pitch, 5, 6) }}
-                y={{ center: cellY(rounds, 5, 6) }}
-                w={Layout.bracket.SLOT_W}
-                h={Layout.bracket.SLOT_H}
-                options={['', '', '', '', '', '', '', '', '', '*']}
+              <BracketCell
+                round={5}
+                slot={6}
+                cx={cellX(pitch, 5, 6)}
+                cy={cellY(rounds, 5, 6)}
+                hidden={hiddenRound(rounds, 5)}
               />
-              <layer
-                hide={hiddenRound(rounds, 5)}
-                x={{ center: cellX(pitch, 5, 7) }}
-                y={{ center: cellY(rounds, 5, 7) }}
-                w={Layout.bracket.SLOT_W}
-                h={Layout.bracket.SLOT_H}
-                options={['', '', '', '', '', '', '', '', '', '*']}
+              <BracketCell
+                round={5}
+                slot={7}
+                cx={cellX(pitch, 5, 7)}
+                cy={cellY(rounds, 5, 7)}
+                hidden={hiddenRound(rounds, 5)}
               />
-              <layer
-                hide={hiddenRound(rounds, 5)}
-                x={{ center: cellX(pitch, 5, 8) }}
-                y={{ center: cellY(rounds, 5, 8) }}
-                w={Layout.bracket.SLOT_W}
-                h={Layout.bracket.SLOT_H}
-                options={['', '', '', '', '', '', '', '', '', '*']}
+              <BracketCell
+                round={5}
+                slot={8}
+                cx={cellX(pitch, 5, 8)}
+                cy={cellY(rounds, 5, 8)}
+                hidden={hiddenRound(rounds, 5)}
               />
-              <layer
-                hide={hiddenRound(rounds, 5)}
-                x={{ center: cellX(pitch, 5, 9) }}
-                y={{ center: cellY(rounds, 5, 9) }}
-                w={Layout.bracket.SLOT_W}
-                h={Layout.bracket.SLOT_H}
-                options={['', '', '', '', '', '', '', '', '', '*']}
+              <BracketCell
+                round={5}
+                slot={9}
+                cx={cellX(pitch, 5, 9)}
+                cy={cellY(rounds, 5, 9)}
+                hidden={hiddenRound(rounds, 5)}
               />
-              <layer
-                hide={hiddenRound(rounds, 5)}
-                x={{ center: cellX(pitch, 5, 10) }}
-                y={{ center: cellY(rounds, 5, 10) }}
-                w={Layout.bracket.SLOT_W}
-                h={Layout.bracket.SLOT_H}
-                options={['', '', '', '', '', '', '', '', '', '*']}
+              <BracketCell
+                round={5}
+                slot={10}
+                cx={cellX(pitch, 5, 10)}
+                cy={cellY(rounds, 5, 10)}
+                hidden={hiddenRound(rounds, 5)}
               />
-              <layer
-                hide={hiddenRound(rounds, 5)}
-                x={{ center: cellX(pitch, 5, 11) }}
-                y={{ center: cellY(rounds, 5, 11) }}
-                w={Layout.bracket.SLOT_W}
-                h={Layout.bracket.SLOT_H}
-                options={['', '', '', '', '', '', '', '', '', '*']}
+              <BracketCell
+                round={5}
+                slot={11}
+                cx={cellX(pitch, 5, 11)}
+                cy={cellY(rounds, 5, 11)}
+                hidden={hiddenRound(rounds, 5)}
               />
-              <layer
-                hide={hiddenRound(rounds, 5)}
-                x={{ center: cellX(pitch, 5, 12) }}
-                y={{ center: cellY(rounds, 5, 12) }}
-                w={Layout.bracket.SLOT_W}
-                h={Layout.bracket.SLOT_H}
-                options={['', '', '', '', '', '', '', '', '', '*']}
+              <BracketCell
+                round={5}
+                slot={12}
+                cx={cellX(pitch, 5, 12)}
+                cy={cellY(rounds, 5, 12)}
+                hidden={hiddenRound(rounds, 5)}
               />
-              <layer
-                hide={hiddenRound(rounds, 5)}
-                x={{ center: cellX(pitch, 5, 13) }}
-                y={{ center: cellY(rounds, 5, 13) }}
-                w={Layout.bracket.SLOT_W}
-                h={Layout.bracket.SLOT_H}
-                options={['', '', '', '', '', '', '', '', '', '*']}
+              <BracketCell
+                round={5}
+                slot={13}
+                cx={cellX(pitch, 5, 13)}
+                cy={cellY(rounds, 5, 13)}
+                hidden={hiddenRound(rounds, 5)}
               />
-              <layer
-                hide={hiddenRound(rounds, 5)}
-                x={{ center: cellX(pitch, 5, 14) }}
-                y={{ center: cellY(rounds, 5, 14) }}
-                w={Layout.bracket.SLOT_W}
-                h={Layout.bracket.SLOT_H}
-                options={['', '', '', '', '', '', '', '', '', '*']}
+              <BracketCell
+                round={5}
+                slot={14}
+                cx={cellX(pitch, 5, 14)}
+                cy={cellY(rounds, 5, 14)}
+                hidden={hiddenRound(rounds, 5)}
               />
-              <layer
-                hide={hiddenRound(rounds, 5)}
-                x={{ center: cellX(pitch, 5, 15) }}
-                y={{ center: cellY(rounds, 5, 15) }}
-                w={Layout.bracket.SLOT_W}
-                h={Layout.bracket.SLOT_H}
-                options={['', '', '', '', '', '', '', '', '', '*']}
+              <BracketCell
+                round={5}
+                slot={15}
+                cx={cellX(pitch, 5, 15)}
+                cy={cellY(rounds, 5, 15)}
+                hidden={hiddenRound(rounds, 5)}
               />
-              <layer
-                hide={hiddenRound(rounds, 4)}
-                x={{ center: cellX(pitch, 4, 0) }}
-                y={{ center: cellY(rounds, 4, 0) }}
-                w={Layout.bracket.SLOT_W}
-                h={Layout.bracket.SLOT_H}
-                options={['', '', '', '', '', '', '', '', '', '*']}
+              <BracketCell
+                round={4}
+                slot={0}
+                cx={cellX(pitch, 4, 0)}
+                cy={cellY(rounds, 4, 0)}
+                hidden={hiddenRound(rounds, 4)}
               />
-              <layer
-                hide={hiddenRound(rounds, 4)}
-                x={{ center: cellX(pitch, 4, 1) }}
-                y={{ center: cellY(rounds, 4, 1) }}
-                w={Layout.bracket.SLOT_W}
-                h={Layout.bracket.SLOT_H}
-                options={['', '', '', '', '', '', '', '', '', '*']}
+              <BracketCell
+                round={4}
+                slot={1}
+                cx={cellX(pitch, 4, 1)}
+                cy={cellY(rounds, 4, 1)}
+                hidden={hiddenRound(rounds, 4)}
               />
-              <layer
-                hide={hiddenRound(rounds, 4)}
-                x={{ center: cellX(pitch, 4, 2) }}
-                y={{ center: cellY(rounds, 4, 2) }}
-                w={Layout.bracket.SLOT_W}
-                h={Layout.bracket.SLOT_H}
-                options={['', '', '', '', '', '', '', '', '', '*']}
+              <BracketCell
+                round={4}
+                slot={2}
+                cx={cellX(pitch, 4, 2)}
+                cy={cellY(rounds, 4, 2)}
+                hidden={hiddenRound(rounds, 4)}
               />
-              <layer
-                hide={hiddenRound(rounds, 4)}
-                x={{ center: cellX(pitch, 4, 3) }}
-                y={{ center: cellY(rounds, 4, 3) }}
-                w={Layout.bracket.SLOT_W}
-                h={Layout.bracket.SLOT_H}
-                options={['', '', '', '', '', '', '', '', '', '*']}
+              <BracketCell
+                round={4}
+                slot={3}
+                cx={cellX(pitch, 4, 3)}
+                cy={cellY(rounds, 4, 3)}
+                hidden={hiddenRound(rounds, 4)}
               />
-              <layer
-                hide={hiddenRound(rounds, 4)}
-                x={{ center: cellX(pitch, 4, 4) }}
-                y={{ center: cellY(rounds, 4, 4) }}
-                w={Layout.bracket.SLOT_W}
-                h={Layout.bracket.SLOT_H}
-                options={['', '', '', '', '', '', '', '', '', '*']}
+              <BracketCell
+                round={4}
+                slot={4}
+                cx={cellX(pitch, 4, 4)}
+                cy={cellY(rounds, 4, 4)}
+                hidden={hiddenRound(rounds, 4)}
               />
-              <layer
-                hide={hiddenRound(rounds, 4)}
-                x={{ center: cellX(pitch, 4, 5) }}
-                y={{ center: cellY(rounds, 4, 5) }}
-                w={Layout.bracket.SLOT_W}
-                h={Layout.bracket.SLOT_H}
-                options={['', '', '', '', '', '', '', '', '', '*']}
+              <BracketCell
+                round={4}
+                slot={5}
+                cx={cellX(pitch, 4, 5)}
+                cy={cellY(rounds, 4, 5)}
+                hidden={hiddenRound(rounds, 4)}
               />
-              <layer
-                hide={hiddenRound(rounds, 4)}
-                x={{ center: cellX(pitch, 4, 6) }}
-                y={{ center: cellY(rounds, 4, 6) }}
-                w={Layout.bracket.SLOT_W}
-                h={Layout.bracket.SLOT_H}
-                options={['', '', '', '', '', '', '', '', '', '*']}
+              <BracketCell
+                round={4}
+                slot={6}
+                cx={cellX(pitch, 4, 6)}
+                cy={cellY(rounds, 4, 6)}
+                hidden={hiddenRound(rounds, 4)}
               />
-              <layer
-                hide={hiddenRound(rounds, 4)}
-                x={{ center: cellX(pitch, 4, 7) }}
-                y={{ center: cellY(rounds, 4, 7) }}
-                w={Layout.bracket.SLOT_W}
-                h={Layout.bracket.SLOT_H}
-                options={['', '', '', '', '', '', '', '', '', '*']}
+              <BracketCell
+                round={4}
+                slot={7}
+                cx={cellX(pitch, 4, 7)}
+                cy={cellY(rounds, 4, 7)}
+                hidden={hiddenRound(rounds, 4)}
               />
-              <layer
-                hide={hiddenRound(rounds, 3)}
-                x={{ center: cellX(pitch, 3, 0) }}
-                y={{ center: cellY(rounds, 3, 0) }}
-                w={Layout.bracket.SLOT_W}
-                h={Layout.bracket.SLOT_H}
-                options={['', '', '', '', '', '', '', '', '', '*']}
+              <BracketCell
+                round={3}
+                slot={0}
+                cx={cellX(pitch, 3, 0)}
+                cy={cellY(rounds, 3, 0)}
+                hidden={hiddenRound(rounds, 3)}
               />
-              <layer
-                hide={hiddenRound(rounds, 3)}
-                x={{ center: cellX(pitch, 3, 1) }}
-                y={{ center: cellY(rounds, 3, 1) }}
-                w={Layout.bracket.SLOT_W}
-                h={Layout.bracket.SLOT_H}
-                options={['', '', '', '', '', '', '', '', '', '*']}
+              <BracketCell
+                round={3}
+                slot={1}
+                cx={cellX(pitch, 3, 1)}
+                cy={cellY(rounds, 3, 1)}
+                hidden={hiddenRound(rounds, 3)}
               />
-              <layer
-                hide={hiddenRound(rounds, 3)}
-                x={{ center: cellX(pitch, 3, 2) }}
-                y={{ center: cellY(rounds, 3, 2) }}
-                w={Layout.bracket.SLOT_W}
-                h={Layout.bracket.SLOT_H}
-                options={['', '', '', '', '', '', '', '', '', '*']}
+              <BracketCell
+                round={3}
+                slot={2}
+                cx={cellX(pitch, 3, 2)}
+                cy={cellY(rounds, 3, 2)}
+                hidden={hiddenRound(rounds, 3)}
               />
-              <layer
-                hide={hiddenRound(rounds, 3)}
-                x={{ center: cellX(pitch, 3, 3) }}
-                y={{ center: cellY(rounds, 3, 3) }}
-                w={Layout.bracket.SLOT_W}
-                h={Layout.bracket.SLOT_H}
-                options={['', '', '', '', '', '', '', '', '', '*']}
+              <BracketCell
+                round={3}
+                slot={3}
+                cx={cellX(pitch, 3, 3)}
+                cy={cellY(rounds, 3, 3)}
+                hidden={hiddenRound(rounds, 3)}
               />
-              <layer
-                hide={hiddenRound(rounds, 2)}
-                x={{ center: cellX(pitch, 2, 0) }}
-                y={{ center: cellY(rounds, 2, 0) }}
-                w={Layout.bracket.SLOT_W}
-                h={Layout.bracket.SLOT_H}
-                options={['', '', '', '', '', '', '', '', '', '*']}
+              <BracketCell
+                round={2}
+                slot={0}
+                cx={cellX(pitch, 2, 0)}
+                cy={cellY(rounds, 2, 0)}
+                hidden={hiddenRound(rounds, 2)}
               />
-              <layer
-                hide={hiddenRound(rounds, 2)}
-                x={{ center: cellX(pitch, 2, 1) }}
-                y={{ center: cellY(rounds, 2, 1) }}
-                w={Layout.bracket.SLOT_W}
-                h={Layout.bracket.SLOT_H}
-                options={['', '', '', '', '', '', '', '', '', '*']}
+              <BracketCell
+                round={2}
+                slot={1}
+                cx={cellX(pitch, 2, 1)}
+                cy={cellY(rounds, 2, 1)}
+                hidden={hiddenRound(rounds, 2)}
               />
-              <layer
-                hide={hiddenRound(rounds, 1)}
-                x={{ center: cellX(pitch, 1, 0) }}
-                y={{ center: cellY(rounds, 1, 0) }}
-                w={Layout.bracket.SLOT_W}
-                h={Layout.bracket.SLOT_H}
-                options={['', '', '', '', '', '', '', '', '', '*']}
+              <BracketCell
+                round={1}
+                slot={0}
+                cx={cellX(pitch, 1, 0)}
+                cy={cellY(rounds, 1, 0)}
+                hidden={hiddenRound(rounds, 1)}
               />
             </layer>
           </layer>
@@ -651,165 +650,42 @@ export function PvpArena1v1Info(): Component {
             sprite={InfoSprites.STATUS_BACKING}
             tiling
           />
-          <text
-            x="center"
-            y="center"
-            w="fill"
-            h="fill"
-            text=""
-            font={InfoFonts.BODY}
-            color={InfoColor.STATUS}
-            align="center"
-            valign="middle"
-            shadow
-          />
+          <DetailsLine />
           <ThinStoneBoxEntrypoint />
         </layer>
       </layer>
 
-      <layer ref={preview} hide x={x} y={y} w={w} h={h}>
+      <layer ref={preview} hide={dragging < 0} x={previewX} y={previewY} w={previewW} h={previewH}>
         <rect x="center" y="center" w="fill" h="fill" color={InfoColor.PREVIEW} transparency={100} />
         <rect x="center" y="center" w={{ fill: 2 }} h={{ fill: 2 }} color={InfoColor.PREVIEW} transparency={110} />
         <rect x="center" y="center" w={{ fill: 4 }} h={{ fill: 4 }} color={InfoColor.PREVIEW} transparency={120} />
         <rect x="center" y="center" w={{ fill: 6 }} h={{ fill: 6 }} color={InfoColor.PREVIEW} transparency={130} />
       </layer>
 
-      <sprite
-        x={handleX(0, x, w)}
-        y={handleY(0, y, h)}
-        w={handleW(0, w)}
-        h={handleH(0, h)}
-        sprite={InfoSprites.HANDLE}
-        tiling
-        transparency={Layout.handle.TRANSPARENT}
-        draggable={dodger}
-        dragDeadZone={Layout.handle.DEAD_ZONE}
-        dragDeadTime={Layout.handle.DEAD_TIME}
-        onMouseRepeat={(event) => ccSetTrans(event.self, Layout.handle.HOVER)}
-        onMouseLeave={(event) => ccSetTrans(event.self, Layout.handle.TRANSPARENT)}
-        onDrag={(event) =>
-          resizeDrag(event.self, 0, event.mouseX, event.mouseY, top, availW, dodgerH, preview, content)
-        }
-      />
-      <sprite
-        x={handleX(1, x, w)}
-        y={handleY(1, y, h)}
-        w={handleW(1, w)}
-        h={handleH(1, h)}
-        sprite={InfoSprites.HANDLE}
-        tiling
-        transparency={Layout.handle.TRANSPARENT}
-        draggable={dodger}
-        dragDeadZone={Layout.handle.DEAD_ZONE}
-        dragDeadTime={Layout.handle.DEAD_TIME}
-        onMouseRepeat={(event) => ccSetTrans(event.self, Layout.handle.HOVER)}
-        onMouseLeave={(event) => ccSetTrans(event.self, Layout.handle.TRANSPARENT)}
-        onDrag={(event) =>
-          resizeDrag(event.self, 1, event.mouseX, event.mouseY, top, availW, dodgerH, preview, content)
-        }
-      />
-      <sprite
-        x={handleX(2, x, w)}
-        y={handleY(2, y, h)}
-        w={handleW(2, w)}
-        h={handleH(2, h)}
-        sprite={InfoSprites.HANDLE}
-        tiling
-        transparency={Layout.handle.TRANSPARENT}
-        draggable={dodger}
-        dragDeadZone={Layout.handle.DEAD_ZONE}
-        dragDeadTime={Layout.handle.DEAD_TIME}
-        onMouseRepeat={(event) => ccSetTrans(event.self, Layout.handle.HOVER)}
-        onMouseLeave={(event) => ccSetTrans(event.self, Layout.handle.TRANSPARENT)}
-        onDrag={(event) =>
-          resizeDrag(event.self, 2, event.mouseX, event.mouseY, top, availW, dodgerH, preview, content)
-        }
-      />
-      <sprite
-        x={handleX(3, x, w)}
-        y={handleY(3, y, h)}
-        w={handleW(3, w)}
-        h={handleH(3, h)}
-        sprite={InfoSprites.HANDLE}
-        tiling
-        transparency={Layout.handle.TRANSPARENT}
-        draggable={dodger}
-        dragDeadZone={Layout.handle.DEAD_ZONE}
-        dragDeadTime={Layout.handle.DEAD_TIME}
-        onMouseRepeat={(event) => ccSetTrans(event.self, Layout.handle.HOVER)}
-        onMouseLeave={(event) => ccSetTrans(event.self, Layout.handle.TRANSPARENT)}
-        onDrag={(event) =>
-          resizeDrag(event.self, 3, event.mouseX, event.mouseY, top, availW, dodgerH, preview, content)
-        }
-      />
-      <sprite
-        x={handleX(4, x, w)}
-        y={handleY(4, y, h)}
-        w={handleW(4, w)}
-        h={handleH(4, h)}
-        sprite={InfoSprites.HANDLE}
-        tiling
-        transparency={Layout.handle.TRANSPARENT}
-        draggable={dodger}
-        dragDeadZone={Layout.handle.DEAD_ZONE}
-        dragDeadTime={Layout.handle.DEAD_TIME}
-        onMouseRepeat={(event) => ccSetTrans(event.self, Layout.handle.HOVER)}
-        onMouseLeave={(event) => ccSetTrans(event.self, Layout.handle.TRANSPARENT)}
-        onDrag={(event) =>
-          resizeDrag(event.self, 4, event.mouseX, event.mouseY, top, availW, dodgerH, preview, content)
-        }
-      />
-      <sprite
-        x={handleX(5, x, w)}
-        y={handleY(5, y, h)}
-        w={handleW(5, w)}
-        h={handleH(5, h)}
-        sprite={InfoSprites.HANDLE}
-        tiling
-        transparency={Layout.handle.TRANSPARENT}
-        draggable={dodger}
-        dragDeadZone={Layout.handle.DEAD_ZONE}
-        dragDeadTime={Layout.handle.DEAD_TIME}
-        onMouseRepeat={(event) => ccSetTrans(event.self, Layout.handle.HOVER)}
-        onMouseLeave={(event) => ccSetTrans(event.self, Layout.handle.TRANSPARENT)}
-        onDrag={(event) =>
-          resizeDrag(event.self, 5, event.mouseX, event.mouseY, top, availW, dodgerH, preview, content)
-        }
-      />
-      <sprite
-        x={handleX(6, x, w)}
-        y={handleY(6, y, h)}
-        w={handleW(6, w)}
-        h={handleH(6, h)}
-        sprite={InfoSprites.HANDLE}
-        tiling
-        transparency={Layout.handle.TRANSPARENT}
-        draggable={dodger}
-        dragDeadZone={Layout.handle.DEAD_ZONE}
-        dragDeadTime={Layout.handle.DEAD_TIME}
-        onMouseRepeat={(event) => ccSetTrans(event.self, Layout.handle.HOVER)}
-        onMouseLeave={(event) => ccSetTrans(event.self, Layout.handle.TRANSPARENT)}
-        onDrag={(event) =>
-          resizeDrag(event.self, 6, event.mouseX, event.mouseY, top, availW, dodgerH, preview, content)
-        }
-      />
-      <sprite
-        x={handleX(7, x, w)}
-        y={handleY(7, y, h)}
-        w={handleW(7, w)}
-        h={handleH(7, h)}
-        sprite={InfoSprites.HANDLE}
-        tiling
-        transparency={Layout.handle.TRANSPARENT}
-        draggable={dodger}
-        dragDeadZone={Layout.handle.DEAD_ZONE}
-        dragDeadTime={Layout.handle.DEAD_TIME}
-        onMouseRepeat={(event) => ccSetTrans(event.self, Layout.handle.HOVER)}
-        onMouseLeave={(event) => ccSetTrans(event.self, Layout.handle.TRANSPARENT)}
-        onDrag={(event) =>
-          resizeDrag(event.self, 7, event.mouseX, event.mouseY, top, availW, dodgerH, preview, content)
-        }
-      />
+      {Handles.map((i) => (
+        <sprite
+          x={handleX(i, x, w)}
+          y={handleY(i, y, h)}
+          w={handleW(i, w)}
+          h={handleH(i, h)}
+          sprite={dragging === i ? -1 : InfoSprites.HANDLE}
+          tiling
+          transparency={Layout.handle.TRANSPARENT}
+          draggable={dodger}
+          dragDeadZone={Layout.handle.DEAD_ZONE}
+          dragDeadTime={Layout.handle.DEAD_TIME}
+          onMouseRepeat={(event) => ccSetTrans(event.self, Layout.handle.HOVER)}
+          onMouseLeave={(event) => ccSetTrans(event.self, Layout.handle.TRANSPARENT)}
+          onDrag={(event) => {
+            setPreviewX(dragBox(0, i, event.mouseX, event.mouseY, top, availW, dodgerH));
+            setPreviewY(dragBox(1, i, event.mouseX, event.mouseY, top, availW, dodgerH));
+            setPreviewW(dragBox(2, i, event.mouseX, event.mouseY, top, availW, dodgerH));
+            setPreviewH(dragBox(3, i, event.mouseX, event.mouseY, top, availW, dodgerH));
+            setDragging(i);
+            setCommitAt(clientClock() + Layout.COMMIT_CYCLES);
+          }}
+        />
+      ))}
     </layer>
   );
 }
@@ -817,6 +693,8 @@ export function PvpArena1v1Info(): Component {
 enum SteelFlags {
   INFO = 11,
 }
+
+const Handles = [0, 1, 2, 3, 4, 5, 6, 7] as const;
 
 function paneWidth(panel: Int): Int {
   return panel - Layout.scrollBox.insetW - Layout.pane.insetW;
@@ -854,27 +732,7 @@ function cellY(rounds: Int, round: Int, slot: Int): Int {
     index = slot - half;
   }
   const span: Int = Math.pow(2, rounds - round) * Layout.bracket.STEP;
-  return ((1 - half + 2 * index) * span) / 2;
-}
-
-function handleX(index: Int, x: Int, w: Int): Int {
-  if (index === 0 || index === 1) {
-    return x + Layout.handle.EDGE;
-  }
-  if (index === 3 || index === 5 || index === 7) {
-    return x + w - Layout.handle.EDGE;
-  }
-  return x;
-}
-
-function handleY(index: Int, y: Int, h: Int): Int {
-  if (index === 1 || index === 6 || index === 7) {
-    return y + h - Layout.handle.EDGE;
-  }
-  if (index === 2 || index === 3) {
-    return y + Layout.handle.EDGE;
-  }
-  return y;
+  return (1 - half + 2 * index) * span / 2;
 }
 
 function handleW(index: Int, w: Int): Int {

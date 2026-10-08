@@ -19,8 +19,8 @@ export function CuisineCell({
 }): Component {
   const label = useRef();
 
-  const dx: Int = (index % Grid.COLUMNS) * Grid.CELL_W;
-  const dy: Int = (index / Grid.COLUMNS) * Grid.CELL_H;
+  const dx: Int = index % Grid.COLUMNS * Grid.CELL_W;
+  const dy: Int = index / Grid.COLUMNS * Grid.CELL_H;
 
   const restColor: Int = canMake ? GnomeColors.GREEN : GnomeColors.GREY;
 

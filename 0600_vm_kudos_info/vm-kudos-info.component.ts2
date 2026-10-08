@@ -113,7 +113,7 @@ export function VmKudosInfo(): Component {
           </layer>
 
           {KudosAmounts.map((amount: Int, row: Int) =>
-            kudosStatus(row) ? (
+            (kudosStatus(row) ? (
               <text
                 x={Layout.ROW_X}
                 y={rowTop(row, rows0, rows1, rows2, rows3, rows4, rows5)}
@@ -139,7 +139,7 @@ export function VmKudosInfo(): Component {
                 valign="middle"
                 shadow
               />
-            ),
+            )),
           )}
         </layer>
 

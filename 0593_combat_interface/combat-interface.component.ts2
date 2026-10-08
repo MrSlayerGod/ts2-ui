@@ -1,4 +1,6 @@
-import { CS2, useDerived, useInventory, useServerState, useState } from 'ts2';
+import { CS2, onMounted, useDerived, useInventory, useRef, useServerState, useState, useWatch } from 'ts2';
+
+import { Varps } from '../lib/game/varps';
 
 import { ButtonBackground } from '../0370_poh_options/button-background.component';
 import { ButtonBackgroundPressed } from '../0551_raids_storage_side/button-background-pressed.component';
@@ -54,6 +56,7 @@ import {
   styleY,
   weaponName,
 } from './combat-interface.helpers';
+import { combatSailingLoose } from './combat-interface.state';
 
 export function CombatInterface(): Component {
   const mobile: Boolean = onMobile();
@@ -68,6 +71,26 @@ export function CombatInterface(): Component {
   const sailingPanel: Int = useServerState(CombatVarbits.SAILING_PANEL);
   const sailingIntro: Int = useServerState(CombatVarbits.SAILING_INTRO);
   const sailingOnlyOnBoat: Int = useServerState(CombatVarbits.SAILING_ONLY_ON_BOAT);
+  const [sailingLoose, setSailingLoose] = useState(combatSailingLoose);
+
+  onMounted(() => {
+    setSailingLoose(0);
+  });
+  const titleGroup = useRef();
+  useWatch(
+    [
+      Varps.RANDOMHITSOUND,
+      Varps.COM_MODE,
+      Varps.WILDERNESS_STATISTICS,
+      Varps.SOTE_LIGHT_LEVEL_0_G,
+      Varps.SETTINGS_VARP_EHC_4,
+      Varps.SAILING_SIDEPANEL_PERM_TRANSMIT,
+    ],
+    () => {
+      setSailingLoose(1);
+    },
+    titleGroup,
+  );
 
   const [info, setInfo] = useState(0);
   const [tip, setTip] = useState(-1);
@@ -91,8 +114,8 @@ export function CombatInterface(): Component {
 
   const iconY: Int = staff ? -1 : -6;
   const labelY: Int = staff ? 10 : 13;
-  const firstIconW: Int = staff ? 33 : category === Category.GUN ? 30 : 34;
-  const firstIconH: Int = staff ? 23 : category === Category.GUN ? 30 : 24;
+  const firstIconW: Int = staff ? 33 : (category === Category.GUN ? 30 : 34);
+  const firstIconH: Int = staff ? 23 : (category === Category.GUN ? 30 : 24);
 
   const retY: Int = retaliateY(mobile, category);
   const retH: Int = retaliateHeight(mobile);
@@ -110,7 +133,8 @@ export function CombatInterface(): Component {
   const name: String = weaponName(weapon);
   const nameWidth: Int = 190 - 21;
   const levelY: Int = textLineCount(name, nameWidth, CombatFonts.TITLE) > 1 ? Layout.LEVEL_Y_WRAPPED : Layout.LEVEL_Y;
-  const sailing: Boolean = sailingPanel === 1 || (membersWorld() && sailingIntro >= 6 && sailingOnlyOnBoat === 0);
+  const sailing: Boolean =
+    sailingPanel === 1 || sailingLoose === 1 && membersWorld() && sailingIntro >= 6 && sailingOnlyOnBoat === 0;
 
   const frameH: Int = cost > 0 ? specY + specH - 39 + 4 : retY + retH - 39 + 4;
 
@@ -159,7 +183,7 @@ export function CombatInterface(): Component {
         <layer x={{ center: 0 }} y={39} w={{ fill: 2 }} h={206} hide />
       )}
 
-      <layer x={{ center: sailing ? Layout.NAME_X_SAILING : 0 }} y={0} w={{ fill: 21 }} h={44}>
+      <layer ref={titleGroup} x={{ center: sailing ? Layout.NAME_X_SAILING : 0 }} y={0} w={{ fill: 21 }} h={44}>
         <text
           x={{ center: 0 }}
           y={0}

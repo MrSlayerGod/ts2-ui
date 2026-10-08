@@ -30,15 +30,24 @@ import {
   Snap,
 } from './dt2-infection.helpers';
 import { infectionBarPx, infectionGlyphAlpha, infectionLaidOutAt, infectionMeasuredPx } from './dt2-infection.state';
+import { FadeOverlay } from '../lib/fade-overlay.component';
+import {
+  dt2InfectionFadeCycles,
+  dt2InfectionFadeEnd,
+  dt2InfectionFadeFrom,
+  dt2InfectionFadeFromAlpha,
+  dt2InfectionFadeKeepHidden,
+  dt2InfectionFadeShown,
+  dt2InfectionFadeTo,
+  dt2InfectionFadeToAlpha,
+} from './dt2-infection-fade.state';
 
 export function Dt2Infection(): Component {
   useInterval(() => publishBreakpoint(), universe);
 
   return (
     <layer ref={universe} w={ROOT_W} h={ROOT_H}>
-      <layer w="fill" h="fill" hide>
-        <rect w="fill" h="fill" fill color={InfectionColor.FADE} />
-      </layer>
+      <InfectionFadeHolder />
 
       <layer w="fill" h="fill" ref={dodger}>
         <layer static ref={overlay} x={Layout.CARD_X} y={Layout.CARD_Y} w={Layout.CARD_W} h={Layout.CARD_H}>
@@ -167,5 +176,29 @@ function InfectionCard(): Component {
         />
       </layer>
     </>
+  );
+}
+
+function InfectionFadeHolder(): Component {
+  const [shown] = useState(dt2InfectionFadeShown);
+  const [from] = useState(dt2InfectionFadeFrom);
+  const [fromAlpha] = useState(dt2InfectionFadeFromAlpha);
+  const [to] = useState(dt2InfectionFadeTo);
+  const [toAlpha] = useState(dt2InfectionFadeToAlpha);
+  const [cycles] = useState(dt2InfectionFadeCycles);
+  const [end] = useState(dt2InfectionFadeEnd);
+  const [keepHidden] = useState(dt2InfectionFadeKeepHidden);
+  return (
+    <layer w="fill" h="fill" hide={shown === 0}>
+      <FadeOverlay
+        from={from}
+        fromAlpha={fromAlpha}
+        to={to}
+        toAlpha={toAlpha}
+        cycles={cycles}
+        end={end}
+        keepHidden={keepHidden}
+      />
+    </layer>
   );
 }

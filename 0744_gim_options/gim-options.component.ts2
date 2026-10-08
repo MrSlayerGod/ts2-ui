@@ -223,7 +223,7 @@ export function GimOptions(): Component {
             scrollHeight={listContent > listView ? listContent : 0}
           >
             {GimOptionRows.map((row, index) =>
-              row.kind === RowKind.HEADER ? (
+              (row.kind === RowKind.HEADER ? (
                 <GimCategoryTitle top={boxY[index]} title={row.title} />
               ) : (
                 <GimOptionButton
@@ -240,7 +240,7 @@ export function GimOptions(): Component {
                   enabled={gimOptionEnabled(row, asGuest, guestStatus, gimStatus)}
                   mobile={mobile}
                 />
-              ),
+              )),
             )}
           </layer>
 

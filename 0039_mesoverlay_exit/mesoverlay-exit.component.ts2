@@ -1,5 +1,10 @@
+import { useRef, useState } from 'ts2';
+
+import { textLineCount } from '../lib/lib.engine';
 import { graphicSwapper } from '../lib/lib.helpers';
-import { BUTTON_WASH, ExitSprites, Layout } from './mesoverlay-exit.constants';
+import { ScrollbarVertical } from '../lib/scrollbar-vertical.component';
+import { Leading, MESSAGE_COLOR, MESSAGE_FONT, MesoBar } from '../0263_mesoverlay/mesoverlay.constants';
+import { BUTTON_WASH, ExitSprites, Layout, mesoverlayExitMessage } from './mesoverlay-exit.constants';
 
 export function MesoverlayExit(): Component {
   return (
@@ -16,9 +21,73 @@ export function MesoverlayExit(): Component {
         onMouseLeave={(event) => graphicSwapper(event.component, ExitSprites.REST)}
       />
 
-      <layer x="center" y="center" w={{ fill: Layout.BAR_INSET_W }} h={{ fill: Layout.BAR_INSET_H }} />
-
-      <layer x="right" y="center" w={Layout.TAIL_W} h={{ fill: Layout.BAR_INSET_H }} />
+      <ExitMessage />
     </layer>
   );
+}
+
+function ExitMessage(): Component {
+  const [message] = useState(mesoverlayExitMessage);
+
+  const lines: Int = textLineCount(message, Layout.PANE_W, MESSAGE_FONT);
+
+  let leading: Int = Leading.DEFAULT;
+  if (lines === 2) {
+    leading = Leading.TWO_LINE;
+  } else if (lines === 3) {
+    leading = Leading.THREE_LINE;
+  }
+
+  const paragraph: Int = lines * leading + Leading.PAD;
+  let fits: Boolean = false;
+  if (paragraph <= Layout.PANE_H) {
+    fits = true;
+  }
+
+  const pane = useRef();
+
+  return (
+    <>
+      <layer
+        ref={pane}
+        x="center"
+        y="center"
+        w={{ fill: Layout.BAR_INSET_W }}
+        h={{ fill: Layout.BAR_INSET_H }}
+        scrollHeight={fits ? 0 : paragraph}
+      >
+        <text
+          x="center"
+          y={fits ? 'center' : 0}
+          w="fill"
+          h={paragraph}
+          text={message}
+          font={MESSAGE_FONT}
+          color={MESSAGE_COLOR}
+          align="center"
+          valign="middle"
+          lineHeight={leading}
+        />
+      </layer>
+
+      <layer x="right" y="center" w={Layout.TAIL_W} h={{ fill: Layout.BAR_INSET_H }} hide={fits}>
+        {!fits && (
+          <ScrollbarVertical
+            content={pane}
+            track={MesoBar.TRACK}
+            capTopSprite={MesoBar.CAP_TOP}
+            thumbSprite={MesoBar.THUMB}
+            capBottomSprite={MesoBar.CAP_BOTTOM}
+            arrowUp={MesoBar.ARROW_UP}
+            arrowDown={MesoBar.ARROW_DOWN}
+          />
+        )}
+      </layer>
+    </>
+  );
+}
+
+export function mesoverlayExitSetText(text: String): void {
+  const [, setMessage] = useState(mesoverlayExitMessage);
+  setMessage(text);
 }

@@ -12,7 +12,7 @@ export function HuntsmansKitPane(): Component {
   const paneWidth: Int = universe.width - Column.BAR_W;
   const gap: Int = (paneWidth - Slot.COLUMNS * Slot.W) / Slot.COLUMNS;
   const margin: Int = gap / 2;
-  const content: Int = ((SLOTS - 1) / Slot.COLUMNS) * (Slot.H + gap) + Slot.H;
+  const content: Int = (SLOTS - 1) / Slot.COLUMNS * (Slot.H + gap) + Slot.H;
 
   return (
     <>

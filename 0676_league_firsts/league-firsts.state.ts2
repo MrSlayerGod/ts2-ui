@@ -1,0 +1,106 @@
+import { createRef, sessionState, useState } from 'ts2';
+
+import { LeagueFirstHolders, LeagueFirstRows } from './league-firsts.data';
+
+export const firstsDataRef = createRef();
+
+export const firstsCalls = sessionState(0);
+
+export const firstsLeague = sessionState(0);
+
+export const firstsExtent = sessionState(0);
+
+export const firstsOwnRow = sessionState(-1);
+export const firstsOwnText = sessionState('');
+export const firstsOwnTitled = sessionState(0);
+export const firstsOwnDate = sessionState('');
+
+export const ROW_PITCH = 70;
+export const ROW_TOP = 1;
+
+export function leagueFirstsCount(league: Int): Int {
+  let count: Int = 0;
+  let i: Int = 0;
+  while (i < LeagueFirstRows.length) {
+    const row = LeagueFirstRows.at(i);
+    if (row !== null) {
+      if (row.league === league) {
+        count = count + 1;
+      }
+    }
+    i = i + 1;
+  }
+  return count;
+}
+
+export function leagueFirstHolders(set: Int): String {
+  let joined: String = '';
+  let first: Boolean = true;
+  let i: Int = 0;
+  while (i < LeagueFirstHolders.length) {
+    const holder = LeagueFirstHolders.at(i);
+    if (holder !== null) {
+      if (holder.set === set) {
+        if (first) {
+          joined = `${joined}${holder.name}`;
+          first = false;
+        } else {
+          joined = `${joined}, ${holder.name}`;
+        }
+      }
+    }
+    i = i + 1;
+  }
+  return joined;
+}
+
+export function leagueFirstsBuild(league: Int): void {
+  const [calls, setCalls] = useState(firstsCalls);
+  const [, setLeague] = useState(firstsLeague);
+  const [, setExtent] = useState(firstsExtent);
+  const [, setOwnRow] = useState(firstsOwnRow);
+  const bottom: Int = ROW_TOP + leagueFirstsCount(league) * ROW_PITCH;
+  const paneHeight: Int = firstsDataRef.height;
+  if (bottom > paneHeight) {
+    firstsDataRef.scrollHeight = bottom;
+    setExtent(bottom);
+  } else {
+    firstsDataRef.scrollHeight = 0;
+    setExtent(0);
+  }
+  firstsDataRef.scrollY = 0;
+  setLeague(league);
+  setOwnRow(-1);
+  setCalls(calls + 1);
+}
+
+export function leagueFirstsShow(
+  frame: Int,
+  unused: Int,
+  data: Int,
+  nameColumn: Int,
+  medalColumn: Int,
+  titleColumn: Int,
+  dateColumn: Int,
+  scrollbar: Int,
+  closeButton: Int,
+  league: Int,
+): void {
+  leagueFirstsBuild(league);
+}
+
+export function leagueFirstsOwnRow(row: Int, name: String, title: String, date: String): void {
+  const [, setOwnRow] = useState(firstsOwnRow);
+  const [, setOwnText] = useState(firstsOwnText);
+  const [, setOwnTitled] = useState(firstsOwnTitled);
+  const [, setOwnDate] = useState(firstsOwnDate);
+  if (title.length > 0) {
+    setOwnText(title);
+    setOwnTitled(1);
+  } else {
+    setOwnText(name);
+    setOwnTitled(0);
+  }
+  setOwnDate(date);
+  setOwnRow(row);
+}

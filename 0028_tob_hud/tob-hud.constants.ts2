@@ -136,6 +136,7 @@ export const Progress = {
   PROPORTION: 16384,
   EASE_NUM: 3,
   EASE_DEN: 7,
+  REFRESH: 30,
 };
 
 export const Tip = {

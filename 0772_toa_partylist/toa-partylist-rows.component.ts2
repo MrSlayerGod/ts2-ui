@@ -1,0 +1,413 @@
+import { CS2, intArray, useInterval, useRef, useState } from 'ts2';
+
+import { BoardButton } from '../lib/board-button.component';
+import { clientClock, playSound } from '../lib/lib.engine';
+import { onMobile } from '../lib/lib.helpers';
+import { partylistAgeNow, partylistAgeSeconds, partylistAgeText } from '../lib/raids-partylist';
+import { ScrollbarVertical } from '../lib/scrollbar-vertical.component';
+import { serverTooltipHide, serverTooltipRepeat } from '../lib/server-tooltip';
+import { Sounds } from '../lib/game/sounds';
+import { clanwarsOpponentchangetime, raidsCount, raidsListsortList } from '../lib/game/varcs';
+import {
+  BoardPausebutton,
+  boardAnchorsRef,
+  Copy,
+  Layout,
+  ListKey,
+  ListRow,
+  ListSort,
+  ToaPartylistColor,
+  ToaPartylistFonts,
+  SLOT_COUNT,
+  ToaPartylistScrollbar,
+  ToaPartylistSlots,
+  ToaPartylistSprites,
+  tooltipRef,
+} from './toa-partylist.constants';
+import {
+  lineField,
+  lineOf,
+  recordStart,
+  slotReset,
+  toaListBuilt,
+  toaListData,
+  toaListEmptyFiltered,
+  toaListPressedSlot,
+  toaListPressedUntil,
+  toaListResetHigh,
+  toaListResetLow,
+} from './toa-partylist.state';
+
+export function ToaPartyListPane(): Component {
+  const pane = useRef();
+  const [data] = useState(toaListData);
+  const [built] = useState(toaListBuilt);
+  const [count] = useState(raidsCount);
+  const [sort] = useState(raidsListsortList);
+  const [emptyFiltered] = useState(toaListEmptyFiltered);
+  const [pressed, setPressed] = useState(toaListPressedSlot);
+  const [pressedUntil, setPressedUntil] = useState(toaListPressedUntil);
+  const [low, setLow] = useState(toaListResetLow);
+  const [high, setHigh] = useState(toaListResetHigh);
+
+  useInterval(() => {
+    if (pressedUntil !== 0 && clientClock() >= pressedUntil) {
+      if (pressed < ListKey.BITS) {
+        setLow(CS2.bit_set(low, pressed));
+      } else {
+        setHigh(CS2.bit_set(high, pressed - ListKey.BITS));
+      }
+      setPressedUntil(0);
+      setPressed(-1);
+    }
+  }, pane);
+
+  const rowH: Int = onMobile() ? Layout.ROW_H_LAID_OUT_MOBILE : Layout.ROW_H_LAID_OUT;
+  const field: Int = sortKeyOf(sort);
+  const descending: Boolean = sortDescending(sort);
+
+  const filled = intArray(SLOT_COUNT);
+  let n: Int = 0;
+  let slot: Int = 0;
+  while (slot < SLOT_COUNT) {
+    if (recordStart(data, slot) !== -1) {
+      filled[n] = slot;
+      n = n + 1;
+    }
+    slot = slot + 1;
+  }
+
+  const slotAt = intArray(SLOT_COUNT);
+  const washAt = intArray(SLOT_COUNT);
+  let i: Int = 0;
+  while (i < SLOT_COUNT) {
+    slotAt[i] = -1;
+    i = i + 1;
+  }
+  i = 0;
+  while (i < n) {
+    let rank: Int = 0;
+    if (n >= 2) {
+      const mine: String = keyOf(data, filled[i], field);
+      let j: Int = 0;
+      while (j < n) {
+        if (j !== i) {
+          const order: Int = CS2.compare(keyOf(data, filled[j], field), mine);
+          if (order < 0 || (order === 0 && j < i)) {
+            rank = rank + 1;
+          }
+        }
+        j = j + 1;
+      }
+    }
+    const position: Int = descending ? n - 1 - rank : rank;
+    slotAt[position] = filled[i];
+    washAt[position] = rank % 2 === 0 ? ListRow.EVEN : ListRow.ODD;
+    i = i + 1;
+  }
+
+  const extent: Int = count * rowH;
+  return (
+    <>
+      {ToaPartylistSlots.map(() => (
+        <rect x={0} y={0} w={0} h={0} hide />
+      ))}
+      <layer
+        ref={pane}
+        x={Layout.LIST_X}
+        y="center"
+        w={{ fill: Layout.LIST_INSET_W }}
+        h={{ fill: Layout.LIST_INSET_H }}
+        scrollHeight={built === 1 && extent > pane.height ? extent : 0}
+      >
+        {ToaPartylistSlots.map((at) => (
+          <ToaPartyRow
+            position={at}
+            slot={slotAt[at]}
+            line={built === 1 ? lineOf(data, slotAt[at]) : ''}
+            wash={washAt[at]}
+            rowH={rowH}
+            pressed={slotAt[at] !== -1 && pressed === slotAt[at]}
+            reset={slotReset(low, high, slotAt[at])}
+          />
+        ))}
+        {built !== 1 ? (
+          <text
+            x="center"
+            y="center"
+            w="fill"
+            h="fill"
+            text={Copy.LOADING}
+            font={ToaPartylistFonts.BODY}
+            color={ToaPartylistColor.LOADING}
+            align="center"
+            valign="middle"
+            shadow
+          />
+        ) : null}
+        {built === 1 && count <= 0 ? (
+          <text
+            x="center"
+            y="center"
+            w="fill"
+            h="fill"
+            text={emptyFiltered === 0 ? Copy.NO_PARTIES : Copy.NO_FRIENDS}
+            font={ToaPartylistFonts.BODY}
+            color={ToaPartylistColor.CELL}
+            align="center"
+            valign="middle"
+            shadow
+          />
+        ) : null}
+      </layer>
+
+      <layer right={Layout.SCROLLBAR_RIGHT} y="center" w={Layout.SCROLLBAR_W} h={{ fill: Layout.LIST_INSET_H }}>
+        <ScrollbarVertical
+          content={pane}
+          track={ToaPartylistScrollbar.TRACK}
+          capTopSprite={ToaPartylistScrollbar.CAP_TOP}
+          thumbSprite={ToaPartylistScrollbar.THUMB}
+          capBottomSprite={ToaPartylistScrollbar.CAP_BOTTOM}
+          arrowUp={ToaPartylistScrollbar.ARROW_UP}
+          arrowDown={ToaPartylistScrollbar.ARROW_DOWN}
+          rebuilt
+        />
+      </layer>
+    </>
+  );
+}
+
+function keyOf(keys: String, slot: Int, field: Int): String {
+  const at: Int = slot * ListKey.SLOT_W + field * ListKey.CELL_W;
+  const length: Int = parseInt(keys.substring(at, at + 2));
+  return keys.substring(at + 2, at + 2 + length);
+}
+
+function sortKeyOf(sort: Int): Int {
+  if (sort === ListSort.LEADER_ASC || sort === ListSort.LEADER_DESC) {
+    return ListKey.LEADER;
+  }
+  if (sort === ListSort.COMPLETIONS_ASC || sort === ListSort.COMPLETIONS_DESC) {
+    return ListKey.COMPLETIONS;
+  }
+  if (sort === ListSort.INVOCATIONS_ASC || sort === ListSort.INVOCATIONS_DESC) {
+    return ListKey.INVOCATIONS;
+  }
+  if (sort === ListSort.LEVEL_ASC || sort === ListSort.LEVEL_DESC) {
+    return ListKey.LEVEL;
+  }
+  if (sort === ListSort.MODE_ASC || sort === ListSort.MODE_DESC) {
+    return ListKey.MODE;
+  }
+  if (sort === ListSort.AGE_ASC || sort === ListSort.AGE_DESC) {
+    return ListKey.AGE;
+  }
+  return ListKey.MEMBERS;
+}
+
+function sortDescending(sort: Int): Boolean {
+  return sort === ListSort.MEMBERS_DESC ||
+    sort === ListSort.LEADER_DESC ||
+    sort === ListSort.COMPLETIONS_DESC ||
+    sort === ListSort.INVOCATIONS_DESC ||
+    sort === ListSort.LEVEL_DESC ||
+    sort === ListSort.AGE_DESC ||
+    sort === ListSort.MODE_DESC;
+}
+
+function completionsText(line: String): String {
+  const completions: String = lineField(line, 9);
+  return CS2.compare(completions, '0') !== 0 ? completions : Copy.NO_COMPLETIONS;
+}
+
+function ToaPartyRow({
+  position,
+  slot,
+  line,
+  wash,
+  rowH,
+  pressed,
+  reset,
+}: {
+  position: Int;
+  slot: Int;
+  line: String;
+  wash: Int;
+  rowH: Int;
+  pressed: Boolean;
+  reset: Boolean;
+}): Component {
+  const [hovered, setHovered] = useState(0);
+  const [, setPressed] = useState(toaListPressedSlot);
+  const [, setPressedUntil] = useState(toaListPressedUntil);
+  if (line.length === 0) {
+    return null;
+  }
+  const mobile: Boolean = onMobile();
+  const leader: String = lineField(line, 0);
+  const completions: String = completionsText(line);
+  const subject: String = CS2.tags_remove(reset ? completions : leader);
+  return (
+    <layer
+      x="center"
+      y={position * rowH}
+      w="fill"
+      h={rowH}
+      options={pressed ? [] : [Copy.VIEW_PARTY]}
+      optionSubject={pressed ? '' : `<col=ff9040>${subject}</col>`}
+      onMouseRepeat={!pressed && !mobile ? () => setHovered(1) : undefined}
+      onMouseLeave={!pressed && !mobile ? () => setHovered(0) : undefined}
+      onOptionSelect={
+        !pressed
+          ? (event) => {
+              if (event.option !== 1) {
+                return;
+              }
+              playSound(Sounds.INTERFACE_SELECT1);
+              setHovered(0);
+              setPressed(slot);
+              setPressedUntil(clientClock() + ListRow.BUSY_CYCLES);
+              if (CS2.cc_find(event.component, slot) === true) {
+                CS2.cc_resume_pausebutton();
+              }
+            }
+          : undefined
+      }
+    >
+      <rect
+        x="center"
+        y="center"
+        w="fill"
+        h="fill"
+        fill
+        color={ToaPartylistColor.ROW}
+        transparency={pressed ? ListRow.PRESSED : (hovered === 1 ? ListRow.HOVER : wash)}
+      />
+      <PartyCell x={Layout.CELL_MEMBERS_X} w={Layout.COL_MEMBERS_W} text={`${lineField(line, 8)}/8`} />
+      <PartyCell x={Layout.CELL_LEADER_X} w={Layout.COL_LEADER_W} text={leader} />
+      <PartyCell x={Layout.CELL_COMPLETIONS_X} w={Layout.COL_COMPLETIONS_W} text={completions} />
+      <PartyCell x={Layout.CELL_INVOCATIONS_X} w={Layout.COL_INVOCATIONS_W} text={lineField(line, 10)} />
+      <PartyCell x={Layout.CELL_LEVEL_X} w={Layout.COL_LEVEL_W} text={lineField(line, 11)} />
+      <PartyCell x={Layout.CELL_MODE_X} w={Layout.COL_MODE_W} text={lineField(line, 12)} />
+      <AgeCell seconds={partylistAgeSeconds(lineField(line, 13))} />
+    </layer>
+  );
+}
+
+function PartyCell({ x, w, text }: { x: Int; w: Int; text: String }): Component {
+  return (
+    <text
+      x={x}
+      y="center"
+      w={w}
+      h="fill"
+      text={text}
+      font={ToaPartylistFonts.BODY}
+      color={ToaPartylistColor.CELL}
+      align="center"
+      valign="middle"
+      shadow
+    />
+  );
+}
+
+function AgeCell({ seconds }: { seconds: Int }): Component {
+  const [fetchedAt] = useState(clanwarsOpponentchangetime);
+  const [shown, setShown] = useState(-1);
+  useInterval(() => {
+    const now: Int = partylistAgeNow(seconds, fetchedAt);
+    if (now !== -1 && now !== shown) {
+      setShown(now);
+    }
+  });
+  return (
+    <text
+      right={0}
+      y="center"
+      w={{ fill: Layout.CELL_AGE_INSET_W }}
+      h="fill"
+      text={partylistAgeText(shown === -1 ? seconds : shown)}
+      font={ToaPartylistFonts.BODY}
+      color={ToaPartylistColor.AGE}
+      align="center"
+      valign="middle"
+      shadow
+    />
+  );
+}
+
+export function ToaListSortColumn({
+  asc,
+  desc,
+  icon,
+  tip,
+}: {
+  asc: Int;
+  desc: Int;
+  icon: Sprite;
+  tip: String;
+}): Component {
+  const [built] = useState(toaListBuilt);
+  const [sort, setSort] = useState(raidsListsortList);
+  const [, setPressed] = useState(toaListPressedSlot);
+  const [, setPressedUntil] = useState(toaListPressedUntil);
+  const [hovered, setHovered] = useState(0);
+  const live: Boolean = sort === asc || sort === desc;
+  let arrow: Int = live ? 0 : ListRow.ARROW_DIM;
+  if (hovered === 1) {
+    arrow = live ? ListRow.ARROW_LIVE_HOVER : ListRow.ARROW_DIM_HOVER;
+  }
+  if (built !== 1) {
+    return <layer w="fill" h="fill" />;
+  }
+  return (
+    <layer
+      w="fill"
+      h="fill"
+      onMouseRepeat={(event) => {
+        if (!onMobile()) {
+          setHovered(1);
+          serverTooltipRepeat(tooltipRef, event.component, tip, ListRow.TIP_WRAP);
+        }
+      }}
+      onMouseLeave={() => {
+        if (!onMobile()) {
+          setHovered(0);
+          serverTooltipHide(tooltipRef);
+        }
+      }}
+      onClick={() => {
+        playSound(Sounds.INTERFACE_SELECT1);
+        setPressed(-1);
+        setPressedUntil(0);
+        setSort(sort === asc ? desc : asc);
+      }}
+    >
+      <sprite
+        x="center"
+        y={{ bottom: Layout.SORT_ARROW_BOTTOM }}
+        w={Layout.SORT_ARROW_W}
+        h={Layout.SORT_ARROW_H}
+        sprite={sort === desc ? ToaPartylistSprites.ARROW_UP : ToaPartylistSprites.ARROW_DOWN}
+        transparency={arrow}
+      />
+      <sprite
+        x="center"
+        y={Layout.SORT_ICON_Y}
+        w={Layout.SORT_ICON_W}
+        h={Layout.SORT_ICON_H}
+        sprite={icon}
+        transparency={hovered === 1 ? ListRow.ICON_HOVER : 0}
+      />
+    </layer>
+  );
+}
+
+export function ToaRefreshButton(): Component {
+  const [built] = useState(toaListBuilt);
+  return (
+    <layer w="fill" h="fill" hide={built !== 1}>
+      <BoardButton label={Copy.REFRESH} resumeIn={boardAnchorsRef} resumeAt={BoardPausebutton.REFRESH} />
+    </layer>
+  );
+}

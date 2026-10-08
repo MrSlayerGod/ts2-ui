@@ -17,10 +17,8 @@ export function burnerValue(column: Int): Int {
 }
 
 export function burnerAverage(): Int {
-  return (
-    (useServerState(BurnerVarbits.WEST) + useServerState(BurnerVarbits.CENTRE) + useServerState(BurnerVarbits.EAST)) /
-    BurnerRange.COLUMNS
-  );
+  return (useServerState(BurnerVarbits.WEST) + useServerState(BurnerVarbits.CENTRE) + useServerState(BurnerVarbits.EAST)) /
+    BurnerRange.COLUMNS;
 }
 
 export function burnersLocked(): Boolean {

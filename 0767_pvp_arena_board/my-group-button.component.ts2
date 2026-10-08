@@ -2,13 +2,17 @@ import { useServerState } from 'ts2';
 
 import { BoardButton } from '../lib/board-button.component';
 import { Varps } from '../lib/game/varps';
-import { Copy } from './pvp-arena-board.constants';
+import { BoardPausebutton, boardAnchorsRef, Copy } from './pvp-arena-board.constants';
 
 export function MyGroupButton(): Component {
   const state: Int = useServerState(Varps.IF1);
   return (
     <layer w="fill" h="fill">
-      <BoardButton label={state === 2 ? Copy.VIEW_APPLICATIONS : state === 1 ? Copy.LIST_GROUP : Copy.CREATE_GROUP} />
+      <BoardButton
+        label={state === 2 ? Copy.VIEW_APPLICATIONS : state === 1 ? Copy.LIST_GROUP : Copy.CREATE_GROUP}
+        resumeIn={boardAnchorsRef}
+        resumeAt={BoardPausebutton.MY_GROUP}
+      />
     </layer>
   );
 }

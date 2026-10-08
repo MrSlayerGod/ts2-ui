@@ -53,7 +53,7 @@ export function MouldList({
         h="fill"
         fill
         color={MouldColor.ROW}
-        transparency={(contentHeight / height) % 2 === 0 ? RowShade.EVEN : RowShade.ODD}
+        transparency={contentHeight / height % 2 === 0 ? RowShade.EVEN : RowShade.ODD}
       />
     </layer>
   );

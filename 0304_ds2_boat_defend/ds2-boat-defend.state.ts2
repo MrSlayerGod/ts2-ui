@@ -1,0 +1,32 @@
+import { CS2, sessionState, useState } from 'ts2';
+
+export const boatIntegrityPx = sessionState(-1);
+
+export const boatClockDeadline = sessionState(-1);
+
+export const boatClockText = sessionState('Time Left: 5:00');
+
+export function ds2BoatDefendUpdate(integrity: Int, seconds: Int): void {
+  const [, setDeadline] = useState(boatClockDeadline);
+  const [, setIntegrity] = useState(boatIntegrityPx);
+  setDeadline(CS2.clientclock() + seconds * 30);
+  setIntegrity(integrity * 100 / 900 * 150 / 100);
+}
+
+export function ds2BoatDefendTick(): void {
+  const [deadline, setDeadline] = useState(boatClockDeadline);
+  const [, setText] = useState(boatClockText);
+  let left: Int = deadline - CS2.clientclock();
+  if (left <= 0) {
+    setDeadline(-1);
+    return;
+  }
+  left = left / 50;
+  const minutes: Int = left / 60;
+  const seconds: Int = left % 60;
+  let text: String = `Time Left: ${stringOf(minutes)}:${stringOf(seconds)}`;
+  if (seconds < 10) {
+    text = `Time Left: ${stringOf(minutes)}:0${stringOf(seconds)}`;
+  }
+  setText(text);
+}

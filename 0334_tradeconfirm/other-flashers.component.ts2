@@ -48,7 +48,7 @@ export function OtherFlashers(): Component {
           changed[index] > flashingSince && (
             <FlashPair
               x={twoColumns && rank[index] % 2 === 1 ? Offer.HALF : 0}
-              y={twoColumns ? (rank[index] / 2) * Offer.ROW_STEP : rank[index] * Offer.ROW_STEP}
+              y={twoColumns ? rank[index] / 2 * Offer.ROW_STEP : rank[index] * Offer.ROW_STEP}
               w={barWidth}
               changedAt={changed[index]}
             />
@@ -63,7 +63,7 @@ export function OtherFlashers(): Component {
               x={twoColumns ? ((placed + pending[index]) % 2 === 0 ? Offer.HALF : Offer.WIDTH) : 0}
               y={
                 twoColumns
-                  ? ((placed + pending[index]) / 2) * Offer.ROW_STEP
+                  ? (placed + pending[index]) / 2 * Offer.ROW_STEP
                   : (placed + pending[index]) * Offer.ROW_STEP
               }
               w={barWidth}

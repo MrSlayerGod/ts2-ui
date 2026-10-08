@@ -1,4 +1,5 @@
-import { onMounted, onUpdated, useServerState, useState } from 'ts2';
+import { onMounted, onUpdated, sessionState, useServerState, useState, useWatch } from 'ts2';
+import { Varps } from '../lib/game/varps';
 import { xpdropsFake6 } from '../lib/game/varcs';
 import { SuppliesTab } from '../lib/pvp-arena/kit-tab.component';
 import { Copy, Layout, PROGRESS_AGREED, UnrankedTab, UnrankedVarbits } from './pvp-arena-unrankedduel.constants';
@@ -8,6 +9,9 @@ export function UnrankedTabStrip(): Component {
   const progress: Int = useServerState(UnrankedVarbits.PROGRESS);
   const build: Int = useServerState(UnrankedVarbits.BUILD);
   const [tab] = useState(xpdropsFake6);
+  const [repaints] = useState(unrankedTabRepaints);
+
+  useWatch(Varps.PVPA_TEMP_TRANSMIT_1, () => repaintUnrankedTabs());
 
   onMounted(() => selectUnrankedDisplays(progress, build, tab));
   onUpdated(() => selectUnrankedDisplays(progress, build, tab));
@@ -19,6 +23,7 @@ export function UnrankedTabStrip(): Component {
           index={UnrankedTab.STATS}
           label={Copy.TAB_STATS}
           active={unrankedTabActive(progress, tab, UnrankedTab.STATS)}
+          repaint={repaints}
         />
       </layer>
       <layer x={Layout.tabs.kitX} y="center" w={Layout.tabs.kitW} h="fill" hide={!loadoutStage(progress)}>
@@ -26,6 +31,7 @@ export function UnrankedTabStrip(): Component {
           index={UnrankedTab.MY_KIT}
           label={kitTabLabel(build)}
           active={unrankedTabActive(progress, tab, UnrankedTab.MY_KIT)}
+          repaint={repaints}
         />
       </layer>
       <layer x={Layout.tabs.opponentX} y="center" w={Layout.tabs.opponentW} h="fill" hide={!loadoutStage(progress)}>
@@ -33,6 +39,7 @@ export function UnrankedTabStrip(): Component {
           index={UnrankedTab.OPPONENT}
           label={Copy.TAB_OPPONENT}
           active={unrankedTabActive(progress, tab, UnrankedTab.OPPONENT)}
+          repaint={repaints}
         />
       </layer>
     </>
@@ -91,10 +98,10 @@ export function selectUnrankedDisplays(progress: Int, build: Int, tab: Int): voi
       hideStats = true;
     }
   }
-  statsPage.hide = hideStats;
-  displayA.hide = hideKitA;
-  displayB.hide = hideKitB;
-  displayC.hide = hideKitC;
+  statsPage.props = { hide: hideStats };
+  displayA.props = { hide: hideKitA };
+  displayB.props = { hide: hideKitB };
+  displayC.props = { hide: hideKitC };
   if (progress < PROGRESS_AGREED) {
     if (tab !== UnrankedTab.STATS) {
       const [, setTab] = useState(xpdropsFake6);
@@ -102,5 +109,12 @@ export function selectUnrankedDisplays(progress: Int, build: Int, tab: Int): voi
     }
     return;
   }
-  opponentPage.hide = tab !== UnrankedTab.OPPONENT;
+  opponentPage.props = { hide: tab !== UnrankedTab.OPPONENT };
+}
+
+export const unrankedTabRepaints = sessionState(0);
+
+function repaintUnrankedTabs(): void {
+  const [n, setN] = useState(unrankedTabRepaints);
+  setN(n + 1);
 }

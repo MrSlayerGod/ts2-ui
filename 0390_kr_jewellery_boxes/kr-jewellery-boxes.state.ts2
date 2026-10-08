@@ -1,0 +1,18 @@
+import { sessionState, useState } from 'ts2';
+
+import { krDisplayRiddle } from '../lib/game/varcs';
+import { RiddleView } from './kr-jewellery-boxes.constants';
+
+export const krRiddleView = sessionState(RiddleView.CACHE);
+
+export function krDisplayRiddleToggle(): void {
+  const [shown, setShown] = useState(krDisplayRiddle);
+  const [, setView] = useState(krRiddleView);
+  if (shown === 0) {
+    setView(RiddleView.BOXES);
+    setShown(1);
+  } else {
+    setView(RiddleView.RIDDLE);
+    setShown(0);
+  }
+}

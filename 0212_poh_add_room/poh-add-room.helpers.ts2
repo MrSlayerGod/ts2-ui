@@ -30,7 +30,7 @@ export function costLabel(cost: Int): String {
   return `${groupDigits(cost, PohCopy.GROUP_SEPARATOR)}${PohCopy.COST_SUFFIX}`;
 }
 
-export function selectRoom(button: ComponentId, sound: Int): void {
+export function selectRoom(button: ComponentId, sound: Sound): void {
   CS2.sound_effect(sound, 1, 0);
   CS2.if_resume_pausebutton(button);
 }

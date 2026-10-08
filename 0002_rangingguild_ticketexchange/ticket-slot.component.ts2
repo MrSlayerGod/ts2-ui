@@ -30,8 +30,8 @@ export function TicketSlot({
     return (
       <sprite
         hide
-        x={(index % Grid.COLUMNS) * stride}
-        y={(index / Grid.COLUMNS) * stride}
+        x={index % Grid.COLUMNS * stride}
+        y={index / Grid.COLUMNS * stride}
         w={Grid.SLOT_W}
         h={Grid.SLOT_H}
         outline={Grid.OUTLINE}
@@ -44,8 +44,8 @@ export function TicketSlot({
 
   return (
     <sprite
-      x={(index % Grid.COLUMNS) * stride}
-      y={(index / Grid.COLUMNS) * stride}
+      x={index % Grid.COLUMNS * stride}
+      y={index / Grid.COLUMNS * stride}
       w={Grid.SLOT_W}
       h={Grid.SLOT_H}
       outline={Grid.OUTLINE}

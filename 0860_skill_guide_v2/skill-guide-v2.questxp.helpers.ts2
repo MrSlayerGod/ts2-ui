@@ -1,0 +1,534 @@
+import { CS2, useServerState, useState } from 'ts2';
+
+import { Fonts } from '../lib/game/fonts';
+import { Sprites } from '../lib/game/sprites';
+import { Varbits } from '../lib/game/varbits';
+import { Varps } from '../lib/game/varps';
+import { combatLevel, playermember } from '../lib/game/varcs';
+import { membersWorld, textWidth } from '../lib/lib.engine';
+import { groupDigits } from '../lib/lib.format';
+import { Quest } from '../lib/lib.quests';
+import { skillBaseLevel } from '../0320_stats/stats-levels.helpers';
+import { miscRequirementsMet, requiredQuestDone } from '../0372_cr_ui/cr-ui.helpers';
+import { CrQuestRow, CrQuestRows } from '../0372_cr_ui/cr-ui.data';
+import { settingColourOrDefault } from '../0399_questlist/settings-colour';
+import { speedrunningWorld } from '../0134_settings/settings.helpers';
+import { leagueWorld } from '../0162_chatbox/chatbox.helpers';
+import { speedrunIndex } from '../0779_speedrunning_panel/speedrunning-panel.helpers';
+import { Speedruns } from '../0779_speedrunning_panel/speedruns.data';
+import {
+  QuestOverviewRow,
+  QuestOverviews,
+  QuestPrerequisites,
+  QuestStatRecommendations,
+  QuestStatRequirements,
+  QuestStatRow,
+} from '../0782_questjournal_overview/questjournal-overview.data';
+import {
+  defenceIsFree,
+  questIsComplete,
+  questStatus,
+} from '../0782_questjournal_overview/questjournal-overview.helpers';
+import { sailingRestricted } from '../0240_xpreward/xpreward.helpers';
+
+import { GuideSkillIcons } from './skill-guide-v2.data';
+import {
+  QUEST_XP_RESTRICTED,
+  QuestXpCount,
+  QuestXpKind,
+  QuestXpStart,
+  QuestXpToken,
+  QuestXpTokens,
+} from './skill-guide-v2.questxp.data';
+
+export enum QuestXpLayout {
+  LEFT = 4,
+  TOP = 5,
+  DIARY = 18,
+  DIARY_GAP = 3,
+  INDENT = 25,
+  LINE_H = 16,
+  NAME_ADVANCE = 19,
+  XP_Y = 24,
+  SKILL_ICON = 13,
+  SKILL_GAP = 2,
+  XP_GAP = 8,
+  STAR = 16,
+  LINE_GAP = 2,
+  RIGHT_INSET = 4,
+  ROW_TAIL = 22,
+  SPRITE_GAP = 1,
+  ITEM_GAP = 5,
+  WIDTH = 306,
+}
+
+export enum QuestXpColour {
+  LABEL = 0xff981f,
+  TEXT = 0xffffff,
+  DEFICIT = 0xffff00,
+  ROW = 0x000000,
+}
+
+export function rowTransparency(index: Int): Int {
+  return index % 2 === 0 ? 200 : 220;
+}
+
+export function questXpKey(stat: Int): Int {
+  if (sailingRestricted() && QuestXpStart.get(stat + QUEST_XP_RESTRICTED) !== null) {
+    return stat + QUEST_XP_RESTRICTED;
+  }
+  return stat;
+}
+
+export function tokenDropped(token: QuestXpToken): Boolean {
+  const row: QuestOverviewRow | null = QuestOverviews.at(token.quest);
+  const gated: Boolean = row === null ? false : row.relatedContent === 1;
+  return gated && sailingRestricted();
+}
+
+export function questId(quest: Int): Int {
+  const row: CrQuestRow | null = CrQuestRows.at(quest);
+  return row === null ? -1 : row.id;
+}
+
+export function skillRequirementMet(skill: Int, level: Int): Boolean {
+  if (skill === -1 || level === -1 || level <= 1) {
+    return true;
+  }
+  if (defenceIsFree(skill)) {
+    return true;
+  }
+  if (skillBaseLevel(skill) < level) {
+    return false;
+  }
+  return true;
+}
+
+export function questRequirementsMet(quest: Int): Boolean {
+  const row: QuestOverviewRow | null = QuestOverviews.at(quest);
+  const members: Boolean = questMembers(quest);
+  const questFrom: Int = row === null ? 0 : row.questReqFrom;
+  const questCount: Int = row === null ? 0 : row.questReqCount;
+  const statFrom: Int = row === null ? 0 : row.statReqFrom;
+  const statCount: Int = row === null ? 0 : row.statReqCount;
+  const points: Int = row === null ? 0 : row.questPoints;
+  const combat: Int = row === null ? 3 : row.combatRequirement;
+  const [member] = useState(playermember);
+  if (members && !membersWorld() && member === 0) {
+    return false;
+  }
+  let i: Int = 0;
+  while (i < questCount) {
+    if (!requiredQuestDone(QuestPrerequisites.at(questFrom + i) ?? -1)) {
+      return false;
+    }
+    i = i + 1;
+  }
+  i = 0;
+  while (i < statCount) {
+    const stat: QuestStatRow | null = QuestStatRequirements.at(statFrom + i);
+    if (stat !== null) {
+      if (!skillRequirementMet(stat.skill, stat.level)) {
+        return false;
+      }
+    }
+    i = i + 1;
+  }
+  if (useServerState(Varps.QP) < points) {
+    return false;
+  }
+  const [level] = useState(combatLevel);
+  if (level < combat) {
+    return false;
+  }
+  if (!miscRequirementsMet(quest)) {
+    return false;
+  }
+  return true;
+}
+
+export function questRecommendationsMet(quest: Int): Boolean {
+  const row: QuestOverviewRow | null = QuestOverviews.at(quest);
+  const statFrom: Int = row === null ? 0 : row.statRecFrom;
+  const statCount: Int = row === null ? 0 : row.statRecCount;
+  const combat: Int = row === null ? 3 : row.combatRecommendation;
+  let i: Int = 0;
+  while (i < statCount) {
+    const stat: QuestStatRow | null = QuestStatRecommendations.at(statFrom + i);
+    if (stat !== null) {
+      if (!skillRequirementMet(stat.skill, stat.level)) {
+        return false;
+      }
+    }
+    i = i + 1;
+  }
+  const [level] = useState(combatLevel);
+  if (level < combat) {
+    return false;
+  }
+  return true;
+}
+
+function questMembers(quest: Int): Boolean {
+  const row: CrQuestRow | null = CrQuestRows.at(quest);
+  return row === null ? false : row.members;
+}
+
+function speedrunBetaAccess(): Boolean {
+  if (useServerState(Varbits.SPEEDRUNNING_BETA_TESTER) === 1) {
+    return true;
+  }
+  if (CS2.staffmodlevel() >= 2) {
+    return true;
+  }
+  return false;
+}
+
+export function speedrunQuestEnabled(quest: Int): Boolean {
+  const index: Int = speedrunIndex(quest);
+  if (index < 0) {
+    return false;
+  }
+  const row = Speedruns.at(index);
+  const state: Int = row === null ? 0 : row.speedrunState;
+  if (state === 1 || state === 3) {
+    return true;
+  }
+  if (state === 2) {
+    return speedrunBetaAccess();
+  }
+  return false;
+}
+
+function leagueQuestBlocked(quest: Int): Boolean {
+  if (useServerState(Varbits.LEAGUE_TYPE) !== 1) {
+    return false;
+  }
+  switch (quest) {
+    case Quest.IN_SEARCH_OF_KNOWLEDGE:
+    case Quest.FORSAKEN_TOWER_THE:
+    case Quest.ASCENT_OF_ARCEUUS_THE:
+    case Quest.CLIENT_OF_KOUREND:
+    case Quest.QUEEN_OF_THIEVES_THE:
+    case Quest.DEPTHS_OF_DESPAIR_THE:
+    case Quest.TALE_OF_THE_RIGHTEOUS:
+    case Quest.EAGLES_PEAK:
+    case Quest.DRUIDIC_RITUAL:
+    case Quest.DRAGON_SLAYER_I:
+    case Quest.RUNE_MYSTERIES:
+      return false;
+  }
+  return true;
+}
+
+export function questUnavailable(quest: Int, status: Int, reqsMet: Boolean, recsMet: Boolean): Boolean {
+  if (leagueWorld() && leagueQuestBlocked(quest)) {
+    return true;
+  }
+  if (speedrunningWorld() && !speedrunQuestEnabled(quest)) {
+    return true;
+  }
+  if (status === 1 && useServerState(Varbits.QUESTLIST_HIDE_LACKREQS) === 1 && !reqsMet) {
+    return true;
+  }
+  if (status === 1 && useServerState(Varbits.QUESTLIST_HIDE_LACKRECS) === 1 && !recsMet) {
+    return true;
+  }
+  return false;
+}
+
+export function questRowColour(quest: Int): Int {
+  const status: Int = questStatus(quest as Quest);
+  if (questUnavailable(quest, status, questRequirementsMet(quest), questRecommendationsMet(quest))) {
+    return settingColourOrDefault(227);
+  }
+  if (status === 0) {
+    return settingColourOrDefault(225);
+  }
+  if (status === 2 && !speedrunningWorld()) {
+    return settingColourOrDefault(226);
+  }
+  return settingColourOrDefault(224);
+}
+
+export function rowActive(quest: Int): Int {
+  if (questIsComplete(quest as Quest)) {
+    return 0;
+  }
+  if (!questRequirementsMet(quest) || !questRecommendationsMet(quest)) {
+    return 1;
+  }
+  return 0;
+}
+
+export function rowStar(token: QuestXpToken): Boolean {
+  const [member] = useState(playermember);
+  return member === 0 && !questMembers(token.quest);
+}
+
+export function nameWidth(quest: Int): Int {
+  const row: QuestOverviewRow | null = QuestOverviews.at(quest);
+  return textWidth(row === null ? '' : row.name, QuestXpLayout.WIDTH, Fonts.B12_FULL);
+}
+
+export function xpText(token: QuestXpToken): String {
+  return `${groupDigits(token.level, ',')} XP`;
+}
+
+export function xpLineEnd(token: QuestXpToken): Int {
+  return QuestXpLayout.INDENT +
+    QuestXpLayout.SKILL_ICON +
+    QuestXpLayout.SKILL_GAP +
+    textWidth(xpText(token), QuestXpLayout.WIDTH, Fonts.P12_FULL) +
+    QuestXpLayout.XP_GAP;
+}
+
+function isRecommendation(token: QuestXpToken): Boolean {
+  return token.kind === QuestXpKind.REC_STAT || token.kind === QuestXpKind.REC_COMBAT;
+}
+
+function questsMissing(quest: Int): Int {
+  const row: QuestOverviewRow | null = QuestOverviews.at(quest);
+  const from: Int = row === null ? 0 : row.questReqFrom;
+  const count: Int = row === null ? 0 : row.questReqCount;
+  let missing: Int = 0;
+  let i: Int = 0;
+  while (i < count) {
+    if (!requiredQuestDone(QuestPrerequisites.at(from + i) ?? -1)) {
+      missing = missing + 1;
+    }
+    i = i + 1;
+  }
+  return missing;
+}
+
+export function itemDeficit(token: QuestXpToken): Int {
+  switch (token.kind) {
+    case QuestXpKind.REQ_STAT:
+    case QuestXpKind.REC_STAT:
+      return token.skill === -1 ? 0 : token.level - skillBaseLevel(token.skill);
+    case QuestXpKind.REQ_COMBAT:
+    case QuestXpKind.REC_COMBAT:
+      return token.level - useServerState(Varbits.COMBATLEVEL_TRANSMIT);
+    case QuestXpKind.REQ_QP:
+      return token.level - useServerState(Varps.QP);
+    case QuestXpKind.REQ_QUESTS:
+      return questsMissing(token.quest);
+  }
+  return -1;
+}
+
+export function itemVisible(token: QuestXpToken, shown: Int, active: Int): Boolean {
+  if (active !== 1 || token.kind === QuestXpKind.ROW) {
+    return false;
+  }
+  if (token.kind === QuestXpKind.MISC) {
+    return !miscRequirementsMet(token.quest) || shown === 0;
+  }
+  return itemDeficit(token) > 0;
+}
+
+function itemBreaks(token: QuestXpToken, shown: Int, recShown: Int): Boolean {
+  if (token.kind === QuestXpKind.MISC) {
+    return shown > 0;
+  }
+  return isRecommendation(token) && recShown === 0 && shown > 0;
+}
+
+export function itemLabel(token: QuestXpToken, shown: Int, recShown: Int): String {
+  if (token.kind === QuestXpKind.MISC) {
+    return '';
+  }
+  if (isRecommendation(token)) {
+    return recShown === 0 ? 'Recommended: ' : '';
+  }
+  return shown === 0 ? 'Requirements: ' : '';
+}
+
+export function labelWidth(label: String): Int {
+  return label.length > 0 ? textWidth(label, QuestXpLayout.WIDTH, Fonts.P11_FULL) : 0;
+}
+
+export function itemText(token: QuestXpToken, shown: Int): String {
+  switch (token.kind) {
+    case QuestXpKind.REQ_QP:
+      return `${token.level} QP`;
+    case QuestXpKind.REQ_QUESTS:
+      return token.level > 1 ? `${token.level} Quests` : `${token.level} Quest`;
+    case QuestXpKind.MISC:
+      return shown > 0
+        ? '<col=ff981f>Other Requirements: </col>View journal for details.'
+        : '<col=ff981f>Requirements: </col>View journal for details.';
+  }
+  return `${token.level}`;
+}
+
+export function itemSprite(token: QuestXpToken): Sprite {
+  switch (token.kind) {
+    case QuestXpKind.REQ_STAT:
+    case QuestXpKind.REC_STAT:
+      return GuideSkillIcons.get(token.skill as Skill) ?? -1;
+    case QuestXpKind.REQ_COMBAT:
+    case QuestXpKind.REC_COMBAT:
+      return Sprites.ACCOUNT_ICONS_0;
+    case QuestXpKind.REQ_QP:
+    case QuestXpKind.REQ_QUESTS:
+      return Sprites.CLAN_RANK_ICONS_262;
+  }
+  return -1;
+}
+
+export function itemSpriteSize(token: QuestXpToken): Int {
+  if (token.kind === QuestXpKind.MISC) {
+    return 0;
+  }
+  if (token.kind === QuestXpKind.REQ_COMBAT || token.kind === QuestXpKind.REC_COMBAT) {
+    return 18;
+  }
+  return 13;
+}
+
+export function deficitText(deficit: Int): String {
+  return deficit > 0 ? `(+${deficit})` : '';
+}
+
+function limit(): Int {
+  return QuestXpLayout.WIDTH - QuestXpLayout.RIGHT_INSET;
+}
+
+export function textWidthOf(text: String): Int {
+  return textWidth(text, limit(), Fonts.P11_FULL);
+}
+
+const X_UNIT = 1;
+const Y_UNIT = 1024;
+const SHOWN_UNIT = 2097152;
+const REC_UNIT = 67108864;
+
+export function cursorPack(x: Int, y: Int, shown: Int, recShown: Int): Int {
+  return x * X_UNIT + y * Y_UNIT + shown * SHOWN_UNIT + recShown * REC_UNIT;
+}
+
+export function cursorX(cursor: Int): Int {
+  return cursor % Y_UNIT;
+}
+
+export function cursorY(cursor: Int): Int {
+  return (cursor / Y_UNIT) % 2048;
+}
+
+export function cursorShown(cursor: Int): Int {
+  return (cursor / SHOWN_UNIT) % 32;
+}
+
+export function cursorRecShown(cursor: Int): Int {
+  return cursor / REC_UNIT;
+}
+
+export function rowCursor(token: QuestXpToken): Int {
+  return cursorPack(xpLineEnd(token), QuestXpLayout.XP_Y, 0, 0);
+}
+
+export function itemLineX(token: QuestXpToken, cursor: Int): Int {
+  return itemBreaks(token, cursorShown(cursor), cursorRecShown(cursor)) ? QuestXpLayout.INDENT : cursorX(cursor);
+}
+
+export function itemLineY(token: QuestXpToken, cursor: Int): Int {
+  const y: Int = cursorY(cursor);
+  return itemBreaks(token, cursorShown(cursor), cursorRecShown(cursor))
+    ? y + QuestXpLayout.LINE_H + QuestXpLayout.LINE_GAP
+    : y;
+}
+
+export function itemBody(token: QuestXpToken, cursor: Int, deficit: Int): Int {
+  const shown: Int = cursorShown(cursor);
+  const recShown: Int = cursorRecShown(cursor);
+  const breaks: Boolean = itemBreaks(token, shown, recShown);
+  const lineX: Int = breaks ? QuestXpLayout.INDENT : cursorX(cursor);
+  const lineY: Int = breaks ? cursorY(cursor) + QuestXpLayout.LINE_H + QuestXpLayout.LINE_GAP : cursorY(cursor);
+  const after: Int = lineX + labelWidth(itemLabel(token, shown, recShown));
+  let width: Int = itemSpriteSize(token) + QuestXpLayout.SPRITE_GAP + textWidthOf(itemText(token, shown));
+  if (deficit > 0) {
+    width = width + 1 + textWidthOf(deficitText(deficit));
+  }
+  if (after + width > limit()) {
+    return cursorPack(QuestXpLayout.INDENT, lineY + QuestXpLayout.LINE_H + QuestXpLayout.LINE_GAP, 0, 0);
+  }
+  return cursorPack(after, lineY, 0, 0);
+}
+
+export function tokenDeficit(token: QuestXpToken): Int {
+  return token.kind === QuestXpKind.MISC ? 0 : itemDeficit(token);
+}
+
+function visibleWith(token: QuestXpToken, shown: Int, active: Int, deficit: Int): Boolean {
+  if (active !== 1 || token.kind === QuestXpKind.ROW) {
+    return false;
+  }
+  if (token.kind === QuestXpKind.MISC) {
+    return !miscRequirementsMet(token.quest) || shown === 0;
+  }
+  return deficit > 0;
+}
+
+export function stepCursor(token: QuestXpToken, cursor: Int, active: Int): Int {
+  if (token.kind === QuestXpKind.ROW) {
+    return rowCursor(token);
+  }
+  const shown: Int = cursorShown(cursor);
+  const deficit: Int = tokenDeficit(token);
+  if (!visibleWith(token, shown, active, deficit)) {
+    return cursor;
+  }
+  const body: Int = itemBody(token, cursor, deficit);
+  const bodyX: Int = cursorX(body);
+  const size: Int = itemSpriteSize(token);
+  const textX: Int = size > 0 ? bodyX + size + QuestXpLayout.SPRITE_GAP : bodyX;
+  let end: Int = textX + textWidthOf(itemText(token, shown)) + QuestXpLayout.ITEM_GAP;
+  if (deficit > 0) {
+    end = end + 1 + textWidthOf(deficitText(deficit));
+  }
+  const recShown: Int = cursorRecShown(cursor);
+  return cursorPack(end, cursorY(body), shown + 1, isRecommendation(token) ? recShown + 1 : recShown);
+}
+
+export function rowHeight(token: QuestXpToken): Int {
+  const active: Int = rowActive(token.quest);
+  let cursor: Int = rowCursor(token);
+  if (active !== 1) {
+    return QuestXpLayout.XP_Y + QuestXpLayout.ROW_TAIL;
+  }
+  let i: Int = token.pos + 1;
+  let going: Boolean = true;
+  const count: Int = QuestXpTokens.length;
+  while (going && i < count) {
+    const item: QuestXpToken | null = QuestXpTokens.at(i);
+    if (item === null) {
+      going = false;
+    } else if (item.kind === QuestXpKind.ROW) {
+      going = false;
+    } else {
+      cursor = stepCursor(item, cursor, active);
+      i = i + 1;
+    }
+  }
+  return cursorY(cursor) + QuestXpLayout.ROW_TAIL;
+}
+
+export function questXpExtent(stat: Int): Int {
+  const key: Int = questXpKey(stat);
+  const start: Int = QuestXpStart.get(key) ?? 0;
+  const end: Int = start + (QuestXpCount.get(key) ?? 0);
+  let total: Int = 0;
+  let i: Int = start;
+  while (i < end) {
+    const token: QuestXpToken | null = QuestXpTokens.at(i);
+    if (token !== null) {
+      if (token.kind === QuestXpKind.ROW && !tokenDropped(token)) {
+        total = total + rowHeight(token);
+      }
+    }
+    i = i + 1;
+  }
+  return total;
+}

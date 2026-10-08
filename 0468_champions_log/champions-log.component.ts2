@@ -1,5 +1,28 @@
+import { sessionState, useRef, useState } from 'ts2';
+
+import { hasBit } from '../lib/lib.engine';
 import { closeInterface, graphicSwapper } from '../lib/lib.helpers';
-import { ChampionsArt, ChampionsLayout, ChampionsScroll } from './champions-log.constants';
+import { ScrollbarVertical } from '../lib/scrollbar-vertical.component';
+import { Fonts } from '../lib/game/fonts';
+import { Sprites } from '../lib/game/sprites';
+import {
+  ChampionsArt,
+  Champions,
+  ChampionsLayout,
+  ChampionsLeon,
+  ChampionsRows,
+  ChampionsScroll,
+} from './champions-log.constants';
+
+const championsLogShown = sessionState(0);
+const championsDefeated = sessionState(0);
+
+export function championsLogOpen(defeated: Int): void {
+  const [, setShown] = useState(championsLogShown);
+  const [, setDefeated] = useState(championsDefeated);
+  setDefeated(defeated);
+  setShown(1);
+}
 
 export function ChampionsLog(): Component {
   return (
@@ -16,14 +39,7 @@ export function ChampionsLog(): Component {
         offsetX={ChampionsScroll.OFFSET_X}
       />
 
-      <layer
-        x={ChampionsLayout.LIST_X}
-        y="center"
-        w={{ fill: ChampionsLayout.LIST_W_INSET }}
-        h={ChampionsLayout.LIST_H}
-      />
-
-      <layer x={{ right: ChampionsLayout.BAR_RIGHT }} y="center" w={ChampionsLayout.BAR_W} h={ChampionsLayout.BAR_H} />
+      <ChampionsPane />
 
       <sprite
         x={{ right: ChampionsLayout.CLOSE_RIGHT }}
@@ -35,6 +51,103 @@ export function ChampionsLog(): Component {
         onOptionSelect={() => closeInterface()}
         onMouseEnter={(event) => graphicSwapper(event.component, ChampionsArt.CLOSE_HOVER)}
         onMouseLeave={(event) => graphicSwapper(event.component, ChampionsArt.CLOSE)}
+      />
+    </>
+  );
+}
+
+function ChampionsPane(): Component {
+  const [shown] = useState(championsLogShown);
+  const contents = useRef();
+  return (
+    <>
+      <layer
+        ref={contents}
+        x={ChampionsLayout.LIST_X}
+        y="center"
+        w={{ fill: ChampionsLayout.LIST_W_INSET }}
+        h={ChampionsLayout.LIST_H}
+        scrollHeight={shown === 1 ? ChampionsRows.EXTENT : 0}
+        scrollY={0}
+      >
+        {shown === 1 ? <ChampionRows /> : null}
+      </layer>
+
+      <layer x={{ right: ChampionsLayout.BAR_RIGHT }} y="center" w={ChampionsLayout.BAR_W} h={ChampionsLayout.BAR_H}>
+        {shown === 1 ? (
+          <ScrollbarVertical
+            content={contents}
+            track={Sprites.SCROLLBAR_PARCHMENT_DRAGGER_V2_3}
+            capTopSprite={Sprites.SCROLLBAR_PARCHMENT_DRAGGER_V2_0}
+            thumbSprite={Sprites.SCROLLBAR_PARCHMENT_DRAGGER_V2_1}
+            capBottomSprite={Sprites.SCROLLBAR_PARCHMENT_DRAGGER_V2_2}
+            arrowUp={Sprites.SCROLLBAR_PARCHMENT_V2_0}
+            arrowDown={Sprites.SCROLLBAR_PARCHMENT_V2_1}
+          />
+        ) : null}
+      </layer>
+    </>
+  );
+}
+
+function ChampionRows(): Component {
+  const [defeated] = useState(championsDefeated);
+  return (
+    <>
+      {Champions.map((row) => (
+        <>
+          <model
+            x={0}
+            y={ChampionsRows.TOP + row.index * ChampionsRows.ROW}
+            w={ChampionsRows.ROW}
+            h={ChampionsRows.ROW}
+            model={row.model}
+            offsetX={0}
+            offsetY={ChampionsRows.MODEL_OFFSET_Y}
+            pitch={0}
+            yaw={0}
+            roll={0}
+            zoom={ChampionsRows.MODEL_ZOOM}
+          />
+          <text
+            x={{ right: 0 }}
+            y={ChampionsRows.TOP + row.index * ChampionsRows.ROW}
+            w={{ fill: ChampionsRows.ROW }}
+            h={ChampionsRows.ROW}
+            text={hasBit(defeated, row.index) ? `<str>${row.name}</str>` : row.name}
+            font={Fonts.Q8_FULL}
+            color={ChampionsRows.INK}
+            shadow
+            align="center"
+            valign="middle"
+          />
+        </>
+      ))}
+      <model
+        x={0}
+        y={ChampionsRows.TOP + ChampionsLeon.INDEX * ChampionsRows.ROW}
+        w={ChampionsRows.ROW}
+        h={ChampionsRows.ROW}
+        npcHead={ChampionsLeon.NPC}
+        anim={ChampionsLeon.ANIM}
+        offsetX={ChampionsLeon.OFFSET_X}
+        offsetY={ChampionsLeon.OFFSET_Y}
+        pitch={ChampionsLeon.PITCH}
+        yaw={ChampionsLeon.YAW}
+        roll={0}
+        zoom={ChampionsLeon.ZOOM}
+      />
+      <text
+        x={{ right: 0 }}
+        y={ChampionsRows.TOP + ChampionsLeon.INDEX * ChampionsRows.ROW}
+        w={{ fill: ChampionsRows.ROW }}
+        h={ChampionsRows.ROW}
+        text={hasBit(defeated, ChampionsLeon.INDEX) ? `<str>${ChampionsLeon.NAME}</str>` : ChampionsLeon.NAME}
+        font={Fonts.Q8_FULL}
+        color={ChampionsRows.INK}
+        shadow
+        align="center"
+        valign="middle"
       />
     </>
   );

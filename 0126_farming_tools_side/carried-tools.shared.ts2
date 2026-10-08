@@ -25,7 +25,7 @@ export enum QuantityTable {
   DEPOSIT_BOX = 2737,
 }
 
-export function selectedQuantity(table: Enum): Int {
+export function selectedQuantity(table: QuantityTable): Int {
   if (table === QuantityTable.FARMING_TOOLS || table === QuantityTable.HALLOWED_TOOLS) {
     return useServerState(Varbits.FARMING_TOOLS_SELECTEDQUANTITY);
   }

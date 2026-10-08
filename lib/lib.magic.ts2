@@ -843,7 +843,7 @@ export function spellbookHasRunes(spell: Item, weapon: Item, shield: Item): Bool
   if (
     rune1 !== -1 &&
     magicRuneCount(rune1, weapon, shield) < spell.magicRunecount1! &&
-    (castlewars === false || (castlewars === true && (RuneClasses.get(rune1) ?? 0) === 0))
+    (castlewars === false || castlewars === true && (RuneClasses.get(rune1) ?? 0) === 0)
   ) {
     return false;
   }
@@ -851,7 +851,7 @@ export function spellbookHasRunes(spell: Item, weapon: Item, shield: Item): Bool
   if (
     rune2 !== -1 &&
     magicRuneCount(rune2, weapon, shield) < spell.magicRunecount2! &&
-    (castlewars === false || (castlewars === true && (RuneClasses.get(rune2) ?? 0) === 0))
+    (castlewars === false || castlewars === true && (RuneClasses.get(rune2) ?? 0) === 0)
   ) {
     return false;
   }
@@ -859,7 +859,7 @@ export function spellbookHasRunes(spell: Item, weapon: Item, shield: Item): Bool
   if (
     rune3 !== -1 &&
     magicRuneCount(rune3, weapon, shield) < spell.magicRunecount3! &&
-    (castlewars === false || (castlewars === true && (RuneClasses.get(rune3) ?? 0) === 0))
+    (castlewars === false || castlewars === true && (RuneClasses.get(rune3) ?? 0) === 0)
   ) {
     return false;
   }
@@ -867,7 +867,7 @@ export function spellbookHasRunes(spell: Item, weapon: Item, shield: Item): Bool
   if (
     rune4 !== -1 &&
     magicRuneCount(rune4, weapon, shield) < spell.magicRunecount4! &&
-    (castlewars === false || (castlewars === true && (RuneClasses.get(rune4) ?? 0) === 0))
+    (castlewars === false || castlewars === true && (RuneClasses.get(rune4) ?? 0) === 0)
   ) {
     return false;
   }

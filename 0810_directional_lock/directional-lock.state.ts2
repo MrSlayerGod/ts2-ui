@@ -1,4 +1,4 @@
-import { CS2, useState } from 'ts2';
+import { CS2, sessionState, useState } from 'ts2';
 
 import { directionalLockInput, directionalLockLength } from '../lib/game/varcs';
 import { playSound } from '../lib/lib.engine';
@@ -23,8 +23,7 @@ export function packDirections(
   d1: Int,
   d0: Int,
 ): Int {
-  return (
-    minmax(0, 3, d9) * CS2.pow(4, 9) +
+  return minmax(0, 3, d9) * CS2.pow(4, 9) +
     minmax(0, 3, d8) * CS2.pow(4, 8) +
     minmax(0, 3, d7) * CS2.pow(4, 7) +
     minmax(0, 3, d6) * CS2.pow(4, 6) +
@@ -33,8 +32,7 @@ export function packDirections(
     minmax(0, 3, d3) * CS2.pow(4, 3) +
     minmax(0, 3, d2) * CS2.pow(4, 2) +
     minmax(0, 3, d1) * 4 +
-    minmax(0, 3, d0)
-  );
+    minmax(0, 3, d0);
 }
 
 export function placeValue(slot: Int): Int {
@@ -89,4 +87,16 @@ export function arrowFor(input: Int, slot: Int): Sprite {
     return LockSprites.ARROW_LEFT;
   }
   return LockSprites.ARROW_UP;
+}
+
+export const lockBodySprite = sessionState(-1);
+
+export function directionalLockBody(sprite: Sprite): void {
+  const [, setBody] = useState(lockBodySprite);
+  setBody(sprite as Int);
+}
+
+export function resetLockBody(): void {
+  const [, setBody] = useState(lockBodySprite);
+  setBody(-1);
 }

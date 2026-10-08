@@ -1,0 +1,78 @@
+import { CS2, sessionState, useServerState, useState } from 'ts2';
+
+import { clientClock } from '../lib/lib.engine';
+import { SlayerVars } from '../0426_slayer_rewards/slayer-rewards.constants';
+import { unlockOwned } from '../0426_slayer_rewards/slayer-rewards.helpers';
+import { MasterTaskCount, MasterTaskFrom, MasterTaskRow, MasterTasks } from './slayer-rewards-task-list.data';
+
+export const taskListShown = sessionState(0);
+export const taskListOffLow = sessionState(0);
+export const taskListOffHigh = sessionState(0);
+export const taskListOpenedAt = sessionState(0);
+
+export function slayerTaskListOpen(slot: Int, offLow: Int, offHigh: Int): void {
+  const [, setShown] = useState(taskListShown);
+  const [, setLow] = useState(taskListOffLow);
+  const [, setHigh] = useState(taskListOffHigh);
+  const [, setAt] = useState(taskListOpenedAt);
+  setLow(offLow);
+  setHigh(offHigh);
+  setAt(clientClock());
+  setShown(1);
+}
+
+export function taskOff(i: Int, offLow: Int, offHigh: Int): Boolean {
+  if (i < 32) {
+    return CS2.testbit(offLow, i);
+  }
+  return CS2.testbit(offHigh, i % 32);
+}
+
+export function masterFrom(master: Int): Int {
+  return MasterTaskFrom.at(master) ?? 0;
+}
+
+export function masterCount(master: Int): Int {
+  return MasterTaskCount.at(master) ?? 0;
+}
+
+export function totalWeight(master: Int, offLow: Int, offHigh: Int): Int {
+  const from: Int = masterFrom(master);
+  const count: Int = masterCount(master);
+  let total: Int = 0;
+  let i: Int = 0;
+  while (i < count) {
+    if (!taskOff(i, offLow, offHigh)) {
+      const row: MasterTaskRow | null = MasterTasks.at(from + i);
+      total = total + (row === null ? 0 : row.weight);
+    }
+    i = i + 1;
+  }
+  return total;
+}
+
+export function rangeLow(row: MasterTaskRow): Int {
+  let low: Int = row.min;
+  if (row.extendBit !== -1 && unlockOwned(row.extendBit)) {
+    low = row.extendMin;
+  }
+  if (row.bonusBit !== -1 && unlockOwned(row.bonusBit)) {
+    low = low + row.bonusMin;
+  }
+  return low;
+}
+
+export function rangeHigh(row: MasterTaskRow): Int {
+  let high: Int = row.max;
+  if (row.extendBit !== -1 && unlockOwned(row.extendBit)) {
+    high = row.extendMax;
+  }
+  if (row.bonusBit !== -1 && unlockOwned(row.bonusBit)) {
+    high = high + row.bonusMax;
+  }
+  return high;
+}
+
+export function masterInFocus(): Int {
+  return useServerState(SlayerVars.MASTER_IN_FOCUS);
+}

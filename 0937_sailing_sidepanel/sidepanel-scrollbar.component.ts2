@@ -118,13 +118,13 @@ export function PaneScrollbar({ which, extent, height }: { which: Int; extent: I
           const travel: Int = Math.max(1, gutter.height - thumb.height);
           const offset: Int = Math.clamp(0, travel, event.mouseY - thumb.height / 2);
           const span: Int = paneExtent(which) - paneHeight(which);
-          setPaneY(which, (offset * span) / travel);
+          setPaneY(which, offset * span / travel);
           trackScrollOn(gutter, thumb, capTop, capBottom, which);
         }}
       />
       <sprite
         ref={thumb}
-        y={ARROW + ((gutter.height - thumbHeightOf(bar.height, height, measured, false)) * paneY(which)) / range}
+        y={ARROW + (gutter.height - thumbHeightOf(bar.height, height, measured, false)) * paneY(which) / range}
         w="fill"
         h={thumbHeightOf(bar.height, height, measured, false)}
         sprite={Bar.THUMB}
@@ -139,7 +139,7 @@ export function PaneScrollbar({ which, extent, height }: { which: Int; extent: I
 
           const travel: Int = Math.max(1, gutter.height - thumb.height);
           const span: Int = paneExtent(which) - paneHeight(which);
-          setPaneY(which, (offset * span) / travel);
+          setPaneY(which, offset * span / travel);
         }}
       />
       <sprite ref={capTop} y={thumb.y} w="fill" h={CAP} sprite={Bar.CAP_TOP} />

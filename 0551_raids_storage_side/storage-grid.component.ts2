@@ -19,8 +19,8 @@ function StoredSlot({ item, count, slot }: { item: Item; count: Int; slot: Int }
   return (
     <sprite
       ref={cell}
-      x={Grid.ORIGIN_X + (slot % Grid.COLUMNS) * Grid.STRIDE_X}
-      y={Grid.ORIGIN_Y + (slot / Grid.COLUMNS) * Grid.STRIDE_Y}
+      x={Grid.ORIGIN_X + slot % Grid.COLUMNS * Grid.STRIDE_X}
+      y={Grid.ORIGIN_Y + slot / Grid.COLUMNS * Grid.STRIDE_Y}
       w={Grid.W}
       h={Grid.H}
       item={item}
@@ -46,8 +46,8 @@ function StoredSlot({ item, count, slot }: { item: Item; count: Int; slot: Int }
 function BlankSlot({ slot }: { slot: Int }): Component {
   return (
     <sprite
-      x={Grid.ORIGIN_X + (slot % Grid.COLUMNS) * Grid.STRIDE_X}
-      y={Grid.ORIGIN_Y + (slot / Grid.COLUMNS) * Grid.STRIDE_Y}
+      x={Grid.ORIGIN_X + slot % Grid.COLUMNS * Grid.STRIDE_X}
+      y={Grid.ORIGIN_Y + slot / Grid.COLUMNS * Grid.STRIDE_Y}
       w={Grid.W}
       h={Grid.H}
       item={StorageItems.BLANK}
@@ -67,8 +67,8 @@ function DonatableSlot({ item, count, slot }: { item: Item; count: Int; slot: In
   return (
     <sprite
       ref={cell}
-      x={Grid.ORIGIN_X + (slot % Grid.COLUMNS) * Grid.STRIDE_X}
-      y={Grid.ORIGIN_Y + (slot / Grid.COLUMNS) * Grid.STRIDE_Y}
+      x={Grid.ORIGIN_X + slot % Grid.COLUMNS * Grid.STRIDE_X}
+      y={Grid.ORIGIN_Y + slot / Grid.COLUMNS * Grid.STRIDE_Y}
       w={Grid.W}
       h={Grid.H}
       item={item}
@@ -92,8 +92,8 @@ function DonatableSlot({ item, count, slot }: { item: Item; count: Int; slot: In
 function RefusedSlot({ item, count, slot }: { item: Item; count: Int; slot: Int }): Component {
   return (
     <sprite
-      x={Grid.ORIGIN_X + (slot % Grid.COLUMNS) * Grid.STRIDE_X}
-      y={Grid.ORIGIN_Y + (slot / Grid.COLUMNS) * Grid.STRIDE_Y}
+      x={Grid.ORIGIN_X + slot % Grid.COLUMNS * Grid.STRIDE_X}
+      y={Grid.ORIGIN_Y + slot / Grid.COLUMNS * Grid.STRIDE_Y}
       w={Grid.W}
       h={Grid.H}
       item={item}
@@ -111,8 +111,8 @@ function HiddenSlot({ slot }: { slot: Int }): Component {
   return (
     <sprite
       hide
-      x={Grid.ORIGIN_X + (slot % Grid.COLUMNS) * Grid.STRIDE_X}
-      y={Grid.ORIGIN_Y + (slot / Grid.COLUMNS) * Grid.STRIDE_Y}
+      x={Grid.ORIGIN_X + slot % Grid.COLUMNS * Grid.STRIDE_X}
+      y={Grid.ORIGIN_Y + slot / Grid.COLUMNS * Grid.STRIDE_Y}
       w={Grid.W}
       h={Grid.H}
       outline={1}

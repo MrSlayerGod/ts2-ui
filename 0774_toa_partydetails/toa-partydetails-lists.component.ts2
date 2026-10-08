@@ -1,0 +1,595 @@
+import { CS2, intArray, useInterval, useState } from 'ts2';
+
+import { clientClock, playSound } from '../lib/lib.engine';
+import { pipeHead, pipeTail } from '../lib/lib.format';
+import { onMobile } from '../lib/lib.helpers';
+import { serverTooltipHide, serverTooltipRepeat } from '../lib/server-tooltip';
+import { raidsListsortDetails } from '../lib/game/varcs';
+import { Sounds } from '../lib/game/sounds';
+import {
+  Color,
+  Copy,
+  Layout,
+  ListRow,
+  Pausebutton,
+  SortKey,
+  ToaPartydetailsFonts,
+  ToaPartydetailsSprites,
+  tooltipRef,
+} from './toa-partydetails.constants';
+import {
+  resumeAnchor,
+  toaApplicantLines,
+  toaDetailsBuilt,
+  toaDetailsRole,
+  toaMemberLines,
+} from './toa-partydetails.state';
+
+const MemberSlots = [0, 1, 2, 3, 4, 5, 6, 7] as const;
+
+const ApplicantSlots = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19] as const;
+
+const APPLICANT_SLOTS = 20;
+
+export function recordAt(lines: String, n: Int): String {
+  let start: Int = 0;
+  let skipped: Int = 0;
+  while (skipped < n) {
+    const end: Int = lines.indexOf('^', start);
+    if (end === -1) {
+      return '';
+    }
+    start = end + 1;
+    skipped = skipped + 1;
+  }
+  const end: Int = lines.indexOf('^', start);
+  if (end === -1) {
+    return '';
+  }
+  return lines.substring(start, end);
+}
+
+function recordCount(lines: String): Int {
+  let count: Int = 0;
+  let at: Int = lines.indexOf('^', 0);
+  while (at !== -1) {
+    count = count + 1;
+    at = lines.indexOf('^', at + 1);
+  }
+  return count;
+}
+
+export function lineField(line: String, n: Int): String {
+  let rest: String = line;
+  let skipped: Int = 0;
+  while (skipped < n) {
+    rest = pipeTail(rest);
+    skipped = skipped + 1;
+  }
+  return pipeHead(rest);
+}
+
+function rowInk(name: String): Int {
+  if (CS2.compare(CS2.lowercase(name), CS2.lowercase(CS2.tags_remove(CS2.chat_playername()))) === 0) {
+    return Color.ROW_SELF;
+  }
+  return Color.LABEL;
+}
+
+function subject(name: String): String {
+  return `<col=ff9040>${name}</col>`;
+}
+
+export function ToaMembersList(): Component {
+  const [lines] = useState(toaMemberLines);
+  return (
+    <>
+      {MemberSlots.map((slot) => (
+        <ToaMemberRow slot={slot} record={recordAt(lines, slot)} />
+      ))}
+    </>
+  );
+}
+
+function ToaMemberRow({ slot, record }: { slot: Int; record: String }): Component {
+  const [hovered, setHovered] = useState(0);
+  const [busyUntil, setBusyUntil] = useState(0);
+  useInterval(() => {
+    if (busyUntil !== 0 && clientClock() >= busyUntil) {
+      setBusyUntil(0);
+      setHovered(0);
+    }
+  });
+
+  const tilde: Int = record.indexOf('~', 0);
+  const role: Int = tilde > 0 ? parseInt(record.substring(0, tilde)) : 0;
+  const line: String = record.substring(tilde + 1, record.length);
+  const name: String = lineField(line, 0);
+  const top: Int = slot * ListRow.H;
+  const wash: Int = slot % 2 === 0 ? ListRow.MEMBER_EVEN : ListRow.ODD;
+  const ink: Int = rowInk(name);
+  const leader: Boolean = role === 2 && name.length > 0;
+  const live: Boolean = leader && busyUntil === 0;
+
+  const opLabel: String = slot === 0 ? Copy.QUIT_PARTY : Copy.KICK;
+  const opSubject: String = slot === 0 ? '' : subject(name);
+  if (record.length === 0) {
+    return null;
+  }
+
+  return (
+    <layer x={0} y={0} w="fill" h="fill">
+      <rect
+        x="center"
+        y={top}
+        w="fill"
+        h={ListRow.H}
+        fill
+        color={Color.WASH}
+        transparency={busyUntil !== 0 ? ListRow.PRESSED : (hovered === 1 ? ListRow.HOVER : wash)}
+        options={live ? ['', '', '', '', '', '', '', '', '', opLabel] : []}
+        optionSubject={live ? opSubject : ''}
+        onMouseRepeat={
+          live
+            ? () => {
+                if (!onMobile()) {
+                  setHovered(1);
+                }
+              }
+            : undefined
+        }
+        onMouseLeave={
+          live
+            ? () => {
+                setHovered(0);
+              }
+            : undefined
+        }
+        onOptionSelect={
+          live
+            ? (event) => {
+                if (event.option !== 10 || busyUntil !== 0) {
+                  return;
+                }
+                playSound(Sounds.INTERFACE_SELECT1);
+                resumeAnchor(Pausebutton.KICK + slot);
+                setBusyUntil(clientClock() + ListRow.BUSY_CYCLES);
+              }
+            : undefined
+        }
+      />
+      <MemberCell x={Layout.M_CELL_NAME_X} w={Layout.M_NAME_W} y={top} field={name} ink={ink} />
+      <MemberCell x={Layout.M_CELL_LEVEL_X} w={Layout.M_LEVEL_W} y={top} field={lineField(line, 1)} ink={ink} />
+      <MemberCell x={Layout.M_CELL_ATTACK_X} w={Layout.M_STAT_W} y={top} field={lineField(line, 2)} ink={ink} />
+      <MemberCell x={Layout.M_CELL_STRENGTH_X} w={Layout.M_STAT_W} y={top} field={lineField(line, 3)} ink={ink} />
+      <MemberCell x={Layout.M_CELL_RANGED_X} w={Layout.M_STAT_W} y={top} field={lineField(line, 4)} ink={ink} />
+      <MemberCell x={Layout.M_CELL_MAGIC_X} w={Layout.M_STAT_W} y={top} field={lineField(line, 5)} ink={ink} />
+      <MemberCell x={Layout.M_CELL_DEFENCE_X} w={Layout.M_STAT_W} y={top} field={lineField(line, 6)} ink={ink} />
+      <MemberCell x={Layout.M_CELL_HITPOINTS_X} w={Layout.M_STAT_W} y={top} field={lineField(line, 7)} ink={ink} />
+      <MemberCell x={Layout.M_CELL_PRAYER_X} w={Layout.M_STAT_W} y={top} field={lineField(line, 8)} ink={ink} />
+      <MemberCell
+        x={Layout.M_CELL_COMPLETIONS_X}
+        w={Layout.M_COMPLETIONS_W}
+        y={top}
+        field={lineField(line, 9)}
+        ink={ink}
+      />
+      <MoveArrow
+        x={Layout.M_ARROW_UP_X}
+        y={top + ListRow.ARROW_INSET}
+        shown={leader}
+        sprite={ToaPartydetailsSprites.MOVE_UP}
+        label={Copy.MOVE_UP}
+        name={name}
+        resumeAt={Pausebutton.MOVE_UP + slot}
+      />
+      <MoveArrow
+        x={Layout.M_ARROW_DOWN_X}
+        y={top + ListRow.ARROW_INSET}
+        shown={leader}
+        sprite={ToaPartydetailsSprites.MOVE_DOWN}
+        label={Copy.MOVE_DOWN}
+        name={name}
+        resumeAt={Pausebutton.MOVE_DOWN + slot}
+      />
+    </layer>
+  );
+}
+
+function MemberCell({ x, y, w, field, ink }: { x: Int; y: Int; w: Int; field: String; ink: Int }): Component {
+  return (
+    <text
+      x={x}
+      y={y}
+      w={w}
+      h={ListRow.H}
+      text={field.length > 0 ? field : Copy.EMPTY_CELL}
+      font={ToaPartydetailsFonts.ROW}
+      color={field.length > 0 ? ink : Color.LOADING}
+      align="center"
+      valign="middle"
+      shadow
+    />
+  );
+}
+
+function MoveArrow({
+  x,
+  y,
+  shown,
+  sprite,
+  label,
+  name,
+  resumeAt,
+}: {
+  x: Int;
+  y: Int;
+  shown: Boolean;
+  sprite: Sprite;
+  label: String;
+  name: String;
+  resumeAt: Int;
+}): Component {
+  const [hovered, setHovered] = useState(0);
+  return (
+    <sprite
+      x={x}
+      y={y}
+      w={ListRow.ARROW}
+      h={ListRow.ARROW}
+      sprite={sprite}
+      hide={!shown}
+      transparency={hovered === 1 ? ListRow.ARROW_HOVER : 0}
+      options={shown ? [label] : []}
+      optionSubject={shown ? subject(name) : ''}
+      onMouseRepeat={
+        shown
+          ? () => {
+              if (!onMobile()) {
+                setHovered(1);
+              }
+            }
+          : undefined
+      }
+      onMouseLeave={
+        shown
+          ? () => {
+              setHovered(0);
+            }
+          : undefined
+      }
+      onOptionSelect={
+        shown
+          ? () => {
+              playSound(Sounds.INTERFACE_SELECT1);
+              resumeAnchor(resumeAt);
+            }
+          : undefined
+      }
+    />
+  );
+}
+
+export function ToaMemberColumn({ x, w, icon, tip }: { x: Int; w: Int; icon: Sprite; tip: String }): Component {
+  const [built] = useState(toaDetailsBuilt);
+  return (
+    <layer
+      x={x}
+      y="center"
+      w={w}
+      h={{ fill: Layout.COLUMN_H_INSET }}
+      onMouseRepeat={
+        built === 1
+          ? (event) => {
+              if (!onMobile()) {
+                serverTooltipRepeat(tooltipRef, event.component, tip, Layout.TIP_WRAP);
+              }
+            }
+          : undefined
+      }
+      onMouseLeave={built === 1 ? () => serverTooltipHide(tooltipRef) : undefined}
+    >
+      {built === 1 ? (
+        <sprite x="center" y="center" w={Layout.HEADER_ICON_W} h={Layout.HEADER_ICON_H} sprite={icon} />
+      ) : null}
+    </layer>
+  );
+}
+
+function sortDescending(sort: Int): Boolean {
+  if (sort === 1 || sort === 3 || sort === 7) {
+    return true;
+  }
+  return sort >= 9 && sort <= 21 && sort % 2 === 1;
+}
+
+function sortField(sort: Int): Int {
+  if (sort === 2 || sort === 3) {
+    return 1;
+  }
+  if (sort === 8 || sort === 9) {
+    return 2;
+  }
+  if (sort === 10 || sort === 11) {
+    return 3;
+  }
+  if (sort === 12 || sort === 13) {
+    return 4;
+  }
+  if (sort === 14 || sort === 15) {
+    return 5;
+  }
+  if (sort === 16 || sort === 17) {
+    return 6;
+  }
+  if (sort === 18 || sort === 19) {
+    return 7;
+  }
+  if (sort === 20 || sort === 21) {
+    return 8;
+  }
+  if (sort === 6 || sort === 7) {
+    return 9;
+  }
+  return 0;
+}
+
+function applicantKey(line: String, slot: Int, field: Int): String {
+  const value: String = CS2.tags_remove(lineField(line, field));
+  if (field === 0) {
+    return value;
+  }
+  return `${value.padStart(Layout.SORT_KEY_W, '0')}${slot * Layout.APPLICANT_CHILDREN}`;
+}
+
+export function ToaApplicantsList(): Component {
+  const [lines] = useState(toaApplicantLines);
+  const [built] = useState(toaDetailsBuilt);
+  const [role] = useState(toaDetailsRole);
+  const [sort] = useState(raidsListsortDetails);
+  const count: Int = recordCount(lines);
+  const field: Int = sortField(sort);
+  const descending: Boolean = sortDescending(sort);
+
+  const tops = intArray(APPLICANT_SLOTS);
+  const washes = intArray(APPLICANT_SLOTS);
+  let slot: Int = 0;
+  while (slot < APPLICANT_SLOTS) {
+    let rank: Int = 0;
+    if (count >= 2 && slot < count) {
+      const mine: String = applicantKey(recordAt(lines, slot), slot, field);
+      let other: Int = 0;
+      while (other < count) {
+        if (other !== slot) {
+          const order: Int = CS2.compare(applicantKey(recordAt(lines, other), other, field), mine);
+          if (order < 0 || (order === 0 && other < slot)) {
+            rank = rank + 1;
+          }
+        }
+        other = other + 1;
+      }
+    }
+    tops[slot] = -ListRow.H;
+    if (built === 1) {
+      tops[slot] = (descending ? count - 1 - rank : rank) * ListRow.H;
+    }
+    washes[slot] = rank % 2 === 0 ? ListRow.APPLICANT_EVEN : ListRow.ODD;
+    slot = slot + 1;
+  }
+
+  return (
+    <>
+      {ApplicantSlots.map((at) => (
+        <ToaApplicantRow slot={at} line={recordAt(lines, at)} top={tops[at]} wash={washes[at]} leader={role === 2} />
+      ))}
+      {built === 1 && count <= 0 ? (
+        <text
+          x="center"
+          y="center"
+          w="fill"
+          h="fill"
+          text={Copy.NO_APPLICANTS}
+          font={ToaPartydetailsFonts.BODY}
+          color={Color.LABEL}
+          align="center"
+          valign="middle"
+          shadow
+        />
+      ) : null}
+    </>
+  );
+}
+
+function ToaApplicantRow({
+  slot,
+  line,
+  top,
+  wash,
+  leader,
+}: {
+  slot: Int;
+  line: String;
+  top: Int;
+  wash: Int;
+  leader: Boolean;
+}): Component {
+  const [hovered, setHovered] = useState(0);
+  const [busyUntil, setBusyUntil] = useState(0);
+  useInterval(() => {
+    if (busyUntil !== 0 && clientClock() >= busyUntil) {
+      setBusyUntil(0);
+      setHovered(0);
+    }
+  });
+
+  if (line.length === 0) {
+    return null;
+  }
+  const name: String = lineField(line, 0);
+  const ink: Int = rowInk(name);
+  const live: Boolean = leader && busyUntil === 0;
+  return (
+    <>
+      <rect
+        x="center"
+        y={top}
+        w="fill"
+        h={ListRow.H}
+        fill
+        color={Color.WASH}
+        transparency={busyUntil !== 0 ? ListRow.PRESSED : (hovered === 1 ? ListRow.HOVER : wash)}
+        options={live ? [Copy.ACCEPT, '', '', '', '', '', '', '', '', Copy.REJECT] : []}
+        optionSubject={live ? subject(name) : ''}
+        onMouseRepeat={
+          live
+            ? () => {
+                if (!onMobile()) {
+                  setHovered(1);
+                }
+              }
+            : undefined
+        }
+        onMouseLeave={
+          live
+            ? () => {
+                setHovered(0);
+              }
+            : undefined
+        }
+        onOptionSelect={
+          live
+            ? (event) => {
+                if (busyUntil !== 0) {
+                  return;
+                }
+                if (event.option === 1) {
+                  playSound(Sounds.INTERFACE_SELECT1);
+                  resumeAnchor(Pausebutton.ACCEPT + slot);
+                  setBusyUntil(clientClock() + ListRow.BUSY_CYCLES);
+                } else if (event.option === 10) {
+                  playSound(Sounds.INTERFACE_SELECT1);
+                  resumeAnchor(Pausebutton.REJECT + slot);
+                  setBusyUntil(clientClock() + ListRow.BUSY_CYCLES);
+                }
+              }
+            : undefined
+        }
+      />
+      <ApplicantCell x={Layout.A_CELL_NAME_X} w={Layout.A_NAME_W} y={top} field={name} ink={ink} />
+      <ApplicantCell x={Layout.A_CELL_LEVEL_X} w={Layout.A_LEVEL_W} y={top} field={lineField(line, 1)} ink={ink} />
+      <ApplicantCell x={Layout.A_CELL_ATTACK_X} w={Layout.A_STAT_W} y={top} field={lineField(line, 2)} ink={ink} />
+      <ApplicantCell x={Layout.A_CELL_STRENGTH_X} w={Layout.A_STAT_W} y={top} field={lineField(line, 3)} ink={ink} />
+      <ApplicantCell x={Layout.A_CELL_RANGED_X} w={Layout.A_STAT_W} y={top} field={lineField(line, 4)} ink={ink} />
+      <ApplicantCell x={Layout.A_CELL_MAGIC_X} w={Layout.A_STAT_W} y={top} field={lineField(line, 5)} ink={ink} />
+      <ApplicantCell x={Layout.A_CELL_DEFENCE_X} w={Layout.A_STAT_W} y={top} field={lineField(line, 6)} ink={ink} />
+      <ApplicantCell x={Layout.A_CELL_HITPOINTS_X} w={Layout.A_STAT_W} y={top} field={lineField(line, 7)} ink={ink} />
+      <ApplicantCell x={Layout.A_CELL_PRAYER_X} w={Layout.A_STAT_W} y={top} field={lineField(line, 8)} ink={ink} />
+      <ApplicantCell
+        x={Layout.A_CELL_COMPLETIONS_X}
+        w={Layout.A_COMPLETIONS_CELL_W}
+        y={top}
+        field={lineField(line, 9)}
+        ink={ink}
+      />
+    </>
+  );
+}
+
+function ApplicantCell({ x, y, w, field, ink }: { x: Int; y: Int; w: Int; field: String; ink: Int }): Component {
+  return (
+    <text
+      x={x}
+      y={y}
+      w={w}
+      h={ListRow.H}
+      text={field}
+      font={ToaPartydetailsFonts.ROW}
+      color={ink}
+      align="center"
+      valign="middle"
+      shadow
+    />
+  );
+}
+
+export function ToaSortColumn({
+  x,
+  w,
+  asc,
+  desc,
+  icon,
+  tip,
+}: {
+  x: Int;
+  w: Int;
+  asc: Int;
+  desc: Int;
+  icon: Sprite;
+  tip: String;
+}): Component {
+  const [built] = useState(toaDetailsBuilt);
+  const [sort, setSort] = useState(raidsListsortDetails);
+  const [hovered, setHovered] = useState(0);
+  const live: Boolean = sort === asc || sort === desc;
+  let arrow: Int = live ? 0 : SortKey.DIM;
+  if (hovered === 1) {
+    arrow = live ? SortKey.LIVE_HOVER : SortKey.DIM_HOVER;
+  }
+  return (
+    <layer
+      x={x}
+      y="center"
+      w={w}
+      h={{ fill: Layout.COLUMN_H_INSET }}
+      onMouseRepeat={
+        built === 1
+          ? (event) => {
+              if (!onMobile()) {
+                setHovered(1);
+                serverTooltipRepeat(tooltipRef, event.component, tip, Layout.TIP_WRAP);
+              }
+            }
+          : undefined
+      }
+      onMouseLeave={
+        built === 1
+          ? () => {
+              if (!onMobile()) {
+                setHovered(0);
+                serverTooltipHide(tooltipRef);
+              }
+            }
+          : undefined
+      }
+      onClick={
+        built === 1
+          ? () => {
+              playSound(Sounds.INTERFACE_SELECT1);
+              setSort(sort === asc ? desc : asc);
+            }
+          : undefined
+      }
+    >
+      {built === 1 ? (
+        <sprite
+          x="center"
+          y={{ bottom: SortKey.ARROW_Y }}
+          w={SortKey.ARROW_W}
+          h={SortKey.ARROW_H}
+          sprite={sort === desc ? ToaPartydetailsSprites.SORT_DESC : ToaPartydetailsSprites.SORT_ASC}
+          transparency={arrow}
+        />
+      ) : null}
+      {built === 1 ? (
+        <sprite
+          x="center"
+          y={SortKey.ICON_Y}
+          w={Layout.HEADER_ICON_W}
+          h={Layout.HEADER_ICON_H}
+          sprite={icon}
+          transparency={hovered === 1 ? SortKey.ICON_HOVER : 0}
+        />
+      ) : null}
+    </layer>
+  );
+}

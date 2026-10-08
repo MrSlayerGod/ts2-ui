@@ -1,20 +1,54 @@
-import { createRef } from 'ts2';
+import { createRef, useState, useUniverse } from 'ts2';
 
 import { Anchor, overlayInit } from '../lib/lib.overlay';
 import { Layout, PoolColor, PoolFonts, PoolOverlay } from './fossil-pool-overlay.constants';
+import {
+  fossilBarColour,
+  fossilCalcium,
+  fossilPhosphate,
+  fossilProgress,
+  fossilProgressColour,
+  proportionWidth,
+  resetFossilPool,
+} from './fossil-pool.state';
 
 const timerHost = createRef('0606_fossil_pool_overlay_timer_host');
 
 const content = createRef('fossil_pool_overlay_content');
 
-function PoolBar({ label }: { label: String }): Component {
+enum Bar {
+  PROGRESS = 0,
+  CALCIUM = 1,
+  PHOSPHATE = 2,
+}
+
+function BarFill({ bar }: { bar: Int }): Component {
+  const [calcium] = useState(fossilCalcium);
+  const [phosphate] = useState(fossilPhosphate);
+  const [progress] = useState(fossilProgress);
+  const box = useUniverse();
+  const level: Int = bar === Bar.PROGRESS ? progress : bar === Bar.CALCIUM ? calcium : phosphate;
+  const colour: Int = bar === Bar.PROGRESS ? fossilProgressColour(level) : fossilBarColour(level, 2, 10);
+  return (
+    <rect
+      x={0}
+      y={0}
+      w={level === -1 ? Layout.BAR_FILLED_W : proportionWidth(level, 10, box.width)}
+      h="fill"
+      color={level === -1 ? PoolColor.BAR_FILLED : colour}
+      fill
+    />
+  );
+}
+
+function PoolBar({ label, bar }: { label: String; bar: Int }): Component {
   return (
     <>
       <text x={0} y={0} w="fill" h={Layout.LINE_H} text={label} font={PoolFonts.LABEL} color={PoolColor.LABEL} shadow />
 
       <layer x={0} y="bottom" w="fill" h={Layout.LINE_H}>
         <rect x={0} y={0} w="fill" h="fill" color={PoolColor.BAR_EMPTY} fill />
-        <rect x={0} y={0} w={Layout.BAR_FILLED_W} h="fill" color={PoolColor.BAR_FILLED} fill />
+        <BarFill bar={bar} />
         <rect x={0} y={0} w="fill" h="fill" color={PoolColor.BAR_BORDER} />
       </layer>
     </>
@@ -30,17 +64,24 @@ export function FossilPoolOverlay(): Component {
         ref={timerHost}
         onLoad={() => overlayInit(timerHost, content, PoolOverlay.DODGE, Anchor.LEFT, Anchor.CENTRE, 1)}
       >
-        <layer ref={content} x={Layout.CONTENT_X} y="center" w={Layout.CONTENT_W} h={Layout.CONTENT_H}>
+        <layer
+          ref={content}
+          onLoad={() => resetFossilPool()}
+          x={Layout.CONTENT_X}
+          y="center"
+          w={Layout.CONTENT_W}
+          h={Layout.CONTENT_H}
+        >
           <layer x={0} y={0} w={Layout.ROW_W} h={Layout.ROW_H}>
-            <PoolBar label="Progress:" />
+            <PoolBar label="Progress:" bar={Bar.PROGRESS} />
           </layer>
 
           <layer x={0} y="center" w={Layout.ROW_W} h={Layout.ROW_H}>
-            <PoolBar label="Calcium Added:" />
+            <PoolBar label="Calcium Added:" bar={Bar.CALCIUM} />
           </layer>
 
           <layer x={0} y="bottom" w={Layout.ROW_W} h={Layout.ROW_H}>
-            <PoolBar label="Phosphate Added:" />
+            <PoolBar label="Phosphate Added:" bar={Bar.PHOSPHATE} />
           </layer>
         </layer>
       </layer>

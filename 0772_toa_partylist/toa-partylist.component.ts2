@@ -1,23 +1,23 @@
-import { useOnResize, useServerState, useUniverse } from 'ts2';
+import { useOnResize, useServerState, useState, useUniverse } from 'ts2';
 
 import { BoardButton } from '../lib/board-button.component';
-import { ScrollbarVertical } from '../lib/scrollbar-vertical.component';
 import { SteelBorderEntrypoint } from '../lib/steel-border-entrypoint.component';
 import { ThinBoxEntrypoint } from '../lib/thin-box-entrypoint.component';
 import { Varbits } from '../lib/game/varbits';
 import { Varps } from '../lib/game/varps';
 import {
+  BoardPausebutton,
+  boardAnchorsRef,
   Copy,
   Layout,
+  ListSort,
   ToaPartylistColor,
-  ToaPartylistFonts,
-  ToaPartylistScrollbar,
-  ToaPartylistSlots,
-  listRef,
+  ToaPartylistSprites,
   panelRef,
-  tooltipRef,
 } from './toa-partylist.constants';
 import { resetToaPartyList, toaPanelHeight } from './toa-partylist.helpers';
+import { ToaListSortColumn, ToaPartyListPane, ToaRefreshButton } from './toa-partylist-rows.component';
+import { toaListBuilt } from './toa-partylist.state';
 
 export function ToaPartylist(): Component {
   return (
@@ -58,82 +58,98 @@ export function ToaPartylist(): Component {
               fill
               transparency={Layout.HEADER_WASH_OPACITY}
             />
-            <layer x={Layout.COL_MEMBERS_X} y="center" w={Layout.COL_MEMBERS_W} h={{ fill: Layout.HEADER_INSET_H }} />
-            <layer x={Layout.COL_LEADER_X} y="center" w={Layout.COL_LEADER_W} h={{ fill: Layout.HEADER_INSET_H }} />
+            <layer x={Layout.COL_MEMBERS_X} y="center" w={Layout.COL_MEMBERS_W} h={{ fill: Layout.HEADER_INSET_H }}>
+              <ToaListSortColumn
+                asc={ListSort.MEMBERS_ASC}
+                desc={ListSort.MEMBERS_DESC}
+                icon={ToaPartylistSprites.ICON_MEMBERS}
+                tip={Copy.TIP_MEMBERS}
+              />
+            </layer>
+            <layer x={Layout.COL_LEADER_X} y="center" w={Layout.COL_LEADER_W} h={{ fill: Layout.HEADER_INSET_H }}>
+              <ToaListSortColumn
+                asc={ListSort.LEADER_ASC}
+                desc={ListSort.LEADER_DESC}
+                icon={ToaPartylistSprites.ICON_LEADER}
+                tip={Copy.TIP_LEADER}
+              />
+            </layer>
             <layer
               x={Layout.COL_COMPLETIONS_X}
               y="center"
               w={Layout.COL_COMPLETIONS_W}
               h={{ fill: Layout.HEADER_INSET_H }}
-            />
+            >
+              <ToaListSortColumn
+                asc={ListSort.COMPLETIONS_ASC}
+                desc={ListSort.COMPLETIONS_DESC}
+                icon={ToaPartylistSprites.ICON_COMPLETIONS}
+                tip={Copy.TIP_COMPLETIONS}
+              />
+            </layer>
             <layer
               x={Layout.COL_INVOCATIONS_X}
               y="center"
               w={Layout.COL_INVOCATIONS_W}
               h={{ fill: Layout.HEADER_INSET_H }}
-            />
-            <layer x={Layout.COL_LEVEL_X} y="center" w={Layout.COL_LEVEL_W} h={{ fill: Layout.HEADER_INSET_H }} />
-            <layer x={Layout.COL_MODE_X} y="center" w={Layout.COL_MODE_W} h={{ fill: Layout.HEADER_INSET_H }} />
+            >
+              <ToaListSortColumn
+                asc={ListSort.INVOCATIONS_ASC}
+                desc={ListSort.INVOCATIONS_DESC}
+                icon={ToaPartylistSprites.ICON_INVOCATIONS}
+                tip={Copy.TIP_INVOCATIONS}
+              />
+            </layer>
+            <layer x={Layout.COL_LEVEL_X} y="center" w={Layout.COL_LEVEL_W} h={{ fill: Layout.HEADER_INSET_H }}>
+              <ToaListSortColumn
+                asc={ListSort.LEVEL_ASC}
+                desc={ListSort.LEVEL_DESC}
+                icon={ToaPartylistSprites.ICON_LEVEL}
+                tip={Copy.TIP_LEVEL}
+              />
+            </layer>
+            <layer x={Layout.COL_MODE_X} y="center" w={Layout.COL_MODE_W} h={{ fill: Layout.HEADER_INSET_H }}>
+              <ToaListSortColumn
+                asc={ListSort.MODE_ASC}
+                desc={ListSort.MODE_DESC}
+                icon={ToaPartylistSprites.ICON_MODE}
+                tip={Copy.TIP_MODE}
+              />
+            </layer>
             <layer
               right={Layout.COL_AGE_RIGHT}
               y="center"
               w={{ fill: Layout.COL_AGE_INSET_W }}
               h={{ fill: Layout.HEADER_INSET_H }}
-            />
+            >
+              <ToaListSortColumn
+                asc={ListSort.AGE_ASC}
+                desc={ListSort.AGE_DESC}
+                icon={ToaPartylistSprites.ICON_AGE}
+                tip={Copy.TIP_AGE}
+              />
+            </layer>
             <ThinBoxEntrypoint />
           </layer>
 
           <layer x="center" y="bottom" w="fill" h={{ fill: Layout.LIST_BOX_H_INSET }}>
-            <layer
-              ref={listRef}
-              x={Layout.LIST_X}
-              y="center"
-              w={{ fill: Layout.LIST_INSET_W }}
-              h={{ fill: Layout.LIST_INSET_H }}
-            >
-              {ToaPartylistSlots.map(() => (
-                <layer x="center" y={0} w="fill" h={Layout.ROW_H} hide />
-              ))}
-              <text
-                x="center"
-                y="center"
-                w="fill"
-                h="fill"
-                text={Copy.LOADING}
-                font={ToaPartylistFonts.BODY}
-                color={ToaPartylistColor.LOADING}
-                align="center"
-                valign="middle"
-                shadow
-              />
-            </layer>
-
-            <layer right={Layout.SCROLLBAR_RIGHT} y="center" w={Layout.SCROLLBAR_W} h={{ fill: Layout.LIST_INSET_H }}>
-              <ScrollbarVertical
-                content={listRef}
-                track={ToaPartylistScrollbar.TRACK}
-                capTopSprite={ToaPartylistScrollbar.CAP_TOP}
-                thumbSprite={ToaPartylistScrollbar.THUMB}
-                capBottomSprite={ToaPartylistScrollbar.CAP_BOTTOM}
-                arrowUp={ToaPartylistScrollbar.ARROW_UP}
-                arrowDown={ToaPartylistScrollbar.ARROW_DOWN}
-                rebuilt
-              />
+            <layer x={0} y={0} w="fill" h="fill">
+              <ToaPartyListPane />
             </layer>
 
             <ThinBoxEntrypoint />
           </layer>
         </layer>
 
-        <layer x={{ center: -Layout.BUTTON_STRIDE }} y="bottom" w={Layout.BUTTON_W} h={Layout.BUTTON_H} hide>
-          <BoardButton label={Copy.REFRESH} />
+        <layer x={{ center: -Layout.BUTTON_STRIDE }} y="bottom" w={Layout.BUTTON_W} h={Layout.BUTTON_H}>
+          <ToaRefreshButton />
         </layer>
 
-        <layer x="center" y="bottom" w={Layout.BUTTON_W} h={Layout.BUTTON_H} hide>
+        <layer x="center" y="bottom" w={Layout.BUTTON_W} h={Layout.BUTTON_H}>
           <ToaMyPartyButton />
         </layer>
 
-        <layer x={{ center: Layout.BUTTON_STRIDE }} y="bottom" w={Layout.BUTTON_W} h={Layout.BUTTON_H} hide>
+        <layer x={{ center: Layout.BUTTON_STRIDE }} y="bottom" w={Layout.BUTTON_W} h={Layout.BUTTON_H}>
           <ToaFriendsClanButton />
         </layer>
       </layer>
@@ -143,18 +159,28 @@ export function ToaPartylist(): Component {
 
 export function ToaMyPartyButton(): Component {
   const partyHeld: Int = useServerState(Varps.TOA_MYCONTROLLER);
+  const [built] = useState(toaListBuilt);
   return (
-    <layer w="fill" h="fill">
-      <BoardButton label={partyHeld !== -1 ? Copy.MY_PARTY : Copy.MAKE_PARTY} />
+    <layer w="fill" h="fill" hide={built !== 1}>
+      <BoardButton
+        label={partyHeld !== -1 ? Copy.MY_PARTY : Copy.MAKE_PARTY}
+        resumeIn={boardAnchorsRef}
+        resumeAt={BoardPausebutton.MY_PARTY}
+      />
     </layer>
   );
 }
 
 export function ToaFriendsClanButton(): Component {
   const filtered: Int = useServerState(Varbits.TOA_PARTYLIST_FILTER);
+  const [built] = useState(toaListBuilt);
   return (
-    <layer w="fill" h="fill">
-      {filtered !== 0 ? <BoardButton label={Copy.FRIENDS_CLAN} pressed /> : <BoardButton label={Copy.FRIENDS_CLAN} />}
+    <layer w="fill" h="fill" hide={built !== 1}>
+      {filtered !== 0 ? (
+        <BoardButton label={Copy.FRIENDS_CLAN} pressed resumeIn={boardAnchorsRef} resumeAt={BoardPausebutton.FILTER} />
+      ) : (
+        <BoardButton label={Copy.FRIENDS_CLAN} resumeIn={boardAnchorsRef} resumeAt={BoardPausebutton.FILTER} />
+      )}
     </layer>
   );
 }

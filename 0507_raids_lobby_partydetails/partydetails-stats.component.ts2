@@ -52,15 +52,15 @@ export function PartydetailsStats(): Component {
       {StatsGrid.map((cell, index) => (
         <>
           <sprite
-            x={left + (index / Layout.STATS_ROWS) * Layout.STATS_COL_STEP}
-            y={Layout.STATS_GRID_TOP + (index % Layout.STATS_ROWS) * Layout.STATS_ROW_STEP}
+            x={left + index / Layout.STATS_ROWS * Layout.STATS_COL_STEP}
+            y={Layout.STATS_GRID_TOP + index % Layout.STATS_ROWS * Layout.STATS_ROW_STEP}
             w={Layout.STATS_ICON}
             h={Layout.STATS_ICON}
             sprite={cell.icon}
           />
           <text
-            x={left + (index / Layout.STATS_ROWS) * Layout.STATS_COL_STEP}
-            y={Layout.STATS_GRID_TOP + (index % Layout.STATS_ROWS) * Layout.STATS_ROW_STEP}
+            x={left + index / Layout.STATS_ROWS * Layout.STATS_COL_STEP}
+            y={Layout.STATS_GRID_TOP + index % Layout.STATS_ROWS * Layout.STATS_ROW_STEP}
             w={Layout.STATS_LEVEL_W}
             h={Layout.STATS_ICON}
             text={rowField(levels, index)}

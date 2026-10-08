@@ -18,15 +18,6 @@ export const popoutArm = sessionState(-1);
 export const popoutDesktopTabsBuilt = sessionState(0);
 export const popoutMobileTabsBuilt = sessionState(0);
 
-export function popoutReset(): void {
-  const [, setArm] = useState(popoutArm);
-  const [, setDesktop] = useState(popoutDesktopTabsBuilt);
-  const [, setMobile] = useState(popoutMobileTabsBuilt);
-  setArm(PopoutArm.NONE);
-  setDesktop(0);
-  setMobile(0);
-}
-
 export function popoutTabAvailable(tab: Int): Boolean {
   switch (tab) {
     case PopoutTab.XP_TRACKER:

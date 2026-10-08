@@ -29,8 +29,8 @@ function TackleBoxSlot({
 }): Component {
   return (
     <sprite
-      x={(slot % Grid.COLUMNS) * Grid.STRIDE_X}
-      y={(slot / Grid.COLUMNS) * Grid.STRIDE_Y}
+      x={slot % Grid.COLUMNS * Grid.STRIDE_X}
+      y={slot / Grid.COLUMNS * Grid.STRIDE_Y}
       w={Grid.W}
       h={Grid.H}
       item={item}
@@ -76,8 +76,8 @@ function TackleBoxSlot({
 function TackleBoxBlank({ slot }: { slot: Int }): Component {
   return (
     <sprite
-      x={(slot % Grid.COLUMNS) * Grid.STRIDE_X}
-      y={(slot / Grid.COLUMNS) * Grid.STRIDE_Y}
+      x={slot % Grid.COLUMNS * Grid.STRIDE_X}
+      y={slot / Grid.COLUMNS * Grid.STRIDE_Y}
       w={Grid.W}
       h={Grid.H}
       item={BLANK_ITEM}

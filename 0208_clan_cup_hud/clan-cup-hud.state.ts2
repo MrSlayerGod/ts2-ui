@@ -1,0 +1,7 @@
+import { sessionState } from 'ts2';
+
+export const clanCupScoreMe = sessionState(0);
+
+export const clanCupScoreThem = sessionState(0);
+
+export const clanCupTimeRemaining = sessionState(0);

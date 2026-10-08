@@ -1,0 +1,136 @@
+import { sessionState, useState } from 'ts2';
+import {
+  league3FragmentFilterCategory,
+  league3FragmentFilterEffect,
+  league3FragmentFilterLevel,
+  league3FragmentFilterLock,
+} from '../lib/game/varcs';
+import { playSound } from '../lib/lib.engine';
+import { Sounds } from './league-3-fragments.constants';
+
+export const fragmentPane = sessionState(0);
+
+export const fragmentFiltersShown = sessionState(0);
+
+export const fragmentFilterOpen = sessionState(0);
+
+export const fragmentMenuOpen = sessionState(0);
+
+export enum Pane {
+  PASSIVE = -1,
+  ACTIVE = 0,
+}
+
+export enum FilterKind {
+  NONE = 0,
+  CATEGORY = 1,
+  LEVEL = 2,
+  SET = 3,
+  LOCK = 4,
+}
+
+export function resetFragments(): void {
+  const [, setPane] = useState(fragmentPane);
+  const [, setShown] = useState(fragmentFiltersShown);
+  const [, setOpen] = useState(fragmentFilterOpen);
+  const [, setMenu] = useState(fragmentMenuOpen);
+  setPane(Pane.ACTIVE);
+  setShown(0);
+  setOpen(FilterKind.NONE);
+  setMenu(0);
+}
+
+export function showPane(pane: Int, option: Int): void {
+  playSound(Sounds.SELECT);
+  if (option !== 1) {
+    return;
+  }
+  const [, setPane] = useState(fragmentPane);
+  setPane(pane);
+}
+
+export function toggleFilters(): void {
+  playSound(Sounds.SELECT);
+  const [shown, setShown] = useState(fragmentFiltersShown);
+  setShown(shown === 1 ? 0 : 1);
+}
+
+export function anyFilter(): Boolean {
+  const [category] = useState(league3FragmentFilterCategory);
+  const [effect] = useState(league3FragmentFilterEffect);
+  const [level] = useState(league3FragmentFilterLevel);
+  const [lock] = useState(league3FragmentFilterLock);
+  if (category < 1 && effect < 1 && level < 1 && lock < 1) {
+    return false;
+  }
+  return true;
+}
+
+export function clearFilters(): void {
+  if (anyFilter() === false) {
+    return;
+  }
+  playSound(Sounds.SELECT);
+  const [, setCategory] = useState(league3FragmentFilterCategory);
+  const [, setEffect] = useState(league3FragmentFilterEffect);
+  const [, setLevel] = useState(league3FragmentFilterLevel);
+  const [, setLock] = useState(league3FragmentFilterLock);
+  const [, setShown] = useState(fragmentFiltersShown);
+  setCategory(0);
+  setEffect(0);
+  setLevel(0);
+  setLock(0);
+  setShown(0);
+}
+
+export function openFilter(kind: Int): void {
+  playSound(Sounds.SELECT);
+  const [, setOpen] = useState(fragmentFilterOpen);
+  setOpen(kind);
+}
+
+export function closeFilter(): void {
+  const [, setOpen] = useState(fragmentFilterOpen);
+  setOpen(FilterKind.NONE);
+}
+
+export function pickFilter(kind: Int, value: Int): void {
+  playSound(Sounds.SELECT);
+  if (kind === FilterKind.CATEGORY) {
+    const [, setCategory] = useState(league3FragmentFilterCategory);
+    setCategory(value);
+  } else if (kind === FilterKind.SET) {
+    const [, setEffect] = useState(league3FragmentFilterEffect);
+    setEffect(value);
+  } else if (kind === FilterKind.LEVEL) {
+    const [, setLevel] = useState(league3FragmentFilterLevel);
+    setLevel(value);
+  } else {
+    const [, setLock] = useState(league3FragmentFilterLock);
+    setLock(value);
+  }
+  closeFilter();
+}
+
+export enum TabAction {
+  FILTERS = 1,
+  PASSIVE = 2,
+  ACTIVE = 3,
+}
+
+export function tabPick(action: Int, option: Int): void {
+  if (action === TabAction.FILTERS) {
+    toggleFilters();
+  } else if (action === TabAction.PASSIVE) {
+    showPane(Pane.PASSIVE, option);
+  } else {
+    showPane(Pane.ACTIVE, option);
+  }
+}
+
+export const fragmentListJump = sessionState(0);
+
+export function league3FragmentsScrollTo(row: Int): void {
+  const [, setJump] = useState(fragmentListJump);
+  setJump((row - 1) * 42);
+}

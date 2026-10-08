@@ -22,7 +22,7 @@ export function RankRung({
 }): Component {
   const threshold: Int = thresholds.at(index) ?? 0;
   const next: Int = thresholds.at(index + 1) ?? 0;
-  const previous: Int = index > 0 ? (thresholds.at(index - 1) ?? 0) : 0;
+  const previous: Int = index > 0 ? thresholds.at(index - 1) ?? 0 : 0;
 
   const reached: Int = points >= threshold ? 1 : 0;
   const passed: Int = next > 0 && points >= next ? 1 : 0;

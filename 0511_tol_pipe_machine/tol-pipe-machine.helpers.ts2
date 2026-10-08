@@ -1,0 +1,17 @@
+import { useServerState } from 'ts2';
+
+import { playSound } from '../lib/lib.engine';
+import { PipeSounds, PipeState } from './tol-pipe-machine.constants';
+
+export function pipeButtonOp(option: Int): void {
+  if (option !== 1) {
+    return;
+  }
+  const selected: Boolean =
+    useServerState(PipeState.PIECE_1) === 1 ||
+    useServerState(PipeState.PIECE_2) === 1 ||
+    useServerState(PipeState.PIECE_3) === 1 ||
+    useServerState(PipeState.PIECE_4) === 1 ||
+    useServerState(PipeState.PIECE_5) === 1;
+  playSound(selected ? PipeSounds.MOVE : PipeSounds.LOCKED);
+}

@@ -1,0 +1,17 @@
+export const YamaContractNames = mapOf<Item, String>([
+  [30810, 'Gl. Attenuation'],
+  [30813, 'Se. Clouding'],
+  [30816, 'Bl. Blows'],
+  [30819, 'Di. Severance'],
+  [30822, 'Fo. Breath'],
+  [30825, 'Oathplate Ac.'],
+  [30828, 'Shard Ac.'],
+  [30831, 'Catalyst Ac.'],
+  [30834, 'Worm Ac.'],
+  [30837, 'Harmony Ac.'],
+  [30840, 'Familiar Ac.'],
+]);
+
+export function yamaContractNamesOf(obj: Item): String {
+  return YamaContractNames.get(obj) ?? '';
+}

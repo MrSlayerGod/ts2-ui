@@ -1,0 +1,8 @@
+import { sessionState, useState } from 'ts2';
+
+export const btRankIcon = sessionState(-1);
+
+export function sailingBtStatisticsRank(icon: Sprite): void {
+  const [, setIcon] = useState(btRankIcon);
+  setIcon(icon as Int);
+}

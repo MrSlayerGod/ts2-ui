@@ -1,3 +1,5 @@
+import { sessionState, useState } from 'ts2';
+
 import {
   JourneyColor,
   JourneyFont,
@@ -44,16 +46,7 @@ export function ShipJourney(): Component {
           ))}
         </layer>
 
-        <model
-          x={Layout.boat.X}
-          y={Layout.boat.Y}
-          w={Layout.boat.W}
-          h={Layout.boat.H}
-          model={JourneyModel.BOAT}
-          zoom={Layout.boat.ZOOM}
-          pitch={Layout.boat.PITCH}
-          yaw={Layout.boat.YAW}
-        />
+        <JourneyBoat />
 
         <layer x={0} y={0} w={Layout.stage.W} h={Layout.stage.H}>
           {Waves.map((wave) => (
@@ -70,17 +63,124 @@ export function ShipJourney(): Component {
           ))}
         </layer>
 
-        <text
-          x={Layout.title.X}
-          y={Layout.title.Y}
-          w={Layout.title.W}
-          h={Layout.title.H}
-          text={JourneyText.TITLE}
-          font={JourneyFont.LABEL}
-          color={JourneyColor.TITLE}
-          shadow
-        />
+        <JourneyTitle />
       </layer>
     </layer>
   );
+}
+
+const journeyRoute = sessionState(0);
+
+export function shipJourneyRoute(route: Int): void {
+  const [, setRoute] = useState(journeyRoute);
+  setRoute(route);
+}
+
+function JourneyBoat(): Component {
+  const [route] = useState(journeyRoute);
+  return (
+    <model
+      x={Layout.boat.X}
+      y={Layout.boat.Y}
+      w={Layout.boat.W}
+      h={Layout.boat.H}
+      model={
+        route === 12
+          ? JourneyRoute.OGRE_KARAMJA_MODEL
+          : route === 13
+            ? JourneyRoute.OGRE_FELDIP_MODEL
+            : JourneyModel.BOAT
+      }
+      anim={routeAnim(route)}
+      orthogonal={route === 6}
+      zoom={Layout.boat.ZOOM}
+      pitch={Layout.boat.PITCH}
+      yaw={Layout.boat.YAW}
+    />
+  );
+}
+
+function JourneyTitle(): Component {
+  const [route] = useState(journeyRoute);
+  return (
+    <text
+      x={Layout.title.X}
+      y={Layout.title.Y}
+      w={Layout.title.W}
+      h={Layout.title.H}
+      text={route === 0 ? JourneyText.TITLE : routeCaption(route)}
+      font={JourneyFont.LABEL}
+      color={JourneyColor.TITLE}
+      shadow
+    />
+  );
+}
+
+enum JourneyRoute {
+  OGRE_KARAMJA_MODEL = 13370,
+  OGRE_FELDIP_MODEL = 13371,
+}
+
+function routeAnim(route: Int): Animation {
+  switch (route) {
+    case 1:
+      return 632;
+    case 2:
+      return 633;
+    case 3:
+      return 630;
+    case 4:
+      return 634;
+    case 5:
+      return 635;
+    case 6:
+      return 638;
+    case 7:
+      return 639;
+    case 8:
+      return 640;
+    case 9:
+      return 641;
+    case 10:
+      return 3545;
+    case 11:
+      return 3546;
+    case 12:
+      return 3476;
+    case 13:
+      return 3477;
+  }
+  return -1;
+}
+
+function routeCaption(route: Int): String {
+  switch (route) {
+    case 1:
+      return 'You sail to Entrana.';
+    case 2:
+      return 'You sail to Port Sarim.';
+    case 3:
+      return 'You sail to Crandor.';
+    case 4:
+      return 'You sail to Karamja.';
+    case 5:
+      return 'You sail to Port Sarim.';
+    case 6:
+      return 'You sail to Port Khazard.';
+    case 7:
+      return 'You sail out to Sea.';
+    case 8:
+      return 'You sail back to Port Khazard.';
+    case 9:
+      return 'You sail to Port Sarim.';
+    case 10:
+      return 'You sail to the Void Knight outpost.';
+    case 11:
+      return 'You sail to Port Sarim.';
+    case 12:
+      return "You're ogre propelled to the beach of Karamja!";
+    case 13:
+      return "You're ogre propelled to the Feldip Hills!";
+  }
+  return 'You Journey on the ship....';
 }

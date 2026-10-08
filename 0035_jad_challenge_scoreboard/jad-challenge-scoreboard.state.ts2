@@ -1,0 +1,19 @@
+import { sessionState, useState } from 'ts2';
+
+export const jadScoreboardText = sessionState('');
+
+export const jadScoreboardCalls = sessionState(0);
+
+export function jadChallengeScoreboardSetText(text: String): void {
+  const [, setText] = useState(jadScoreboardText);
+  const [calls, setCalls] = useState(jadScoreboardCalls);
+  setText(text);
+  setCalls(calls + 1);
+}
+
+export function resetJadScoreboard(): void {
+  const [, setText] = useState(jadScoreboardText);
+  const [, setCalls] = useState(jadScoreboardCalls);
+  setText('');
+  setCalls(0);
+}

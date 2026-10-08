@@ -1,0 +1,74 @@
+import { CS2, useServerState, useState } from 'ts2';
+import { crmOverlayDismiss } from '../0065_crm_surprisepopup_side/crm-overlay-dismiss';
+import { keybindPanel } from '../0161_toplevel_osrs_stretch/toplevel-osrs-stretch.keys';
+import { chatmodalRef } from '../0162_chatbox/chatbox.constants';
+import { Varbits } from '../lib/game/varbits';
+import { crmOverlayActive, meslayermode } from '../lib/game/varcs';
+import { dialogueMayAdvance } from '../lib/lib.dialogue';
+import { Panel, SideSlots, controlRef, floaterRef, mainmodalRef, sidemodalRef } from './toplevel.constants';
+import { fixedToplevelInit, switchSidePanel } from './toplevel.helpers';
+import { rendererNoticeBuild } from '../lib/enhanced/renderer-notice.component';
+
+export function fixedKeypress(key: Int): void {
+  if (dialogueMayAdvance(-1, -1) === false) {
+    return;
+  }
+  if (key === Keys.ESCAPE) {
+    const [mode] = useState(meslayermode);
+    if (mode === 14 || mode === 17 || mode === 18 || mode === 11) {
+      return;
+    }
+    if (useServerState(Varbits.KEYBINDING_ESC_TO_CLOSE) === 1) {
+      const dismissed: Boolean = crmOverlayDismiss();
+      if (CS2.if_sub_has(floaterRef)) {
+        return;
+      }
+      if (fixedMountOpen(Panel.INVENTORY) && CS2.if_sub_has(mainmodalRef)) {
+        CS2.if_close();
+        return;
+      }
+      if (fixedMountOpen(Panel.INVENTORY) && CS2.if_sub_has(sidemodalRef)) {
+        CS2.if_close();
+        return;
+      } else if (CS2.if_sub_has(chatmodalRef)) {
+        CS2.if_close();
+        return;
+      } else if (dismissed) {
+        return;
+      }
+    }
+  }
+  const panel: Int = keybindPanel(key);
+  if (panel === -1 || panel === useServerState(Varbits.FLASHSIDE) - 1) {
+    return;
+  }
+  if (fixedMountOpen(panel)) {
+    fixedTabHotkey(panel);
+  }
+}
+
+function fixedTabHotkey(panel: Int): void {
+  const [active] = useState(crmOverlayActive);
+  if (CS2.testbit(active, 1)) {
+    crmOverlayDismiss();
+  }
+  switchSidePanel(panel, 0, true);
+}
+
+function fixedMountOpen(panel: Int): Boolean {
+  const slot: ComponentId = SideSlots.at(panel) ?? -1;
+  if (slot !== -1 && CS2.if_sub_has(slot)) {
+    return true;
+  }
+  return false;
+}
+
+enum Keys {
+  ESCAPE = 13,
+}
+
+export function fixedToplevelLoad(): void {
+  fixedToplevelInit();
+  controlRef.onKey = (event) => fixedKeypress(event.keyCode);
+  rendererNoticeBuild();
+}

@@ -25,3 +25,9 @@ export const Layout = {
 export enum GauntletDodge {
   FLAGS = 52968,
 }
+
+export enum GauntletClock {
+  CYCLES_PER_TICK = 30,
+  CYCLES_PER_SECOND = 50,
+  FLASH = 0xfc0000,
+}

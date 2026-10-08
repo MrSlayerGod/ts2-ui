@@ -17,8 +17,8 @@ export function ButlerLabourGrid(): Component {
         (item, slot) =>
           item !== -1 && (
             <sprite
-              x={inset + (slot % Grid.COLUMNS) * (Grid.SLOT_W + gap)}
-              y={(slot / Grid.COLUMNS) * (Grid.SLOT_H + gap)}
+              x={inset + slot % Grid.COLUMNS * (Grid.SLOT_W + gap)}
+              y={slot / Grid.COLUMNS * (Grid.SLOT_H + gap)}
               w={Grid.SLOT_W}
               h={Grid.SLOT_H}
               item={item}

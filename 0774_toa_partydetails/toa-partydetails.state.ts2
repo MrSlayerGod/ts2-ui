@@ -1,0 +1,175 @@
+import { CS2, sessionState, useState } from 'ts2';
+
+import { clientClock } from '../lib/lib.engine';
+import { pipeHead } from '../lib/lib.format';
+import { GameframeSlot, gameframeSlot } from '../lib/lib.gameframe';
+import { raidsCount, raidsCount2, raidsListsortDetails } from '../lib/game/varcs';
+import { Pausebutton, actionRef, pausebuttonsRef, refreshRef, unblockRef } from './toa-partydetails.constants';
+
+export const toaMemberLines = sessionState('');
+
+export const toaApplicantLines = sessionState('');
+
+export const toaDetailsBuilt = sessionState(0);
+export const toaDetailsRole = sessionState(0);
+export const toaDetailsCompletions = sessionState(0);
+export const toaDetailsLevelBracket = sessionState(0);
+export const toaDetailsLevel = sessionState(0);
+export const toaDetailsTab = sessionState(0);
+export const toaDetailsInvocations0 = sessionState(0);
+export const toaDetailsInvocations1 = sessionState(0);
+export const toaDetailsInvocations2 = sessionState(0);
+
+export const toaAutorefreshFrom = sessionState(-1);
+
+export const toaTabPressed = sessionState(-1);
+export const toaTabReadyAt = sessionState(0);
+
+export const toaForcedButton = sessionState(-1);
+export const toaForcedAt = sessionState(0);
+
+function panelOpen(): Boolean {
+  return CS2.if_sub_has(gameframeSlot(GameframeSlot.VIEWPORT));
+}
+
+export function toaPartydetailsAddmember(role: Int, line: String): void {
+  if (!panelOpen()) {
+    return;
+  }
+  const [lines, setLines] = useState(toaMemberLines);
+  const [count, setCount] = useState(raidsCount);
+  const [named, setNamed] = useState(raidsCount2);
+  setLines(`${lines}${role}~${line}^`);
+  setCount(count + 1);
+  if (pipeHead(line).length > 0) {
+    setNamed(named + 1);
+  }
+}
+
+export function toaPartydetailsAddapplicant(line: String): void {
+  if (!panelOpen()) {
+    return;
+  }
+  const [lines, setLines] = useState(toaApplicantLines);
+  const [count, setCount] = useState(raidsCount);
+  setLines(`${lines}${line}^`);
+  setCount(count + 1);
+}
+
+export function toaPartydetailsBuild(
+  role: Int,
+  completions: Int,
+  bracket: Int,
+  level: Int,
+  tab: Int,
+  invocations0: Int,
+  invocations1: Int,
+  invocations2: Int,
+): void {
+  if (!panelOpen()) {
+    return;
+  }
+  const [sort, setSort] = useState(raidsListsortDetails);
+  if (!knownSort(sort)) {
+    setSort(0);
+  }
+  const [, setRole] = useState(toaDetailsRole);
+  const [, setCompletions] = useState(toaDetailsCompletions);
+  const [, setBracket] = useState(toaDetailsLevelBracket);
+  const [, setLevel] = useState(toaDetailsLevel);
+  const [, setTab] = useState(toaDetailsTab);
+  const [, setInv0] = useState(toaDetailsInvocations0);
+  const [, setInv1] = useState(toaDetailsInvocations1);
+  const [, setInv2] = useState(toaDetailsInvocations2);
+  const [, setPressed] = useState(toaTabPressed);
+  const [, setReadyAt] = useState(toaTabReadyAt);
+  const [, setRefreshFrom] = useState(toaAutorefreshFrom);
+  const [, setBuilt] = useState(toaDetailsBuilt);
+  setRole(role);
+  setCompletions(completions);
+  setBracket(bracket);
+  setLevel(level);
+  setTab(tab);
+  setInv0(invocations0);
+  setInv1(invocations1);
+  setInv2(invocations2);
+  setPressed(-1);
+  setReadyAt(0);
+  setRefreshFrom(tab === 0 || tab === 1 ? clientClock() : -1);
+  setBuilt(1);
+}
+
+function knownSort(sort: Int): Boolean {
+  if (sort >= 0 && sort <= 3) {
+    return true;
+  }
+  return sort >= 6 && sort <= 21;
+}
+
+export function toaPartydetailsForcebutton(target: Int, label: String): void {
+  if (!panelOpen()) {
+    return;
+  }
+  const button: ComponentId = target as ComponentId;
+  const which: Int = footerButtonOf(button, refreshRef, actionRef, unblockRef);
+  if (which === -1) {
+    return;
+  }
+  const [, setForced] = useState(toaForcedButton);
+  const [, setForcedAt] = useState(toaForcedAt);
+  setForced(which);
+  setForcedAt(clientClock());
+  resumeAnchor(footerAnchor(which));
+}
+
+export function footerAnchor(which: Int): Int {
+  if (which === 1) {
+    return Pausebutton.ACTION;
+  }
+  if (which === 2) {
+    return Pausebutton.UNBLOCK;
+  }
+  return Pausebutton.REFRESH;
+}
+
+function footerButtonOf(button: ComponentId, refresh: ComponentId, action: ComponentId, unblock: ComponentId): Int {
+  if (button === refresh) {
+    return 0;
+  }
+  if (button === action) {
+    return 1;
+  }
+  if (button === unblock) {
+    return 2;
+  }
+  return -1;
+}
+
+export function resumeAnchor(index: Int): void {
+  if (CS2.cc_find(pausebuttonsRef, index) === true) {
+    CS2.cc_resume_pausebutton();
+  }
+}
+
+export function resetToaPartyDetails(): void {
+  const [, setCount] = useState(raidsCount);
+  const [, setNamed] = useState(raidsCount2);
+  const [, setMembers] = useState(toaMemberLines);
+  const [, setApplicants] = useState(toaApplicantLines);
+  const [, setBuilt] = useState(toaDetailsBuilt);
+  const [, setRefreshFrom] = useState(toaAutorefreshFrom);
+  const [, setPressed] = useState(toaTabPressed);
+  const [, setReadyAt] = useState(toaTabReadyAt);
+  const [, setForced] = useState(toaForcedButton);
+  const [, setForcedAt] = useState(toaForcedAt);
+  setCount(0);
+  setNamed(0);
+  setMembers('');
+  setApplicants('');
+  setBuilt(0);
+  setRefreshFrom(-1);
+  setPressed(-1);
+  setReadyAt(0);
+  setForced(-1);
+  setForcedAt(0);
+}

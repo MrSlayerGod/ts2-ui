@@ -4,6 +4,8 @@ import { CrmLoadingIcon } from '../0284_membership_benefits_prompt/crm-loading-i
 import { opsound } from '../lib/lib.helpers';
 import { Anchor, overlayInit } from '../lib/lib.overlay';
 import { InboxCaption, LastLogin, MembershipCaption, PlayCaption } from './welcome-captions.component';
+import { ButtonWash } from './welcome-wash.component';
+import { WelcomeLink } from './welcome-link.component';
 import { WelcomeScenes } from './welcome-scenes.component';
 import {
   Advert,
@@ -17,7 +19,6 @@ import {
   WelcomeModel,
   WelcomeSprites,
 } from './welcome-screen.constants';
-import { hideUnlessMobile } from './welcome-screen.helpers';
 
 const timerHost = createRef('0378_welcome_screen_timer_host');
 
@@ -25,9 +26,7 @@ const dodger = createRef('welcome_screen_dodger');
 
 const content = createRef('welcome_screen_content');
 
-const storeWash = createRef('welcome_screen_store_wash');
-const inboxWash = createRef('welcome_screen_inbox_wash');
-const playWash = createRef('welcome_screen_play_wash');
+export const bannerCrmCanvas = createRef('welcome_screen_banner_crmcanvas');
 
 export function WelcomeScreen(): Component {
   useInterval(() => welcomeInit(dodger, content), timerHost);
@@ -59,17 +58,7 @@ export function WelcomeScreen(): Component {
               valign="middle"
               lineHeight={Band.MESSAGE_LINE}
             />
-            <rect
-              x={{ center: Band.MESSAGE_DX }}
-              y={Band.LINK_Y}
-              w={Band.MESSAGE_W}
-              h={Band.LINK_H}
-              fill
-              color={WelcomeColors.WHITE}
-              transparency={Band.INVISIBLE}
-              hide
-              options={['Open Link']}
-            />
+            <WelcomeLink />
 
             <WelcomeScenes />
 
@@ -99,28 +88,11 @@ export function WelcomeScreen(): Component {
               <LastLogin />
             </layer>
 
-            <layer
-              x={{ right: Button.SIDE_X }}
-              y={Button.Y}
-              w={Button.SIDE_W}
-              h={Button.H}
-              options={['Open Store']}
-              onMouseRepeat={() => hideUnlessMobile(0, storeWash)}
-              onMouseLeave={() => hideUnlessMobile(1, storeWash)}
-            >
+            <layer x={{ right: Button.SIDE_X }} y={Button.Y} w={Button.SIDE_W} h={Button.H} options={['Open Store']}>
               <sprite x="center" y="center" w={Button.SIDE_W} h={Button.H} sprite={WelcomeSprites.SIDE_BUTTON} />
-              <rect
-                static
-                ref={storeWash}
-                x="center"
-                y="center"
-                w={{ fill: Button.WASH_INSET }}
-                h={{ fill: Button.WASH_INSET }}
-                hide
-                fill
-                color={WelcomeColors.WHITE}
-                transparency={Button.WASH_TRANSPARENCY}
-              />
+              <layer x="center" y="center" w="fill" h="fill">
+                <ButtonWash />
+              </layer>
               <sprite
                 x={Button.ICON_X}
                 y={{ center: Button.STORE_ICON_DY }}
@@ -131,28 +103,11 @@ export function WelcomeScreen(): Component {
               <MembershipCaption />
             </layer>
 
-            <layer
-              x={Button.SIDE_X}
-              y={Button.Y}
-              w={Button.SIDE_W}
-              h={Button.H}
-              options={['View Inbox']}
-              onMouseRepeat={() => hideUnlessMobile(0, inboxWash)}
-              onMouseLeave={() => hideUnlessMobile(1, inboxWash)}
-            >
+            <layer x={Button.SIDE_X} y={Button.Y} w={Button.SIDE_W} h={Button.H} options={['View Inbox']}>
               <sprite x="center" y="center" w={Button.SIDE_W} h={Button.H} sprite={WelcomeSprites.SIDE_BUTTON} />
-              <rect
-                static
-                ref={inboxWash}
-                x="center"
-                y="center"
-                w={{ fill: Button.WASH_INSET }}
-                h={{ fill: Button.WASH_INSET }}
-                hide
-                fill
-                color={WelcomeColors.WHITE}
-                transparency={Button.WASH_TRANSPARENCY}
-              />
+              <layer x="center" y="center" w="fill" h="fill">
+                <ButtonWash />
+              </layer>
               <sprite
                 x={Button.ICON_X}
                 y="center"
@@ -169,23 +124,12 @@ export function WelcomeScreen(): Component {
               w={Button.PLAY_W}
               h={Button.H}
               options={['Play']}
-              onMouseRepeat={() => hideUnlessMobile(0, playWash)}
-              onMouseLeave={() => hideUnlessMobile(1, playWash)}
               onOptionSelect={(event) => opsound(event.option, 2)}
             >
               <sprite x="center" y="center" w={Button.PLAY_W} h={Button.H} sprite={WelcomeSprites.PLAY_BUTTON} />
-              <rect
-                static
-                ref={playWash}
-                x="center"
-                y="center"
-                w={{ fill: Button.WASH_INSET }}
-                h={{ fill: Button.WASH_INSET }}
-                hide
-                fill
-                color={WelcomeColors.WHITE}
-                transparency={Button.WASH_TRANSPARENCY}
-              />
+              <layer x="center" y="center" w="fill" h="fill">
+                <ButtonWash />
+              </layer>
               <sprite
                 x={Button.ICON_X}
                 y="center"
@@ -199,7 +143,13 @@ export function WelcomeScreen(): Component {
             <layer x={Advert.X} y={Advert.Y} w={Advert.W} h={Advert.H}>
               <sprite x="center" y="center" w="fill" h="fill" sprite={WelcomeSprites.ADVERT_BORDER} />
               <sprite x="center" y="center" w={{ fill: Advert.INSET }} h={{ fill: Advert.INSET }} />
-              <layer x="center" y="center" w={{ fill: Advert.INSET }} h={{ fill: Advert.INSET }} />
+              <layer
+                ref={bannerCrmCanvas}
+                x="center"
+                y="center"
+                w={{ fill: Advert.INSET }}
+                h={{ fill: Advert.INSET }}
+              />
               <rect
                 x="center"
                 y="center"

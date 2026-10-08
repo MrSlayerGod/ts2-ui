@@ -1,3 +1,4 @@
+/** @wire */
 export enum CustomisationBoat {
   RAFT = 1,
   SKIFF = 2,
@@ -5,6 +6,7 @@ export enum CustomisationBoat {
   WILL_AND_ANNE = 4,
 }
 
+/** @wire */
 export enum CustomisationOptionId {
   BRONZE_CANNON = 1,
   IRON_CANNON = 2,

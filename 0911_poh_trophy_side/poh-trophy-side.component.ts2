@@ -24,8 +24,8 @@ function TrophySlot({
 }): Component {
   return (
     <sprite
-      x={Grid.ORIGIN_X + (slot % Grid.COLUMNS) * Grid.STRIDE_X}
-      y={Grid.ORIGIN_Y + (slot / Grid.COLUMNS) * Grid.STRIDE_Y}
+      x={Grid.ORIGIN_X + slot % Grid.COLUMNS * Grid.STRIDE_X}
+      y={Grid.ORIGIN_Y + slot / Grid.COLUMNS * Grid.STRIDE_Y}
       w={Grid.W}
       h={Grid.H}
       item={item}
@@ -55,8 +55,8 @@ function TrophyBlank({ slot }: { slot: Int }): Component {
   return (
     <sprite
       hide
-      x={Grid.ORIGIN_X + (slot % Grid.COLUMNS) * Grid.STRIDE_X}
-      y={Grid.ORIGIN_Y + (slot / Grid.COLUMNS) * Grid.STRIDE_Y}
+      x={Grid.ORIGIN_X + slot % Grid.COLUMNS * Grid.STRIDE_X}
+      y={Grid.ORIGIN_Y + slot / Grid.COLUMNS * Grid.STRIDE_Y}
       w={Grid.W}
       h={Grid.H}
       outline={Grid.OUTLINE}

@@ -19,7 +19,7 @@ export function CodeStrip(): Component {
         h={{ fill: LockLayout.STRIP_INNER_INSET_Y }}
       >
         {CodeSlots.map((slot) =>
-          slot < length ? (
+          (slot < length ? (
             <sprite
               x={slot * StripLayout.PITCH + StripLayout.INSET}
               y="center"
@@ -27,7 +27,7 @@ export function CodeStrip(): Component {
               h={StripLayout.ICON_BOX}
               sprite={arrowFor(input, slot)}
             />
-          ) : null,
+          ) : null),
         )}
       </layer>
     </layer>

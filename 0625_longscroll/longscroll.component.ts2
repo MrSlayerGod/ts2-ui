@@ -1,7 +1,37 @@
+import { sessionState, useRef, useState } from 'ts2';
 import { closeInterface } from '../lib/lib.helpers';
-import { ScrollColors, ScrollFonts, ScrollModels, ScrollSprites } from './longscroll.constants';
+import { textLineCount } from '../lib/lib.engine';
+import { ScrollbarVertical } from '../lib/scrollbar-vertical.component';
+import { Sprites } from '../lib/game/sprites';
+import { ScrollColors, ScrollFonts, ScrollLayout, ScrollModels, ScrollSprites } from './longscroll.constants';
+
+const longscrollMode = sessionState(0);
+const longscrollExtent = sessionState(0);
+const longscrollTitle = sessionState('');
+const longscrollText = sessionState('');
+
+export function longscrollSetup(title: String, text: String): void {
+  const [, setMode] = useState(longscrollMode);
+  const [, setExtent] = useState(longscrollExtent);
+  const [, setTitle] = useState(longscrollTitle);
+  const [, setText] = useState(longscrollText);
+  const noTitle: Boolean = title.length === 0;
+  const minimum: Int = noTitle ? ScrollLayout.BODY_H_NO_TITLE : ScrollLayout.BODY_H;
+  const measured: Int =
+    textLineCount(text, ScrollLayout.TEXT_W, ScrollFonts.BODY) * ScrollLayout.LINE_H + ScrollLayout.TEXT_PAD;
+  setTitle(title);
+  setText(text);
+  setExtent(measured < minimum ? minimum : measured);
+  setMode(noTitle ? 2 : 1);
+}
 
 export function MessageScroll(): Component {
+  const [mode] = useState(longscrollMode);
+  const [extent] = useState(longscrollExtent);
+  const page = useRef();
+  const set: Boolean = mode !== 0;
+  const noTitle: Boolean = mode === 2;
+
   return (
     <layer x="center" y="center" w={512} h={334}>
       <sprite
@@ -26,33 +56,80 @@ export function MessageScroll(): Component {
         yaw={513}
       />
 
-      <text
-        x={60}
-        y={30}
-        w={370}
-        h={22}
-        text="Title"
-        font={ScrollFonts.BODY}
-        align="center"
-        valign="middle"
-        shadow
-        color={ScrollColors.TEXT}
-      />
+      {noTitle ? null : <ScrollTitle set={set} />}
 
-      <layer x={{ center: -19 }} y={{ center: 10 }} w={348} h={244}>
-        <text
-          x={1}
-          w={343}
-          h={1200}
-          font={ScrollFonts.BODY}
-          align="center"
-          lineHeight={16}
-          shadow
-          color={ScrollColors.TEXT}
-        />
+      <layer
+        ref={page}
+        x={{ center: -19 }}
+        y={{ center: noTitle ? ScrollLayout.BODY_DY_NO_TITLE : ScrollLayout.BODY_DY }}
+        w={348}
+        h={noTitle ? ScrollLayout.BODY_H_NO_TITLE : ScrollLayout.BODY_H}
+        scrollHeight={set ? extent : 0}
+        scrollY={0}
+      >
+        <ScrollText h={set ? extent : ScrollLayout.TEXT_H_DEFINITION} />
       </layer>
 
-      <layer right={83} y={55} w={16} h={244} />
+      {!set ? (
+        <layer right={83} y={55} w={16} h={244} />
+      ) : noTitle ? (
+        <layer right={84} y={{ center: -1 }} w={16} h={ScrollLayout.BODY_H_NO_TITLE}>
+          <ParchmentBar content={page} />
+        </layer>
+      ) : (
+        <layer right={84} y={55} w={16} h={ScrollLayout.BODY_H}>
+          <ParchmentBar content={page} />
+        </layer>
+      )}
     </layer>
+  );
+}
+
+function ScrollTitle({ set }: { set: Boolean }): Component {
+  const [title] = useState(longscrollTitle);
+  return (
+    <text
+      x={60}
+      y={30}
+      w={370}
+      h={22}
+      text={set ? title : 'Title'}
+      font={ScrollFonts.BODY}
+      align="center"
+      valign="middle"
+      shadow
+      color={ScrollColors.TEXT}
+    />
+  );
+}
+
+function ScrollText({ h }: { h: Int }): Component {
+  const [text] = useState(longscrollText);
+  return (
+    <text
+      x={1}
+      w={343}
+      h={h}
+      text={text}
+      font={ScrollFonts.BODY}
+      align="center"
+      lineHeight={16}
+      shadow
+      color={ScrollColors.TEXT}
+    />
+  );
+}
+
+function ParchmentBar({ content }: { content: Ref }): Component {
+  return (
+    <ScrollbarVertical
+      content={content}
+      track={Sprites.SCROLLBAR_PARCHMENT_DRAGGER_V2_3}
+      capTopSprite={Sprites.SCROLLBAR_PARCHMENT_DRAGGER_V2_0}
+      thumbSprite={Sprites.SCROLLBAR_PARCHMENT_DRAGGER_V2_1}
+      capBottomSprite={Sprites.SCROLLBAR_PARCHMENT_DRAGGER_V2_2}
+      arrowUp={Sprites.SCROLLBAR_PARCHMENT_V2_0}
+      arrowDown={Sprites.SCROLLBAR_PARCHMENT_V2_1}
+    />
   );
 }

@@ -1,14 +1,58 @@
+import { createRef, predictServerState, useServerState, useState } from 'ts2';
 import { ThinBoxEntrypoint } from '../lib/thin-box-entrypoint.component';
-import { Layout, LockSprites } from './bank-side-locks.constants';
+import { playSound, textLineCount } from '../lib/lib.engine';
+import { onMobile, textDevice } from '../lib/lib.helpers';
+import { SteelFrame } from '../0032_boardgames_draughts/steel-frame.component';
+import { StoneButtonDraw } from '../0704_clans_events_create/stone-button.component';
+import { LockGrid } from './bank-side-locks.grid.component';
+import {
+  Copy,
+  Layout,
+  LockColors,
+  LockFonts,
+  LockRadio,
+  LockSounds,
+  LockSprites,
+  LockVars,
+} from './bank-side-locks.constants';
+import { LockPanel, dismissLockPanel, lockFadeStep, lockPanel, lockPanelAt } from './bank-side-locks.state';
 
 export function BankSideLocks(): Component {
-  return (
-    <layer x="center" y="center" w="fill" h="fill">
-      <rect x="center" y="center" w="fill" h="fill" fill transparency={Layout.FADER_TRANSPARENCY} />
+  const [phase] = useState(lockPanel);
+  const [at] = useState(lockPanelAt);
+  const built: Boolean = phase !== LockPanel.UNBUILT;
+  const open: Boolean = phase === LockPanel.OPEN;
 
-      <layer x="center" y="center" w={Layout.WINDOW_W} h={Layout.WINDOW_H}>
+  return (
+    <layer
+      x="center"
+      y={{ bottom: built ? 6 : 0 }}
+      w={{ fill: built ? 12 : 0 }}
+      h={{ fill: built ? 41 : 0 }}
+      noClickThrough={open}
+      onClick={open ? () => dismissLockPanel(false) : null}
+    >
+      <rect
+        x="center"
+        y="center"
+        w="fill"
+        h="fill"
+        fill
+        transparency={phase === LockPanel.DISMISSED ? 150 : Layout.FADER_TRANSPARENCY}
+        onTimer={built ? (event) => lockFadeStep(event.self, phase, at) : null}
+      />
+
+      <layer
+        x="center"
+        y="center"
+        w={Layout.WINDOW_W}
+        h={Layout.WINDOW_H}
+        hide={phase === LockPanel.DISMISSED}
+        noClickThrough={open}
+      >
         <layer x="center" y="center" w="fill" h="fill">
           <sprite x="center" y="center" w={{ fill: 2 }} h={{ fill: 2 }} sprite={LockSprites.WINDOW} tiling />
+          {built && <SteelFrame backdrop={false} />}
         </layer>
 
         <layer x={Layout.SLOTS_X} y="center" w={Layout.SLOTS_W} h={{ fill: Layout.SLOTS_H_INSET }}>
@@ -21,21 +65,194 @@ export function BankSideLocks(): Component {
             tiling
             transparency={Layout.SLOTS_FILL_TRANSPARENCY}
           />
-          <layer x="center" y="center" w={{ fill: Layout.SLOTS_PANE_INSET }} h={{ fill: Layout.SLOTS_PANE_INSET }} />
+          <LockGrid built={built} />
           <ThinBoxEntrypoint />
         </layer>
 
-        <layer
-          x={{ right: Layout.RIGHT_X }}
-          y="center"
-          w={{ fill: Layout.RIGHT_W_INSET }}
-          h={{ fill: Layout.RIGHT_H_INSET }}
-        >
-          <layer x="center" y={0} w="fill" h={Layout.ROW_H} options={['*']} />
-          <layer x="center" y={0} w="fill" h={Layout.ROW_H} options={['*']} />
-          <layer x="center" y="bottom" w={Layout.DONE_W} h={Layout.DONE_H} />
-        </layer>
+        <RightColumn built={built} open={open} />
       </layer>
     </layer>
+  );
+}
+
+function RightColumn({ built, open }: { built: Boolean; open: Boolean }): Component {
+  const w: Int = Layout.WINDOW_W - Layout.RIGHT_W_INSET;
+  const extra: String = `You may also enable <col=ffffff>extra ${textDevice('right-click', 'long press')} options</col> within the bank's inventory display, for locking & unlocking slots more conveniently.`;
+  const showLabel: String = `Show ${textDevice('right-click', 'long press')} options`;
+  const bodyH: Int = textLineCount(Copy.BODY, w, LockFonts.BODY) * 14 + 5;
+  const extraH: Int = textLineCount(extra, w, LockFonts.BODY) * 14 + 5;
+  const firstY: Int = 25 + bodyH;
+  const secondY: Int = firstY + Layout.ROW_H + extraH;
+  const [pressed, setPressed] = useState(0);
+
+  return (
+    <layer
+      x={{ right: Layout.RIGHT_X }}
+      y="center"
+      w={{ fill: Layout.RIGHT_W_INSET }}
+      h={{ fill: Layout.RIGHT_H_INSET }}
+    >
+      {built ? (
+        <IgnoreLocksRow y={firstY} label={Copy.ENABLE} />
+      ) : (
+        <layer x="center" y={0} w="fill" h={Layout.ROW_H} options={['*']} />
+      )}
+      {built ? (
+        <ShowOpRow y={secondY} label={showLabel} />
+      ) : (
+        <layer x="center" y={0} w="fill" h={Layout.ROW_H} options={['*']} />
+      )}
+      <layer
+        ref={doneRef}
+        x="center"
+        y="bottom"
+        w={Layout.DONE_W}
+        h={Layout.DONE_H}
+        options={[built ? 'Done' : '']}
+        onMouseRepeat={
+          built
+            ? () => {
+                if (!onMobile()) {
+                  setPressed(1);
+                }
+              }
+            : null
+        }
+        onMouseLeave={built ? () => setPressed(0) : null}
+        onOptionSelect={open ? () => dismissLockPanel(true) : null}
+      >
+        {built && <StoneButtonDraw label={Copy.DONE} font={LockFonts.BOLD} pressed={pressed} />}
+      </layer>
+      {built && (
+        <>
+          <text
+            x="center"
+            y={0}
+            w="fill"
+            h={25}
+            text={Copy.TITLE}
+            font={LockFonts.BOLD}
+            color={LockColors.ORANGE}
+            shadow
+            align="center"
+            valign="middle"
+          />
+          <text
+            x="center"
+            y={25}
+            w="fill"
+            h={bodyH}
+            text={Copy.BODY}
+            font={LockFonts.BODY}
+            color={LockColors.ORANGE}
+            shadow
+            valign="middle"
+            lineHeight={14}
+          />
+          <text
+            x="center"
+            y={firstY + Layout.ROW_H}
+            w="fill"
+            h={extraH}
+            text={extra}
+            font={LockFonts.BODY}
+            color={LockColors.ORANGE}
+            shadow
+            valign="middle"
+            lineHeight={14}
+          />
+        </>
+      )}
+    </layer>
+  );
+}
+
+const ignoreLocksRef = createRef('bank_side_locks_ignorelocks');
+const extraOptionsRef = createRef('bank_side_locks_extraoptions');
+const doneRef = createRef('bank_side_locks_done');
+
+function IgnoreLocksRow({ y, label }: { y: Int; label: String }): Component {
+  const ignore: Int = useServerState(LockVars.IGNORE_LOCKS);
+  const [lit, setLit] = useState(0);
+  const mobile: Boolean = onMobile();
+  return (
+    <layer
+      ref={ignoreLocksRef}
+      x="center"
+      y={y}
+      w="fill"
+      h={Layout.ROW_H}
+      options={[label]}
+      onMouseEnter={mobile ? null : () => setLit(1)}
+      onMouseLeave={mobile ? null : () => setLit(0)}
+      onOptionSelect={(event) => {
+        if (event.option !== 1) {
+          return;
+        }
+        playSound(LockSounds.SELECT);
+        predictServerState(LockVars.IGNORE_LOCKS, 1 - ignore);
+      }}
+    >
+      <OptionRowBody label={label} lit={lit} radio={ignore === 1 ? LockRadio.OFF : LockRadio.ON} />
+    </layer>
+  );
+}
+
+function ShowOpRow({ y, label }: { y: Int; label: String }): Component {
+  const ignore: Int = useServerState(LockVars.IGNORE_LOCKS);
+  const showOp: Int = useServerState(LockVars.SHOW_OP);
+  const [lit, setLit] = useState(0);
+  const mobile: Boolean = onMobile();
+  const radio: Sprite = ignore === 1 ? LockRadio.DISABLED : (showOp === 1 ? LockRadio.ON : LockRadio.OFF);
+  return (
+    <layer
+      ref={extraOptionsRef}
+      x="center"
+      y={y}
+      w="fill"
+      h={Layout.ROW_H}
+      options={[label]}
+      onMouseEnter={mobile ? null : () => setLit(1)}
+      onMouseLeave={mobile ? null : () => setLit(0)}
+      onOptionSelect={(event) => {
+        if (event.option !== 1) {
+          return;
+        }
+        playSound(LockSounds.SELECT);
+        if (ignore === 0) {
+          predictServerState(LockVars.SHOW_OP, 1 - showOp);
+        }
+      }}
+    >
+      <OptionRowBody label={label} lit={lit} radio={radio} />
+    </layer>
+  );
+}
+
+function OptionRowBody({ label, lit, radio }: { label: String; lit: Int; radio: Sprite }): Component {
+  return (
+    <>
+      <rect
+        x="center"
+        y="center"
+        w="fill"
+        h="fill"
+        color={LockColors.WHITE}
+        fill
+        transparency={lit === 1 ? 230 : 255}
+      />
+      <sprite x={0} y="center" w={17} h={17} sprite={radio} />
+      <text
+        x={{ right: 0 }}
+        y="center"
+        w={{ fill: 22 }}
+        h="fill"
+        text={label}
+        font={LockFonts.BODY}
+        color={LockColors.ORANGE}
+        shadow
+        valign="middle"
+      />
+    </>
   );
 }

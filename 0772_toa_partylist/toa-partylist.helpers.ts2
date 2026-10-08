@@ -3,12 +3,35 @@ import { useState } from 'ts2';
 import { clientClock } from '../lib/lib.engine';
 import { clanwarsOpponentchangetime, raidsCount } from '../lib/game/varcs';
 import { Layout } from './toa-partylist.constants';
+import {
+  toaListBuilt,
+  toaListData,
+  toaListEmptyFiltered,
+  toaListPressedSlot,
+  toaListPressedUntil,
+  toaListResetHigh,
+  toaListResetLow,
+} from './toa-partylist.state';
 
 export function resetToaPartyList(): void {
   const [, setCount] = useState(raidsCount);
   const [, setFetchedAt] = useState(clanwarsOpponentchangetime);
+  const [, setData] = useState(toaListData);
+  const [, setBuilt] = useState(toaListBuilt);
+  const [, setEmptyFiltered] = useState(toaListEmptyFiltered);
+  const [, setPressed] = useState(toaListPressedSlot);
+  const [, setPressedUntil] = useState(toaListPressedUntil);
+  const [, setLow] = useState(toaListResetLow);
+  const [, setHigh] = useState(toaListResetHigh);
   setCount(0);
   setFetchedAt(clientClock());
+  setData('');
+  setBuilt(0);
+  setEmptyFiltered(0);
+  setPressed(-1);
+  setPressedUntil(0);
+  setLow(0);
+  setHigh(0);
 }
 
 export function minmax(low: Int, high: Int, value: Int): Int {

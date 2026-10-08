@@ -1,0 +1,41 @@
+export type PassiveTierRow = { name: String; points: Int };
+export type PassiveLineRow = { tier: Int; text: String };
+
+export const PassiveTiers = listOf<PassiveTierRow>([
+  { name: 'Tier I', points: 0 },
+  { name: 'Tier II', points: 10 },
+  { name: 'Tier III', points: 300 },
+  { name: 'Tier IV', points: 1500 },
+  { name: 'Tier V', points: 3000 },
+  { name: 'Tier VI', points: 7500 },
+  { name: 'Tier VII', points: 15000 },
+]);
+
+export const PassiveLines = listOf<PassiveLineRow>([
+  { tier: 0, text: 'Unlock Fragment Slot  I.' },
+  { tier: 0, text: 'Your League XP multiplier starts at 5x.' },
+  { tier: 0, text: 'A free Combat Fragment.' },
+  { tier: 1, text: 'Unlock Fragment Slot  II.' },
+  { tier: 1, text: 'Your run energy will never drain whilst running.' },
+  { tier: 1, text: 'All un-started clues are stackable as Scroll Boxes.' },
+  { tier: 1, text: 'The Smooth Criminal Fragment.' },
+  { tier: 2, text: 'Unlock Fragment Slot  III.' },
+  { tier: 2, text: 'Your League XP multiplier increases from 5x to 8x.' },
+  { tier: 2, text: 'A random Combat Fragment.' },
+  { tier: 3, text: 'Unlock Fragment Slot IV.' },
+  { tier: 3, text: 'Items from some sources will be 2x as common.' },
+  { tier: 3, text: 'A random Skilling Fragment.' },
+  { tier: 4, text: 'Unlock Fragment Slot V.' },
+  { tier: 4, text: 'Your League XP multiplier increases from 8x to 12x.' },
+  { tier: 4, text: 'A random Combat Fragment.' },
+  { tier: 5, text: 'Unlock Fragment Slot VI.' },
+  { tier: 5, text: 'Items from some sources will be 3x as common.' },
+  {
+    tier: 5,
+    text: 'When getting a Slayer Task, you can choose which task to receive. The same task can be chosen repeatedly.',
+  },
+  { tier: 5, text: 'A random Skilling Fragment.' },
+  { tier: 6, text: 'Unlock Fragment Slot VII.' },
+  { tier: 6, text: 'Your League XP multiplier increases from 12x to 16x.' },
+  { tier: 6, text: 'A random Combat Fragment.' },
+]);

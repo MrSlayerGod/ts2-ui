@@ -15,6 +15,7 @@ export enum AtmosphereKind {
   DOLL = 6,
   MOLE_SPLAT = 7,
   WEDDING = 8,
+  MODE_BANNER = 9,
 }
 
 export const atmosphereKind = sessionState(0);
@@ -273,10 +274,8 @@ export function fossilSwampSplat(duration: Int): void {
 
 export function moleSplatZoom(height: Int): Int {
   const h: Int = Math.clamp(MoleSplat.MIN_H, MoleSplat.MAX_H, height);
-  return (
-    180 -
-    CS2.interpolate(0, CS2.invpow(h - MoleSplat.MIN_H, 2), 0, CS2.invpow(MoleSplat.MAX_H - MoleSplat.MIN_H, 2), 130)
-  );
+  return 180 -
+    CS2.interpolate(0, CS2.invpow(h - MoleSplat.MIN_H, 2), 0, CS2.invpow(MoleSplat.MAX_H - MoleSplat.MIN_H, 2), 130);
 }
 
 export const spectatorHintUntil = sessionState(-1);
@@ -364,4 +363,88 @@ export function weddingFadeOut(elapsed: Int): Int {
 
 export function weddingHeadYaw(from: Int, to: Int, elapsed: Int): Int {
   return from + CS2.scale(Math.min(Wedding.TURN, elapsed - Wedding.TURN_DELAY), Wedding.TURN, to - from);
+}
+
+export const atmosphereText = sessionState('');
+
+export enum ModeBanner {
+  DELAY = 20,
+  HEAD = 40,
+  SOUND_IN = 5,
+  SOUND_OUT = 150,
+  END = 180,
+}
+
+export function modeBanner(name: String): void {
+  const [, setKind] = useState(atmosphereKind);
+  const [, setStart] = useState(atmosphereStart);
+  const [, setText] = useState(atmosphereText);
+  setText(name);
+  setStart(clientClock() + ModeBanner.DELAY);
+  setKind(AtmosphereKind.MODE_BANNER);
+}
+
+export function bannerElapsed(start: Int): Int {
+  return clientClock() - start;
+}
+
+export function bannerStrip(elapsed: Int): Int {
+  if (elapsed <= 0) {
+    return 255;
+  }
+  if (elapsed < 20) {
+    return 255 - elapsed * 255 / 20;
+  }
+  if (elapsed < 150) {
+    return 0;
+  }
+  if (elapsed < 170) {
+    return (20 - (170 - elapsed)) * 255 / 20;
+  }
+  return 255;
+}
+
+export function bannerCover(elapsed: Int): Int {
+  if (elapsed <= 0) {
+    return 255;
+  }
+  if (elapsed < 20) {
+    return 255 - elapsed * 255 / 20;
+  }
+  if (elapsed < 40) {
+    return 255 - (40 - elapsed) * 255 / 20;
+  }
+  return 255;
+}
+
+export function bannerTextHidden(elapsed: Int): Boolean {
+  return elapsed < 20 || elapsed >= 150;
+}
+
+export function bannerHeadOffset(elapsed: Int, width: Int): Int {
+  const travel: Int = 40 + (width / 2 - 150);
+  if (elapsed <= 0) {
+    return -40;
+  }
+  if (elapsed < 20) {
+    return elapsed * travel / 30 - 40;
+  }
+  if (elapsed < 40) {
+    return Math.min(30, elapsed) * travel / 30 - 40;
+  }
+  if (elapsed < 150) {
+    return travel - 40;
+  }
+  return (180 - elapsed) * travel / 30 - 40;
+}
+
+export function bannerStep(start: Int): Int {
+  const elapsed: Int = bannerElapsed(start);
+  if (elapsed === ModeBanner.SOUND_IN || elapsed === ModeBanner.SOUND_OUT) {
+    CS2.sound_effect(Sounds.COSMIC_STAR, 1, 0);
+  }
+  if (elapsed >= ModeBanner.END) {
+    endAtmosphere();
+  }
+  return bannerStrip(elapsed);
 }

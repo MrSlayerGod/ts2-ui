@@ -1,4 +1,4 @@
-import { CS2, predictServerState, useServerState } from 'ts2';
+import { CS2, predictServerState, useInterval, useRef, useServerState, useState } from 'ts2';
 import { onMobile } from '../lib/lib.helpers';
 import { cameraDoZoom } from '../0016_oculus/oculus.camera';
 import { DropdownRow } from './dropdown-row.component';
@@ -12,6 +12,9 @@ import {
   framerateCapIndex,
 } from './display.data';
 import { clickSound, neq, onEnhancedAny } from './settings-side.helpers';
+import { brightnessRevision } from './settings-side.state';
+import { SideTip, TipAnchor, hideSideTip, showSideTip } from './settings-side.tooltip.component';
+import { zoomSliderClick, zoomSliderDrag, zoomSliderDragComplete, zoomThumbAt, zoomTimer } from './settings-side.zoom';
 import {
   AudioArt,
   DropdownId,
@@ -58,7 +61,8 @@ function framerateText(): String {
 }
 
 function BrightnessRow(): Component {
-  const step: Int = CS2.device_option_get(DeviceOption.BRIGHTNESS) / 5;
+  const [revision] = useState(brightnessRevision);
+  const step: Int = revision >= -1 ? CS2.device_option_get(DeviceOption.BRIGHTNESS) / 5 : 0;
 
   return (
     <layer x="center" y={Layout.displayRow.brightnessY} w="fill" h={Layout.displayRow.h}>
@@ -72,7 +76,16 @@ function BrightnessRow(): Component {
         />
       </layer>
 
-      <layer x="right" y="center" w={Layout.slider.troughW} h={Layout.slider.h}>
+      <layer
+        x="right"
+        y="center"
+        w={Layout.slider.troughW}
+        h={Layout.slider.h}
+        onMouseRepeat={() =>
+          showSideTip(SideTip.BRIGHTNESS, TipAnchor.troughX, TipAnchor.brightnessY, TipAnchor.sliderH)
+        }
+        onMouseLeave={() => hideSideTip()}
+      >
         <SliderTrough />
       </layer>
 
@@ -120,12 +133,17 @@ function thumbX(step: Int): Int {
 
 function setBrightness(step: Int): void {
   clickSound();
+  hideSideTip();
   CS2.device_option_set(DeviceOption.BRIGHTNESS, Math.clamp(0, 100, step * 5));
 }
 
 function ZoomRow(): Component {
   const mouseZoomOff: Int = useServerState(SideVars.ZOOM_MOUSE_DISABLED);
   const mobile: Boolean = onMobile();
+  const [at] = useState(zoomThumbAt);
+  const zone = useRef('zoom_slider');
+  const thumb = useRef('zoom_slider_bobble');
+  useInterval(() => zoomTimer(), thumb);
 
   return (
     <layer x="center" y={Layout.displayRow.zoomY} w={Layout.displayRow.zoomW} h={Layout.displayRow.h}>
@@ -136,6 +154,8 @@ function ZoomRow(): Component {
         h={Layout.audioRow.icon}
         options={[mouseZoomOff === 0 ? 'Disable' : 'Enable', 'Restore Default Zoom']}
         onOptionSelect={(event) => zoomOp(event.option, mouseZoomOff)}
+        onMouseRepeat={() => showSideTip(SideTip.ZOOM_TOGGLE, TipAnchor.toggleX, TipAnchor.toggleY, TipAnchor.toggleH)}
+        onMouseLeave={() => hideSideTip()}
       />
       <sprite
         x={Layout.zoomRow.iconX}
@@ -153,11 +173,36 @@ function ZoomRow(): Component {
       {mouseZoomOff === 1 && (
         <sprite y="center" w={Layout.audioRow.muted} h={Layout.audioRow.muted} sprite={AudioArt.MUTED} />
       )}
-      <layer x="right" y="center" w={Layout.slider.troughW} h={Layout.slider.h}>
+      <layer
+        x="right"
+        y="center"
+        w={Layout.slider.troughW}
+        h={Layout.slider.h}
+        onMouseRepeat={() => showSideTip(SideTip.ZOOM, TipAnchor.troughX, TipAnchor.zoomY, TipAnchor.sliderH)}
+        onMouseLeave={() => hideSideTip()}
+      >
         <SliderTrough />
       </layer>
-      <layer x={{ right: Layout.slider.zoneInset }} y="center" w={Layout.slider.zoneW} h={Layout.slider.h}>
-        <sprite x="center" w={Layout.slider.thumb} h={Layout.slider.thumb} sprite={SideArt.SLIDER_THUMB_ZOOM} />
+      <layer
+        ref={zone}
+        x={{ right: Layout.slider.zoneInset }}
+        y="center"
+        w={Layout.slider.zoneW}
+        h={Layout.slider.h}
+        onClick={(event) => zoomSliderClick(event.mouseX)}
+      >
+        <sprite
+          ref={thumb}
+          x={at < 0 ? ZOOM_THUMB_CENTRE : at}
+          w={Layout.slider.thumb}
+          h={Layout.slider.thumb}
+          sprite={SideArt.SLIDER_THUMB_ZOOM}
+          draggable={zone}
+          dragDeadZone={0}
+          dragDeadTime={0}
+          onDrag={(event) => zoomSliderDrag(event.mouseX)}
+          onDragComplete={() => zoomSliderDragComplete()}
+        />
       </layer>
     </layer>
   );
@@ -173,6 +218,8 @@ function zoomOp(option: Int, mouseZoomOff: Int): void {
     cameraDoZoom(ZOOM_DEFAULT, ZOOM_DEFAULT);
   }
 }
+
+const ZOOM_THUMB_CENTRE = 48;
 
 const ZOOM_DEFAULT = 512;
 

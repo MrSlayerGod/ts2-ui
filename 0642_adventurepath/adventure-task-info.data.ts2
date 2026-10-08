@@ -1,0 +1,461 @@
+export type TaskInfoRow = {
+  taskId: Int;
+  prereq: Int;
+  icon: Sprite;
+  longText: String;
+  hints: String;
+  image: Sprite;
+  imageText: String;
+  url: String;
+  hasUrl: Int;
+};
+
+export const TaskInfo = listOf<TaskInfoRow>([
+  {
+    taskId: 1,
+    prereq: 0,
+    icon: 197,
+    image: 2228,
+    hasUrl: 0,
+    url: 'https://oldschool.runescape.wiki/w/Attack',
+    longText:
+      'Ensure your combat style is set to provide Attack XP. The Men, Chickens and Goblins near Lumbridge are suitable targets to fight.',
+    hints:
+      'Train your Attack to level 5 by fighting nearby monsters!|Equip your armour and weapon.|Ensure your combat style is set to provide Attack XP.|Take some food to keep your hitpoints high.|The Men, Chickens and Goblins near Lumbridge are suitable targets to fight.|Chickens drop Raw chicken that can be cooked and used as food.|You can bury bones to gain Prayer experience.',
+    imageText: 'Set your combat style to the correct stance to gain Attack experience.',
+  },
+  {
+    taskId: 2,
+    prereq: 1,
+    icon: 197,
+    image: 2229,
+    hasUrl: 0,
+    url: 'https://oldschool.runescape.wiki/w/Cow',
+    longText:
+      'Ensure your combat style is set to provide Attack XP. Cows and Farmers around Lumbridge are suitable targets to fight.',
+    hints:
+      'Take some food to keep your hitpoints high.|Cows and Farmers around Lumbridge are suitable targets to fight.|Cows drop hides that can be turned into leather for Crafting xp.',
+    imageText: '\tFarmers can be found around the chicken pen.',
+  },
+  {
+    taskId: 3,
+    prereq: 2,
+    icon: 197,
+    image: 2230,
+    hasUrl: 0,
+    url: 'https://oldschool.runescape.wiki/w/Barbarian',
+    longText:
+      'Ensure your combat style is set to provide Attack XP. The Barbarians south of Edgeville are suitable targets to fight.',
+    hints:
+      'The Barbarians south of Edgeville are suitable targets to fight.|To get to Barbarian Village, travel north to Varrock then travel West, use the world map to navigate if you get lost.|Watch out for Gunthor the Brave!|Visit the Stronghold of Security while you are there for additional rewards, more variety in monsters and to learn how to keep your account secure.',
+    imageText: 'Barbarians can be found in their village, especially in the pub.',
+  },
+  {
+    taskId: 4,
+    prereq: 0,
+    icon: 198,
+    image: 2231,
+    hasUrl: 0,
+    url: 'https://oldschool.runescape.wiki/w/Strength',
+    longText:
+      'Ensure your combat style is set to provide Strength XP. The Men, Chickens and Goblins near Lumbridge are suitable targets to fight.',
+    hints:
+      'Train your Strength to level 5 by fighting nearby monsters!|Equip your armour and weapon.|Ensure your combat style is set to provide Strength XP.|Take some food to keep your hitpoints high.|The Men, Chickens and Goblins near Lumbridge are suitable targets to fight.|Chickens drop Raw chicken that can be cooked and used as food.|You can bury bones to gain Prayer experience.',
+    imageText: 'Set your combat style to the correct stance to gain Strength experience.',
+  },
+  {
+    taskId: 5,
+    prereq: 4,
+    icon: 198,
+    image: 2232,
+    hasUrl: 0,
+    url: 'https://oldschool.runescape.wiki/w/Cow',
+    longText:
+      'Ensure your combat style is set to provide Strength XP. Cows and Farmers around Lumbridge are suitable targets to fight.',
+    hints:
+      'Take some food to keep your hitpoints high.|Cows and Farmers around Lumbridge are suitable targets to fight.|Cows drop hides that can be turned into leather for Crafting xp.',
+    imageText: 'Cows drop a variety of items that can be used to train other skills.',
+  },
+  {
+    taskId: 6,
+    prereq: 5,
+    icon: 198,
+    image: 2233,
+    hasUrl: 0,
+    url: 'https://oldschool.runescape.wiki/w/Al Kharid_warrior',
+    longText:
+      'Ensure your combat style is set to provide Strength XP. The Al Kharid guards in the Al Kharid palace are suitable targets to fight.',
+    hints:
+      "The Al Kharid guards in the Al Kharid palace are suitable targets to fight.|Al Kharid is to the east of Lumbridge through the toll gate. Remember to take 10 coins to pass through the Al Kharid gate, you can kill goblins nearby for coins if you forget.|Al Kharid guards drop a variety of runes and coins.|Al Kharid guards often attack in groups.|Kebabs are cheap food which can be bought from Karim's kebab shop west of the palace.|There is a bank nearby to the south of Karim's kebab shop.",
+    imageText: 'You can find Al Kharid warriors in the Al Kharid palace court yard.',
+  },
+  {
+    taskId: 7,
+    prereq: 0,
+    icon: 199,
+    image: 2234,
+    hasUrl: 0,
+    url: 'https://oldschool.runescape.wiki/w/Defence',
+    longText:
+      'Ensure your combat style is set to provide Defence XP. The Men, Chickens and Goblins near Lumbridge are suitable targets to fight.',
+    hints:
+      'Train your Defence trength to level 5 by fighting nearby monsters!|Equip your armour and weapon.|Ensure your combat style is set to provide Defence XP.|Take some food to keep your hitpoints high.|The Men, Chickens and Goblins near Lumbridge are suitable targets to fight.|Chickens drop Raw chicken that can be cooked and used as food.|You can bury bones to gain Prayer experience.',
+    imageText: 'Set your combat style to the correct stance to gain Defence experience.',
+  },
+  {
+    taskId: 8,
+    prereq: 7,
+    icon: 199,
+    image: 2235,
+    hasUrl: 0,
+    url: 'https://oldschool.runescape.wiki/w/Cow',
+    longText:
+      'Ensure your combat style is set to provide Defence XP. Cows and Farmers around Lumbridge are suitable targets to fight.',
+    hints:
+      'Take some food to keep your hitpoints high.|Cows and Farmers around Lumbridge are suitable targets to fight.|Cows drop hides that can be turned into leather for Crafting xp.',
+    imageText: 'Cows drop a variety of items that can be used to train other skills.',
+  },
+  {
+    taskId: 9,
+    prereq: 8,
+    icon: 199,
+    image: 2236,
+    hasUrl: 0,
+    url: 'https://oldschool.runescape.wiki/w/Scorpion',
+    longText:
+      'Ensure your combat style is set to provide Defence XP. The Scorpions in Al Kharid mine are suitable targets to fight.',
+    hints:
+      'The Scorpions in Al Kharid mine are suitable targets to fight.|Al Kharid is to the east of Lumbridge through the toll gate. Remember to take 10 coins to pass through the Al Kharid gate, you can kill goblins nearby for coins if you forget.|Scorpions have a chance at dropping beginner clues that can be completed for rewards.',
+    imageText: 'Scorpions can be found in the Al Kharid mine and may drop beginner clue scrolls!',
+  },
+  {
+    taskId: 10,
+    prereq: 0,
+    icon: 200,
+    image: 2240,
+    hasUrl: 0,
+    url: 'https://oldschool.runescape.wiki/w/Ranged',
+    longText:
+      'Ensure you have a Ranged weapon for your level with usable ammo. Arrows you fire can be picked up from the ground.',
+    hints:
+      'Train your Ranged to level 5 by fighting nearby monsters!|Make sure to equip your armour, bow and arrows.|Take some food to keep your hitpoints high.|The Men, Chickens and Goblins near Lumbridge are suitable targets to fight.|Chickens drop raw chicken which can be cooked for food.|You can bury bones to gain Prayer experience.|Arrows you fire can be picked up from the ground.|If you run out of arrows, speak to the Ranged combat instructor south of the general store in Lumbridge.',
+    imageText: 'Set your combat style to the stance you want.',
+  },
+  {
+    taskId: 11,
+    prereq: 10,
+    icon: 200,
+    image: 2241,
+    hasUrl: 0,
+    url: 'https://oldschool.runescape.wiki/w/Cow',
+    longText:
+      'Ensure you have a Ranged weapon for your level with usable ammo. Cows and Farmers around Lumbridge are suitable targets to fight.',
+    hints:
+      "Take some food to keep your hitpoints high.|Cows and Farmers around Lumbridge are suitable targets to fight.|Cows drop hides that can be turned into leather for Crafting xp.|Arrows which don't break can be picked up from the ground.|Accurate fires arrows with a higher chance to hit.|Rapid fires arrows at a faster rate.|Longrange fires arrows further and gives Defence xp.",
+    imageText: 'Use obstacles when using Ranged combat to avoid taking damage.',
+  },
+  {
+    taskId: 12,
+    prereq: 11,
+    icon: 200,
+    image: 2242,
+    hasUrl: 0,
+    url: 'https://oldschool.runescape.wiki/w/Frog',
+    longText:
+      'Ensure you have a Ranged weapon for your level with usable ammo. The Frogs south of Lumbridge and Wizards west of Lumbridge are suitable targets to fight.',
+    hints:
+      "The Frogs south of Lumbridge and Wizards west of Lumbridge are suitable targets to fight.|Wizards drop an assortment of rune and Magic equipment.|If you need more food you can fish at Draynor Village to the north of the Wizards' Tower.",
+    imageText: 'Use Ranged armour when fighting monsters that use Magic attacks.',
+  },
+  {
+    taskId: 13,
+    prereq: 0,
+    icon: 202,
+    image: 2237,
+    hasUrl: 0,
+    url: 'https://oldschool.runescape.wiki/w/Magic',
+    longText:
+      'Ensure you have runes for a spell you can cast at your Magic level. The Men, Chickens and Goblins near Lumbridge are suitable targets to fight.',
+    hints:
+      'Train your Magic to level 5 by fighting nearby monsters!|Make sure to equip your robes and staff.|Ensure you have a spell set that you can use and have the runes for.|If you run out of runes, speak to the magic instructor south of the general store in Lumbridge.|Take some food to keep your hitpoints high.|The Men, Chickens and Goblins near Lumbridge are suitable targets to fight.|Chickens drop Raw chicken which can be cooked and used as food.|You can bury bones to gain Prayer experience.',
+    imageText: 'Ensure you have runes for a Magic spell which you can use.',
+  },
+  {
+    taskId: 14,
+    prereq: 13,
+    icon: 202,
+    image: 2238,
+    hasUrl: 0,
+    url: 'https://oldschool.runescape.wiki/w/Cow',
+    longText:
+      'Ensure you have runes for a spell you can cast at your Magic level. Cows and Farmers around Lumbridge are suitable targets to fight.',
+    hints:
+      'Ensure you have a spell set that you can use and have the runes for.|Take some food to keep your hitpoints high.|Cows and Farmers around Lumbridge are suitable targets to fight.|Cows drop hides that can be turned into leather for Crafting xp.',
+    imageText: 'Use obstacles when using Magic combat to avoid taking damage.',
+  },
+  {
+    taskId: 15,
+    prereq: 14,
+    icon: 202,
+    image: 2239,
+    hasUrl: 0,
+    url: 'https://oldschool.runescape.wiki/w/Frog',
+    longText:
+      'Ensure you have runes for a spell you can cast at your Magic level. The Frogs in the swamp south of Lumbridge are suitable targets to fight.',
+    hints:
+      'Ensure you have a spell set that you can use and have the runes for.|The Frogs in the swamp south of Lumbridge are suitable targets to fight.|Giant Frogs drop big bones which grant more Prayer experience than regular bones.',
+    imageText: 'Bring food when using Magic as the Magic armour leaves you vulnerable to melee.',
+  },
+  {
+    taskId: 16,
+    prereq: 0,
+    icon: 211,
+    image: 2498,
+    hasUrl: 1,
+    url: 'https://oldschool.runescape.wiki/w/Fishing',
+    longText:
+      'You can find fishing spots by looking at the Mini-map and World map for the icon <img=18>. You can get a fishing net from the Fishing Tutor, south of Lumbridge graveyard.',
+    hints:
+      'You can find fishing spots by looking at the Mini-map and World map for the icon <img=18>.|You can get a fishing net from the Fishing Tutor, south of Lumbridge graveyard.|At level 1 Fishing you are able to catch shrimp. There is a spot you can fish shrimp east of the Fishing Tutor.|The higher your Fishing level, the more varieties of fish you can catch.',
+    imageText: 'This is what the Fishing tutor looks like.',
+  },
+  {
+    taskId: 17,
+    prereq: 0,
+    icon: 214,
+    image: 2500,
+    hasUrl: 1,
+    url: 'https://oldschool.runescape.wiki/w/Woodcutting',
+    longText:
+      'You can find trees to chop by looking at the Mini-map and World map for tree icons that look similar to this icon <img=16>. You can get an axe from the Woodcutting Tutor.',
+    hints:
+      'You can find trees to chop by looking at the Mini-map and World map for tree icons that look similar to this icon <img=16>.|You can get an axe from the Woodcutting Tutor, north of Lumbridge castle.|At level 1 Woodcutting you can chop normal trees, there are some trees west of Lumbridge castle.|The higher your Woodcutting level, the more varieties of trees you can chop.',
+    imageText: 'This is what the Woodcutting tutor looks like.',
+  },
+  {
+    taskId: 18,
+    prereq: 0,
+    icon: 209,
+    image: 2499,
+    hasUrl: 1,
+    url: 'https://oldschool.runescape.wiki/w/Mining',
+    longText:
+      'You can find rocks to mine by looking at the Mini-map and World map for the icon <img=17>. You can get a pickaxe from the Mining Tutor, south of Lumbridge graveyard.',
+    hints:
+      'You can find rocks to mine by looking at the Mini-map and World map for the icon <img=17>.|You can get a pickaxe from the Mining Tutor, south of Lumbridge graveyard.|At level 1 Mining you can mine Copper ore and Tin ore, there are some rocks by the mining tutor.|The higher your Mining level, the more varieties of rocks you can mine.',
+    imageText: 'This is what the Mining tutor looks like.',
+  },
+  {
+    taskId: 19,
+    prereq: 0,
+    icon: 197,
+    image: 2228,
+    hasUrl: 1,
+    url: 'https://oldschool.runescape.wiki/w/Attack',
+    longText:
+      'Ensure your combat style is set to provide Attack XP. The Goblins near Lumbridge are suitable targets to fight.',
+    hints:
+      'Train your Attack to level 5 by fighting nearby monsters!|Equip your armour and ranged weapon.|Ensure your combat style is set to provide Attack XP.|Take some food to keep your hitpoints high.|The Goblins near Lumbridge are suitable targets to fight.|Goblins drop an assortment of items like coins and low-level runes. Maybe you could even get a Beginner clue scroll from them.|You can bury bones to gain Prayer experience.',
+    imageText: 'Set your combat style to the correct stance to gain Attack experience.',
+  },
+  {
+    taskId: 20,
+    prereq: 0,
+    icon: 198,
+    image: 2231,
+    hasUrl: 1,
+    url: 'https://oldschool.runescape.wiki/w/Strength',
+    longText:
+      'Ensure your combat style is set to provide Strength XP. The Chickens near Lumbridge are suitable targets to fight.',
+    hints:
+      'Train your Strength to level 5 by fighting nearby monsters!|Equip your armour and weapon.|Ensure your combat style is set to provide Strength XP.|Take some food to keep your hitpoints high.|The Chickens near Lumbridge are suitable targets to fight.|Chickens drop Raw chicken that can be cooked and used as food. They also drop feathers which can be used for Fly-fishing or used in fletching if you are a member.|You can bury bones to gain Prayer experience.',
+    imageText: 'Set your combat style to the correct stance to gain Strength experience.',
+  },
+  {
+    taskId: 21,
+    prereq: 0,
+    icon: 199,
+    image: 2234,
+    hasUrl: 1,
+    url: 'https://oldschool.runescape.wiki/w/Defence',
+    longText:
+      'Ensure your combat style is set to provide Defence XP. The Cows north east of Lumbridge are suitable targets to fight.',
+    hints:
+      'Train your Defence to level 5 by fighting nearby monsters!|Equip your armour and weapon.|Ensure your combat style is set to provide Defence XP.|Take some food to keep your hitpoints high.|The Cows north east of Lumbridge are suitable targets to fight. Cows drop beef which you can cook to use as low-level food. Cows also drop Cowhides, you can tan the hided and use them to train your crafting skill.|You can bury bones to gain Prayer experience.',
+    imageText: 'Set your combat style to the correct stance to gain Defence experience.',
+  },
+  {
+    taskId: 22,
+    prereq: 0,
+    icon: 202,
+    image: 2237,
+    hasUrl: 1,
+    url: 'https://oldschool.runescape.wiki/w/Magic',
+    longText:
+      'Ensure you have runes for a spell you can cast at your Magic level. The Chickens near Lumbridge are suitable targets to fight.',
+    hints:
+      'Train your Magic to level 5 by fighting nearby monsters!|Equip your armour and weapon.|Ensure you have runes for the spell you would like to cast.|Take some food to keep your hitpoints high.|The Chickens near Lumbridge are suitable targets to fight.|Chickens drop Raw chicken that can be cooked and used as food. They also drop feathers which can be used for Fly-fishing or used in fletching if you are a member.|You can bury bones to gain Prayer experience.',
+    imageText: 'Ensure you have runes for a Magic spell which you can use.',
+  },
+  {
+    taskId: 23,
+    prereq: 0,
+    icon: 202,
+    image: 2560,
+    hasUrl: 1,
+    url: 'https://oldschool.runescape.wiki/w/Autocast',
+    longText:
+      'Ensure you have runes to cast the Water strike spell. This would be one Mind rune, one Water rune and either a Staff of air or one Air rune.',
+    hints:
+      'Ensure you have runes to cast the Water strike spell. This would be one Mind rune, one Water rune and either a Staff of air or one Air rune.|You will need at least level 5 in the Magic skill to cast this spell.|To autocast a spell, you need a staff. Most staffs can autocast but make sure the staff you are using can autocast the normal spellbook.|@control_leftclick_caps the choose spell button and select the water strike spell. You can now autocast the spell when fighting monsters.',
+    imageText: 'You can access the autocast menu via Combat options.',
+  },
+  {
+    taskId: 24,
+    prereq: 22,
+    icon: 202,
+    image: 2238,
+    hasUrl: 1,
+    url: 'https://oldschool.runescape.wiki/w/Cow',
+    longText:
+      'Ensure you have runes for a spell you can cast at your Magic level. The Cows north east of Lumbridge are suitable targets to fight.',
+    hints:
+      'Train your Magic to level 10 by fighting nearby monsters!|Equip your armour and weapon.|Ensure you have runes for the spell you would like to cast.|Take some food to keep your hitpoints high.|The Cows north east of Lumbridge are suitable targets to fight. You can cast spells over the fence and some other scenery. This means that the cows will not be able to attack you, but you can attack the cow.|You can bury bones to gain Prayer experience.',
+    imageText: 'Use obstacles when using Magic combat to avoid taking damage.',
+  },
+  {
+    taskId: 25,
+    prereq: 0,
+    icon: 200,
+    image: 2240,
+    hasUrl: 1,
+    url: 'https://oldschool.runescape.wiki/w/Ranged',
+    longText:
+      'Ensure you have a bow and arrows suitable for your level. The Chickens near Lumbridge are suitable targets to fight.',
+    hints:
+      'Train your Ranged to level 5 by fighting nearby monsters!|Equip your armour and ranged weapon.|Ensure you have a bow and arrows suitable for your level.|Take some food to keep your hitpoints high.|The Chickens near Lumbridge are suitable targets to fight.|Chickens drop Raw chicken that can be cooked and used as food. They also drop feathers which can be used for Fly-fishing or used in fletching if you are a member.|You can bury bones to gain Prayer experience.',
+    imageText: 'Set your combat style to the stance you want.',
+  },
+  {
+    taskId: 26,
+    prereq: 0,
+    icon: 200,
+    image: 2241,
+    hasUrl: 1,
+    url: 'https://oldschool.runescape.wiki/w/Arrows',
+    longText:
+      '@control_leftclick_caps on the Iron arrows you may have in your inventory. The Oak shortbow can use arrows up to steel.',
+    hints:
+      'Upgrade your ammunition by equipping some Iron arrows.|@control_leftclick_caps on the Iron arrows you may have in your inventory.|The Oak shortbow can use arrows up to steel.|Different arrows have different ranged strengths.|The higher your ranged strength, the more damage you can deal with your bow. You can check your ranged strength by opening the equipment stats interface.',
+    imageText: '@control_leftclick_caps on the Iron arrows in your inventory to equip them.',
+  },
+  {
+    taskId: 27,
+    prereq: 25,
+    icon: 200,
+    image: 2241,
+    hasUrl: 1,
+    url: 'https://oldschool.runescape.wiki/w/Cow',
+    longText:
+      'Ensure you have a bow and arrows suitable for your level. The Cows north east of Lumbridge are suitable targets to fight.',
+    hints:
+      'Train your Ranged to level 10 by fighting nearby monsters! Ensure you have a bow and arrows suitable for your level.|Take some food to keep your hitpoints high.|The Cows north east of Lumbridge are suitable targets to fight. You can fire arrows over the fence and some other scenery. This means that the cows will not be able to attack you, but you can attack the cow.|If you run out of arrows, speak to the Ranged combat instructor south of the general store in Lumbridge. Arrows you fire can be picked up from the ground.',
+    imageText: 'Use obstacles when using Ranged combat to avoid taking damage.',
+  },
+]);
+
+export type TaskRewardRow = {
+  taskId: Int;
+  column: Int;
+  index: Int;
+  item: Int;
+  count: Int;
+};
+
+export const TaskRewards = listOf<TaskRewardRow>([
+  { taskId: 1, column: 0, index: 0, item: 1295, count: 1 },
+  { taskId: 1, column: 1, index: 0, item: 995, count: 500 },
+  { taskId: 2, column: 0, index: 0, item: 1297, count: 1 },
+  { taskId: 2, column: 1, index: 0, item: 995, count: 500 },
+  { taskId: 3, column: 0, index: 0, item: 1299, count: 1 },
+  { taskId: 3, column: 1, index: 0, item: 995, count: 1000 },
+  { taskId: 4, column: 0, index: 0, item: 334, count: 5 },
+  { taskId: 4, column: 0, index: 1, item: 1061, count: 1 },
+  { taskId: 4, column: 0, index: 2, item: 1059, count: 1 },
+  { taskId: 4, column: 1, index: 0, item: 334, count: 10 },
+  { taskId: 4, column: 1, index: 1, item: 113, count: 1 },
+  { taskId: 5, column: 0, index: 0, item: 334, count: 5 },
+  { taskId: 5, column: 0, index: 1, item: 113, count: 1 },
+  { taskId: 5, column: 1, index: 0, item: 334, count: 10 },
+  { taskId: 5, column: 1, index: 1, item: 114, count: 2 },
+  { taskId: 6, column: 0, index: 0, item: 330, count: 20 },
+  { taskId: 6, column: 0, index: 1, item: 114, count: 2 },
+  { taskId: 6, column: 1, index: 0, item: 995, count: 500 },
+  { taskId: 6, column: 1, index: 1, item: 1725, count: 1 },
+  { taskId: 6, column: 1, index: 2, item: 114, count: 5 },
+  { taskId: 7, column: 0, index: 0, item: 1141, count: 1 },
+  { taskId: 7, column: 1, index: 0, item: 1193, count: 1 },
+  { taskId: 8, column: 0, index: 0, item: 1105, count: 1 },
+  { taskId: 8, column: 1, index: 0, item: 1069, count: 1 },
+  { taskId: 9, column: 0, index: 0, item: 1109, count: 1 },
+  { taskId: 9, column: 1, index: 0, item: 1159, count: 1 },
+  { taskId: 9, column: 1, index: 1, item: 1197, count: 1 },
+  { taskId: 9, column: 1, index: 2, item: 1071, count: 1 },
+  { taskId: 10, column: 0, index: 0, item: 1167, count: 1 },
+  { taskId: 10, column: 0, index: 1, item: 882, count: 75 },
+  { taskId: 10, column: 1, index: 0, item: 1095, count: 1 },
+  { taskId: 11, column: 0, index: 0, item: 843, count: 1 },
+  { taskId: 11, column: 0, index: 1, item: 882, count: 275 },
+  { taskId: 11, column: 1, index: 0, item: 1129, count: 1 },
+  { taskId: 12, column: 0, index: 0, item: 849, count: 1 },
+  { taskId: 12, column: 0, index: 1, item: 884, count: 75 },
+  { taskId: 12, column: 0, index: 2, item: 1169, count: 1 },
+  { taskId: 12, column: 1, index: 0, item: 1097, count: 1 },
+  { taskId: 12, column: 1, index: 1, item: 884, count: 75 },
+  { taskId: 13, column: 0, index: 0, item: 558, count: 50 },
+  { taskId: 13, column: 0, index: 1, item: 555, count: 75 },
+  { taskId: 13, column: 0, index: 2, item: 1381, count: 1 },
+  { taskId: 13, column: 1, index: 0, item: 559, count: 35 },
+  { taskId: 14, column: 0, index: 0, item: 558, count: 250 },
+  { taskId: 14, column: 0, index: 1, item: 556, count: 250 },
+  { taskId: 14, column: 0, index: 2, item: 1385, count: 1 },
+  { taskId: 14, column: 1, index: 0, item: 564, count: 35 },
+  { taskId: 15, column: 0, index: 0, item: 558, count: 300 },
+  { taskId: 15, column: 0, index: 1, item: 556, count: 300 },
+  { taskId: 15, column: 0, index: 2, item: 1387, count: 1 },
+  { taskId: 15, column: 1, index: 0, item: 562, count: 35 },
+  { taskId: 15, column: 1, index: 1, item: 1727, count: 1 },
+  { taskId: 16, column: 0, index: 0, item: 307, count: 1 },
+  { taskId: 16, column: 0, index: 1, item: 313, count: 100 },
+  { taskId: 17, column: 0, index: 0, item: 1349, count: 1 },
+  { taskId: 17, column: 0, index: 1, item: 1512, count: 20 },
+  { taskId: 18, column: 0, index: 0, item: 1267, count: 1 },
+  { taskId: 18, column: 0, index: 1, item: 439, count: 20 },
+  { taskId: 18, column: 0, index: 2, item: 437, count: 20 },
+  { taskId: 19, column: 0, index: 0, item: 1295, count: 1 },
+  { taskId: 19, column: 1, index: 0, item: 995, count: 500 },
+  { taskId: 20, column: 0, index: 0, item: 334, count: 5 },
+  { taskId: 20, column: 0, index: 1, item: 1059, count: 1 },
+  { taskId: 20, column: 0, index: 2, item: 1061, count: 1 },
+  { taskId: 20, column: 1, index: 0, item: 334, count: 10 },
+  { taskId: 20, column: 1, index: 1, item: 113, count: 1 },
+  { taskId: 21, column: 0, index: 0, item: 1141, count: 1 },
+  { taskId: 21, column: 1, index: 0, item: 1193, count: 1 },
+  { taskId: 22, column: 0, index: 0, item: 558, count: 75 },
+  { taskId: 22, column: 0, index: 1, item: 555, count: 75 },
+  { taskId: 22, column: 0, index: 2, item: 1381, count: 1 },
+  { taskId: 22, column: 1, index: 0, item: 559, count: 50 },
+  { taskId: 23, column: 0, index: 0, item: 581, count: 1 },
+  { taskId: 23, column: 1, index: 0, item: 1017, count: 1 },
+  { taskId: 24, column: 0, index: 0, item: 558, count: 300 },
+  { taskId: 24, column: 0, index: 1, item: 556, count: 300 },
+  { taskId: 24, column: 0, index: 2, item: 1385, count: 1 },
+  { taskId: 24, column: 1, index: 0, item: 564, count: 50 },
+  { taskId: 25, column: 0, index: 0, item: 884, count: 100 },
+  { taskId: 25, column: 1, index: 0, item: 884, count: 50 },
+  { taskId: 26, column: 0, index: 0, item: 1095, count: 1 },
+  { taskId: 26, column: 1, index: 0, item: 1167, count: 1 },
+  { taskId: 27, column: 0, index: 0, item: 884, count: 100 },
+  { taskId: 27, column: 0, index: 1, item: 1097, count: 1 },
+  { taskId: 27, column: 1, index: 0, item: 1169, count: 1 },
+]);

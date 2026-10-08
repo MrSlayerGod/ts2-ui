@@ -50,8 +50,8 @@ function SlotGlow({ item, slot, hasLoot }: { item: Item; slot: Int; hasLoot: Int
   }
   return (
     <sprite
-      x={Grid.ORIGIN_X + (slot % Grid.COLUMNS) * Grid.STRIDE_X}
-      y={Grid.ORIGIN_Y + (slot / Grid.COLUMNS) * Grid.STRIDE_Y}
+      x={Grid.ORIGIN_X + slot % Grid.COLUMNS * Grid.STRIDE_X}
+      y={Grid.ORIGIN_Y + slot / Grid.COLUMNS * Grid.STRIDE_Y}
       w={Grid.GLOW}
       h={Grid.GLOW}
       sprite={BanksideSprites.GLOW}
@@ -61,8 +61,8 @@ function SlotGlow({ item, slot, hasLoot }: { item: Item; slot: Int; hasLoot: Int
 }
 
 function EmptySlot({ slot, locked, lockOp }: { slot: Int; locked: Boolean; lockOp: Boolean }): Component {
-  const x: Int = Grid.ORIGIN_X + (slot % Grid.COLUMNS) * Grid.STRIDE_X;
-  const y: Int = Grid.ORIGIN_Y + (slot / Grid.COLUMNS) * Grid.STRIDE_Y;
+  const x: Int = Grid.ORIGIN_X + slot % Grid.COLUMNS * Grid.STRIDE_X;
+  const y: Int = Grid.ORIGIN_Y + slot / Grid.COLUMNS * Grid.STRIDE_Y;
   if (locked && lockOp) {
     return (
       <sprite
@@ -130,8 +130,8 @@ function HeldSlot({
   if3: Int;
   if4: Int;
 }): Component {
-  const x: Int = Grid.ORIGIN_X + (slot % Grid.COLUMNS) * Grid.STRIDE_X;
-  const y: Int = Grid.ORIGIN_Y + (slot / Grid.COLUMNS) * Grid.STRIDE_Y;
+  const x: Int = Grid.ORIGIN_X + slot % Grid.COLUMNS * Grid.STRIDE_X;
+  const y: Int = Grid.ORIGIN_Y + slot / Grid.COLUMNS * Grid.STRIDE_Y;
   const mode: Int = viewModeOf(item, hasLoot);
   const op9: String = banksideExtraOp(item, slot, hideSideOps, if1, if2, if3, if4);
   let op10: String = 'Examine';
@@ -271,8 +271,8 @@ function ItemSlot({
 }
 
 function HeldWornSlot({ item, count, slot, if2 }: { item: Item; count: Int; slot: Int; if2: Int }): Component {
-  const x: Int = Grid.ORIGIN_X + (slot % Grid.COLUMNS) * Grid.STRIDE_X;
-  const y: Int = Grid.ORIGIN_Y + (slot / Grid.COLUMNS) * Grid.STRIDE_Y;
+  const x: Int = Grid.ORIGIN_X + slot % Grid.COLUMNS * Grid.STRIDE_X;
+  const y: Int = Grid.ORIGIN_Y + slot / Grid.COLUMNS * Grid.STRIDE_Y;
   let op1: String = '';
   if (hasBit(if2, slot)) {
     let offerable: Boolean = false;

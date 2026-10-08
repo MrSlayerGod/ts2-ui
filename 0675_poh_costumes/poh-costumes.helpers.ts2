@@ -1,0 +1,45 @@
+import { CostumeEntries, CostumeEntry, CostumePiece, CostumePieces } from './poh-costumes.data';
+
+export function countAlternates(pieceAt: Int): Int {
+  const piece: CostumePiece | null = CostumePieces.at(pieceAt);
+  const exclusive: Int = piece === null ? 0 : piece.exclusive;
+  const single: Item = piece === null ? -1 : piece.single;
+  const alternates: Int = piece === null ? 0 : piece.altCount;
+  if (exclusive === 1) {
+    return 1;
+  }
+  if (single !== -1) {
+    return 2;
+  }
+  if (alternates > 0) {
+    return 1 + alternates;
+  }
+  return 1;
+}
+
+export function countMembers(entryAt: Int): Int {
+  const entry: CostumeEntry | null = CostumeEntries.at(entryAt);
+  const first: Int = entry === null ? 0 : entry.pieceFirst;
+  const count: Int = entry === null ? 0 : entry.pieceCount;
+  let total: Int = 0;
+  let i: Int = 0;
+  while (i < count) {
+    total = total + countAlternates(first + i);
+    i = i + 1;
+  }
+  return total;
+}
+
+export function entryHasAlternates(entryAt: Int): Boolean {
+  const entry: CostumeEntry | null = CostumeEntries.at(entryAt);
+  if (entry === null) {
+    return false;
+  }
+  if (entry.grouped === 1) {
+    return true;
+  }
+  const piece: CostumePiece | null = CostumePieces.at(entry.pieceFirst);
+  const single: Item = piece === null ? -1 : piece.single;
+  const alternates: Int = piece === null ? 0 : piece.altCount;
+  return single !== -1 || alternates > 0;
+}

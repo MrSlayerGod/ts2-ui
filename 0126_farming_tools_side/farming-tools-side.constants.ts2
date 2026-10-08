@@ -1,15 +1,10 @@
 export { FarmingToolsToolQuantities, FarmingToolsWateringCans } from './tables.data';
 
-import { Enums } from '../lib/game/enums';
 import { Fonts } from '../lib/game/fonts';
 
 export declare const FarmingToolsFonts: {
   readonly SLOT: typeof Fonts.P11_FULL;
 };
-
-export enum FarmingToolsTables {
-  WATERING_CANS = 136,
-}
 
 export enum FarmingItems {
   RAKE = 5341,

@@ -1,0 +1,19 @@
+import { sessionState, useState } from 'ts2';
+
+import { pohCostumeRoomScroll } from '../lib/game/varcs';
+import { CostumeRoom } from './poh-costumes.data';
+
+export const costumeCategory = sessionState(-1);
+
+export const costumeCanSet = sessionState(0);
+
+export function pohCostumesInit(room: CostumeRoom, canSet: Boolean, resetScroll: Boolean): void {
+  if (resetScroll) {
+    const [, setRemembered] = useState(pohCostumeRoomScroll);
+    setRemembered(0);
+  }
+  const [, setCategory] = useState(costumeCategory);
+  const [, setCanSet] = useState(costumeCanSet);
+  setCategory(room);
+  setCanSet(canSet ? 1 : 0);
+}

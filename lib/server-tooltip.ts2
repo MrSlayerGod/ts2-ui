@@ -1,0 +1,150 @@
+import { CS2, useState } from 'ts2';
+
+import { tooltipBuilt } from './game/varcs';
+import { textLineCount, textWidth } from './lib.engine';
+import { enhancedAny } from './lib.overlay';
+import {
+  TooltipBox,
+  tooltipDown,
+  tooltipDwellElapsed,
+  tooltipHide,
+  tooltipMark,
+  tooltipStale,
+} from './tooltip.component';
+
+export function serverTooltip(host: ComponentId, anchor: ComponentId, text: String): void {
+  anchor.onMouseRepeat = () => {
+    serverTooltipRepeat(host, anchor, text, Tip.WRAP);
+  };
+  anchor.onMouseLeave = () => {
+    serverTooltipHide(host);
+  };
+}
+
+const enum Tip {
+  DWELL = 25,
+  WRAP = 250,
+}
+
+const enum Kind {
+  RECT = 3,
+  TEXT = 4,
+}
+
+function enhancedMobile(): Boolean {
+  const type: Int = CS2.clienttype();
+  if (type === 7 || type === 8) {
+    return true;
+  }
+  return false;
+}
+
+export function serverTooltipRepeat(host: ComponentId, anchor: ComponentId, text: String, wrap: Int): void {
+  if (enhancedMobile()) {
+    return;
+  }
+  tooltipMark();
+  if (!enhancedAny() && !tooltipDwellElapsed(Tip.DWELL)) {
+    return;
+  }
+  if (tooltipDown() && !CS2.if_hide_get(host)) {
+    serverTooltipBuild(host, anchor, text, wrap);
+  }
+}
+
+export function serverTooltipRepeatAfter(
+  host: ComponentId,
+  anchor: ComponentId,
+  text: String,
+  wrap: Int,
+  dwell: Int,
+): void {
+  if (enhancedMobile()) {
+    return;
+  }
+  tooltipMark();
+  if (!enhancedAny() && !tooltipDwellElapsed(dwell)) {
+    return;
+  }
+  if (tooltipDown() && !CS2.if_hide_get(host)) {
+    serverTooltipBuild(host, anchor, text, wrap);
+  }
+}
+
+export function serverTooltipBuild(host: ComponentId, anchor: ComponentId, text: String, maxWidth: Int): void {
+  const [, setBuilt] = useState(tooltipBuilt);
+  host.onTimer = () => {
+    if (tooltipStale()) {
+      serverTooltipHide(host);
+    }
+  };
+
+  const parent: ComponentId = CS2.if_layer_get(host);
+  let wrap: Int = maxWidth;
+  if (parent !== -1 && wrap > CS2.if_width_get(parent)) {
+    wrap = CS2.if_width_get(parent);
+  }
+  wrap = wrap - TooltipBox.padX;
+  const boxW: Int = TooltipBox.padX + textWidth(text, wrap, TooltipBox.font);
+  const boxH: Int = TooltipBox.padY + TooltipBox.line * textLineCount(text, wrap, TooltipBox.font);
+  CS2.if_size_set(boxW, boxH, 0, 0, host);
+
+  let left: Int = CS2.if_x_get(anchor);
+  let top: Int = CS2.if_y_get(anchor);
+  let right: Int = left + CS2.if_width_get(anchor);
+  let bottom: Int = top + CS2.if_height_get(anchor);
+  let layer: ComponentId = CS2.if_layer_get(anchor);
+  while (layer !== -1) {
+    const scrollX: Int = CS2.if_scroll_x_get(layer);
+    const scrollY: Int = CS2.if_scroll_y_get(layer);
+    const w: Int = CS2.if_width_get(layer);
+    const h: Int = CS2.if_height_get(layer);
+    const ox: Int = CS2.if_x_get(layer);
+    const oy: Int = CS2.if_y_get(layer);
+    left = Math.min(Math.max(0, left - scrollX), w) + ox;
+    right = Math.min(Math.max(0, right - scrollX), w) + ox;
+    top = Math.min(Math.max(0, top - scrollY), h) + oy;
+    bottom = Math.min(Math.max(0, bottom - scrollY), h) + oy;
+    layer = CS2.if_layer_get(layer);
+  }
+
+  let x: Int = left + TooltipBox.nudge;
+  let y: Int = bottom + TooltipBox.nudge;
+  if (parent !== -1) {
+    if (x > CS2.if_width_get(parent) - boxW) {
+      x = CS2.if_width_get(parent) - boxW;
+    }
+    if (y > CS2.if_height_get(parent) - boxH) {
+      y = top - boxH - TooltipBox.nudge;
+    }
+  }
+  CS2.if_position_set(x, y, 0, 0, host);
+
+  CS2.cc_all_delete(host);
+  CS2.cc_create(host, Kind.RECT, 0, false);
+  CS2.cc_size_set(0, 0, 1, 1);
+  CS2.cc_position_set(0, 0, 1, 1);
+  CS2.cc_fill_set(true);
+  CS2.cc_colour_set(TooltipBox.fill);
+  CS2.cc_create(host, Kind.RECT, 1, false);
+  CS2.cc_size_set(0, 0, 1, 1);
+  CS2.cc_position_set(0, 0, 1, 1);
+  CS2.cc_fill_set(false);
+  CS2.cc_colour_set(TooltipBox.ink);
+  CS2.cc_create(host, Kind.TEXT, 2, false);
+  CS2.cc_size_set(TooltipBox.padX, 1, 1, 1);
+  CS2.cc_position_set(0, 0, 1, 2);
+  CS2.cc_text_set(text);
+  CS2.cc_text_align_set(0, 0, 0);
+  CS2.cc_text_font_set(TooltipBox.font);
+  CS2.cc_colour_set(TooltipBox.ink);
+  setBuilt(1);
+}
+
+export function serverTooltipHide(host: ComponentId): void {
+  if (!enhancedAny()) {
+    host.onTimer = null;
+  }
+  CS2.cc_all_delete(host);
+  tooltipHide();
+}

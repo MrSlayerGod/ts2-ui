@@ -263,15 +263,15 @@ function HeaderTab({
   const edge: Sprite =
     shown === TabLook.REST
       ? CrSprite.TAB_EDGE
-      : shown === TabLook.HOVER
+      : (shown === TabLook.HOVER
         ? CrSprite.TAB_HOVER_EDGE
-        : CrSprite.TAB_ACTIVE_EDGE;
+        : CrSprite.TAB_ACTIVE_EDGE);
   const middle: Sprite =
     shown === TabLook.REST
       ? CrSprite.TAB_MIDDLE
-      : shown === TabLook.HOVER
+      : (shown === TabLook.HOVER
         ? CrSprite.TAB_HOVER_MIDDLE
-        : CrSprite.TAB_ACTIVE_MIDDLE;
+        : CrSprite.TAB_ACTIVE_MIDDLE);
   const colour: Int = shown === TabLook.ACTIVE ? CrColour.TAB_ACTIVE : CrColour.ORANGE;
 
   const labelW: Int = textWidth(label, Tab.W, CrFont.SMALL);
@@ -620,9 +620,9 @@ function QuestList({ listing, data }: { listing: Boolean; data: String }): Compo
         fields[pc * PIECE_STRIDE + F_ART] =
           kind === 2
             ? settingColourOrDefault(227)
-            : questStatus(quest) === 0
+            : (questStatus(quest) === 0
               ? settingColourOrDefault(225)
-              : CrColour.ORANGE;
+              : CrColour.ORANGE);
         fields[pc * PIECE_STRIDE + F_CODE] = TC_NAME;
         fields[pc * PIECE_STRIDE + F_CUT] = CUT_NONE;
         fields[pc * PIECE_STRIDE + F_QUEST] = quest;
@@ -903,7 +903,7 @@ function QuestList({ listing, data }: { listing: Boolean; data: String }): Compo
               itemCursor = itemCursor + artSize + 1;
               bottom = artTop + artSize + (itemLine < 0 ? 5 : 4);
             }
-            const valueGap: Int = short === -1 ? 4 : short > 0 ? 1 : 0;
+            const valueGap: Int = short === -1 ? 4 : (short > 0 ? 1 : 0);
             const [vd, vx, vy, vw, vh, vcut, vline, vcursor, vbottom] = textPlacement(
               valueText,
               itemLine,
@@ -1210,9 +1210,9 @@ function QuestList({ listing, data }: { listing: Boolean; data: String }): Compo
     fields[pc * PIECE_STRIDE + F_ARG] =
       useServerState(Varbits.QUESTS_COMPLETED_COUNT) >= useServerState(Varbits.QUESTS_TOTAL_COUNT)
         ? 0
-        : useServerState(Varbits.CR_QUESTS_INCLUDE_MEMBERS) === 0
+        : (useServerState(Varbits.CR_QUESTS_INCLUDE_MEMBERS) === 0
           ? 1
-          : 2;
+          : 2);
     fields[pc * PIECE_STRIDE + F_CUT] = CUT_NONE;
     pc = pc + 1;
   }
@@ -1260,7 +1260,7 @@ function QuestList({ listing, data }: { listing: Boolean; data: String }): Compo
               sprite={
                 pieceKindOf(value) === PK_TOGGLE
                   ? toggleSprite(pieceFlagOf(value), hoveredEntry === pieceEntryOf(value))
-                  : (fields[i * PIECE_STRIDE + F_ART] as Sprite)
+                  : fields[i * PIECE_STRIDE + F_ART] as Sprite
               }
               tiling={pieceKindOf(value) === PK_TILED}
             />

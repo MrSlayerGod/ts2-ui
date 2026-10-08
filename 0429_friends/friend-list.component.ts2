@@ -1,9 +1,22 @@
-import { CS2, Engine, intArray, stopTimer, useRef, useRerenderOn, useServerState, useState } from 'ts2';
+import {
+  CS2,
+  Engine,
+  intArray,
+  useInterval,
+  useRef,
+  useRerenderOn,
+  useServerState,
+  useServerStateOnce,
+  useState,
+  useUniverse,
+  useWatch,
+} from 'ts2';
 
-import { friendsLastscrollpos, friendsPrevioussort } from '../lib/game/varcs';
 import { clientClock, playSound, scaled, textWidth, chatMessage } from '../lib/lib.engine';
 import { Sounds } from '../lib/lib.constants';
 import { onMobile, textDevice } from '../lib/lib.helpers';
+import { ScrollbarVertical } from '../lib/scrollbar-vertical.component';
+import { ThinBoxEntrypoint } from '../lib/thin-box-entrypoint.component';
 import { enhancedAny } from '../0134_settings/settings.helpers';
 import { meslayerMode6 } from '../0162_chatbox/meslayer';
 import { switchToWorld } from '../0701_clans_sidepanel/clan-sidepanel-op';
@@ -19,38 +32,38 @@ import {
   Layout,
   NO_NAME_TEXT,
   OFFLINE_MESSAGE,
-  friendsListRef,
-  listContainerRef,
-  loadingRef,
 } from './friends.constants';
-import { currentSort } from './friends.state';
+import { currentSort, lastScrollPos, previousSort } from './friends.state';
+import { SortColumns } from './sort-columns.component';
 
-export function FriendRows(): Component {
+export function FriendList(): Component {
   useRerenderOn(Engine.FRIENDS);
+
+  const [heardCount, setHeardCount] = useState(useServerStateOnce(() => CS2.friend_count()));
+  useWatch(Engine.FRIENDS, () => setHeardCount(CS2.friend_count()));
+
+  const universe = useUniverse();
+  const list = useRef();
 
   const mobile: Boolean = onMobile();
   const rowHeight: Int = mobile ? scaled(8, 5, Layout.ROW_H) : Layout.ROW_H;
   const enhanced: Boolean = enhancedAny();
   const world: Int = CS2.map_world();
-  const count: Int = CS2.friend_count();
+  const count: Int = heardCount;
   const hasName: Int = useServerState(FriendsVarbits.HAS_DISPLAYNAME);
 
   let state: Int = 0;
+  let message: String = '';
   if (count <= FriendListState.UNREQUESTED || count === FriendListState.LOADING) {
     state = 1;
-    loadingRef.text = hasName === 1 ? LOADING_TEXT : NO_NAME_TEXT;
-    listContainerRef.hide = true;
+    message = hasName === 1 ? LOADING_TEXT : NO_NAME_TEXT;
   } else if (count === 0) {
     state = 2;
-    loadingRef.text = `You may add friends by using the button below, or by ${textDevice('right-clicking', 'long pressing')} on a message from them and selecting to add them as a friend.`;
-    listContainerRef.hide = true;
-  } else {
-    loadingRef.text = '';
-    listContainerRef.hide = false;
+    message = `You may add friends by using the button below, or by ${textDevice('right-clicking', 'long pressing')} on a message from them and selecting to add them as a friend.`;
   }
 
   const sort: Int = currentSort();
-  const [previous] = useState(friendsPrevioussort);
+  const previous: Int = useServerStateOnce(() => previousSort());
   if (state === 0) {
     CS2.friendlist_sort_reset();
     if (sort === FriendsSort.LEGACY_REVERSED) {
@@ -92,30 +105,72 @@ export function FriendRows(): Component {
   if (state === 0 && count >= 1) {
     extent = count * rowHeight + Layout.TAIL_PAD;
   }
-  const [lastScroll] = useState(friendsLastscrollpos);
-  if (extent > heightOf(friendsListRef)) {
-    friendsListRef.scrollHeight = extent;
-    friendsListRef.scrollY = lastScroll;
-  } else {
-    friendsListRef.scrollHeight = 0;
-    friendsListRef.scrollY = 0;
-  }
+  const lastScroll: Int = useServerStateOnce(() => lastScrollPos());
+  const listHeight: Int = universe.height - Layout.BOX_H_INSET - Layout.INNER_INSET - Layout.LIST_H_INSET;
+  const fits: Boolean = extent <= listHeight;
 
   return (
     <layer w="fill" h="fill">
-      {live.map(
-        (row, index) =>
-          row === 1 && (
-            <FriendRow
-              index={index}
-              top={index * rowHeight}
-              rowHeight={rowHeight}
-              world={world}
-              enhanced={enhanced ? 1 : 0}
-              mobile={mobile ? 1 : 0}
-            />
-          ),
-      )}
+      <layer x="center" y="center" w={{ fill: Layout.INNER_INSET }} h={{ fill: Layout.INNER_INSET }} hide={state !== 0}>
+        <layer x="center" y={0} w="fill" h={Layout.SORT_ROW_H}>
+          <SortColumns />
+          <ThinBoxEntrypoint />
+        </layer>
+
+        <layer
+          ref={list}
+          x={Layout.LIST_X}
+          y={{ bottom: Layout.LIST_BOTTOM }}
+          w={{ fill: Layout.LIST_W_INSET }}
+          h={{ fill: Layout.LIST_H_INSET }}
+          scrollHeight={fits ? 0 : extent}
+          scrollY={fits ? 0 : lastScroll}
+        >
+          {live.map(
+            (row, index) =>
+              row === 1 && (
+                <FriendRow
+                  index={index}
+                  top={index * rowHeight}
+                  rowHeight={rowHeight}
+                  world={world}
+                  enhanced={enhanced ? 1 : 0}
+                  mobile={mobile ? 1 : 0}
+                />
+              ),
+          )}
+        </layer>
+
+        <layer
+          x={{ right: Layout.BAR_RIGHT }}
+          y={{ bottom: Layout.LIST_BOTTOM }}
+          w={Layout.BAR_W}
+          h={{ fill: Layout.LIST_H_INSET }}
+        >
+          <ScrollbarVertical
+            content={list}
+            track={FriendsSprites.TRACK}
+            capTopSprite={FriendsSprites.CAP_TOP}
+            thumbSprite={FriendsSprites.THUMB}
+            capBottomSprite={FriendsSprites.CAP_BOTTOM}
+            arrowUp={FriendsSprites.ARROW_UP}
+            arrowDown={FriendsSprites.ARROW_DOWN}
+          />
+        </layer>
+      </layer>
+
+      <text
+        x="center"
+        y={Layout.LOADING_Y}
+        w={{ fill: Layout.LOADING_W_INSET }}
+        h="50%"
+        text={message}
+        font={FriendsFonts.BODY}
+        color={FriendsColor.WHITE}
+        align="center"
+        valign="middle"
+        shadow
+      />
     </layer>
   );
 }
@@ -132,10 +187,6 @@ function tieBreak(previous: Int): void {
   } else {
     CS2.friendlist_sort_name(true);
   }
-}
-
-function heightOf(component: ComponentId): Int {
-  return CS2.if_height_get(component);
 }
 
 function FriendRow({
@@ -156,8 +207,19 @@ function FriendRow({
   const [name, previousName] = CS2.friend_name_get(index);
   const friendWorld: Int = CS2.friend_world_get(index);
 
-  const label = useRef();
   const badge = useRef();
+
+  const [revealUntil, setRevealUntil] = useState(0);
+  useInterval(
+    revealUntil > 0
+      ? () => {
+          if (clientClock() >= revealUntil) {
+            setRevealUntil(0);
+          }
+        }
+      : undefined,
+    badge,
+  );
 
   const subject: String = `<col=ff9040>${name}</col>`;
 
@@ -188,12 +250,11 @@ function FriendRow({
   return (
     <>
       <text
-        ref={label}
         x="center"
         y={top}
         w="fill"
         h={rowHeight}
-        text={name}
+        text={revealUntil > 0 ? `<col=ff2020>${previousName}</col>` : name}
         font={FriendsFonts.BODY}
         color={FriendsColor.WHITE}
         align="left"
@@ -212,9 +273,15 @@ function FriendRow({
           '',
           reveal === 1 ? 'Reveal previous name' : '',
         ]}
-        onOptionSelect={(event) =>
-          friendOp(event.option, event.optionSubject, label, badge, previousName, name, friendWorld)
-        }
+        onOptionSelect={(event) => {
+          if (event.option === 10) {
+            playSound(Sounds.CLICK);
+            setRevealUntil(clientClock() + Layout.REVEAL_CYCLES);
+            playSound(Sounds.CLICK);
+            return;
+          }
+          friendOp(event.option, event.optionSubject, friendWorld);
+        }}
       />
 
       <sprite
@@ -226,6 +293,7 @@ function FriendRow({
         sprite={FriendsSprites.CHANGED_NAME}
         shadowColor={FriendsColor.BADGE_SHADOW}
         hide={badgeHidden}
+        transparency={revealUntil > 0 ? Layout.BADGE_HIDDEN : Layout.BADGE_SHOWN}
       />
 
       <text
@@ -244,15 +312,7 @@ function FriendRow({
   );
 }
 
-function friendOp(
-  option: Int,
-  subject: String,
-  label: ComponentId,
-  badge: ComponentId,
-  previous: String,
-  name: String,
-  world: Int,
-): void {
+function friendOp(option: Int, subject: String, world: Int): void {
   const target: String = CS2.tags_remove(subject);
   switch (option) {
     case 1:
@@ -267,26 +327,8 @@ function friendOp(
     case 4:
       switchToWorld(world);
       break;
-    case 10:
-      revealPreviousName(label, badge, previous, name);
-      break;
     default:
       return;
   }
   playSound(Sounds.CLICK);
-}
-
-function revealPreviousName(label: ComponentId, badge: ComponentId, previous: String, name: String): void {
-  const restoreAt: Int = clientClock() + Layout.REVEAL_CYCLES;
-  playSound(Sounds.CLICK);
-  label.text = `<col=ff2020>${previous}</col>`;
-  badge.transparency = Layout.BADGE_HIDDEN;
-  badge.onTimer = () => {
-    if (clientClock() < restoreAt) {
-      return;
-    }
-    label.text = name;
-    badge.transparency = Layout.BADGE_SHOWN;
-    stopTimer(badge);
-  };
 }

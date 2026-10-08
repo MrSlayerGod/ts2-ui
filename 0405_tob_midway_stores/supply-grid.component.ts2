@@ -24,7 +24,7 @@ export function SupplyGrid(): Component {
       {StoreStock.map((item, index) => (
         <text
           x={(Grid.ICON_W + Grid.GAP_X) * (index % Grid.COLS)}
-          y={Grid.COUNT_TOP + (index / Grid.COLS) * (Grid.ICON_W + Grid.GAP_Y)}
+          y={Grid.COUNT_TOP + index / Grid.COLS * (Grid.ICON_W + Grid.GAP_Y)}
           w={Grid.COUNT_W}
           h={Grid.COUNT_H}
           text={stringOf(StorePrices.get(item as Item) ?? -1)}

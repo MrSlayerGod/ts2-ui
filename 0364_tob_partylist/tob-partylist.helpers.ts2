@@ -2,10 +2,33 @@ import { useState } from 'ts2';
 
 import { clientClock } from '../lib/lib.engine';
 import { clanwarsOpponentchangetime, raidsCount } from '../lib/game/varcs';
+import {
+  tobListBuilt,
+  tobListData,
+  tobListDeadHigh,
+  tobListDeadLow,
+  tobListEmptyFiltered,
+  tobListPressedSlot,
+  tobListPressedUntil,
+} from './tob-partylist.state';
 
 export function resetTobPartyList(): void {
   const [, setCount] = useState(raidsCount);
   const [, setFetchedAt] = useState(clanwarsOpponentchangetime);
+  const [, setData] = useState(tobListData);
+  const [, setBuilt] = useState(tobListBuilt);
+  const [, setEmptyFiltered] = useState(tobListEmptyFiltered);
+  const [, setPressed] = useState(tobListPressedSlot);
+  const [, setPressedUntil] = useState(tobListPressedUntil);
+  const [, setLow] = useState(tobListDeadLow);
+  const [, setHigh] = useState(tobListDeadHigh);
   setCount(0);
   setFetchedAt(clientClock());
+  setData('');
+  setBuilt(0);
+  setEmptyFiltered(0);
+  setPressed(-1);
+  setPressedUntil(0);
+  setLow(0);
+  setHigh(0);
 }

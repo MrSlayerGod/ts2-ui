@@ -63,8 +63,8 @@ export function runePouchInit(
     CS2.cc_create(inventory, ComponentType.SPRITE, index, false);
     CS2.cc_size_set(Layout.SLOT_W, Layout.SLOT_H, SizeMode.ABS, SizeMode.ABS);
     CS2.cc_position_set(
-      left + (index % columns) * stepX,
-      top0 + (index / columns) * stepY,
+      left + index % columns * stepX,
+      top0 + index / columns * stepY,
       PosMode.ABS_LEFT,
       PosMode.ABS_TOP,
     );

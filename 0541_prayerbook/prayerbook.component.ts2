@@ -118,7 +118,7 @@ function InfoGlow(): Component {
   }
   let lastRowY: Int = 0;
   if (shown > 0) {
-    lastRowY = ((shown - 1) / Layout.COLUMNS) * gridPitch();
+    lastRowY = (shown - 1) / Layout.COLUMNS * gridPitch();
   }
   const glowH: Int = Layout.GLOW_PAD + lastRowY + Layout.SLOT + Layout.GLOW_PAD + skillTick * 0;
 
@@ -198,8 +198,8 @@ function PrayerGrid(): Component {
           (row, index, placed) => (
             <PrayerCell
               item={row.item}
-              x={(placed % Layout.COLUMNS) * pitch}
-              y={(placed / Layout.COLUMNS) * pitch}
+              x={placed % Layout.COLUMNS * pitch}
+              y={placed / Layout.COLUMNS * pitch}
               mode={mode}
               mask={mask}
               ruinous={ruinous}
@@ -224,8 +224,8 @@ function PrayerGrid(): Component {
         (row, index, placed) => (
           <PrayerCell
             item={row.item}
-            x={(placed % Layout.COLUMNS) * pitch}
-            y={(placed / Layout.COLUMNS) * pitch}
+            x={placed % Layout.COLUMNS * pitch}
+            y={placed / Layout.COLUMNS * pitch}
             mode={mode}
             mask={mask}
             ruinous={ruinous}

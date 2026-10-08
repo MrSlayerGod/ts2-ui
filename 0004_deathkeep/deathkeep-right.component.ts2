@@ -99,14 +99,12 @@ function DeathkeepButton({ label, on, y, height }: { label: String; on: Boolean;
 }
 
 function buttonHeight(label: String, wrap: Int): Int {
-  return (
-    Layout.BUTTON_PAD +
+  return Layout.BUTTON_PAD +
     Math.max(
       Layout.BUTTON_MIN_LABEL_H,
       textLineCount(label, wrap, DeathkeepFonts.BODY) * Layout.INFO_LINE_H + Layout.BUTTON_LABEL_EXTRA,
     ) +
-    Layout.BUTTON_PAD
-  );
+    Layout.BUTTON_PAD;
 }
 
 export function DeathkeepRight(): Component {

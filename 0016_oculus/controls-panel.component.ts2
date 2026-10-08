@@ -34,7 +34,7 @@ export function OculusControls(): Component {
   const travel: Int = (stage.height + Panel.H) / 2;
   const parkedStill: Int = slideFrom === 0 ? parked : 0;
   const step: Int =
-    slideFrom === 0 ? 0 : parked === 1 ? Slide.CYCLES - (clientClock() - slideFrom) : clientClock() - slideFrom + 1;
+    slideFrom === 0 ? 0 : (parked === 1 ? Slide.CYCLES - (clientClock() - slideFrom) : clientClock() - slideFrom + 1);
 
   useInterval(() => {
     if (slideFrom !== 0) {

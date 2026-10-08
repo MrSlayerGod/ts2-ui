@@ -18,8 +18,8 @@ import {
 function SharedSlot({ item, count, rank }: { item: Item; count: Int; rank: Int }): Component {
   return (
     <sprite
-      x={Grid.ORIGIN_X + (rank % Grid.COLUMNS) * Grid.STRIDE_X}
-      y={(rank / Grid.COLUMNS) * Grid.STRIDE_Y}
+      x={Grid.ORIGIN_X + rank % Grid.COLUMNS * Grid.STRIDE_X}
+      y={rank / Grid.COLUMNS * Grid.STRIDE_Y}
       w={Grid.W}
       h={Grid.H}
       item={item}
@@ -56,7 +56,7 @@ export function SharedItems(): Component {
     counts[row] = held;
     rank[row] = placed;
     if (held > 0) {
-      lastRowY = (placed / Grid.COLUMNS) * Grid.STRIDE_Y;
+      lastRowY = placed / Grid.COLUMNS * Grid.STRIDE_Y;
       placed = placed + 1;
     }
     row = row + 1;

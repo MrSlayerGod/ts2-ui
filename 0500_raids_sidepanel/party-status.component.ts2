@@ -15,15 +15,15 @@ export function PartyStatus(): Component {
 
   const status: String =
     progress === 0
-      ? leader === 1
+      ? (leader === 1
         ? ''
-        : Copy.WAITING
+        : Copy.WAITING)
       : progress === 1
         ? Copy.UPPER
         : progress === 2
-          ? mapPool === 2
+          ? (mapPool === 2
             ? Copy.MIDDLE
-            : Copy.LOWER
+            : Copy.LOWER)
           : progress === 3
             ? Copy.LOWER
             : progress === 4

@@ -1,10 +1,306 @@
+import { useRef, useState, useUniverse } from 'ts2';
+import { onMobile } from '../lib/lib.helpers';
+import { ScrollbarVertical } from '../lib/scrollbar-vertical.component';
+import { Sprites } from '../lib/game/sprites';
+import { FragmentFonts, LEAGUE_3, ScrollbarSprites as Bar } from './league-3-fragments.constants';
+import { leagueColour } from './league-3-fragments.helpers';
+import { FilterCategoryLabels, FilterLevelLabels, FilterLockLabels, FilterSetLabels } from './filter-labels.data';
+import { closeFilter, FilterKind, fragmentFilterOpen, pickFilter } from './league-3-fragments.state';
+
+enum Ink {
+  OUTER = 0x0e0e0c,
+  INNER = 0x474745,
+  WHITE = 0xffffff,
+}
+
 export function DropdownPopup(): Component {
+  const [open] = useState(fragmentFilterOpen);
+  const root = useUniverse();
+  const mobile: Boolean = onMobile();
+  const shown: Boolean = open !== FilterKind.NONE;
+
+  const buttonX: Int = (root.width - 480) / 2 + 12 + 65;
+  const buttonY: Int = (root.height - 314) / 2 + 131 + boxTop(open);
+  const buttonW: Int = 150;
+  const buttonH: Int = 20;
+
+  const count: Int = choiceCount(open);
+  const rowH: Int = mobile ? 26 : 14;
+  let listH: Int = rowH * count + 4;
+  if (listH > 212) {
+    listH = 212;
+  }
+  const scrollSpace: Boolean = !mobile;
+  const below: Boolean = buttonY + buttonH + listH <= root.height;
+  const contentH: Int = listH - 4;
+  const wide: Boolean = mobile && rowH * count > contentH;
+  const boxW: Int = wide ? buttonW * 2 : buttonW;
+  const contentW: Int = buttonW - (scrollSpace ? 20 : 0);
+  const perColumn: Int = contentH / rowH < 1 ? 1 : contentH / rowH;
+  const colour: Int = leagueColour(LEAGUE_3);
+  const arrowX: Int = mobile ? contentW - buttonH + 2 : 2;
+  const content = useRef();
+
   return (
-    <layer w="fill" h="fill" hide>
-      <layer x={192} y={176} w={123} h={99} noClickThrough>
-        <layer w="fill" h="fill" />
-        <layer right={0} y={0} w={16} h={99} />
-      </layer>
+    <layer
+      w="fill"
+      h="fill"
+      hide={!shown}
+      onMouseRepeat={shown && !mobile ? () => closeFilter() : null}
+      onClick={shown && mobile ? () => closeFilter() : null}
+    >
+      {shown && (
+        <layer x={buttonX} y={below ? buttonY : buttonY - listH + 1} w={boxW} h={listH + buttonH - 1} noClickThrough>
+          <layer
+            ref={content}
+            x={2}
+            y={below ? { bottom: 2 } : 2}
+            w={{ fill: scrollSpace ? 20 : 0 }}
+            h={contentH}
+            scrollHeight={mobile ? 0 : count * rowH}
+            scrollY={0}
+          >
+            <sprite x={0} y={0} w="fill" h="fill" sprite={Sprites.TRADEBACKING} tiling />
+            {FilterCategoryLabels.map(
+              (label, i) =>
+                open === FilterKind.CATEGORY && (
+                  <ChoiceRow
+                    kind={open}
+                    value={i}
+                    label={label}
+                    colour={colour}
+                    x={mobile ? (i / perColumn) * contentW : 0}
+                    y={mobile ? (i % perColumn) * rowH : i * rowH}
+                    w={contentW}
+                    h={rowH}
+                    hover={!mobile}
+                  />
+                ),
+            )}
+            {FilterSetLabels.map(
+              (label, i) =>
+                open === FilterKind.SET && (
+                  <ChoiceRow
+                    kind={open}
+                    value={i}
+                    label={label}
+                    colour={colour}
+                    x={mobile ? (i / perColumn) * contentW : 0}
+                    y={mobile ? (i % perColumn) * rowH : i * rowH}
+                    w={contentW}
+                    h={rowH}
+                    hover={!mobile}
+                  />
+                ),
+            )}
+            {FilterLevelLabels.map(
+              (label, i) =>
+                open === FilterKind.LEVEL && (
+                  <ChoiceRow
+                    kind={open}
+                    value={i}
+                    label={label}
+                    colour={colour}
+                    x={mobile ? (i / perColumn) * contentW : 0}
+                    y={mobile ? (i % perColumn) * rowH : i * rowH}
+                    w={contentW}
+                    h={rowH}
+                    hover={!mobile}
+                  />
+                ),
+            )}
+            {FilterLockLabels.map(
+              (label, i) =>
+                open === FilterKind.LOCK && (
+                  <ChoiceRow
+                    kind={open}
+                    value={i}
+                    label={label}
+                    colour={colour}
+                    x={mobile ? (i / perColumn) * contentW : 0}
+                    y={mobile ? (i % perColumn) * rowH : i * rowH}
+                    w={contentW}
+                    h={rowH}
+                    hover={!mobile}
+                  />
+                ),
+            )}
+          </layer>
+          <layer x={{ right: 2 }} y={below ? { bottom: 2 } : 2} w={16} h={contentH}>
+            {scrollSpace && (
+              <ScrollbarVertical
+                content={content}
+                track={Bar.TRACK}
+                capTopSprite={Bar.CAP_TOP}
+                thumbSprite={Bar.THUMB}
+                capBottomSprite={Bar.CAP_BOTTOM}
+                arrowUp={Bar.ARROW_UP}
+                arrowDown={Bar.ARROW_DOWN}
+              />
+            )}
+          </layer>
+          <rect x={0} y={below ? buttonH - 1 : 0} w={boxW} h={listH} color={Ink.OUTER} />
+          <rect x={1} y={below ? buttonH : 1} w={boxW - 2} h={listH - 2} color={Ink.INNER} />
+          <CloseStrip below={below} height={buttonH} arrowX={arrowX} mobile={mobile} />
+        </layer>
+      )}
     </layer>
+  );
+}
+
+function boxTop(kind: Int): Int {
+  switch (kind) {
+    case FilterKind.CATEGORY:
+      return 35;
+    case FilterKind.LEVEL:
+      return 67;
+    case FilterKind.SET:
+      return 99;
+    case FilterKind.LOCK:
+      return 131;
+  }
+  return 35;
+}
+
+function choiceCount(kind: Int): Int {
+  switch (kind) {
+    case FilterKind.CATEGORY:
+      return FilterCategoryLabels.length;
+    case FilterKind.LEVEL:
+      return FilterLevelLabels.length;
+    case FilterKind.SET:
+      return FilterSetLabels.length;
+    case FilterKind.LOCK:
+      return FilterLockLabels.length;
+  }
+  return 0;
+}
+
+function CloseStrip({
+  below,
+  height,
+  arrowX,
+  mobile,
+}: {
+  below: Boolean;
+  height: Int;
+  arrowX: Int;
+  mobile: Boolean;
+}): Component {
+  const arrow = useRef();
+  const inset: Int = (height - 16) / 2;
+  return (
+    <>
+      <rect
+        x={0}
+        y={below ? 0 : { bottom: 0 }}
+        w="fill"
+        h={height + 1}
+        color={Ink.WHITE}
+        fill
+        transparency={255}
+        noClickThrough
+        options={['Close']}
+        onOptionSelect={() => closeFilter()}
+        onMouseEnter={
+          mobile
+            ? null
+            : () => {
+                arrow.transparency = 125;
+              }
+        }
+        onMouseLeave={
+          mobile
+            ? null
+            : () => {
+                arrow.transparency = 0;
+              }
+        }
+      />
+      <sprite
+        x={mobile ? arrowX : { right: inset }}
+        y={below ? inset : { bottom: inset }}
+        w={16}
+        h={16}
+        sprite={Sprites.TRADEBACKING}
+        tiling
+      />
+      <sprite
+        ref={arrow}
+        x={mobile ? arrowX : { right: inset }}
+        y={below ? inset : { bottom: inset }}
+        w={16}
+        h={16}
+        sprite={Sprites.SCROLLBAR_V2_0}
+        tiling
+      />
+    </>
+  );
+}
+
+function ChoiceRow({
+  kind,
+  value,
+  label,
+  colour,
+  x,
+  y,
+  w,
+  h,
+  hover,
+}: {
+  kind: Int;
+  value: Int;
+  label: String;
+  colour: Int;
+  x: Int;
+  y: Int;
+  w: Int;
+  h: Int;
+  hover: Boolean;
+}): Component {
+  const lit = useRef();
+  return (
+    <>
+      <rect
+        ref={lit}
+        x={x}
+        y={y}
+        w={w}
+        h={h}
+        color={Ink.WHITE}
+        fill
+        transparency={255}
+        options={['Select']}
+        optionSubject={`<col=ff9040>${label}</col>`}
+        onOptionSelect={() => pickFilter(kind, value)}
+        onMouseEnter={
+          hover
+            ? () => {
+                lit.transparency = 220;
+              }
+            : null
+        }
+        onMouseLeave={
+          hover
+            ? () => {
+                lit.transparency = 255;
+              }
+            : null
+        }
+      />
+      <text
+        x={x}
+        y={y}
+        w={w}
+        h={h}
+        text={label}
+        font={FragmentFonts.LABEL}
+        color={colour}
+        shadow
+        align="center"
+        valign="middle"
+      />
+    </>
   );
 }

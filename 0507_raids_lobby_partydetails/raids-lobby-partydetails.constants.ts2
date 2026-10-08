@@ -16,6 +16,10 @@ export const tooltipRef = createRef('raids_lobby_partydetails_tooltip');
 
 export const statsSlot = sessionState(-1);
 
+export const autoRefreshAt = sessionState(0);
+
+export const refreshRef = createRef('raids_lobby_partydetails_refresh');
+
 export declare const PartydetailsFonts: {
   readonly BODY: typeof Fonts.P11_FULL;
 };
@@ -229,3 +233,19 @@ export const Layout = {
 export const SET_BUSY_CYCLES = 80;
 
 export const AUTOREFRESH_CYCLES = 520;
+
+export const boardAnchorsRef = createRef('raids_lobby_partydetails_board_anchors');
+
+export const Pausebutton = {
+  JOIN: 0,
+  ADVERTISE: 1,
+  DISBAND: 2,
+  REFRESH: 3,
+  BACK: 4,
+  PREFERRED_SIZE: 5,
+  PREFERRED_COMLEVEL: 6,
+  PREFERRED_SKILLTOTAL: 7,
+  SCALING: 8,
+  CHALLENGE: 9,
+  MAP_POOL: 10,
+} as const;

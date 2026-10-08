@@ -1,9 +1,10 @@
-import { useDerived, useInterval, useOnResize, useRef, useServerState, useUniverse } from 'ts2';
+import { useDerived, useInterval, useOnResize, useServerState, useUniverse, useWatch } from 'ts2';
 
 import { StonePanelEntrypoint } from '../0648_target_streaks/stone-panel-entrypoint.component';
 import { tobHudNameFlasher } from '../0773_toa_lobby/toa-lobby.helpers';
 import { Anchor, overlayInit } from '../lib/lib.overlay';
 import { Varbits } from '../lib/game/varbits';
+import { Varps } from '../lib/game/varps';
 import {
   Layout,
   NO_CONTENT,
@@ -22,12 +23,15 @@ import {
   statusDodgerRef,
   statusRef,
 } from './tob-hud.constants';
-import { inTobLobby, tobHudMiddleTick, tobHudStatusTick } from './tob-hud.state';
+import { drawWaveProgress, inTobLobby, tobHudDrawTick } from './tob-hud.state';
 import { TobHudProgress } from './tob-hud-progress.component';
 import { TobHudStatus } from './tob-hud-status.component';
 
-export function flashTobHeadline(target: ComponentId): void {
-  target.color = tobHudNameFlasher();
+export function headlineInk(): Int {
+  if (useServerState(Varbits.TOB_CLIENT_PARTYSTATUS) === PartyStatus.READY) {
+    return tobHudNameFlasher();
+  }
+  return TobHudColor.LABEL;
 }
 
 export function TobHudScreenFlash(): Component {
@@ -84,10 +88,15 @@ export function TobHudNamesDodger(): Component {
 }
 
 export function TobHudStatusDodger(): Component {
-  useInterval(() => tobHudStatusTick(statusDodgerRef, statusRef), statusDodgerRef);
-
   return (
-    <layer ref={statusDodgerRef} x={0} y={0} w="fill" h="fill">
+    <layer
+      ref={statusDodgerRef}
+      onLoad={() => overlayInit(statusDodgerRef, statusRef, TobHudDodge.LEFT, Anchor.LEFT, Anchor.TOP, 1)}
+      x={0}
+      y={0}
+      w="fill"
+      h="fill"
+    >
       <layer
         static
         ref={statusRef}
@@ -102,11 +111,20 @@ export function TobHudStatusDodger(): Component {
   );
 }
 
+function middleDodgerLoad(): void {
+  overlayInit(middleDodgerRef, progressRef, TobHudDodge.MIDDLE, Anchor.CENTRE, Anchor.TOP, 0);
+  drawWaveProgress();
+}
+
 export function TobHudMiddleDodger(): Component {
-  useInterval(() => tobHudMiddleTick(middleDodgerRef, progressRef, hudRef), middleDodgerRef);
+  useWatch(
+    [Varps.TOB_TEMP_TRANSMIT_1, Varps.TOB_TEMP_TRANSMIT_2, Varps.XPDROPS_OPTIONS, Varps.CHAT_FILTER_ASSIST],
+    () => drawWaveProgress(),
+  );
+  useInterval(() => tobHudDrawTick());
 
   return (
-    <layer ref={middleDodgerRef} x={0} y={0} w="fill" h="fill">
+    <layer ref={middleDodgerRef} onLoad={() => middleDodgerLoad()} x={0} y={0} w="fill" h="fill">
       <layer
         static
         ref={progressRef}
@@ -131,26 +149,19 @@ function lobbyCaption(status: Int): String {
   return 'Party';
 }
 
-function lobbyInk(status: Int): Int {
-  if (status === PartyStatus.READY) {
-    return tobHudNameFlasher();
-  }
-  return TobHudColor.LABEL;
-}
-
 export function TobHudLobbyBoard(): Component {
   const universe = useUniverse();
   useOnResize(universe);
 
   const inLobby: Int = useDerived(() => inTobLobby());
   const status: Int = useServerState(Varbits.TOB_CLIENT_PARTYSTATUS);
+  const ink: Int = useDerived(() => headlineInk());
 
   if (inLobby === 0 || status === PartyStatus.HIDDEN) {
     return null;
   }
 
   const caption: String = lobbyCaption(status);
-  const ink: Int = lobbyInk(status);
 
   return (
     <layer w="fill" h="fill">
@@ -174,7 +185,6 @@ export function TobHudLobbyBoard(): Component {
         valign="middle"
         shadow
         color={ink}
-        onTimer={status === PartyStatus.READY ? (event) => flashTobHeadline(event.self) : null}
       />
       <text
         x="center"

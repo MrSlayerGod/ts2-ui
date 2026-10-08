@@ -1,0 +1,117 @@
+import { CS2, stopTimer } from 'ts2';
+
+import { clientClock } from './lib.engine';
+
+export function serverPopupFrame(box: ComponentId, fader: ComponentId, border: ComponentId): void {
+  box.props = { x: 'center', y: { bottom: Frame.BOTTOM }, w: { fill: Frame.INSET_W }, h: { fill: Frame.INSET_H } };
+  box.noClickThrough = true;
+  fadeIn(fader);
+  steelBorderNoCloseNoPlate(border, '');
+}
+
+const enum Frame {
+  INSET_W = 12,
+  INSET_H = 41,
+  BOTTOM = 6,
+}
+
+const enum Fade {
+  FROM = 255,
+  TO = 150,
+  CYCLES = 30,
+}
+
+function fadeIn(fader: ComponentId): void {
+  const startedAt: Int = clientClock();
+  fader.transparency = Fade.FROM;
+  fader.onTimer = () => {
+    fadeStep(fader, startedAt);
+  };
+}
+
+function fadeStep(fader: ComponentId, startedAt: Int): void {
+  const elapsed: Int = clientClock() - startedAt;
+  if (elapsed >= Fade.CYCLES) {
+    fader.transparency = Fade.TO;
+    stopTimer(fader);
+    return;
+  }
+  fader.transparency = Fade.FROM + CS2.scale(elapsed, Fade.CYCLES, Fade.TO - Fade.FROM);
+}
+
+const enum Kind {
+  TEXT = 4,
+  SPRITE = 5,
+}
+
+const enum Pos {
+  START = 0,
+  CENTRE = 1,
+  END = 2,
+}
+
+const enum Size {
+  ABS = 0,
+  MINUS = 1,
+}
+
+const enum SteelArt {
+  TRADEBACKING = 297,
+  TOP_LEFT = 310,
+  TOP_RIGHT = 311,
+  BOTTOM_LEFT = 312,
+  BOTTOM_RIGHT = 313,
+  LEFT = 172,
+  RIGHT = 315,
+  TOP = 314,
+  BOTTOM = 173,
+}
+
+const TITLE_FONT = 496;
+const TITLE_COLOUR = 0xff981f;
+
+function graphic(
+  container: ComponentId,
+  index: Int,
+  sprite: Sprite,
+  x: Int,
+  y: Int,
+  xMode: Int,
+  yMode: Int,
+  w: Int,
+  h: Int,
+  wMode: Int,
+  hMode: Int,
+): void {
+  CS2.cc_create(container, Kind.SPRITE, index, false);
+  CS2.cc_position_set(x, y, xMode, yMode);
+  CS2.cc_size_set(w, h, wMode, hMode);
+  CS2.cc_sprite_set(sprite);
+  CS2.cc_tiling_set(true);
+}
+
+function steelBorderNoCloseNoPlate(container: ComponentId, title: String): void {
+  CS2.cc_all_delete(container);
+
+  graphic(container, 0, SteelArt.TRADEBACKING, 0, 0, Pos.CENTRE, Pos.CENTRE, 2, 2, Size.MINUS, Size.MINUS);
+  CS2.cc_transparency_set(0);
+
+  CS2.cc_create(container, Kind.TEXT, 1, false);
+  CS2.cc_position_set(0, 6, Pos.CENTRE, Pos.START);
+  CS2.cc_size_set(12, 24, Size.MINUS, Size.ABS);
+  CS2.cc_text_align_set(1, 1, 0);
+  CS2.cc_colour_set(TITLE_COLOUR);
+  CS2.cc_text_shadow_set(true);
+  CS2.cc_text_font_set(TITLE_FONT);
+  CS2.cc_text_set(title);
+
+  graphic(container, 2, SteelArt.TOP_LEFT, 0, 0, Pos.START, Pos.START, 25, 30, Size.ABS, Size.ABS);
+  graphic(container, 3, SteelArt.TOP_RIGHT, 0, 0, Pos.END, Pos.START, 25, 30, Size.ABS, Size.ABS);
+  graphic(container, 4, SteelArt.BOTTOM_LEFT, 0, 0, Pos.START, Pos.END, 25, 30, Size.ABS, Size.ABS);
+  graphic(container, 5, SteelArt.BOTTOM_RIGHT, 0, 0, Pos.END, Pos.END, 25, 30, Size.ABS, Size.ABS);
+  graphic(container, 6, SteelArt.LEFT, -15, 0, Pos.START, Pos.CENTRE, 36, 60, Size.ABS, Size.MINUS);
+  graphic(container, 7, SteelArt.RIGHT, -15, 0, Pos.END, Pos.CENTRE, 36, 60, Size.ABS, Size.MINUS);
+  graphic(container, 8, SteelArt.TOP, 0, -15, Pos.CENTRE, Pos.START, 50, 36, Size.MINUS, Size.ABS);
+  graphic(container, 9, SteelArt.BOTTOM, 0, -15, Pos.CENTRE, Pos.END, 50, 36, Size.MINUS, Size.ABS);
+  graphic(container, 10, -1, 0, 0, 0, 0, 0, 0, 0, 0);
+}

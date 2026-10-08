@@ -1,0 +1,271 @@
+import { CS2, useState } from 'ts2';
+
+import { Sounds } from '../lib/game/sounds';
+import { meslayermode } from '../lib/game/varcs';
+import { playSound } from '../lib/lib.engine';
+import { pipeHead, pipeTail } from '../lib/lib.format';
+import { onMobile } from '../lib/lib.helpers';
+import { mesText2Ref } from '../0162_chatbox/chatbox.constants';
+import { meslayerPromptText } from '../0162_chatbox/chatbox.state';
+import {
+  KEYBOARD_INTEGER,
+  keyboardShow,
+  meslayerBindKeys,
+  meslayerEcho,
+  meslayerOnDialogAbort,
+  meslayerOpen,
+} from '../0162_chatbox/meslayer';
+import {
+  smCount,
+  smItem0,
+  smItem1,
+  smItem2,
+  smItem3,
+  smItem4,
+  smItem5,
+  smItem6,
+  smItem7,
+  smItem8,
+  smItem9,
+  smItem10,
+  smItem11,
+  smItem12,
+  smItem13,
+  smItem14,
+  smItem15,
+  smItem16,
+  smItem17,
+  smKind,
+  smMax,
+  smNames,
+  smQuantity,
+  smScroll,
+  smSuggested,
+  smTitle,
+  smXPending,
+} from './skillmulti.cells';
+import { KindHasFreeEntry, KindHasQuantity } from './skillmulti.constants';
+import { hideSkillTip } from './skill-multi-tooltip.component';
+
+const MESLAYER_SKILLMULTI = 16;
+const AMOUNT_LIMIT = 10;
+const FREE_MAX = 28;
+
+export function skillMultiSetup(
+  kind: Int,
+  maxQuantity: Int,
+  item0: Item,
+  item1: Item,
+  item2: Item,
+  item3: Item,
+  item4: Item,
+  item5: Item,
+  item6: Item,
+  item7: Item,
+  item8: Item,
+  item9: Item,
+  item10: Item,
+  item11: Item,
+  item12: Item,
+  item13: Item,
+  item14: Item,
+  item15: Item,
+  item16: Item,
+  item17: Item,
+  quantity: Int,
+  names: String,
+): void {
+  const [, setKind] = useState(smKind);
+  const [, setMax] = useState(smMax);
+  const [, setCount] = useState(smCount);
+  const [, setTitle] = useState(smTitle);
+  const [, setNames] = useState(smNames);
+  const [, setQuantity] = useState(smQuantity);
+  const [, setSuggested] = useState(smSuggested);
+  const [, setXPending] = useState(smXPending);
+  const [, setScroll] = useState(smScroll);
+  const [, s0] = useState(smItem0);
+  const [, s1] = useState(smItem1);
+  const [, s2] = useState(smItem2);
+  const [, s3] = useState(smItem3);
+  const [, s4] = useState(smItem4);
+  const [, s5] = useState(smItem5);
+  const [, s6] = useState(smItem6);
+  const [, s7] = useState(smItem7);
+  const [, s8] = useState(smItem8);
+  const [, s9] = useState(smItem9);
+  const [, s10] = useState(smItem10);
+  const [, s11] = useState(smItem11);
+  const [, s12] = useState(smItem12);
+  const [, s13] = useState(smItem13);
+  const [, s14] = useState(smItem14);
+  const [, s15] = useState(smItem15);
+  const [, s16] = useState(smItem16);
+  const [, s17] = useState(smItem17);
+
+  setXPending(0);
+  setScroll(0);
+  hideSkillTip();
+  setKind(kind);
+  s0(item0 as Int);
+  s1(item1 as Int);
+  s2(item2 as Int);
+  s3(item3 as Int);
+  s4(item4 as Int);
+  s5(item5 as Int);
+  s6(item6 as Int);
+  s7(item7 as Int);
+  s8(item8 as Int);
+  s9(item9 as Int);
+  s10(item10 as Int);
+  s11(item11 as Int);
+  s12(item12 as Int);
+  s13(item13 as Int);
+  s14(item14 as Int);
+  s15(item15 as Int);
+  s16(item16 as Int);
+  s17(item17 as Int);
+
+  if (item0 === -1) {
+    setCount(0);
+    setTitle("You can't think of any options.");
+    setNames('');
+    return;
+  }
+  setTitle(pipeHead(names));
+  setNames(pipeTail(names));
+
+  let max: Int = maxQuantity;
+  let chosen: Int = quantity;
+  if (KindHasQuantity.get(kind) ?? true) {
+    if (KindHasFreeEntry.get(kind) ?? true) {
+      max = CS2.max(1, CS2.min(FREE_MAX, max));
+      chosen = CS2.max(1, CS2.min(max, chosen));
+    } else if (max > 5) {
+      max = 10;
+      if (chosen > 5) {
+        chosen = 10;
+      } else if (chosen > 1) {
+        chosen = 5;
+      } else {
+        chosen = 1;
+      }
+    } else if (max > 1) {
+      max = 5;
+      if (chosen > 1) {
+        chosen = 5;
+      } else {
+        chosen = 1;
+      }
+    } else {
+      max = 1;
+      chosen = 1;
+    }
+    setQuantity(chosen);
+    setSuggested(chosen);
+    quantityNormalise(kind, max);
+  }
+  setMax(max);
+
+  let count: Int = 18;
+  if (item1 === -1) {
+    count = 1;
+  } else if (item2 === -1) {
+    count = 2;
+  } else if (item3 === -1) {
+    count = 3;
+  } else if (item4 === -1) {
+    count = 4;
+  } else if (item5 === -1) {
+    count = 5;
+  } else if (item6 === -1) {
+    count = 6;
+  } else if (item7 === -1) {
+    count = 7;
+  } else if (item8 === -1) {
+    count = 8;
+  } else if (item9 === -1) {
+    count = 9;
+  } else if (item10 === -1) {
+    count = 10;
+  } else if (item11 === -1) {
+    count = 11;
+  } else if (item12 === -1) {
+    count = 12;
+  } else if (item13 === -1) {
+    count = 13;
+  } else if (item14 === -1) {
+    count = 14;
+  } else if (item15 === -1) {
+    count = 15;
+  } else if (item16 === -1) {
+    count = 16;
+  } else if (item17 === -1) {
+    count = 17;
+  }
+  setCount(count);
+}
+
+export function quantityNormalise(kind: Int, max: Int): void {
+  const [quantity, setQuantity] = useState(smQuantity);
+  if (KindHasFreeEntry.get(kind) ?? true) {
+    setQuantity(CS2.max(1, CS2.min(max, quantity)));
+    return;
+  }
+  let snapped: Int = 1;
+  if (quantity > 5) {
+    snapped = 10;
+  } else if (quantity > 1) {
+    snapped = 5;
+  }
+  setQuantity(CS2.min(snapped, max));
+}
+
+export function quantityPick(amount: Int): void {
+  const [, setQuantity] = useState(smQuantity);
+  const [kind] = useState(smKind);
+  const [max] = useState(smMax);
+  playSound(Sounds.INTERFACE_SELECT1);
+  setQuantity(amount);
+  quantityNormalise(kind, max);
+}
+
+export function quantityXStart(): void {
+  const [max] = useState(smMax);
+  const [, setXPending] = useState(smXPending);
+  playSound(Sounds.INTERFACE_SELECT1);
+  setXPending(1);
+  meslayerSkillmulti(`Enter amount (1 - ${max}):`);
+}
+
+export function quantityXEnd(): Boolean {
+  const [mode] = useState(meslayermode);
+  if (mode === MESLAYER_SKILLMULTI) {
+    return false;
+  }
+  const [quantity, setQuantity] = useState(smQuantity);
+  const [, setSuggested] = useState(smSuggested);
+  const [, setXPending] = useState(smXPending);
+  const [kind] = useState(smKind);
+  const [max] = useState(smMax);
+  setXPending(0);
+  if (quantity >= 0 && quantity <= max) {
+    setSuggested(CS2.max(quantity, 1));
+  } else {
+    setQuantity(max);
+  }
+  quantityNormalise(kind, max);
+  return true;
+}
+
+export function meslayerSkillmulti(prompt: String): void {
+  meslayerOpen(MESLAYER_SKILLMULTI);
+  const [, setPrompt] = useState(meslayerPromptText);
+  setPrompt(prompt);
+  meslayerEcho('');
+  meslayerBindKeys();
+  CS2.if_on_dialog_abort_set(() => meslayerOnDialogAbort(), mesText2Ref);
+  if (onMobile()) {
+    keyboardShow(KEYBOARD_INTEGER, AMOUNT_LIMIT);
+  }
+}

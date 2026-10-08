@@ -270,7 +270,7 @@ function HelperScrollbar(): Component {
   const [scrollY, setScrollY] = useState(helperGenericScrollY);
   const thumbH: Int = thumbHeightOf(holder.height, holder.height, extent, false);
   const shownY: Int = Math.clamp(0, Math.max(1, frameH - holder.height), scrollY);
-  const thumbY: Int = ARROW + ((holder.height - ARROW * 2 - thumbH) * shownY) / Math.max(1, extent - holder.height);
+  const thumbY: Int = ARROW + (holder.height - ARROW * 2 - thumbH) * shownY / Math.max(1, extent - holder.height);
   return (
     <>
       <sprite
@@ -289,7 +289,7 @@ function HelperScrollbar(): Component {
           const range: Int = Math.max(1, frameH - gutter.height - ARROW * 2);
           const span: Int = Math.max(1, gutter.height - thumb.height);
           const offset: Int = Math.clamp(0, span, event.mouseY - thumb.height / 2);
-          setScrollY((offset * range) / span);
+          setScrollY(offset * range / span);
         }}
       />
       <sprite
@@ -305,7 +305,7 @@ function HelperScrollbar(): Component {
         onDrag={(event) => {
           const range: Int = Math.max(1, frameH - gutter.height - ARROW * 2);
           const span: Int = Math.max(1, gutter.height - thumb.height);
-          setScrollY((Math.clamp(0, span, event.mouseY) * range) / span);
+          setScrollY(Math.clamp(0, span, event.mouseY) * range / span);
         }}
       />
       <sprite y={thumbY} w="fill" h={CAP} sprite={Sprites.SCROLLBAR_TRANS_DRAGGER_0} transparency={PIECE_ALPHA} />

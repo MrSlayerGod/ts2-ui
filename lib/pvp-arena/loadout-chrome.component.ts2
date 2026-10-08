@@ -29,29 +29,35 @@ import { openDropdown, sheetClosableAt } from './kit.state';
 export function SpellbookControl({ build }: { build: Int }): Component {
   const [open] = useState(openDropdown);
   const isOpen: Boolean = open === build;
-  const strip = useRef();
-  const chevron = useRef();
-  const value = useRef();
+  const [hoverPaint, setHoverPaint] = useState(0);
+  const hovered: Boolean = hoverPaint === (isOpen ? 2 : 1);
+  let stripWash: Int = isOpen ? Wash.CONTROL_OPEN : Wash.OPAQUE;
+  let chevronSprite: Sprite = isOpen ? SuppliesSprites.SCROLL_ARROW_UP : SuppliesSprites.SCROLL_ARROW_DOWN;
+  let chevronWash: Int = Wash.OPAQUE;
+  let labelColour: Int = isOpen ? SuppliesColor.LABEL_HOT : SuppliesColor.LABEL;
+  if (hovered) {
+    stripWash = Wash.CONTROL_HOVER;
+    chevronSprite = SuppliesSprites.SCROLL_ARROW_DOWN;
+    chevronWash = Wash.CHEVRON_HOVER;
+    labelColour = SuppliesColor.LABEL_HOT;
+  }
   return (
     <>
       <sprite
-        ref={strip}
         x="center"
         y="center"
         w="fill"
         h="fill"
         sprite={SuppliesSprites.TRADEBACKING}
         tiling
-        transparency={isOpen ? Wash.CONTROL_OPEN : Wash.OPAQUE}
+        transparency={stripWash}
         onClick={isOpen ? null : () => openSpellbook(build)}
         onMouseEnter={
           isOpen
             ? null
             : () => {
                 if (!onMobile()) {
-                  strip.transparency = Wash.CONTROL_HOVER;
-                  chevron.sprite = SuppliesSprites.SCROLL_ARROW_DOWN;
-                  value.color = SuppliesColor.LABEL_HOT;
+                  setHoverPaint(openDropdownNow() === build ? 2 : 1);
                 }
               }
         }
@@ -59,10 +65,8 @@ export function SpellbookControl({ build }: { build: Int }): Component {
           isOpen
             ? null
             : () => {
-                if (!onMobile()) {
-                  strip.transparency = Wash.OPAQUE;
-                  chevron.sprite = SuppliesSprites.SCROLL_ARROW_DOWN;
-                  value.color = SuppliesColor.LABEL;
+                if (!onMobile() && openDropdownNow() !== build) {
+                  setHoverPaint(0);
                 }
               }
         }
@@ -70,22 +74,20 @@ export function SpellbookControl({ build }: { build: Int }): Component {
       <rect x="center" y="center" w="fill" h="fill" color={SuppliesColor.CONTROL_OUTER} />
       <rect x="center" y="center" w={{ fill: 2 }} h={{ fill: 2 }} color={SuppliesColor.CONTROL_INNER} />
       <sprite
-        ref={chevron}
         x={{ right: Layout.spellbook.chevronRight }}
         y="center"
         w={Layout.spellbook.chevron}
         h={Layout.spellbook.chevron}
-        sprite={isOpen ? SuppliesSprites.SCROLL_ARROW_UP : SuppliesSprites.SCROLL_ARROW_DOWN}
-        transparency={Wash.OPAQUE}
+        sprite={chevronSprite}
+        transparency={chevronWash}
       />
       <text
-        ref={value}
         x={Layout.spellbook.labelX}
         y="center"
         w={{ fill: Layout.spellbook.labelInset }}
         h={{ fill: Layout.spellbook.labelDrop }}
         font={SuppliesFonts.BODY}
-        color={isOpen ? SuppliesColor.LABEL_HOT : SuppliesColor.LABEL}
+        color={labelColour}
         shadow
         align="center"
         valign="middle"
@@ -93,6 +95,11 @@ export function SpellbookControl({ build }: { build: Int }): Component {
       />
     </>
   );
+}
+
+export function openDropdownNow(): Int {
+  const [open] = useState(openDropdown);
+  return open;
 }
 
 export function openSpellbook(build: Int): void {

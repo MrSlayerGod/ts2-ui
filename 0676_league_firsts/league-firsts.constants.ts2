@@ -16,6 +16,86 @@ export declare const FirstsSprites: {
   readonly CARET_SHUT: typeof Sprites.SCROLLBAR_V2_1;
 };
 
+export declare const FirstsTableSprites: {
+  readonly MEDAL_1: typeof Sprites.LEAGUE_RELICS_34;
+  readonly BLANK_1: typeof Sprites.LEAGUE_RELICS_35;
+  readonly MEDAL_2: typeof Sprites.TRAILBLAZER_RELICS_38;
+  readonly BLANK_2: typeof Sprites.TRAILBLAZER_RELICS_39;
+  readonly MEDAL_3: typeof Sprites.LEAGUE_3_RELICS_1;
+  readonly BLANK_3: typeof Sprites.LEAGUE_3_RELICS_0;
+  readonly MEDAL_4: typeof Sprites.LEAGUE_4_RELICS_26;
+  readonly BLANK_4: typeof Sprites.LEAGUE_4_RELICS_OFF_26;
+  readonly MEDAL_5: typeof Sprites.LEAGUE_5_RELICS_26;
+  readonly BLANK_5: typeof Sprites.LEAGUE_5_RELICS_OFF_26;
+  readonly MEDAL_6: typeof Sprites.SPRITE_8208;
+  readonly BLANK_6: typeof Sprites.SPRITE_8235;
+  readonly CLOSE: typeof Sprites.CLOSE_BUTTONS_0;
+  readonly CLOSE_HOVER: typeof Sprites.CLOSE_BUTTONS_1;
+  readonly CLOSE_MOBILE: typeof Sprites.STEELBORDER_CLOSE_BUTTON_0;
+  readonly BAR_GUTTER: typeof Sprites.SCROLLBAR_DRAGGER_V2_3;
+  readonly BAR_CAP_TOP: typeof Sprites.SCROLLBAR_DRAGGER_V2_0;
+  readonly BAR_THUMB: typeof Sprites.SCROLLBAR_DRAGGER_V2_1;
+  readonly BAR_CAP_BOTTOM: typeof Sprites.SCROLLBAR_DRAGGER_V2_2;
+  readonly BAR_UP: typeof Sprites.SCROLLBAR_V2_0;
+  readonly BAR_DOWN: typeof Sprites.SCROLLBAR_V2_1;
+};
+
+export function medalSprite(league: Int): Sprite {
+  if (league === 1) {
+    return FirstsTableSprites.MEDAL_1;
+  }
+  if (league === 2) {
+    return FirstsTableSprites.MEDAL_2;
+  }
+  if (league === 3) {
+    return FirstsTableSprites.MEDAL_3;
+  }
+  if (league === 4) {
+    return FirstsTableSprites.MEDAL_4;
+  }
+  if (league === 5) {
+    return FirstsTableSprites.MEDAL_5;
+  }
+  return FirstsTableSprites.MEDAL_6;
+}
+
+export function blankSprite(league: Int): Sprite {
+  if (league === 1) {
+    return FirstsTableSprites.BLANK_1;
+  }
+  if (league === 2) {
+    return FirstsTableSprites.BLANK_2;
+  }
+  if (league === 3) {
+    return FirstsTableSprites.BLANK_3;
+  }
+  if (league === 4) {
+    return FirstsTableSprites.BLANK_4;
+  }
+  if (league === 5) {
+    return FirstsTableSprites.BLANK_5;
+  }
+  return FirstsTableSprites.BLANK_6;
+}
+
+export const FirstsTable = {
+  TEXT: 0xff981f,
+  STRIPE_EVEN: 0xa9a9a9,
+  STRIPE_ODD: 0xffffff,
+  STRIPE_FADE: 235,
+  ROW_H: 70,
+  MEDAL: 30,
+  MEDAL_DY: 10,
+  MEDAL_DY_SET: 5,
+  NAME_DY: 39,
+  NAME_DY_SET: 36,
+  NAME_H: 30,
+  OWN_TITLE_UP: 3,
+  OWN_MEDAL_UP: 5,
+  TEXT_INSET: 10,
+  OWN_MEDAL_LEAGUE: 6,
+};
+
 export declare const FirstsSounds: {
   readonly CLICK: typeof Sounds.INTERFACE_SELECT1;
 };

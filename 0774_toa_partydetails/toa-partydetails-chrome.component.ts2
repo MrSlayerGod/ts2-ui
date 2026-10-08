@@ -1,0 +1,440 @@
+import { CS2, useInterval, useState } from 'ts2';
+
+import { BoardButton } from '../lib/board-button.component';
+import { SteelBorder } from '../lib/steel-border.component';
+import { SteelborderColor } from '../lib/lib.constants';
+import { clientClock, playSound } from '../lib/lib.engine';
+import { onMobile } from '../lib/lib.helpers';
+import { raidsCount, raidsCount2 } from '../lib/game/varcs';
+import { Sounds } from '../lib/game/sounds';
+import {
+  Color,
+  Copy,
+  Layout,
+  ListRow,
+  Pausebutton,
+  ToaPartydetailsFonts,
+  ToaPartydetailsSprites,
+  pausebuttonsRef,
+} from './toa-partydetails.constants';
+import { lineField, recordAt } from './toa-partydetails-lists.component';
+import {
+  toaAutorefreshFrom,
+  toaDetailsBuilt,
+  toaDetailsCompletions,
+  toaDetailsLevel,
+  toaDetailsLevelBracket,
+  toaDetailsRole,
+  toaDetailsTab,
+  toaForcedAt,
+  toaForcedButton,
+  toaMemberLines,
+  toaTabPressed,
+  toaTabReadyAt,
+  footerAnchor,
+  resumeAnchor,
+} from './toa-partydetails.state';
+
+export function ToaPartydetailsTitle(): Component {
+  const [lines] = useState(toaMemberLines);
+  const first: String = recordAt(lines, 0);
+  if (first.length === 0) {
+    return null;
+  }
+  const leader: String = lineField(first.substring(first.indexOf('~', 0) + 1, first.length), 0);
+  return (
+    <layer w="fill" h="fill">
+      <SteelBorder
+        title={leader.length > 0 ? `${Copy.PARTY_OF}${leader}` : Copy.PARTY_DETAILS}
+        titleColor={SteelborderColor.TITLE}
+        flags={0}
+      />
+    </layer>
+  );
+}
+
+export function ToaTab({ tab }: { tab: Int }): Component {
+  const [built] = useState(toaDetailsBuilt);
+  const [open] = useState(toaDetailsTab);
+  const [pressed, setPressed] = useState(toaTabPressed);
+  const [readyAt, setReadyAt] = useState(toaTabReadyAt);
+  const [count] = useState(raidsCount);
+  const [named] = useState(raidsCount2);
+  const [hovered, setHovered] = useState(0);
+  useInterval(() => {
+    if (readyAt !== 0 && clientClock() >= readyAt) {
+      setReadyAt(0);
+    }
+  });
+
+  const label: String = tabLabel(tab);
+  let suffix: String = '';
+  if (tab === 0 && named > 0) {
+    suffix = ` (${named})`;
+  }
+  if (tab === 1 && count - 8 > 0) {
+    suffix = ` (${count - 8})`;
+  }
+  const busy: Boolean = pressed !== -1 && readyAt !== 0;
+  let selected: Boolean = tab === open;
+  if (pressed !== -1) {
+    selected = tab === pressed && busy;
+  }
+  const view: Boolean = !selected && !(pressed !== -1 && tab === open);
+  let cap: Sprite = ToaPartydetailsSprites.TAB_REST_CAP;
+  let mid: Sprite = ToaPartydetailsSprites.TAB_REST_MID;
+  if (selected) {
+    cap = ToaPartydetailsSprites.TAB_SELECTED_CAP;
+    mid = ToaPartydetailsSprites.TAB_SELECTED_MID;
+  } else if (hovered === 1) {
+    cap = ToaPartydetailsSprites.TAB_HOVER_CAP;
+    mid = ToaPartydetailsSprites.TAB_HOVER_MID;
+  }
+
+  return (
+    <layer
+      x={tab * Layout.TAB_W}
+      y={0}
+      w={Layout.TAB_W}
+      h="fill"
+      hide={built === 0}
+      options={view ? [Copy.VIEW] : []}
+      optionSubject={view ? `<col=ff9040>${CS2.tags_remove(label)}</col>` : ''}
+      onMouseRepeat={
+        selected
+          ? undefined
+          : () => {
+              if (!onMobile()) {
+                setHovered(1);
+              }
+            }
+      }
+      onMouseLeave={
+        selected
+          ? undefined
+          : () => {
+              setHovered(0);
+            }
+      }
+      onOptionSelect={
+        view
+          ? () => {
+              playSound(Sounds.INTERFACE_SELECT1);
+              setHovered(0);
+              setPressed(tab);
+              setReadyAt(clientClock() + ListRow.BUSY_CYCLES);
+              resumeAnchor(Pausebutton.TAB + tab);
+            }
+          : undefined
+      }
+    >
+      <sprite x={0} y={0} w={Layout.TAB_CAP_W} h="fill" sprite={cap} />
+      <sprite x={Layout.TAB_CAP_W} y={0} w={{ fill: Layout.TAB_MID_INSET }} h="fill" sprite={mid} tiling />
+      <sprite x="right" y={0} w={Layout.TAB_CAP_W} h="fill" sprite={cap} hflip />
+      <text
+        x="center"
+        y={Layout.TAB_TEXT_Y}
+        w="fill"
+        h={Layout.TAB_TEXT_H}
+        text={`${label}${suffix}`}
+        font={ToaPartydetailsFonts.BODY}
+        color={selected ? Color.TAB_SELECTED : Color.LABEL}
+        align="center"
+        valign="middle"
+        shadow
+      />
+    </layer>
+  );
+}
+
+function tabLabel(tab: Int): String {
+  if (tab === 0) {
+    return Copy.TAB_MEMBERS;
+  }
+  if (tab === 1) {
+    return Copy.TAB_APPLICANTS;
+  }
+  if (tab === 2) {
+    return Copy.TAB_INVOCATIONS;
+  }
+  return Copy.TAB_SUMMARY;
+}
+
+export function ToaBackButton(): Component {
+  const [built] = useState(toaDetailsBuilt);
+  const [hovered, setHovered] = useState(0);
+  const [clicked, setClicked] = useState(0);
+  const mobile: Boolean = onMobile();
+  return (
+    <layer
+      x={mobile ? Layout.BACK_MOBILE_XY : Layout.BACK_X}
+      y={mobile ? Layout.BACK_MOBILE_XY : Layout.BACK_Y}
+      w={mobile ? Layout.BACK_MOBILE : Layout.BACK}
+      h={mobile ? Layout.BACK_MOBILE : Layout.BACK}
+      hide={built === 0}
+      options={clicked === 0 ? [Copy.BACK] : []}
+      onOptionSelect={
+        clicked === 0
+          ? () => {
+              playSound(Sounds.INTERFACE_SELECT1);
+              setClicked(1);
+              resumeAnchor(Pausebutton.BACK);
+            }
+          : undefined
+      }
+    >
+      {built === 1 ? (
+        <sprite
+          x="center"
+          y="center"
+          w={Layout.BACK}
+          h={Layout.BACK}
+          sprite={hovered === 1 || clicked === 1 ? ToaPartydetailsSprites.BACK_LIT : ToaPartydetailsSprites.BACK}
+          onMouseRepeat={
+            clicked === 0
+              ? () => {
+                  if (!onMobile()) {
+                    setHovered(1);
+                  }
+                }
+              : undefined
+          }
+          onMouseLeave={
+            clicked === 0
+              ? () => {
+                  if (!onMobile()) {
+                    setHovered(0);
+                  }
+                }
+              : undefined
+          }
+        />
+      ) : null}
+    </layer>
+  );
+}
+
+export function ToaFooterButton({ which }: { which: Int }): Component {
+  const [built] = useState(toaDetailsBuilt);
+  const [role] = useState(toaDetailsRole);
+  const [tab] = useState(toaDetailsTab);
+  const [refreshFrom, setRefreshFrom] = useState(toaAutorefreshFrom);
+  const [forced, setForced] = useState(toaForcedButton);
+  const [forcedAt, setForcedAt] = useState(toaForcedAt);
+  useInterval(() => {
+    if (which !== 0) {
+      return;
+    }
+    if (refreshFrom !== -1 && clientClock() - refreshFrom >= Layout.AUTOREFRESH_CYCLES) {
+      setRefreshFrom(-1);
+      resumeAnchor(Pausebutton.REFRESH);
+    }
+    if (forcedAt !== 0 && clientClock() >= forcedAt + ListRow.BUSY_CYCLES) {
+      setForcedAt(0);
+      setForced(-1);
+    }
+  });
+
+  const leader: Boolean = role === 2;
+  const shown: Boolean = built === 1 && tab !== 2 && (which !== 2 || leader);
+  const width: Int = footerButtonWidth(leader);
+  let label: String = Copy.REFRESH;
+  if (which === 1) {
+    label = actionLabel(role);
+  } else if (which === 2) {
+    label = Copy.UNBLOCK;
+  }
+  return (
+    <layer x={which * (width + Layout.FOOTER_GAP)} y={Layout.BUTTON_Y} w={width} h={Layout.BUTTON_H} hide={!shown}>
+      {shown ? (
+        <BoardButton
+          label={label}
+          pressedAt={forced === which ? forcedAt : 0}
+          resumeIn={pausebuttonsRef}
+          resumeAt={footerAnchor(which)}
+        />
+      ) : null}
+    </layer>
+  );
+}
+
+function footerCount(leader: Boolean): Int {
+  return leader ? 4 : 3;
+}
+
+function footerPlateExtra(leader: Boolean): Int {
+  const count: Int = footerCount(leader);
+  return Layout.FOOTER_PLATE - (Layout.FOOTER_SPAN - count * Layout.FOOTER_GAP) / count;
+}
+
+function footerButtonWidth(leader: Boolean): Int {
+  const count: Int = footerCount(leader);
+  return (Layout.FOOTER_SPAN - footerPlateExtra(leader) - count * Layout.FOOTER_GAP) / count;
+}
+
+function actionLabel(role: Int): String {
+  if (role === 2) {
+    return Copy.DISBAND;
+  }
+  if (role === 1) {
+    return Copy.LEAVE;
+  }
+  if (role === 3) {
+    return Copy.WITHDRAW;
+  }
+  if (role === 4) {
+    return Copy.APPLY_BARRED;
+  }
+  return Copy.APPLY;
+}
+
+export function ToaCompletionsPlate(): Component {
+  const [built] = useState(toaDetailsBuilt);
+  const [tab] = useState(toaDetailsTab);
+  const [role] = useState(toaDetailsRole);
+  const [completions] = useState(toaDetailsCompletions);
+  const [hovered, setHovered] = useState(0);
+  const [busyUntil, setBusyUntil] = useState(0);
+  useInterval(() => {
+    if (busyUntil !== 0 && clientClock() >= busyUntil) {
+      setBusyUntil(0);
+      setHovered(0);
+    }
+  });
+  const leader: Boolean = role === 2;
+  const shown: Boolean = built === 1 && tab !== 2;
+  const x: Int = (footerCount(leader) - 1) * (footerButtonWidth(leader) + Layout.FOOTER_GAP);
+  const w: Int = footerButtonWidth(leader) + footerPlateExtra(leader);
+  const settable: Boolean = shown && leader && busyUntil === 0;
+  let label: String = `${Copy.COMPLETIONS}: -`;
+  if (completions > 0) {
+    label = `${Copy.COMPLETIONS}: <col=ffffff>${completions}</col>`;
+  } else if (role === 2) {
+    label = `${Copy.SET} ${Copy.COMPLETIONS}`;
+  }
+  let ink: Int = Color.LABEL;
+  if (busyUntil !== 0) {
+    ink = Color.LOADING;
+    label = Copy.BUSY;
+  } else if (hovered === 1) {
+    ink = Color.COMPLETIONS_HOVER;
+  }
+  return (
+    <layer
+      x={shown ? x : Layout.COMPLETIONS_REST_X}
+      y={Layout.BUTTON_Y}
+      w={shown ? w : Layout.COMPLETIONS_W}
+      h={Layout.COMPLETIONS_H}
+      hide={!shown}
+      options={settable ? [Copy.SET] : []}
+      optionSubject={settable ? `<col=ff9040>${Copy.COMPLETIONS}</col>` : ''}
+      onMouseRepeat={
+        settable
+          ? () => {
+              if (!onMobile()) {
+                setHovered(1);
+              }
+            }
+          : undefined
+      }
+      onMouseLeave={
+        settable
+          ? () => {
+              setHovered(0);
+            }
+          : undefined
+      }
+      onOptionSelect={
+        settable
+          ? () => {
+              playSound(Sounds.INTERFACE_SELECT1);
+              resumeAnchor(Pausebutton.COMPLETIONS);
+              setBusyUntil(clientClock() + ListRow.BUSY_CYCLES);
+            }
+          : undefined
+      }
+    >
+      <sprite
+        x="center"
+        y="center"
+        w={{ fill: Layout.PLATE_FILL_INSET }}
+        h={Layout.COMPLETIONS_H}
+        sprite={ToaPartydetailsSprites.PLATE_FILL}
+        tiling
+      />
+      <sprite
+        x={0}
+        y="center"
+        w={Layout.PLATE_CAP_W}
+        h={Layout.COMPLETIONS_H}
+        sprite={ToaPartydetailsSprites.PLATE_LEFT}
+      />
+      <sprite
+        x="right"
+        y="center"
+        w={Layout.PLATE_CAP_W}
+        h={Layout.COMPLETIONS_H}
+        sprite={ToaPartydetailsSprites.PLATE_RIGHT}
+      />
+      {shown ? (
+        <text
+          x="center"
+          y="center"
+          w="fill"
+          h="fill"
+          text={label}
+          font={ToaPartydetailsFonts.BODY}
+          color={ink}
+          align="center"
+          valign="middle"
+          shadow
+        />
+      ) : null}
+    </layer>
+  );
+}
+
+export function ToaRaidLevelLabels(): Component {
+  const [built] = useState(toaDetailsBuilt);
+  const [level] = useState(toaDetailsLevel);
+  const [bracket] = useState(toaDetailsLevelBracket);
+  let levelText: String = Copy.RAID_LEVEL;
+  let modeText: String = Copy.RAID_MODE;
+  if (built === 1) {
+    levelText = `${Copy.RAID_LEVEL_PREFIX}${level} <col=ffffff>(${bracket})</col>`;
+    modeText = Copy.MODE_ENTRY;
+    if (level >= 300) {
+      modeText = Copy.MODE_EXPERT;
+    } else if (level >= 150) {
+      modeText = Copy.MODE_NORMAL;
+    }
+  }
+  return (
+    <>
+      <text
+        x={{ right: Layout.FOOTER_LABEL_RIGHT }}
+        y="bottom"
+        w={Layout.FOOTER_LABEL_W}
+        h={Layout.FOOTER_LABEL_H}
+        text={levelText}
+        font={ToaPartydetailsFonts.BODY}
+        color={Color.LABEL}
+        align="center"
+        valign="middle"
+        shadow
+      />
+      <text
+        x={{ right: Layout.FOOTER_LABEL_RIGHT }}
+        y={0}
+        w={Layout.FOOTER_LABEL_W}
+        h={Layout.FOOTER_LABEL_H}
+        text={modeText}
+        font={ToaPartydetailsFonts.BODY}
+        color={Color.LABEL}
+        align="center"
+        valign="middle"
+        shadow
+      />
+    </>
+  );
+}

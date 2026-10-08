@@ -6,11 +6,11 @@ import { emoteOp1, emoteOp2, emoteOp3, emoteOpBase, emoteSlotIcon, emoteUnlocked
 import { hideEmoteTooltip, showEmoteTooltip } from './emote.state';
 
 function slotX(visible: Int, column: Int): Int {
-  return (visible % Layout.COLUMNS) * column;
+  return visible % Layout.COLUMNS * column;
 }
 
 function slotY(visible: Int): Int {
-  return (visible / Layout.COLUMNS) * Layout.ROW_PITCH + Layout.ROW_TOP;
+  return visible / Layout.COLUMNS * Layout.ROW_PITCH + Layout.ROW_TOP;
 }
 
 export function EmoteGrid({ pane }: { pane: Ref }): Component {

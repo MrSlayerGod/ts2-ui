@@ -30,7 +30,7 @@ export function InfoScrollbar({ extent, paneHeight }: { extent: Int; paneHeight:
           const travel: Int = Math.max(1, gutter.height - thumb.height);
           const offset: Int = Math.clamp(0, travel, event.mouseY - thumb.height / 2);
           const range: Int = pactInfoPaneRef.scrollHeight - pactInfoPaneRef.height;
-          pactInfoPaneRef.scrollY = (offset * range) / travel;
+          pactInfoPaneRef.scrollY = offset * range / travel;
           trackScroll(gutter, thumb, capTop, capBottom, pactInfoPaneRef);
         }}
       />
@@ -38,7 +38,7 @@ export function InfoScrollbar({ extent, paneHeight }: { extent: Int; paneHeight:
         ref={thumb}
         y={
           ARROW +
-          ((gutter.height - thumbHeightOf(bar.height, paneHeight, measured, true)) * pactInfoPaneRef.scrollY) /
+          (gutter.height - thumbHeightOf(bar.height, paneHeight, measured, true)) * pactInfoPaneRef.scrollY /
             Math.max(1, extent - paneHeight)
         }
         w="fill"
@@ -54,7 +54,7 @@ export function InfoScrollbar({ extent, paneHeight }: { extent: Int; paneHeight:
           capBottom.y = offset + ARROW + thumb.height - CAP;
           const travel: Int = Math.max(1, gutter.height - thumb.height);
           const range: Int = pactInfoPaneRef.scrollHeight - pactInfoPaneRef.height;
-          pactInfoPaneRef.scrollY = (offset * range) / travel;
+          pactInfoPaneRef.scrollY = offset * range / travel;
         }}
       />
       <sprite ref={capTop} y={thumb.y} w="fill" h={CAP} sprite={PactSprite.BAR_CAP_TOP} />

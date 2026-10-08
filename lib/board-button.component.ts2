@@ -1,4 +1,4 @@
-import { CS2, useInterval, useState } from 'ts2';
+import { CS2, onMounted, useInterval, useState } from 'ts2';
 
 import { Fonts } from './game/fonts';
 import { Sounds } from './game/sounds';
@@ -11,10 +11,14 @@ export function BoardButton({
   label,
   pressed = false,
   pressedAt = 0,
+  resumeIn = -1,
+  resumeAt = -1,
 }: {
   label: String;
   pressed?: Boolean;
   pressedAt?: Int;
+  resumeIn?: ComponentId;
+  resumeAt?: Int;
 }): Component {
   const [hovered, setHovered] = useState(0);
   const [readyAt, setReadyAt] = useState(0);
@@ -60,7 +64,11 @@ export function BoardButton({
           return;
         }
         playSound(Sounds.INTERFACE_SELECT1);
-        CS2.if_resume_pausebutton(event.component);
+        if (resumeAt === -1) {
+          CS2.if_resume_pausebutton(event.component);
+        } else if (CS2.cc_find(resumeIn, resumeAt) === true) {
+          CS2.cc_resume_pausebutton();
+        }
         setReadyAt(clientClock() + BUSY_CYCLES);
       }}
     >
@@ -80,6 +88,20 @@ export function BoardButton({
     </layer>
   );
 }
+
+export function BoardAnchors({ universe, count }: { universe: ComponentId; count: Int }): Component {
+  onMounted(() => {
+    let n: Int = 0;
+    while (n < count) {
+      CS2.cc_create(universe, IFTYPE_RECTANGLE, n, false);
+      CS2.cc_hide_set(true);
+      n = n + 1;
+    }
+  });
+  return <rect x={0} y={0} w={0} h={0} hide />;
+}
+
+const IFTYPE_RECTANGLE = 3;
 
 export function setColorTransparency(target: ComponentId, color: Int, transparency: Int): void {
   target.color = color;

@@ -15,6 +15,7 @@ export const LeagueToggles = listOf<LeagueToggleRow>([
   { name: 'Soul Harvest bone toggle', inverted: false, bit: 7 },
 ]);
 
+/** @wire */
 export const enum LeagueToggle {
   ENDLESS_HARVEST_BANK = 0,
   BARBARIAN_GATHERING_DISPOSE = 1,

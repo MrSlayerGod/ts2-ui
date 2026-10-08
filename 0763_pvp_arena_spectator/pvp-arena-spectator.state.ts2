@@ -20,3 +20,6 @@ export const pvpaRightMaxPrayer = sessionState(0);
 export const pvpaRightSpecial = sessionState(0);
 export const pvpaRightTrailTarget = sessionState(-1);
 export const pvpaRightTrailHp = sessionState(0);
+
+export const pvpaLeftInvStart = sessionState(-1);
+export const pvpaRightInvStart = sessionState(-1);

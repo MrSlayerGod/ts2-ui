@@ -1,0 +1,89 @@
+import { CS2 } from 'ts2';
+
+import { Sprites } from '../lib/game/sprites';
+
+const SPRITE_TYPE = 5;
+const SIZE_ABS = 0;
+const POS_LEFT = 0;
+const POS_CENTRE = 1;
+const POS_RIGHT = 2;
+const POS_TOP = 0;
+const CORNER = 6;
+
+function slice(
+  target: ComponentId,
+  index: Int,
+  x: Int,
+  y: Int,
+  mode: Int,
+  w: Int,
+  h: Int,
+  sprite: Sprite,
+  tiled: Boolean,
+): void {
+  CS2.cc_create(target, SPRITE_TYPE, index, false);
+  CS2.cc_position_set(x, y, mode, POS_TOP);
+  CS2.cc_size_set(w, h, SIZE_ABS, SIZE_ABS);
+  CS2.cc_sprite_set(sprite);
+  if (tiled) {
+    CS2.cc_tiling_set(true);
+  }
+}
+
+export function speedrunningFilterbutton(
+  target: Int,
+  x: Int,
+  y: Int,
+  size: Int,
+  height: Int,
+  icon: Sprite,
+  index: Int,
+  label: String,
+): void {
+  const into: ComponentId = target as ComponentId;
+  const inner: Int = size - 12;
+  let at: Int = index;
+  slice(into, at, x, y, POS_LEFT, CORNER, CORNER, Sprites.MISCGRAPHICS_BUTTONTILE_NW_GREY, false);
+  at = at + 1;
+  slice(into, at, x + CORNER, y, POS_LEFT, inner, inner, Sprites.MISCGRAPHICS_BUTTONTILE_NC_GREY, true);
+  at = at + 1;
+  slice(into, at, x, y, POS_RIGHT, CORNER, CORNER, Sprites.MISCGRAPHICS_BUTTONTILE_NE_GREY, false);
+  at = at + 1;
+  slice(into, at, x, y + CORNER, POS_LEFT, CORNER, inner, Sprites.MISCGRAPHICS_BUTTONTILE_CW_GREY, true);
+  at = at + 1;
+  slice(into, at, x + CORNER, y + CORNER, POS_LEFT, inner, inner, Sprites.MISCGRAPHICS_BUTTONTILE_CC_GREY, true);
+  at = at + 1;
+  slice(into, at, x, y + CORNER, POS_RIGHT, CORNER, inner, Sprites.MISCGRAPHICS_BUTTONTILE_CE_GREY, true);
+  at = at + 1;
+  slice(into, at, x, y + CORNER + inner, POS_LEFT, CORNER, CORNER, Sprites.MISCGRAPHICS_BUTTONTILE_SW_GREY, false);
+  at = at + 1;
+  slice(
+    into,
+    at,
+    x + CORNER,
+    y + CORNER + inner,
+    POS_LEFT,
+    inner,
+    CORNER,
+    Sprites.MISCGRAPHICS_BUTTONTILE_SC_GREY,
+    true,
+  );
+  at = at + 1;
+  slice(into, at, x, y + CORNER + inner, POS_RIGHT, CORNER, CORNER, Sprites.MISCGRAPHICS_BUTTONTILE_SE_GREY, false);
+  at = at + 1;
+  let iconW: Int = 33;
+  let iconH: Int = 36;
+  if (icon === Sprites.BANKBUTTONS_2) {
+    iconW = 29;
+    iconH = 22;
+  }
+  CS2.cc_create(into, SPRITE_TYPE, at, false);
+  CS2.cc_size_set(iconW, iconH, SIZE_ABS, SIZE_ABS);
+  CS2.cc_position_set(0, y + (height - iconH) / 2, POS_CENTRE, POS_TOP);
+  CS2.cc_sprite_set(icon);
+  at = at + 1;
+  CS2.cc_create(into, SPRITE_TYPE, at, false);
+  CS2.cc_size_set(inner + CORNER, inner + CORNER, SIZE_ABS, SIZE_ABS);
+  CS2.cc_position_set(x, y, POS_LEFT, POS_TOP);
+  CS2.cc_op_set(1, label);
+}

@@ -151,11 +151,11 @@ function PaneTabs(): Component {
 
 function PaneTab({ label, selected }: { label: String; selected: Boolean }): Component {
   const [hovered, setHovered] = useState(0);
-  const face: Int = selected ? 1 : hovered === 1 ? 2 : 0;
+  const face: Int = selected ? 1 : (hovered === 1 ? 2 : 0);
   const cap: Sprite =
-    face === 1 ? Sprites.TABS_MODAL_SHORT_0 : face === 2 ? Sprites.TABS_MODAL_SHORT_4 : Sprites.TABS_MODAL_SHORT_2;
+    face === 1 ? Sprites.TABS_MODAL_SHORT_0 : (face === 2 ? Sprites.TABS_MODAL_SHORT_4 : Sprites.TABS_MODAL_SHORT_2);
   const middle: Sprite =
-    face === 1 ? Sprites.TABS_MODAL_SHORT_1 : face === 2 ? Sprites.TABS_MODAL_SHORT_5 : Sprites.TABS_MODAL_SHORT_3;
+    face === 1 ? Sprites.TABS_MODAL_SHORT_1 : (face === 2 ? Sprites.TABS_MODAL_SHORT_5 : Sprites.TABS_MODAL_SHORT_3);
   return (
     <layer
       x={0}
@@ -277,7 +277,7 @@ function SummaryScrollbar(): Component {
           const travel: Int = Math.max(1, gutter.height - thumb.height);
           const offset: Int = Math.clamp(0, travel, event.mouseY - thumb.height / 2);
           const range: Int = SUMMARY_LIST.scrollHeight - SUMMARY_LIST.height;
-          SUMMARY_LIST.scrollY = (offset * range) / travel;
+          SUMMARY_LIST.scrollY = offset * range / travel;
           trackScroll(gutter, thumb, capTop, capBottom, SUMMARY_LIST);
         }}
       />
@@ -285,7 +285,7 @@ function SummaryScrollbar(): Component {
         ref={thumb}
         y={
           ARROW +
-          ((gutter.height - thumbHeightOf(bar.height, SUMMARY_LIST.height, extent, true)) * SUMMARY_LIST.scrollY) /
+          (gutter.height - thumbHeightOf(bar.height, SUMMARY_LIST.height, extent, true)) * SUMMARY_LIST.scrollY /
             Math.max(1, SUMMARY_LIST.scrollHeight - SUMMARY_LIST.height)
         }
         w="fill"
@@ -301,7 +301,7 @@ function SummaryScrollbar(): Component {
           capBottom.y = offset + ARROW + thumb.height - CAP;
           const travel: Int = Math.max(1, gutter.height - thumb.height);
           const range: Int = SUMMARY_LIST.scrollHeight - SUMMARY_LIST.height;
-          SUMMARY_LIST.scrollY = (offset * range) / travel;
+          SUMMARY_LIST.scrollY = offset * range / travel;
         }}
       />
       <sprite ref={capTop} y={thumb.y} w="fill" h={CAP} sprite={Sprites.SCROLLBAR_DRAGGER_V2_0} />
@@ -742,7 +742,7 @@ function OfferBox({ position }: { position: Int }): Component {
   const [hoveredOffer, setHoveredOffer] = useState(intermissionHovered);
   const key: Int = offerKey(position);
   const row = ColosseumModifiers.at(key);
-  const tier: Int = row === null ? 0 : row.tiered ? modifierTier(row) : 0;
+  const tier: Int = row === null ? 0 : (row.tiered ? modifierTier(row) : 0);
   const title: String = row === null ? '' : modifierTitle(row, false, true);
   const icon: Sprite = row === null ? -1 : modifierIcon(row, tier + 1);
   const badge: Sprite = ModifierBadges.get(tier + 1) ?? BADGE_DEFAULT;
@@ -807,7 +807,7 @@ function OfferDescription(): Component {
   const shown: Int = showHovered ? hoveredOffer : selected;
   const key: Int = shown > 0 ? offerKey(shown) : 0;
   const row = ColosseumModifiers.at(key);
-  const title: String = row === null ? '' : showHovered ? modifierTitle(row, false, false) : row.name;
+  const title: String = row === null ? '' : (showHovered ? modifierTitle(row, false, false) : row.name);
   const description: String = row === null ? '' : modifierDescription(row);
   const glory: Int = row === null ? 0 : row.glory;
 

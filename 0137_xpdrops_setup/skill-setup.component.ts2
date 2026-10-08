@@ -25,7 +25,7 @@ export function XpdropsSkillSetup(): Component {
   const editEnd: Int = useServerState(XpdropsVars.EDIT_END);
   const skill: Skill | null = SkillByIndex.get(setupSkill);
   const total: Boolean = skill === null;
-  const title: String = total ? 'Total XP' : (SkillNames.get(skill ?? 0) ?? 'Skill');
+  const title: String = total ? 'Total XP' : SkillNames.get(skill ?? 0) ?? 'Skill';
 
   const setToLevel: String = total ? '' : 'Set to level';
 
@@ -217,7 +217,7 @@ function SetupValueRow({
   currentXp: Boolean;
 }): Component {
   const [plateHovered, setPlateHovered] = useState(0);
-  const plateColor: Int = lit ? (plateHovered === 1 ? XpdropsColor.WHITE : XpdropsColor.LABEL) : XpdropsColor.DIM;
+  const plateColor: Int = lit ? plateHovered === 1 ? XpdropsColor.WHITE : XpdropsColor.LABEL : XpdropsColor.DIM;
 
   return (
     <>

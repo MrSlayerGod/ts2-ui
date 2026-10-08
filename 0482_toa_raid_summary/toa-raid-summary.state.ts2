@@ -1,6 +1,6 @@
 import { sessionState, useState } from 'ts2';
 
-import { TimeTab } from './toa-raid-summary.constants';
+import { Layout, TimeTab } from './toa-raid-summary.constants';
 import { bossTimesTable, pathTimesTable } from './toa-raid-summary.refs';
 
 export const summaryTimeTab = sessionState(TimeTab.BOSSES);
@@ -36,4 +36,33 @@ export function hoverTimeTab(tab: Int): void {
 export function unhoverTimeTab(): void {
   const [, setHover] = useState(summaryTabHover);
   setHover(-1);
+}
+
+export const summaryRows = sessionState('');
+
+export const summaryNameColumnH = sessionState(Layout.HEADER_H);
+
+export function toaRaidSummaryRow(
+  dealt: Int,
+  taken: Int,
+  deaths: Int,
+  title: Int,
+  unused: Int,
+  index: Int,
+  count: Int,
+  mvp: Int,
+  name: String,
+): void {
+  const [rows, setRows] = useState(summaryRows);
+  const [top, setTop] = useState(summaryNameColumnH);
+  const h: Int = count > 0 ? Layout.ROWS_H / count : 0;
+  setRows(`${rows}${top}|${h}|${index}|${mvp}|${title}|${dealt}|${taken}|${deaths}|${name}^`);
+  setTop(top + h);
+}
+
+export function resetSummaryRows(): void {
+  const [, setRows] = useState(summaryRows);
+  const [, setTop] = useState(summaryNameColumnH);
+  setRows('');
+  setTop(Layout.HEADER_H);
 }

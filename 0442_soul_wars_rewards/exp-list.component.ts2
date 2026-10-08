@@ -61,7 +61,7 @@ function ExpSkill({
   const poor: Boolean = tokens < 1;
   const mine: Boolean = pick === base || pick === base + 1 || pick === base + 2;
   const title: String = gated ? `${name} - Requires level 30` : `${name} - ${perToken / 10} XP per Token`;
-  const titleColour: Int = gated || poor ? RewardsColour.GREY : mine ? RewardsColour.WHITE : RewardsColour.GREEN;
+  const titleColour: Int = gated || poor ? RewardsColour.GREY : (mine ? RewardsColour.WHITE : RewardsColour.GREEN);
   const optionX: Int = x + ExpLayout.OPTION_X;
 
   return (
@@ -165,8 +165,8 @@ function ExpOption({
   mobile: Boolean;
 }): Component {
   const cost: Int = ExpOptionTokens.get(id) ?? -1;
-  const xp: Int = (perToken * cost) / 10;
-  const reason: String = gated ? Copy.LEVEL_NEEDED : tokens < cost ? needTokens(cost) : '';
+  const xp: Int = perToken * cost / 10;
+  const reason: String = gated ? Copy.LEVEL_NEEDED : (tokens < cost ? needTokens(cost) : '');
   const refused: Boolean = CS2.string_length(reason) > 0;
   const chosen: Boolean = pick === id;
   const hoverable: Boolean = !chosen && !refused && !mobile;
@@ -180,7 +180,7 @@ function ExpOption({
       shadow
       align="left"
       valign="bottom"
-      color={chosen ? RewardsColour.WHITE : refused ? RewardsColour.GREY : RewardsColour.ORANGE}
+      color={chosen ? RewardsColour.WHITE : (refused ? RewardsColour.GREY : RewardsColour.ORANGE)}
       text={`${cost} ${tokenWord(cost)}`}
       options={[Copy.SELECT]}
       optionSubject={`<col=ff9040>${groupDigits(xp, ',')} ${name} XP</col>`}
@@ -230,7 +230,7 @@ function ExpOptionX({
   perToken: Int;
   mobile: Boolean;
 }): Component {
-  const reason: String = gated ? Copy.LEVEL_NEEDED : tokens < 1 ? needAtLeast(1) : '';
+  const reason: String = gated ? Copy.LEVEL_NEEDED : (tokens < 1 ? needAtLeast(1) : '');
   const refused: Boolean = CS2.string_length(reason) > 0;
   const chosen: Boolean = pick === id;
   const hoverable: Boolean = !chosen && !refused && !mobile;
@@ -244,7 +244,7 @@ function ExpOptionX({
       shadow
       align="left"
       valign="bottom"
-      color={chosen ? RewardsColour.WHITE : refused ? RewardsColour.GREY : RewardsColour.ORANGE}
+      color={chosen ? RewardsColour.WHITE : (refused ? RewardsColour.GREY : RewardsColour.ORANGE)}
       text={`X ${tokenWord(9)}`}
       options={[Copy.SELECT]}
       optionSubject={`<col=ff9040>${groupDigits(perToken / 10, ',')} ${name} XP/Token</col>`}

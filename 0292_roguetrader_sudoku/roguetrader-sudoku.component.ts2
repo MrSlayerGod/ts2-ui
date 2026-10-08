@@ -249,7 +249,7 @@ function BoardItems(): Component {
               ? -1
               : transpose !== 0
                 ? transposedDigit(solution.get(slot) ?? -1)
-                : (solution.get(slot) ?? -1)
+                : solution.get(slot) ?? -1
           }
           placed={Runes.at(tileRune(slot)) ?? -1}
         />
@@ -328,7 +328,7 @@ function BoardCells(): Component {
               ? -1
               : transpose !== 0
                 ? transposedDigit(solution.get(slot) ?? -1)
-                : (solution.get(slot) ?? -1)
+                : solution.get(slot) ?? -1
           }
         />
       ))}

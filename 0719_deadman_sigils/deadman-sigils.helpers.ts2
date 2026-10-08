@@ -21,9 +21,7 @@ export function offerTitleHeight(title: String): Int {
 }
 
 export function offerBodyHeight(body: String): Int {
-  return (
-    Layout.OFFER_BODY_PAD + Layout.OFFER_BODY_LINE * textLineCount(body, Layout.OFFER_TEXT_W, SigilFonts.OFFER_BODY)
-  );
+  return Layout.OFFER_BODY_PAD + Layout.OFFER_BODY_LINE * textLineCount(body, Layout.OFFER_TEXT_W, SigilFonts.OFFER_BODY);
 }
 
 export function offerBodyPadded(titleH: Int, bodyH: Int): Int {

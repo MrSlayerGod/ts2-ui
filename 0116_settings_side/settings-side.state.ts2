@@ -3,3 +3,5 @@ import { sessionState } from 'ts2';
 export const openDropdown = sessionState(-1);
 
 export const hoveredEntry = sessionState(-1);
+
+export const brightnessRevision = sessionState(-1);

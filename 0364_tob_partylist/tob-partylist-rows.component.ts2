@@ -1,0 +1,390 @@
+import { CS2, intArray, useInterval, useRef, useState } from 'ts2';
+
+import { BoardButton } from '../lib/board-button.component';
+import { clientClock, playSound } from '../lib/lib.engine';
+import { onMobile } from '../lib/lib.helpers';
+import {
+  partylistAgeNow,
+  partylistAgeSeconds,
+  partylistAgeText,
+  partylistField,
+  partylistLineOf,
+  partylistQuicksort,
+} from '../lib/raids-partylist';
+import { ScrollbarVertical } from '../lib/scrollbar-vertical.component';
+import { serverTooltipHide, serverTooltipRepeat } from '../lib/server-tooltip';
+import { Sounds } from '../lib/game/sounds';
+import { clanwarsOpponentchangetime, raidsCount, raidsListsortList } from '../lib/game/varcs';
+import {
+  BoardPausebutton,
+  boardAnchorsRef,
+  Copy,
+  Layout,
+  ListKey,
+  ListRow,
+  ListSort,
+  SLOT_COUNT,
+  TobPartylistColor,
+  TobPartylistFonts,
+  TobPartylistScrollbar,
+  TobPartylistSlots,
+  TobPartylistSprites,
+  tooltipRef,
+} from './tob-partylist.constants';
+import {
+  slotBit,
+  slotFilled,
+  tobListBuilt,
+  tobListData,
+  tobListDeadHigh,
+  tobListDeadLow,
+  tobListEmptyFiltered,
+  tobListPressedSlot,
+  tobListPressedUntil,
+} from './tob-partylist.state';
+
+export function TobPartyListPane(): Component {
+  const pane = useRef();
+  const [data] = useState(tobListData);
+  const [built] = useState(tobListBuilt);
+  const [count] = useState(raidsCount);
+  const [sort] = useState(raidsListsortList);
+  const [emptyFiltered] = useState(tobListEmptyFiltered);
+  const [pressed, setPressed] = useState(tobListPressedSlot);
+  const [pressedUntil, setPressedUntil] = useState(tobListPressedUntil);
+  const [deadLow] = useState(tobListDeadLow);
+  const [deadHigh] = useState(tobListDeadHigh);
+
+  useInterval(() => {
+    if (pressedUntil !== 0 && clientClock() >= pressedUntil) {
+      setPressedUntil(0);
+      setPressed(-1);
+    }
+  }, pane);
+
+  const field: Int = sortKeyOf(sort);
+  const descending: Boolean = sortDescending(sort);
+
+  const filled = intArray(SLOT_COUNT);
+  let n: Int = 0;
+  let slot: Int = 0;
+  while (slot < SLOT_COUNT) {
+    if (slotFilled(data, slot)) {
+      filled[n] = slot;
+      n = n + 1;
+    }
+    slot = slot + 1;
+  }
+
+  const sorted = partylistQuicksort(data, ListKey.SLOT_W, field, filled, n);
+  const slotAt = intArray(SLOT_COUNT);
+  const washAt = intArray(SLOT_COUNT);
+  let i: Int = 0;
+  while (i < SLOT_COUNT) {
+    slotAt[i] = -1;
+    i = i + 1;
+  }
+  i = 0;
+  while (i < n) {
+    const position: Int = descending ? n - 1 - i : i;
+    slotAt[position] = sorted[i];
+    washAt[position] = i % 2 === 0 ? ListRow.EVEN : ListRow.ODD;
+    i = i + 1;
+  }
+
+  const extent: Int = count * Layout.ROW_H;
+  return (
+    <>
+      {TobPartylistSlots.map(() => (
+        <rect x={0} y={0} w={0} h={0} hide />
+      ))}
+      <layer
+        ref={pane}
+        x={Layout.LIST_X}
+        y={{ bottom: Layout.LIST_BOTTOM }}
+        w={{ fill: Layout.LIST_INSET_W }}
+        h={{ fill: Layout.LIST_INSET_H }}
+        scrollHeight={built === 1 && extent > pane.height ? extent : 0}
+      >
+        {TobPartylistSlots.map((at) => (
+          <TobPartyRow
+            position={at}
+            slot={slotAt[at]}
+            line={built === 1 ? partylistLineOf(data, slotAt[at]) : ''}
+            wash={washAt[at]}
+            pressed={slotAt[at] !== -1 && pressed === slotAt[at]}
+            dead={slotBit(deadLow, deadHigh, slotAt[at])}
+          />
+        ))}
+        {built !== 1 ? (
+          <text
+            x="center"
+            y="center"
+            w="fill"
+            h="fill"
+            text={Copy.LOADING}
+            font={TobPartylistFonts.BODY}
+            color={TobPartylistColor.LOADING}
+            align="center"
+            valign="middle"
+            shadow
+          />
+        ) : null}
+        {built === 1 && count <= 0 ? (
+          <text
+            x="center"
+            y="center"
+            w="fill"
+            h="fill"
+            text={emptyFiltered === 0 ? Copy.NO_PARTIES : Copy.NO_FRIENDS}
+            font={TobPartylistFonts.BODY}
+            color={TobPartylistColor.CELL}
+            align="center"
+            valign="middle"
+            shadow
+          />
+        ) : null}
+      </layer>
+
+      <layer
+        right={Layout.SCROLLBAR_RIGHT}
+        y={{ bottom: Layout.LIST_BOTTOM }}
+        w={Layout.SCROLLBAR_W}
+        h={{ fill: Layout.LIST_INSET_H }}
+      >
+        <ScrollbarVertical
+          content={pane}
+          track={TobPartylistScrollbar.TRACK}
+          capTopSprite={TobPartylistScrollbar.CAP_TOP}
+          thumbSprite={TobPartylistScrollbar.THUMB}
+          capBottomSprite={TobPartylistScrollbar.CAP_BOTTOM}
+          arrowUp={TobPartylistScrollbar.ARROW_UP}
+          arrowDown={TobPartylistScrollbar.ARROW_DOWN}
+        />
+      </layer>
+    </>
+  );
+}
+
+function sortKeyOf(sort: Int): Int {
+  if (sort === ListSort.SIZE_ASC || sort === ListSort.SIZE_DESC) {
+    return ListKey.SIZE;
+  }
+  if (sort === ListSort.LEADER_ASC || sort === ListSort.LEADER_DESC) {
+    return ListKey.LEADER;
+  }
+  if (sort === ListSort.COMBAT_ASC || sort === ListSort.COMBAT_DESC) {
+    return ListKey.COMBAT;
+  }
+  if (sort === ListSort.MODE_ASC || sort === ListSort.MODE_DESC) {
+    return ListKey.MODE;
+  }
+  if (sort === ListSort.AGE_ASC || sort === ListSort.AGE_DESC) {
+    return ListKey.AGE;
+  }
+  return ListKey.MEMBERS;
+}
+
+function sortDescending(sort: Int): Boolean {
+  return sort === ListSort.MEMBERS_DESC ||
+    sort === ListSort.SIZE_DESC ||
+    sort === ListSort.LEADER_DESC ||
+    sort === ListSort.COMBAT_DESC ||
+    sort === ListSort.AGE_DESC ||
+    sort === ListSort.MODE_DESC;
+}
+
+function TobPartyRow({
+  position,
+  slot,
+  line,
+  wash,
+  pressed,
+  dead,
+}: {
+  position: Int;
+  slot: Int;
+  line: String;
+  wash: Int;
+  pressed: Boolean;
+  dead: Boolean;
+}): Component {
+  const [hovered, setHovered] = useState(0);
+  const [, setPressed] = useState(tobListPressedSlot);
+  const [, setPressedUntil] = useState(tobListPressedUntil);
+  if (line.length === 0) {
+    return null;
+  }
+  const mobile: Boolean = onMobile();
+  const leader: String = partylistField(line, 0);
+  const members: String = partylistField(line, 5);
+  const size: String = partylistField(line, 6);
+  const combat: String = partylistField(line, 7);
+  const sized: Boolean = CS2.compare(size, '0') !== 0;
+  const full: Boolean = sized && CS2.compare(members.padStart(3, '0'), size.padStart(3, '0')) >= 0;
+  const countColor: Int = full ? TobPartylistColor.FULL : TobPartylistColor.CELL;
+  return (
+    <layer
+      x="center"
+      y={position * Layout.ROW_H}
+      w="fill"
+      h={Layout.ROW_H}
+      options={pressed || dead ? [] : [Copy.VIEW_PARTY]}
+      optionSubject={pressed || dead ? '' : `<col=ff9040>${CS2.tags_remove(leader)}</col>`}
+      onMouseRepeat={!pressed && !mobile ? () => setHovered(1) : undefined}
+      onMouseLeave={!pressed && !mobile ? () => setHovered(0) : undefined}
+      onOptionSelect={
+        !pressed
+          ? (event) => {
+              if (event.option !== 1) {
+                return;
+              }
+              playSound(Sounds.INTERFACE_SELECT1);
+              setHovered(0);
+              setPressed(slot);
+              setPressedUntil(clientClock() + ListRow.BUSY_CYCLES);
+              if (CS2.cc_find(event.component, slot) === true) {
+                CS2.cc_resume_pausebutton();
+              }
+            }
+          : undefined
+      }
+    >
+      <rect
+        x="center"
+        y="center"
+        w="fill"
+        h="fill"
+        fill
+        color={TobPartylistColor.ROW}
+        transparency={pressed ? ListRow.PRESSED : (hovered === 1 ? ListRow.HOVER : wash)}
+      />
+      <PartyCell x={0} w={Layout.COL_MEMBERS_W} text={members} color={countColor} />
+      <PartyCell
+        x={Layout.CELL_SIZE_X}
+        w={Layout.COL_SIZE_W}
+        text={sized ? `/ ${size}` : Copy.NONE}
+        color={countColor}
+      />
+      <PartyCell x={Layout.CELL_LEADER_X} w={Layout.COL_LEADER_W} text={leader} color={TobPartylistColor.CELL} />
+      <PartyCell
+        x={Layout.CELL_COMBAT_X}
+        w={Layout.COL_COMBAT_W}
+        text={CS2.compare(combat, '0') !== 0 ? combat : Copy.NONE}
+        color={TobPartylistColor.CELL}
+      />
+      <PartyCell
+        x={Layout.CELL_MODE_X}
+        w={Layout.COL_MODE_W}
+        text={partylistField(line, 8)}
+        color={TobPartylistColor.CELL}
+      />
+      <AgeCell seconds={partylistAgeSeconds(partylistField(line, 9))} />
+    </layer>
+  );
+}
+
+function PartyCell({ x, w, text, color }: { x: Int; w: Int; text: String; color: Int }): Component {
+  return (
+    <text
+      x={x}
+      y="center"
+      w={w}
+      h="fill"
+      text={text}
+      font={TobPartylistFonts.BODY}
+      color={color}
+      align="center"
+      valign="middle"
+      shadow
+    />
+  );
+}
+
+function AgeCell({ seconds }: { seconds: Int }): Component {
+  const [fetchedAt] = useState(clanwarsOpponentchangetime);
+  const [shown, setShown] = useState(-1);
+  useInterval(() => {
+    const now: Int = partylistAgeNow(seconds, fetchedAt);
+    if (now !== -1 && now !== shown) {
+      setShown(now);
+    }
+  });
+  return (
+    <text
+      right={0}
+      y="center"
+      w={{ fill: Layout.CELL_AGE_INSET_W }}
+      h="fill"
+      text={partylistAgeText(shown === -1 ? seconds : shown)}
+      font={TobPartylistFonts.AGE}
+      color={TobPartylistColor.AGE}
+      align="center"
+      valign="middle"
+      shadow
+    />
+  );
+}
+
+export function TobListSortColumn({ asc, desc, tip }: { asc: Int; desc: Int; tip: String }): Component {
+  const [built] = useState(tobListBuilt);
+  const [sort, setSort] = useState(raidsListsortList);
+  const [pressed, setPressed] = useState(tobListPressedSlot);
+  const [, setPressedUntil] = useState(tobListPressedUntil);
+  const [deadLow, setDeadLow] = useState(tobListDeadLow);
+  const [deadHigh, setDeadHigh] = useState(tobListDeadHigh);
+  const [hovered, setHovered] = useState(0);
+  const live: Boolean = sort === asc || sort === desc;
+  let arrow: Int = live ? 0 : ListRow.ARROW_DIM;
+  if (hovered === 1) {
+    arrow = live ? ListRow.ARROW_LIVE_HOVER : ListRow.ARROW_DIM_HOVER;
+  }
+  if (built !== 1) {
+    return <layer w="fill" h="fill" />;
+  }
+  return (
+    <layer
+      w="fill"
+      h="fill"
+      onMouseRepeat={(event) => {
+        setHovered(1);
+        serverTooltipRepeat(tooltipRef, event.component, tip, ListRow.TIP_WRAP);
+      }}
+      onMouseLeave={() => {
+        setHovered(0);
+        serverTooltipHide(tooltipRef);
+      }}
+      onClick={() => {
+        playSound(Sounds.INTERFACE_SELECT1);
+        if (pressed !== -1) {
+          if (pressed < ListKey.BITS) {
+            setDeadLow(CS2.bit_set(deadLow, pressed));
+          } else {
+            setDeadHigh(CS2.bit_set(deadHigh, pressed - ListKey.BITS));
+          }
+          setPressed(-1);
+          setPressedUntil(0);
+        }
+        setSort(sort === asc ? desc : asc);
+      }}
+    >
+      <sprite
+        x="center"
+        y="center"
+        w={Layout.SORT_ARROW_W}
+        h={Layout.SORT_ARROW_H}
+        sprite={sort === desc ? TobPartylistSprites.ARROW_UP : TobPartylistSprites.ARROW_DOWN}
+        transparency={arrow}
+      />
+    </layer>
+  );
+}
+
+export function TobRefreshButton(): Component {
+  const [built] = useState(tobListBuilt);
+  return (
+    <layer w="fill" h="fill" hide={built !== 1}>
+      <BoardButton label={Copy.REFRESH} resumeIn={boardAnchorsRef} resumeAt={BoardPausebutton.REFRESH} />
+    </layer>
+  );
+}

@@ -91,6 +91,7 @@ export const Copy = {
   ACCEPT: 'Accept',
   REJECT: 'Reject',
   SET: 'Set',
+  WAITING: '...',
   SUBJECT_MODE: '<col=ff9040>Mode</col>',
   SUBJECT_SIZE: '<col=ff9040>Preferred Size</col>',
   SUBJECT_LEVEL: '<col=ff9040>Preferred Level</col>',
@@ -228,6 +229,7 @@ export const Layout = {
   ARROW_DOWN_Y: 12,
   ARROW_Y: -19,
   ARROW_LIVE: 13,
+  ARROW_HOVER: 150,
 
   ROW_H: 13,
   ROW_TOP: 1,
@@ -348,3 +350,24 @@ export const RowColumns = {
 };
 
 export const ROW_COLUMNS_W = 416;
+
+export const anchorsRef = createRef('tob_partydetails_anchors');
+
+export const Anchor = {
+  BACK: 0,
+  REFRESH: 1,
+  UNBLOCK: 2,
+  SIZE: 3,
+  LEVEL: 4,
+  ACTION: 5,
+  MODE: 6,
+  KICK: 7,
+  ACCEPT: 12,
+  REJECT: 22,
+  COUNT: 32,
+};
+
+export const MemberSlots = [0, 1, 2, 3, 4] as const;
+export const ApplicantSlots = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9] as const;
+export const APPLICANT_SLOTS = 10;
+export const SORT_KEY_W = 13;

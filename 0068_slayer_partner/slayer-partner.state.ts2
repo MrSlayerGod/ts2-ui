@@ -1,0 +1,13 @@
+import { sessionState, useState } from 'ts2';
+
+export const slayerPartnerLabel = sessionState('');
+
+export function slayerPartnerSetButton(text: String): void {
+  const [, setLabel] = useState(slayerPartnerLabel);
+  setLabel(text);
+}
+
+export function resetSlayerPartnerLabel(): void {
+  const [, setLabel] = useState(slayerPartnerLabel);
+  setLabel('');
+}

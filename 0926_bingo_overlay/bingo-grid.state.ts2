@@ -71,7 +71,7 @@ export function bingoRewardClaimable(grid: Int, slot: Int): Boolean {
 }
 
 export function bingoClaimPulse(): Int {
-  const wave: Int = Trig.sinDeg((BINGO_PULSE_SPEED * (clientClock() % BINGO_PULSE_UNIT)) % BINGO_PULSE_UNIT);
+  const wave: Int = Trig.sinDeg(BINGO_PULSE_SPEED * (clientClock() % BINGO_PULSE_UNIT) % BINGO_PULSE_UNIT);
   return 255 - CS2.scale(wave + BINGO_PULSE_UNIT, BINGO_PULSE_UNIT * 2, 255);
 }
 

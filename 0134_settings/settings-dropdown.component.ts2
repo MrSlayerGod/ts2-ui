@@ -10,13 +10,13 @@ import {
   VsyncIndex,
   VsyncValues,
 } from './settings-options.data';
-import { CS2, predictServerState, sessionState, useDerived, useRef, useServerState, useState } from 'ts2';
+import { CS2, predictServerState, sessionState, useDerived, useServerState, useState } from 'ts2';
 import { Sprites } from '../lib/game/sprites';
 import { Varbits } from '../lib/game/varbits';
 import { Varps } from '../lib/game/varps';
 import { settingsDevExampleInt } from '../lib/game/varcs';
 import { onMobile } from '../lib/lib.helpers';
-import { chatMessage, playSound, textLineCount, textWidth } from '../lib/lib.engine';
+import { chatMessage, clientClock, playSound, textLineCount, textWidth } from '../lib/lib.engine';
 import { Art, Colour, Row, SettingsFonts, SettingsVarbits, Sounds } from './settings.constants';
 import type { SettingsRow } from './settings-rows.data';
 import { categoryBase, rowDescription, rowTitle } from './settings-layout';
@@ -72,8 +72,36 @@ export const openDropdownY = sessionState(-1);
 export const openDropdownW = sessionState(-1);
 export const openDropdownH = sessionState(-1);
 
-export const openDropdownCaption = sessionState(-1);
-export const openDropdownChevron = sessionState(-1);
+export const dropdownPickSetting = sessionState(-1);
+export const dropdownPickIndex = sessionState(-1);
+export const dropdownPickValue = sessionState(-1);
+export const dropdownPickAt = sessionState(-1);
+
+export function pickShown(settingId: Int, current: Int): Int {
+  const [pick] = useState(dropdownPickSetting);
+  if (pick !== settingId) {
+    return current;
+  }
+  const [value] = useState(dropdownPickValue);
+  if (value !== current) {
+    return current;
+  }
+  const [at] = useState(dropdownPickAt);
+  if (at !== -1 && clientClock() - at > Drop.synchCycles) {
+    return current;
+  }
+  const [index] = useState(dropdownPickIndex);
+  return index;
+}
+
+export function dropdownShown(settingId: Int): Int {
+  return pickShown(settingId, dropdownValue(settingId));
+}
+
+export function listOpen(settingId: Int): Int {
+  const [open] = useState(openDropdownSetting);
+  return open === settingId ? 1 : 0;
+}
 
 export function optionEntry(options: List<String>, index: Int): String {
   return options.at(index) ?? '';
@@ -822,10 +850,9 @@ export function SettingsDropdown({
   const [, setOpenY] = useState(openDropdownY);
   const [, setOpenW] = useState(openDropdownW);
   const [, setOpenH] = useState(openDropdownH);
-  const caption = useRef();
-  const chevron = useRef();
   const enabledFlag: Int = useDerived(() => settingEnabled(row));
-  const value: Int = useDerived(() => dropdownValue(settingId));
+  const value: Int = useDerived(() => dropdownShown(settingId));
+  const expanded: Int = useDerived(() => listOpen(settingId));
 
   if (options.length === 0) {
     return <rect hide />;
@@ -894,15 +921,13 @@ export function SettingsDropdown({
         color={DropColour.OUTLINE_INNER}
       />
       <sprite
-        ref={chevron}
         x={{ right: Drop.chevronRight }}
         y={top + (box / 2 - Drop.chevronHalf)}
         w={Drop.chevron}
         h={Drop.chevron}
-        sprite={Art.BAR_ARROW_DOWN}
+        sprite={expanded === 1 ? Art.BAR_ARROW_UP : Art.BAR_ARROW_DOWN}
       />
       <text
-        ref={caption}
         x={{ right: Drop.valueRight }}
         y={top + (box / 2 - Drop.chevronHalf)}
         w={valueBox}
@@ -957,9 +982,7 @@ export function SettingsDropdown({
               setOpenY(centre);
               setOpenW(control);
               setOpenH(Drop.controlH);
-              latchOpenComponents(caption, chevron);
               setOpen(settingId);
-              chevron.sprite = Art.BAR_ARROW_UP;
             } else {
               playSound(Sounds.DISMISS);
               chatMessage(rowLockedMessage(row));
@@ -984,9 +1007,7 @@ export function SettingsDropdown({
               setOpenY(centre);
               setOpenW(control);
               setOpenH(Drop.controlH);
-              latchOpenComponents(caption, chevron);
               setOpen(settingId);
-              chevron.sprite = Art.BAR_ARROW_UP;
             } else {
               playSound(Sounds.DISMISS);
               chatMessage(rowLockedMessage(row));
@@ -1041,8 +1062,6 @@ export function DropdownEntry({
   count,
   entryH,
   mobile,
-  captionIndex,
-  chevronIndex,
 }: {
   row: SettingsRow;
   optionsId: List<String>;
@@ -1050,8 +1069,6 @@ export function DropdownEntry({
   count: Int;
   entryH: Int;
   mobile: Boolean;
-  captionIndex: Int;
-  chevronIndex: Int;
 }): Component {
   const [, setOpen] = useState(openDropdownSetting);
   const settingId: Int = row.settingId ?? 0;
@@ -1108,7 +1125,7 @@ export function DropdownEntry({
             hide={disabled}
             options={['Select']}
             onOptionSelect={(event) => {
-              dropdownEntryOp(event.component, captionIndex, chevronIndex, text, row, mobile, index);
+              dropdownEntryOp(row, mobile, index);
               setOpen(-1);
             }}
           />
@@ -1118,58 +1135,21 @@ export function DropdownEntry({
   );
 }
 
-export function latchOpenComponents(caption: Ref, chevron: Ref): void {
-  const [, setOpenCaption] = useState(openDropdownCaption);
-  const [, setOpenChevron] = useState(openDropdownChevron);
-  setOpenCaption(caption as Int);
-  setOpenChevron(chevron as Int);
-}
-
-export function dropdownEntryOp(
-  mount: ComponentId,
-  captionIndex: Int,
-  chevronIndex: Int,
-  text: String,
-  row: SettingsRow,
-  mobile: Boolean,
-  index: Int,
-): void {
+export function dropdownEntryOp(row: SettingsRow, mobile: Boolean, index: Int): void {
+  const [, setPickSetting] = useState(dropdownPickSetting);
+  const [, setPickIndex] = useState(dropdownPickIndex);
+  const [, setPickValue] = useState(dropdownPickValue);
+  const [, setPickAt] = useState(dropdownPickAt);
   playSound(Sounds.TAB_SELECT);
-  if (CS2.cc_find(mount, captionIndex)) {
-    CS2.cc_text_set(text);
-    if (!(row.live ?? false)) {
-      settingsSetDropdown(row, mobile, index);
-      if (CS2.cc_find(mount, captionIndex)) {
-        CS2.cc_on_timer_set(() => dropdownSynch(0, mount, captionIndex, row, mobile));
-      }
-    }
-  }
-  if (CS2.cc_find(mount, chevronIndex)) {
-    CS2.cc_sprite_set(Art.BAR_ARROW_DOWN);
-  }
-}
-
-export function dropdownSynch(
-  count: Int,
-  mount: ComponentId,
-  captionIndex: Int,
-  row: SettingsRow,
-  mobile: Boolean,
-): void {
-  if (!CS2.cc_find(mount, captionIndex)) {
-    return;
-  }
-  if (count < Drop.synchCycles) {
-    const next: Int = count + 1;
-    CS2.cc_on_timer_set(() => dropdownSynch(next, mount, captionIndex, row, mobile));
-    return;
-  }
   const settingId: Int = row.settingId ?? 0;
-  const options: List<String> = rowOptions(row, mobile);
-  const fallback: String = rowOptionsFallback(row, mobile);
-  const label: String = optionLabel(settingId, options, fallback, dropdownValue(settingId));
-  CS2.cc_text_set(label);
-  CS2.cc_on_timer_set(null);
+  setPickSetting(settingId);
+  setPickIndex(index);
+  setPickValue(dropdownValue(settingId));
+  setPickAt(-1);
+  if (!(row.live ?? false)) {
+    settingsSetDropdown(row, mobile, index);
+    setPickAt(clientClock());
+  }
 }
 
 function rowLit(enabled: Boolean, flag: Int): Boolean {

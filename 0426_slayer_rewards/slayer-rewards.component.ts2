@@ -5,6 +5,7 @@ import { SteelBorderEntrypoint } from '../lib/steel-border-entrypoint.component'
 import { SteelFrameEntrypoint } from '../lib/steel-frame-entrypoint.component';
 import { slayerRewardsTabLastOpened } from '../lib/game/varcs';
 import {
+  ConfirmCodes,
   Ink,
   PANEL_TITLE,
   Panel,
@@ -21,154 +22,154 @@ import {
 import { UnlockList } from './unlock-list.component';
 import { UnlockList as UnlockSlice } from './slayer-rewards.data';
 import { pointsLine } from './slayer-rewards.helpers';
+import { BuyPane } from './buy-grid.component';
+import { TasksPane } from './tasks-pane.component';
+import {
+  Confirm,
+  confirmBack,
+  confirmBackLater,
+  confirmCode,
+  confirmInfo,
+  confirmLabel,
+  confirmShown,
+  confirmSubject,
+  resetConfirm,
+} from './slayer-rewards.confirm';
 
 export function SlayerRewards(): Component {
-  const [lastOpened] = useState(slayerRewardsTabLastOpened);
-  const tab: Int = lastOpened >= Tab.UNLOCK && lastOpened <= Tab.COSMETICS ? lastOpened : Tab.UNLOCK;
-
   return (
     <>
       <SteelBorderEntrypoint title={PANEL_TITLE} />
 
-      <layer x="center" y={{ center: 15 }} w={268} h={200} hide>
-        <sprite x={1} y={1} w={266} h={198} sprite={SlayerSprites.DIALOG_BACK} tiling />
+      <ConfirmDialog />
+
+      <layer x={0} y={0} w="fill" h="fill" onLoad={() => resetConfirm()}>
+        <ConfirmHits />
+      </layer>
+
+      <MainPanel />
+
+      <layer x="center" y="center" w="fill" h="fill" />
+    </>
+  );
+}
+
+function ConfirmHits(): Component {
+  const [shown] = useState(confirmShown);
+  const [code] = useState(confirmCode);
+  const label: String = confirmLabel(code);
+  const subject: String = confirmSubject(code);
+  return (
+    <>
+      {ConfirmCodes.map(
+        (index) =>
+          index <= code &&
+          shown === Confirm.SHOWN_DIALOG && (
+            <rect
+              x={Confirm.HIT_X}
+              y={Confirm.HIT_Y}
+              w={Confirm.HIT_W}
+              h={Confirm.HIT_H}
+              color={0}
+              fill
+              transparency={255}
+              hide={index < code}
+              options={index === code ? [label] : []}
+              optionSubject={subject}
+              onOptionSelect={index === code ? (event) => confirmBack(true, event.option) : null}
+            />
+          ),
+      )}
+    </>
+  );
+}
+
+function ConfirmDialog(): Component {
+  const [shown] = useState(confirmShown);
+  const [info] = useState(confirmInfo);
+  const [code] = useState(confirmCode);
+  return (
+    <layer x="center" y={{ center: 15 }} w={268} h={200} hide={shown === Confirm.SHOWN_NONE}>
+      <sprite x={1} y={1} w={266} h={198} sprite={SlayerSprites.DIALOG_BACK} tiling />
+      <text
+        x={10}
+        y={10}
+        w={248}
+        h={155}
+        text={info}
+        font={SlayerFonts.DIALOG}
+        color={Ink.DIALOG}
+        shadow
+        align="center"
+        valign="middle"
+      />
+      <DialogButton
+        x={code === Confirm.NONE ? Confirm.BACK_X_ALONE : Confirm.BACK_X}
+        label="Back"
+        option={shown === Confirm.SHOWN_DIALOG ? 'Back' : ''}
+        onBack={shown === Confirm.SHOWN_DIALOG}
+      />
+      <ConfirmButton shown={shown} code={code} />
+      <SteelFrameEntrypoint />
+    </layer>
+  );
+}
+
+function MainPanel(): Component {
+  const [lastOpened] = useState(slayerRewardsTabLastOpened);
+  const tab: Int = lastOpened >= Tab.UNLOCK && lastOpened <= Tab.COSMETICS ? lastOpened : Tab.UNLOCK;
+  const [shown] = useState(confirmShown);
+  return (
+    <layer
+      x="center"
+      y={{ bottom: Panel.MAIN_BOTTOM }}
+      hide={shown !== Confirm.SHOWN_NONE}
+      w={{ fill: Panel.MAIN_W_INSET }}
+      h={{ fill: Panel.MAIN_H_INSET }}
+    >
+      <layer x={0} y={0} w={Panel.TABS_W} h={Panel.TABS_H}>
+        <TabButton slot={Tab.UNLOCK} label={TAB_UNLOCK} tab={tab} />
+        <TabButton slot={Tab.EXTEND} label={TAB_EXTEND} tab={tab} />
+        <TabButton slot={Tab.BUY} label={TAB_BUY} tab={tab} />
+        <TabButton slot={Tab.TASKS} label={TAB_TASKS} tab={tab} />
+        <TabButton slot={Tab.COSMETICS} label={TAB_COSMETICS} tab={tab} />
         <text
-          x={10}
-          y={10}
-          w={248}
-          h={155}
-          font={SlayerFonts.DIALOG}
-          color={Ink.DIALOG}
+          x="right"
+          y={0}
+          w={{ fill: Tab.STRIDE * 5 }}
+          h="fill"
+          text={pointsLine()}
+          font={SlayerFonts.SMALL}
+          color={Ink.AMBER}
           shadow
           align="center"
           valign="middle"
         />
-        <DialogButton x={33} label="Back" />
-        <DialogButton x={150} label="Confirm" />
-        <SteelFrameEntrypoint />
       </layer>
 
-      <layer
-        x="center"
-        y={{ bottom: Panel.MAIN_BOTTOM }}
-        w={{ fill: Panel.MAIN_W_INSET }}
-        h={{ fill: Panel.MAIN_H_INSET }}
-      >
-        <layer x={0} y={0} w={Panel.TABS_W} h={Panel.TABS_H}>
-          <TabButton slot={Tab.UNLOCK} label={TAB_UNLOCK} tab={tab} />
-          <TabButton slot={Tab.EXTEND} label={TAB_EXTEND} tab={tab} />
-          <TabButton slot={Tab.BUY} label={TAB_BUY} tab={tab} />
-          <TabButton slot={Tab.TASKS} label={TAB_TASKS} tab={tab} />
-          <TabButton slot={Tab.COSMETICS} label={TAB_COSMETICS} tab={tab} />
-          <text
-            x="right"
-            y={0}
-            w={{ fill: Tab.STRIDE * 5 }}
-            h="fill"
-            text={pointsLine()}
-            font={SlayerFonts.SMALL}
-            color={Ink.AMBER}
-            shadow
-            align="center"
-            valign="middle"
-          />
+      <layer x={0} y={Panel.BODY_Y} w="fill" h={{ fill: Panel.BODY_H_INSET }}>
+        <layer x="center" y="center" w="fill" h="fill" hide={tab !== Tab.UNLOCK}>
+          <UnlockList from={UnlockSlice.UNLOCK_FROM} count={UnlockSlice.UNLOCK_COUNT} inset={0} />
         </layer>
 
-        <layer x={0} y={Panel.BODY_Y} w="fill" h={{ fill: Panel.BODY_H_INSET }}>
-          <layer x="center" y="center" w="fill" h="fill" hide={tab !== Tab.UNLOCK}>
-            <UnlockList from={UnlockSlice.UNLOCK_FROM} count={UnlockSlice.UNLOCK_COUNT} inset={0} />
-          </layer>
+        <layer x="center" y="center" w="fill" h="fill" hide={tab !== Tab.EXTEND}>
+          <UnlockList from={UnlockSlice.EXTEND_FROM} count={UnlockSlice.EXTEND_COUNT} inset={Panel.EXTEND_H_INSET} />
+          <layer x="center" y="bottom" w="fill" h={20} />
+        </layer>
 
-          <layer x="center" y="center" w="fill" h="fill" hide={tab !== Tab.EXTEND}>
-            <UnlockList from={UnlockSlice.EXTEND_FROM} count={UnlockSlice.EXTEND_COUNT} inset={Panel.EXTEND_H_INSET} />
-            <layer x="center" y="bottom" w="fill" h={20} />
-          </layer>
+        <layer x="center" y="center" w="fill" h="fill" hide={tab !== Tab.BUY}>
+          <BuyPane />
+        </layer>
 
-          <layer x="center" y="center" w="fill" h="fill" hide={tab !== Tab.BUY}>
-            <layer x={0} y="center" w={{ fill: Panel.BAR_W }} h="fill">
-              <layer x="center" y={0} w="fill" h="fill" />
-              <layer x="center" y={0} w="fill" h="fill" />
-            </layer>
-            <layer x="right" y="center" w={Panel.BAR_W} h="fill" />
-          </layer>
+        <layer x="center" y="center" w="fill" h="fill" hide={tab !== Tab.TASKS}>
+          <TasksPane />
+        </layer>
 
-          <layer x="center" y="center" w="fill" h="fill" hide={tab !== Tab.TASKS}>
-            <layer x={0} y={22} w="fill" h={{ fill: 22 }} />
-            <layer x={221} y={70} w={245} h={18}>
-              <line x={0} y={0} w="fill" h="fill" color={Ink.BORDER_OUTER} />
-              <rect x={1} y={1} w={{ fill: 2 }} h={{ fill: 2 }} color={Ink.WHITE} fill transparency={240} />
-              <rect x={1} y={1} w={{ fill: 2 }} h={{ fill: 2 }} color={0x474745} />
-              <text x={0} y={3} w="fill" h="fill" font={SlayerFonts.BUTTON} color={Ink.WHITE} shadow align="center" />
-            </layer>
-            <text
-              x="center"
-              y={0}
-              w="fill"
-              h={48}
-              font={SlayerFonts.BUTTON}
-              color={Ink.DIALOG}
-              shadow
-              align="center"
-              valign="middle"
-            />
-            <layer x={0} y={48} w={219} h={40}>
-              <line x={0} y={0} w={219} h={40} color={Ink.BORDER_OUTER} />
-              <rect x={1} y={1} w={217} h={38} color={Ink.WHITE} fill transparency={240} />
-              <rect x={1} y={1} w={217} h={38} color={0x474745} />
-              <text
-                x={0}
-                y={0}
-                w={219}
-                h={20}
-                text="Current assignment:"
-                font={SlayerFonts.HEADING}
-                color={Ink.DIALOG}
-                shadow
-                align="center"
-                valign="bottom"
-                lineHeight={17}
-              />
-              <text
-                x={0}
-                y={20}
-                w={219}
-                h={20}
-                font={SlayerFonts.DIALOG}
-                color={Ink.WHITE}
-                shadow
-                align="center"
-                lineHeight={17}
-              />
-            </layer>
-            <text
-              x={0}
-              y={85}
-              w="fill"
-              h={25}
-              text="Blocked tasks:"
-              font={SlayerFonts.HEADING}
-              color={Ink.DIALOG}
-              shadow
-              align="center"
-              valign="middle"
-            />
-            <layer x="center" y={103} w={400} h={22} />
-            <layer x="center" y={125} w={400} h={22} />
-            <layer x="center" y={147} w={400} h={22} />
-            <layer x="center" y={169} w={400} h={22} />
-            <layer x="center" y={191} w={400} h={22} />
-            <layer x="center" y={213} w={400} h={22} />
-            <layer x="center" y={235} w={400} h={22} />
-          </layer>
-
-          <layer x="center" y="center" w="fill" h="fill" hide={tab !== Tab.COSMETICS}>
-            <UnlockList from={UnlockSlice.COSMETIC_FROM} count={UnlockSlice.COSMETIC_COUNT} inset={0} />
-          </layer>
+        <layer x="center" y="center" w="fill" h="fill" hide={tab !== Tab.COSMETICS}>
+          <UnlockList from={UnlockSlice.COSMETIC_FROM} count={UnlockSlice.COSMETIC_COUNT} inset={0} />
         </layer>
       </layer>
-
-      <layer x="center" y="center" w="fill" h="fill" />
-    </>
+    </layer>
   );
 }
 
@@ -224,7 +225,53 @@ function openTab(slot: Int): void {
   setTab(slot);
 }
 
-function DialogButton({ x, label }: { x: Int; label: String }): Component {
+function ConfirmButton({ shown, code }: { shown: Int; code: Int }): Component {
+  const text = useRef();
+
+  return (
+    <layer
+      x={150}
+      y={165}
+      w={85}
+      h={22}
+      hide={code === Confirm.NONE}
+      onMouseEnter={() => {
+        text.color = Ink.WHITE;
+      }}
+      onMouseLeave={() => {
+        text.color = Ink.DIALOG;
+      }}
+      onTimer={shown === Confirm.SHOWN_REQUESTING ? () => confirmBackLater() : null}
+    >
+      <sprite x={0} y={0} w={85} h={22} sprite={SlayerSprites.DIALOG_BUTTON} />
+      <text
+        ref={text}
+        x={0}
+        y={0}
+        w={85}
+        h={22}
+        text="Confirm"
+        font={SlayerFonts.BUTTON}
+        color={Ink.DIALOG}
+        shadow
+        align="center"
+        valign="middle"
+      />
+    </layer>
+  );
+}
+
+function DialogButton({
+  x,
+  label,
+  option,
+  onBack,
+}: {
+  x: Int;
+  label: String;
+  option: String;
+  onBack: Boolean;
+}): Component {
   const text = useRef();
 
   return (
@@ -233,6 +280,8 @@ function DialogButton({ x, label }: { x: Int; label: String }): Component {
       y={165}
       w={85}
       h={22}
+      options={[option]}
+      onOptionSelect={onBack ? (event) => confirmBack(false, event.option) : null}
       onMouseEnter={() => {
         text.color = Ink.WHITE;
       }}

@@ -21,8 +21,8 @@ export function dropSettingOn(): Int {
   return 0;
 }
 
-export function shiftClickDropActive(shift: Int): Int {
-  if (dropSettingOn() === 1 && (shift === 1 || CS2.tap_to_drop_get())) {
+export function shiftClickDropActive(shift: Int, tap: Int): Int {
+  if (dropSettingOn() === 1 && (shift === 1 || tap === 1)) {
     return 1;
   }
   return 0;

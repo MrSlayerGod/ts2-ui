@@ -1,4 +1,4 @@
-import { predictServerState, useServerState, useUniverse } from 'ts2';
+import { predictServerState, useServerState, useState, useUniverse } from 'ts2';
 import { playSound, textWidth } from '../lib/lib.engine';
 import { battleSettled } from './supplies-tabs';
 import {
@@ -16,6 +16,7 @@ export function ReadyToggle(): Component {
   const strip = useUniverse();
   const battleType: Int = useServerState(SuppliesVarbits.BATTLE_TYPE);
   const ready: Int = useServerState(SuppliesVarbits.I_AM_READY);
+  const [hot, setHot] = useState(0);
 
   if (!battleSettled(battleType)) {
     return null;
@@ -31,14 +32,10 @@ export function ReadyToggle(): Component {
         h={{ fill: 1 }}
         fill
         color={SuppliesColor.WHITE}
-        transparency={Wash.CLEAR}
+        transparency={hot === 1 ? Wash.READY_HOVER : Wash.CLEAR}
         options={[Copy.READY_OP]}
-        onMouseRepeat={(event) => {
-          event.self.transparency = Wash.READY_HOVER;
-        }}
-        onMouseLeave={(event) => {
-          event.self.transparency = Wash.CLEAR;
-        }}
+        onMouseRepeat={() => setHot(1)}
+        onMouseLeave={() => setHot(0)}
         onOptionSelect={(event) => {
           if (event.option === 1) {
             playSound(SuppliesSounds.CLICK);

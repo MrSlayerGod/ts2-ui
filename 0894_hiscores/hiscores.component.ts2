@@ -1,16 +1,17 @@
-import { useRef, useState, useServerState } from 'ts2';
+import { CS2, onMounted, useInterval, useRef, useState, useServerState } from 'ts2';
 
 import { Varbits } from '../lib/game/varbits';
 import {
   hiscoresTabActivitiesClosed,
   hiscoresTabBossesClosed,
   hiscoresTabSkillsClosed,
+  hiscoresQueueLookup,
   hiscoresType,
 } from '../lib/game/varcs';
 import { ScrollbarVertical } from '../lib/scrollbar-vertical.component';
 import { StoneButtonFilled } from '../lib/stone-button-filled.component';
 import { StoneButtonDraw } from '../0705_clans_creation_sidepanel/stone-button.component';
-import { playSound } from '../lib/lib.engine';
+import { clientClock, playSound } from '../lib/lib.engine';
 import { opsound } from '../lib/lib.helpers';
 import { Sounds } from '../lib/game/sounds';
 
@@ -26,10 +27,19 @@ import {
   Totals,
 } from './hiscores.constants';
 import { HiscoresActivities, HiscoresBosses, HiscoresSkills } from './hiscores.data';
-import { HiscoresTypeControl } from './hiscores-dropdown.component';
+import { HiscoresTypeControl, HiscoresTypeList } from './hiscores-dropdown.component';
 import { SectionBodyPlate, SectionHeaderPlate } from './hiscores-section.component';
 import { ActivityCells, BossCells, SkillCells } from './hiscores-grid.component';
-import { clampType, isGroupType } from './hiscores.helpers';
+import { clampType, hiscoreCombat, hiscoreTotal, isGroupType } from './hiscores.helpers';
+import { hiscoresLoadedResult, hiscoresPoll, hiscoresQueued } from './hiscores.lookup';
+import {
+  hiscoresDropOpen,
+  hiscoresFailed,
+  hiscoresFailedAt,
+  hiscoresLoaded,
+  hiscoresLoading,
+  hiscoresName,
+} from './hiscores.state';
 import { onEnhancedMobile } from '../0134_settings/settings.helpers';
 
 const TOGGLE_OPSOUND_MASK = 2046;
@@ -43,6 +53,39 @@ export function HiscoresPanel(): Component {
   const [activitiesClosed, setActivitiesClosed] = useState(hiscoresTabActivitiesClosed);
   const [bossesClosed, setBossesClosed] = useState(hiscoresTabBossesClosed);
   const inWorld: Int = useServerState(Varbits.POPOUT_HISCORES_GLOBALCLICK_ENABLED);
+  const [dropOpen, setDropOpen] = useState(hiscoresDropOpen);
+  const [name, setName] = useState(hiscoresName);
+  const [loading, setLoading] = useState(hiscoresLoading);
+  const [loaded, setLoaded] = useState(hiscoresLoaded);
+  const [failed, setFailed] = useState(hiscoresFailed);
+  const [queued] = useState(hiscoresQueueLookup);
+  const [queuedAt, setQueuedAt] = useState(-1);
+
+  onMounted(() => {
+    setDropOpen(0);
+    setFailed(0);
+    setLoading(0);
+    setLoaded(0);
+    setName('');
+    if (CS2.native_hiscore_status_get() === 2) {
+      hiscoresLoadedResult();
+      if (queued.length > 0) {
+        setName(queued);
+      }
+    } else if (queued.length > 0) {
+      setQueuedAt(clientClock());
+    }
+  });
+  useInterval(() => {
+    if (queuedAt >= 0 && hiscoresQueued(queuedAt)) {
+      setQueuedAt(-1);
+    }
+  }, container);
+  useInterval(() => {
+    if (loading === 1) {
+      hiscoresPoll(name);
+    }
+  }, content);
   const mobile: Boolean = onEnhancedMobile();
 
   const type: Int = clampType(rawType);
@@ -91,8 +134,9 @@ export function HiscoresPanel(): Component {
             w={{ fill: Layout.DROPDOWN_INSET_W }}
             h={Layout.DROPDOWN_H}
             options={['Select <col=ff981f>Hiscores type']}
+            onOptionSelect={() => setDropOpen(1)}
           >
-            <HiscoresTypeControl type={type} open={false} />
+            <HiscoresTypeControl type={type} open={dropOpen === 1} />
           </layer>
 
           <layer
@@ -132,7 +176,7 @@ export function HiscoresPanel(): Component {
               y="center"
               w={{ fill: Input.FIELD_INSET }}
               h={{ fill: Input.FIELD_INSET }}
-              text=""
+              text={name}
               font={HiscoresFonts.VALUE}
               shadow
               color={0xffffff}
@@ -145,21 +189,7 @@ export function HiscoresPanel(): Component {
             />
           </layer>
 
-          <layer x={Layout.FAIL_X} y={Layout.FAIL_Y} w={Layout.FAIL_W} h={Layout.FAIL_H} hide>
-            <sprite y="center" w={Layout.FAIL_ICON_W} h={Layout.FAIL_H} sprite={937} />
-            <text
-              x={Layout.FAIL_TEXT_X}
-              y="center"
-              w={Layout.FAIL_TEXT_W}
-              h={{ fill: Layout.FAIL_TEXT_INSET_H }}
-              font={HiscoresFonts.VALUE}
-              shadow
-              color={HiscoresColour.FAIL_RED}
-              align="center"
-              valign="middle"
-              text="Lookup failed!"
-            />
-          </layer>
+          {failed === 1 && <HiscoresFailBox />}
 
           <layer
             x="center"
@@ -205,7 +235,7 @@ export function HiscoresPanel(): Component {
               />
             )}
             <SectionBodyPlate />
-            <SkillCells third={container.width / 3} top={Frame.CLOSED_H} />
+            <SkillCells third={container.width / 3} top={Frame.CLOSED_H} loaded={loaded === 1} />
             <sprite
               x={container.width / 2 / 2 - Totals.OFFSET}
               y={skillsHeight - Frame.BODY_LIP - Totals.ADVANCE}
@@ -224,7 +254,7 @@ export function HiscoresPanel(): Component {
               color={HiscoresColour.ORANGE}
               align="center"
               valign="middle"
-              text={Cell.PLACEHOLDER}
+              text={loaded === 1 ? hiscoreCombat() : Cell.PLACEHOLDER}
             />
             <sprite
               x={{ right: container.width / 2 / 2 }}
@@ -244,7 +274,7 @@ export function HiscoresPanel(): Component {
               color={HiscoresColour.ORANGE}
               align="center"
               valign="middle"
-              text={Cell.PLACEHOLDER}
+              text={loaded === 1 ? `${hiscoreTotal()}` : Cell.PLACEHOLDER}
             />
           </layer>
 
@@ -273,7 +303,7 @@ export function HiscoresPanel(): Component {
               />
             )}
             <SectionBodyPlate />
-            <ActivityCells third={container.width / 3} top={Frame.CLOSED_H} />
+            <ActivityCells third={container.width / 3} top={Frame.CLOSED_H} loaded={loaded === 1} />
           </layer>
 
           <layer y={bossesTop} w="fill" h={bossesClosed === 1 ? Frame.CLOSED_H : bossesHeight}>
@@ -301,7 +331,7 @@ export function HiscoresPanel(): Component {
               />
             )}
             <SectionBodyPlate />
-            <BossCells third={container.width / 3} top={Frame.CLOSED_H} />
+            <BossCells third={container.width / 3} top={Frame.CLOSED_H} loaded={loaded === 1} />
           </layer>
         </layer>
 
@@ -321,13 +351,45 @@ export function HiscoresPanel(): Component {
             arrowDown={HiscoresScrollbar.ARROW_DOWN}
           />
         </layer>
+
+        <HiscoresTypeList width={container.width - Layout.DROPDOWN_INSET_W} />
       </layer>
 
       <layer w={Layout.TOOLTIP_ANCHOR} h={Layout.TOOLTIP_ANCHOR} />
 
-      <layer x={{ right: 0 }} w={266} h="fill" hide>
+      <layer x={{ right: 0 }} w={266} h="fill" hide={loading !== 1} noClickThrough>
         <rect x="center" y="center" w="fill" h="fill" fill transparency={100} />
       </layer>
     </>
+  );
+}
+
+function HiscoresFailBox(): Component {
+  const box = useRef();
+  const [at] = useState(hiscoresFailedAt);
+  const [iconHidden, setIconHidden] = useState(0);
+  useInterval(() => {
+    const now: Int = clientClock();
+    const want: Int = now - at < 120 && now % 60 < 30 ? 1 : 0;
+    if (want !== iconHidden) {
+      setIconHidden(want);
+    }
+  }, box);
+  return (
+    <layer ref={box} x={Layout.FAIL_X} y={Layout.FAIL_Y} w={Layout.FAIL_W} h={Layout.FAIL_H}>
+      <sprite y="center" w={Layout.FAIL_ICON_W} h={Layout.FAIL_H} sprite={937} hide={iconHidden === 1} />
+      <text
+        x={Layout.FAIL_TEXT_X}
+        y="center"
+        w={Layout.FAIL_TEXT_W}
+        h={{ fill: Layout.FAIL_TEXT_INSET_H }}
+        font={HiscoresFonts.VALUE}
+        shadow
+        color={HiscoresColour.FAIL_RED}
+        align="center"
+        valign="middle"
+        text="Lookup failed!"
+      />
+    </layer>
   );
 }

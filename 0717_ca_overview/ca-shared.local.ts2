@@ -130,15 +130,13 @@ export function caSpecificKillcount(boss: Int): Int {
     case 57:
       return useServerState(Varps.TOTAL_COMPLETED_TOMBSOFAMASCUT_EXPERT);
     case 58:
-      return (
-        useServerState(Varps.JAD_CHALLENGE_1_COMPLETIONS) +
+      return useServerState(Varps.JAD_CHALLENGE_1_COMPLETIONS) +
         useServerState(Varps.JAD_CHALLENGE_2_COMPLETIONS) +
         useServerState(Varps.JAD_CHALLENGE_3_COMPLETIONS) +
         useServerState(Varps.JAD_CHALLENGE_4_COMPLETIONS) +
         useServerState(Varps.JAD_CHALLENGE_5_COMPLETIONS) +
         useServerState(Varps.JAD_CHALLENGE_6_COMPLETIONS) +
-        useServerState(Varps.JAD_CHALLENGE_LEAGUE_ONLY_COMPLETIONS)
-      );
+        useServerState(Varps.JAD_CHALLENGE_LEAGUE_ONLY_COMPLETIONS);
     case 59:
       return useServerState(Varps.TOTAL_ZUK_KILLS);
     case 60:
@@ -360,14 +358,12 @@ export function caTasksBossTotal(boss: Int): Int {
   if (boss === 0) {
     return 0;
   }
-  return (
-    caTasksBossTotalTier(1, boss) +
+  return caTasksBossTotalTier(1, boss) +
     caTasksBossTotalTier(2, boss) +
     caTasksBossTotalTier(3, boss) +
     caTasksBossTotalTier(4, boss) +
     caTasksBossTotalTier(5, boss) +
-    caTasksBossTotalTier(6, boss)
-  );
+    caTasksBossTotalTier(6, boss);
 }
 
 export function chatDefaultRestoreInput(): void {
@@ -485,7 +481,7 @@ export function CaBurgerMenu({ selected }: { selected: Int }): Component {
                     align="center"
                     valign="middle"
                   />
-                ) : mobile ? (
+                ) : (mobile ? (
                   <text
                     x={Burger.ENTRY_INSET}
                     y={Burger.ENTRY_INSET + entryH * i}
@@ -524,7 +520,7 @@ export function CaBurgerMenu({ selected }: { selected: Int }): Component {
                       setLit(0);
                     }}
                   />
-                )}
+                ))}
               </>
             ))}
           </layer>

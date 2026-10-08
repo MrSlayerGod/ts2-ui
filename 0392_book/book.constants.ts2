@@ -46,6 +46,8 @@ export const Layout = {
   CLOSE_TOP: 2,
   CLOSE_W: 26,
   CLOSE_H: 23,
+  CLOSE_MOBILE_W: 30,
+  CLOSE_MOBILE_H: 27,
 
   PAGENO_W: 80,
   PAGENO_H: 20,

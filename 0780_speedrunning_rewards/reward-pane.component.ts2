@@ -14,7 +14,7 @@ export function RewardPane(): Component {
   const paneWidth: Int = universe.width - RewardLayout.PANE_W_INSET;
   const paneHeight: Int = universe.height - RewardLayout.PANE_H_INSET;
   const half: Int = paneWidth / 2;
-  const contentHeight: Int = RewardLayout.ROW_Y0 + ((Rewards.length + 1) / 2) * RewardLayout.ROW_STRIDE;
+  const contentHeight: Int = RewardLayout.ROW_Y0 + (Rewards.length + 1) / 2 * RewardLayout.ROW_STRIDE;
   const rightX: Int = half - RewardLayout.ODD_SHIFT + RewardLayout.ROW_X;
 
   return (
@@ -34,7 +34,7 @@ export function RewardPane(): Component {
               row={row}
               index={index}
               rowX={index % 2 === 0 ? RewardLayout.ROW_X : rightX}
-              rowY={RewardLayout.ROW_Y0 + (index / 2) * RewardLayout.ROW_STRIDE}
+              rowY={RewardLayout.ROW_Y0 + index / 2 * RewardLayout.ROW_STRIDE}
               cellW={half}
               selected={selected}
               points={points}
@@ -49,7 +49,7 @@ export function RewardPane(): Component {
               row={row}
               index={index}
               rowX={index % 2 === 0 ? RewardLayout.ROW_X : rightX}
-              rowY={RewardLayout.ROW_Y0 + (index / 2) * RewardLayout.ROW_STRIDE}
+              rowY={RewardLayout.ROW_Y0 + index / 2 * RewardLayout.ROW_STRIDE}
               cellW={half}
               selected={selected}
               points={points}

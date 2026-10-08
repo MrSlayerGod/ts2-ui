@@ -1,0 +1,24 @@
+export const FilterCategoryLabels = listOf<String>(['All', 'Combat', 'Harvesting', 'Production', 'Other']);
+
+export const FilterLevelLabels = listOf<String>(['All', 'Level 1', 'Level 2', 'Level 3']);
+
+export const FilterSetLabels = listOf<String>([
+  'All',
+  'Absolute Unit',
+  'The Alchemist',
+  'Chain Magic',
+  'The Craftsman',
+  'Double Tap',
+  "Drakan's Touch",
+  'Endless Knowledge',
+  'Fast Metabolism',
+  'Greedy Gatherer',
+  "Knife's Edge",
+  'Last Recall',
+  'Personal Banker',
+  'Trailblazer',
+  'Twin Strikes',
+  'Unchained Talent',
+]);
+
+export const FilterLockLabels = listOf<String>(['All', 'Locked', 'Unlocked']);

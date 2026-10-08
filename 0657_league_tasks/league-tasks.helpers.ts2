@@ -7,6 +7,7 @@ import { debugMessageAlias } from '../lib/lib.debug';
 import { dialogueMayAdvance } from '../lib/lib.dialogue';
 import { hasBit, playSound, textLineCount } from '../lib/lib.engine';
 import { onMobile } from '../lib/lib.helpers';
+import { GameframeSlot, gameframeSlot } from '../lib/lib.gameframe';
 import { RelicThemes } from '../0655_league_relics/league-relics.data';
 import { areaSelected, regionHidden } from '../0512_trailblazer_areas/trailblazer-areas.helpers';
 import { chatDefaultRestoreInput, chatDefaultStopInput } from '../0888_number_pad/chatdefault';
@@ -369,7 +370,13 @@ export function filtersActive(searchLength: Int): Boolean {
   return true;
 }
 
-export function leagueTaskDisplay(task: LeagueTask, done: Int, search: String, searchLength: Int): Boolean {
+export function leagueTaskDisplay(
+  task: LeagueTask,
+  done: Int,
+  search: String,
+  searchLength: Int,
+  hotfixes: String,
+): Boolean {
   const tier: Int = useServerState(Varbits.LEAGUE_TASK_FILTER_TIER);
   if (tier !== 0 && tier !== task.tier) {
     return false;
@@ -403,8 +410,8 @@ export function leagueTaskDisplay(task: LeagueTask, done: Int, search: String, s
   if (searchLength > 1) {
     const needle: String = search.toLowerCase();
     if (
-      task.name.toLowerCase().includes(needle) === false &&
-      task.description.toLowerCase().includes(needle) === false
+      taskName(task, hotfixes).toLowerCase().includes(needle) === false &&
+      taskDescription(task, hotfixes).toLowerCase().includes(needle) === false
     ) {
       return false;
     }
@@ -421,12 +428,13 @@ export function leagueTaskShown(
   active: Boolean,
   search: String,
   searchLength: Int,
+  hotfixes: String,
 ): Boolean {
   if (task.inLeague === false) {
     return false;
   }
   if (active) {
-    return leagueTaskDisplay(task, done, search, searchLength);
+    return leagueTaskDisplay(task, done, search, searchLength, hotfixes);
   }
   const completed: Int = useServerState(Varbits.LEAGUE_TASK_FILTER_COMPLETED);
   if (completed !== 0 && completed - 1 !== done) {
@@ -435,13 +443,42 @@ export function leagueTaskShown(
   return true;
 }
 
-export function descriptionLines(task: LeagueTask, paneWidth: Int): Int {
-  return textLineCount(`Description: ${task.description}.`, paneWidth - Row.DESCRIPTION_INSET, TaskFont.SMALL);
+function hotfixField(task: LeagueTask, hotfixes: String, description: Boolean): String {
+  const key: String = `\n${task.id}\t`;
+  const at: Int = hotfixes.indexOf(key);
+  if (at === -1) {
+    return '';
+  }
+  const nameStart: Int = at + key.length;
+  const nameEnd: Int = hotfixes.indexOf('\t', nameStart);
+  if (!description) {
+    return hotfixes.substring(nameStart, nameEnd);
+  }
+  const next: Int = hotfixes.indexOf('\n', nameEnd + 1);
+  return hotfixes.substring(nameEnd + 1, next === -1 ? hotfixes.length : next);
 }
 
-export function rowHeight(task: LeagueTask, index: Int, expanded: Int, paneWidth: Int): Int {
+export function taskName(task: LeagueTask, hotfixes: String): String {
+  const fixed: String = hotfixField(task, hotfixes, false);
+  return fixed.length > 0 ? fixed : task.name;
+}
+
+export function taskDescription(task: LeagueTask, hotfixes: String): String {
+  const fixed: String = hotfixField(task, hotfixes, true);
+  return fixed.length > 0 ? fixed : task.description;
+}
+
+export function descriptionLines(task: LeagueTask, paneWidth: Int, hotfixes: String): Int {
+  return textLineCount(
+    `Description: ${taskDescription(task, hotfixes)}.`,
+    paneWidth - Row.DESCRIPTION_INSET,
+    TaskFont.SMALL,
+  );
+}
+
+export function rowHeight(task: LeagueTask, index: Int, expanded: Int, paneWidth: Int, hotfixes: String): Int {
   if (index === expanded) {
-    return Row.H + Row.LINE * descriptionLines(task, paneWidth) + Row.EXPAND_PAD;
+    return Row.H + Row.LINE * descriptionLines(task, paneWidth, hotfixes) + Row.EXPAND_PAD;
   }
   return Row.H;
 }
@@ -500,6 +537,14 @@ export function leagueTasksWindowInit(): void {
   }
   universeRef.width = Layout.universe.desktopW;
   universeRef.height = Layout.universe.desktopH;
+  const modal: ComponentId = gameframeSlot(GameframeSlot.VIEWPORT);
+  if ((modal as Int) === -1) {
+    return;
+  }
+  const x = CS2.if_x_get(modal);
+  const y = CS2.if_y_get(modal);
+  universeRef.x = x;
+  universeRef.y = y;
 }
 
 function filterRowX(filter: Int): Int {

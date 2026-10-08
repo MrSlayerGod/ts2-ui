@@ -11,8 +11,8 @@ function BundleSlot({ item, count, index }: { item: Item; count: Int; index: Int
   return (
     <sprite
       ref={cell}
-      x={SlotLayout.FIRST_X + (index % SlotLayout.COLUMNS) * SlotLayout.STRIDE_X}
-      y={SlotLayout.FIRST_Y + (index / SlotLayout.COLUMNS) * SlotLayout.STRIDE_Y}
+      x={SlotLayout.FIRST_X + index % SlotLayout.COLUMNS * SlotLayout.STRIDE_X}
+      y={SlotLayout.FIRST_Y + index / SlotLayout.COLUMNS * SlotLayout.STRIDE_Y}
       w={SlotLayout.W}
       h={SlotLayout.H}
       item={item}

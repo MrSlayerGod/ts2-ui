@@ -96,7 +96,7 @@ function CaBossesList({ extent, areaH, children }: { extent: Int; areaH: Int; ch
   const thumbH: Int = thumbHeightOf(areaH, listH, measured, false);
   const travel: Int = areaH - ARROW * 2 - thumbH;
   const key: Int = measured * 1024 + areaH;
-  const thumbY: Int = thumbKey === key ? thumbAt : ARROW + (travel * at) / Math.max(1, range);
+  const thumbY: Int = thumbKey === key ? thumbAt : ARROW + travel * at / Math.max(1, range);
 
   return (
     <>
@@ -112,7 +112,7 @@ function CaBossesList({ extent, areaH, children }: { extent: Int; areaH: Int; ch
           const next: Int = scrolls ? Math.clamp(0, range, from + event.mouseY * WHEEL) : 0;
           setRemembered(next);
           setDrawn(next);
-          setThumbAt(ARROW + (travel * next) / Math.max(1, range));
+          setThumbAt(ARROW + travel * next / Math.max(1, range));
           setThumbKey(key);
         }}
       >
@@ -132,16 +132,16 @@ function CaBossesList({ extent, areaH, children }: { extent: Int; areaH: Int; ch
             const next: Int = scrolls ? Math.clamp(0, range, from + event.mouseY * WHEEL) : 0;
             setRemembered(next);
             setDrawn(next);
-            setThumbAt(ARROW + (travel * next) / Math.max(1, range));
+            setThumbAt(ARROW + travel * next / Math.max(1, range));
             setThumbKey(key);
           }}
           onClick={(event) => {
             const span: Int = Math.max(1, travel);
             const offset: Int = Math.clamp(0, span, event.mouseY - thumbH / 2);
-            const next: Int = scrolls ? Math.clamp(0, range, (offset * range) / span) : 0;
+            const next: Int = scrolls ? Math.clamp(0, range, offset * range / span) : 0;
             setRemembered(next);
             setDrawn(next);
-            setThumbAt(ARROW + (travel * next) / Math.max(1, range));
+            setThumbAt(ARROW + travel * next / Math.max(1, range));
             setThumbKey(key);
           }}
         />
@@ -155,7 +155,7 @@ function CaBossesList({ extent, areaH, children }: { extent: Int; areaH: Int; ch
           dragMoves
           onDrag={(event) => {
             const offset: Int = event.mouseY;
-            const next: Int = scrolls ? Math.clamp(0, range, (offset * range) / Math.max(1, travel)) : 0;
+            const next: Int = scrolls ? Math.clamp(0, range, offset * range / Math.max(1, travel)) : 0;
             setRemembered(next);
             setDrawn(next);
             setThumbAt(offset + ARROW);
@@ -175,7 +175,7 @@ function CaBossesList({ extent, areaH, children }: { extent: Int; areaH: Int; ch
             const next: Int = scrolls ? Math.clamp(0, range, from - STEP) : 0;
             setRemembered(next);
             setDrawn(next);
-            setThumbAt(ARROW + (travel * next) / Math.max(1, range));
+            setThumbAt(ARROW + travel * next / Math.max(1, range));
             setThumbKey(key);
           }}
         />
@@ -190,7 +190,7 @@ function CaBossesList({ extent, areaH, children }: { extent: Int; areaH: Int; ch
             const next: Int = scrolls ? Math.clamp(0, range, from + STEP) : 0;
             setRemembered(next);
             setDrawn(next);
-            setThumbAt(ARROW + (travel * next) / Math.max(1, range));
+            setThumbAt(ARROW + travel * next / Math.max(1, range));
             setThumbKey(key);
           }}
         />

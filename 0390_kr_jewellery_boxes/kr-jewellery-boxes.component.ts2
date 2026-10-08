@@ -1,6 +1,19 @@
-import { useRef } from 'ts2';
+import { useRef, useState } from 'ts2';
 import { closeInterface, graphicSwapper } from '../lib/lib.helpers';
-import { Boxes, KrArt, KrColors, KrCopy, KrFonts, KrModels, Layout } from './kr-jewellery-boxes.constants';
+import { ScrollbarVertical } from '../lib/scrollbar-vertical.component';
+import {
+  Boxes,
+  KrArt,
+  KrColors,
+  KrCopy,
+  KrFonts,
+  KrModels,
+  KrScrollbar,
+  Layout,
+  RiddleScroll,
+  RiddleView,
+} from './kr-jewellery-boxes.constants';
+import { krRiddleView } from './kr-jewellery-boxes.state';
 
 function textColourSwapper(component: ComponentId, colour: Int): void {
   component.color = colour;
@@ -12,6 +25,8 @@ function modelSwapper(component: ComponentId, model: Model): void {
 
 export function KrJewelleryBoxes(): Component {
   const krTable = useRef();
+  const riddleBox = useRef();
+  const [view] = useState(krRiddleView);
 
   return (
     <>
@@ -43,7 +58,7 @@ export function KrJewelleryBoxes(): Component {
         y={Layout.RIDDLE_LAYER_Y}
         w={Layout.RIDDLE_LAYER_W}
         h={Layout.RIDDLE_LAYER_H}
-        hide
+        hide={view !== RiddleView.RIDDLE}
       >
         <model
           x={Layout.SCROLL_X}
@@ -56,14 +71,23 @@ export function KrJewelleryBoxes(): Component {
           yaw={Layout.SCROLL_YAW}
         />
 
-        <layer x={Layout.RIDDLE_BOX_X} y={Layout.RIDDLE_BOX_Y} w={Layout.RIDDLE_BOX_W} h={Layout.RIDDLE_BOX_H}>
+        <layer
+          ref={riddleBox}
+          x={Layout.RIDDLE_BOX_X}
+          y={Layout.RIDDLE_BOX_Y}
+          w={Layout.RIDDLE_BOX_W}
+          h={Layout.RIDDLE_BOX_H}
+          scrollWidth={view === RiddleView.RIDDLE ? RiddleScroll.W : 0}
+          scrollHeight={view === RiddleView.RIDDLE ? RiddleScroll.H : 0}
+        >
           <text
             x={Layout.RIDDLE_TEXT_X}
             y={Layout.RIDDLE_TEXT_Y}
             w={Layout.RIDDLE_TEXT_W}
             h={Layout.RIDDLE_TEXT_H}
+            text={view === RiddleView.RIDDLE ? KrCopy.RIDDLE : ''}
             font={KrFonts.BODY}
-            color={KrColors.RIDDLE}
+            color={view === RiddleView.RIDDLE ? KrColors.RIDDLE_INK : KrColors.RIDDLE}
           />
         </layer>
       </layer>
@@ -79,30 +103,97 @@ export function KrJewelleryBoxes(): Component {
         yaw={Layout.ICON_YAW}
       />
 
-      <layer x={Layout.SCROLLBAR_X} y={Layout.SCROLLBAR_Y} w={Layout.SCROLLBAR_W} h={Layout.SCROLLBAR_H} />
+      <layer
+        x={Layout.SCROLLBAR_X}
+        y={Layout.SCROLLBAR_Y}
+        w={Layout.SCROLLBAR_W}
+        h={Layout.SCROLLBAR_H}
+        hide={view === RiddleView.BOXES}
+      >
+        {view === RiddleView.RIDDLE && (
+          <ScrollbarVertical
+            content={riddleBox}
+            track={KrScrollbar.TRACK}
+            capTopSprite={KrScrollbar.CAP_TOP}
+            thumbSprite={KrScrollbar.THUMB}
+            capBottomSprite={KrScrollbar.CAP_BOTTOM}
+            arrowUp={KrScrollbar.ARROW_UP}
+            arrowDown={KrScrollbar.ARROW_DOWN}
+          />
+        )}
+      </layer>
 
       <text
         x={Layout.SHOW_X}
         y={Layout.SHOW_Y}
         w={Layout.SHOW_W}
         h={Layout.SHOW_H}
-        text={KrCopy.SHOW_RIDDLE}
+        text={view === RiddleView.RIDDLE ? KrCopy.HIDE_RIDDLE : KrCopy.SHOW_RIDDLE}
         font={KrFonts.BODY}
         color={KrColors.SHOW_REST}
         align="center"
         valign="middle"
-        options={['Show']}
+        options={[view === RiddleView.RIDDLE ? 'Hide' : 'Show']}
         onMouseRepeat={(event) => textColourSwapper(event.self, KrColors.SHOW_HOVER)}
         onMouseLeave={(event) => textColourSwapper(event.self, KrColors.SHOW_REST)}
       />
 
-      <layer x={Boxes.BOX_1.x} y={Boxes.BOX_1.y} w={Boxes.BOX_1.w} h={Boxes.BOX_1.h} options={['Select']} />
-      <layer x={Boxes.BOX_2.x} y={Boxes.BOX_2.y} w={Boxes.BOX_2.w} h={Boxes.BOX_2.h} options={['Select']} />
-      <layer x={Boxes.BOX_3.x} y={Boxes.BOX_3.y} w={Boxes.BOX_3.w} h={Boxes.BOX_3.h} options={['Select']} />
-      <layer x={Boxes.BOX_4.x} y={Boxes.BOX_4.y} w={Boxes.BOX_4.w} h={Boxes.BOX_4.h} options={['Select']} />
-      <layer x={Boxes.BOX_5.x} y={Boxes.BOX_5.y} w={Boxes.BOX_5.w} h={Boxes.BOX_5.h} options={['Select']} />
-      <layer x={Boxes.BOX_6.x} y={Boxes.BOX_6.y} w={Boxes.BOX_6.w} h={Boxes.BOX_6.h} options={['Select']} />
-      <layer x={Boxes.BOX_7.x} y={Boxes.BOX_7.y} w={Boxes.BOX_7.w} h={Boxes.BOX_7.h} options={['Select']} />
+      <layer
+        x={Boxes.BOX_1.x}
+        y={Boxes.BOX_1.y}
+        w={Boxes.BOX_1.w}
+        h={Boxes.BOX_1.h}
+        options={['Select']}
+        hide={view === RiddleView.RIDDLE}
+      />
+      <layer
+        x={Boxes.BOX_2.x}
+        y={Boxes.BOX_2.y}
+        w={Boxes.BOX_2.w}
+        h={Boxes.BOX_2.h}
+        options={['Select']}
+        hide={view === RiddleView.RIDDLE}
+      />
+      <layer
+        x={Boxes.BOX_3.x}
+        y={Boxes.BOX_3.y}
+        w={Boxes.BOX_3.w}
+        h={Boxes.BOX_3.h}
+        options={['Select']}
+        hide={view === RiddleView.RIDDLE}
+      />
+      <layer
+        x={Boxes.BOX_4.x}
+        y={Boxes.BOX_4.y}
+        w={Boxes.BOX_4.w}
+        h={Boxes.BOX_4.h}
+        options={['Select']}
+        hide={view === RiddleView.RIDDLE}
+      />
+      <layer
+        x={Boxes.BOX_5.x}
+        y={Boxes.BOX_5.y}
+        w={Boxes.BOX_5.w}
+        h={Boxes.BOX_5.h}
+        options={['Select']}
+        hide={view === RiddleView.RIDDLE}
+      />
+      <layer
+        x={Boxes.BOX_6.x}
+        y={Boxes.BOX_6.y}
+        w={Boxes.BOX_6.w}
+        h={Boxes.BOX_6.h}
+        options={['Select']}
+        hide={view === RiddleView.RIDDLE}
+      />
+      <layer
+        x={Boxes.BOX_7.x}
+        y={Boxes.BOX_7.y}
+        w={Boxes.BOX_7.w}
+        h={Boxes.BOX_7.h}
+        options={['Select']}
+        hide={view === RiddleView.RIDDLE}
+      />
 
       <layer
         x={Boxes.BOX_8.x}
@@ -110,6 +201,7 @@ export function KrJewelleryBoxes(): Component {
         w={Boxes.BOX_8.w}
         h={Boxes.BOX_8.h}
         options={['Select']}
+        hide={view === RiddleView.RIDDLE}
         onClick={() => modelSwapper(krTable, KrModels.TABLE_OPENED)}
       />
 

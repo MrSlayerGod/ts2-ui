@@ -90,70 +90,70 @@ export function potionLoadable(item: Item): Boolean {
 export function prepotLoadoutPotion(loadout: Int, slot: Int): Int {
   if (loadout === 0) {
     if (slot === 0) {
-      return useServerState(Varps.PREPOT_DEVICE_LOADOUT_0_SLOT_0_POTION);
+      return (useServerState(Varps.PREPOT_DEVICE_LOADOUT_0_SLOT_0_POTION));
     }
     if (slot === 1) {
-      return useServerState(Varps.PREPOT_DEVICE_LOADOUT_0_SLOT_1_POTION);
+      return (useServerState(Varps.PREPOT_DEVICE_LOADOUT_0_SLOT_1_POTION));
     }
     if (slot === 2) {
-      return useServerState(Varps.PREPOT_DEVICE_LOADOUT_0_SLOT_2_POTION);
+      return (useServerState(Varps.PREPOT_DEVICE_LOADOUT_0_SLOT_2_POTION));
     }
     if (slot === 3) {
-      return useServerState(Varps.PREPOT_DEVICE_LOADOUT_0_SLOT_3_POTION);
+      return (useServerState(Varps.PREPOT_DEVICE_LOADOUT_0_SLOT_3_POTION));
     }
     if (slot === 4) {
-      return useServerState(Varps.PREPOT_DEVICE_LOADOUT_0_SLOT_4_POTION);
+      return (useServerState(Varps.PREPOT_DEVICE_LOADOUT_0_SLOT_4_POTION));
     }
   }
   if (loadout === 1) {
     if (slot === 0) {
-      return useServerState(Varps.PREPOT_DEVICE_LOADOUT_1_SLOT_0_POTION);
+      return (useServerState(Varps.PREPOT_DEVICE_LOADOUT_1_SLOT_0_POTION));
     }
     if (slot === 1) {
-      return useServerState(Varps.PREPOT_DEVICE_LOADOUT_1_SLOT_1_POTION);
+      return (useServerState(Varps.PREPOT_DEVICE_LOADOUT_1_SLOT_1_POTION));
     }
     if (slot === 2) {
-      return useServerState(Varps.PREPOT_DEVICE_LOADOUT_1_SLOT_2_POTION);
+      return (useServerState(Varps.PREPOT_DEVICE_LOADOUT_1_SLOT_2_POTION));
     }
     if (slot === 3) {
-      return useServerState(Varps.PREPOT_DEVICE_LOADOUT_1_SLOT_3_POTION);
+      return (useServerState(Varps.PREPOT_DEVICE_LOADOUT_1_SLOT_3_POTION));
     }
     if (slot === 4) {
-      return useServerState(Varps.PREPOT_DEVICE_LOADOUT_1_SLOT_4_POTION);
+      return (useServerState(Varps.PREPOT_DEVICE_LOADOUT_1_SLOT_4_POTION));
     }
   }
   if (loadout === 2) {
     if (slot === 0) {
-      return useServerState(Varps.PREPOT_DEVICE_LOADOUT_2_SLOT_0_POTION);
+      return (useServerState(Varps.PREPOT_DEVICE_LOADOUT_2_SLOT_0_POTION));
     }
     if (slot === 1) {
-      return useServerState(Varps.PREPOT_DEVICE_LOADOUT_2_SLOT_1_POTION);
+      return (useServerState(Varps.PREPOT_DEVICE_LOADOUT_2_SLOT_1_POTION));
     }
     if (slot === 2) {
-      return useServerState(Varps.PREPOT_DEVICE_LOADOUT_2_SLOT_2_POTION);
+      return (useServerState(Varps.PREPOT_DEVICE_LOADOUT_2_SLOT_2_POTION));
     }
     if (slot === 3) {
-      return useServerState(Varps.PREPOT_DEVICE_LOADOUT_2_SLOT_3_POTION);
+      return (useServerState(Varps.PREPOT_DEVICE_LOADOUT_2_SLOT_3_POTION));
     }
     if (slot === 4) {
-      return useServerState(Varps.PREPOT_DEVICE_LOADOUT_2_SLOT_4_POTION);
+      return (useServerState(Varps.PREPOT_DEVICE_LOADOUT_2_SLOT_4_POTION));
     }
   }
   if (loadout === 3) {
     if (slot === 0) {
-      return useServerState(Varps.PREPOT_DEVICE_LOADOUT_3_SLOT_0_POTION);
+      return (useServerState(Varps.PREPOT_DEVICE_LOADOUT_3_SLOT_0_POTION));
     }
     if (slot === 1) {
-      return useServerState(Varps.PREPOT_DEVICE_LOADOUT_3_SLOT_1_POTION);
+      return (useServerState(Varps.PREPOT_DEVICE_LOADOUT_3_SLOT_1_POTION));
     }
     if (slot === 2) {
-      return useServerState(Varps.PREPOT_DEVICE_LOADOUT_3_SLOT_2_POTION);
+      return (useServerState(Varps.PREPOT_DEVICE_LOADOUT_3_SLOT_2_POTION));
     }
     if (slot === 3) {
-      return useServerState(Varps.PREPOT_DEVICE_LOADOUT_3_SLOT_3_POTION);
+      return (useServerState(Varps.PREPOT_DEVICE_LOADOUT_3_SLOT_3_POTION));
     }
     if (slot === 4) {
-      return useServerState(Varps.PREPOT_DEVICE_LOADOUT_3_SLOT_4_POTION);
+      return (useServerState(Varps.PREPOT_DEVICE_LOADOUT_3_SLOT_4_POTION));
     }
   }
   return -1;

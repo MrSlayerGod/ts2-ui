@@ -45,3 +45,17 @@ export const Layout = {
   CLOSE_W: 26,
   CLOSE_H: 23,
 };
+
+export enum PlaqueBar {
+  TRACK = 792,
+  CAP_TOP = 789,
+  THUMB = 790,
+  CAP_BOTTOM = 791,
+  ARROW_UP = 773,
+  ARROW_DOWN = 788,
+}
+
+export const PlaqueText = {
+  LINE_H: 12,
+  PAD: 3,
+};

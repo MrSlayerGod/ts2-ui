@@ -1,5 +1,18 @@
+import { useState } from 'ts2';
+
 import { closeInterface, graphicSwapper } from '../lib/lib.helpers';
-import { GameoverArt, GameoverColor, GameoverFonts, GameoverModel, Layout } from './clanwars-gameover.constants';
+import {
+  GameoverArt,
+  GameoverColor,
+  GameoverFonts,
+  GameoverModel,
+  GameoverOutcome,
+  GameoverText,
+  Layout,
+  WinLayout,
+  gameoverMessage,
+  gameoverOutcome,
+} from './clanwars-gameover.constants';
 
 export function ClanwarsGameover(): Component {
   return (
@@ -15,32 +28,7 @@ export function ClanwarsGameover(): Component {
         yaw={Layout.BACKDROP_YAW}
       />
 
-      <model x={0} y={0} w={Layout.MODEL_W} h={Layout.MODEL_H} zoom={Layout.DECOR_ZOOM} />
-
-      <text
-        x={Layout.TITLE_X}
-        y={Layout.TITLE_Y}
-        w={Layout.TITLE_W}
-        h={Layout.TITLE_H}
-        font={GameoverFonts.TITLE}
-        color={GameoverColor.LABEL}
-        align="center"
-        valign="middle"
-        shadow
-      />
-
-      <text
-        x={Layout.MESSAGE_X}
-        y={Layout.MESSAGE_Y}
-        w={Layout.MESSAGE_W}
-        h={Layout.MESSAGE_H}
-        font={GameoverFonts.MESSAGE}
-        color={GameoverColor.LABEL}
-        align="center"
-        valign="middle"
-        shadow
-        lineHeight={Layout.MESSAGE_LINE_H}
-      />
+      <GameoverResult />
 
       <sprite
         x={Layout.CLOSE_X}
@@ -55,4 +43,76 @@ export function ClanwarsGameover(): Component {
       />
     </>
   );
+}
+
+function GameoverResult(): Component {
+  const [outcome] = useState(gameoverOutcome);
+  const [message] = useState(gameoverMessage);
+
+  const won: Boolean = outcome === GameoverOutcome.WON;
+  const shown: Boolean = outcome !== GameoverOutcome.NONE;
+
+  let decor: Model = -1;
+  let title: String = '';
+  if (won) {
+    decor = GameoverModel.TROPHY;
+    title = GameoverText.WON;
+  } else if (shown) {
+    decor = GameoverModel.SKULL;
+    title = GameoverText.LOST;
+  }
+
+  return (
+    <>
+      <model
+        x={0}
+        y={0}
+        w={Layout.MODEL_W}
+        h={Layout.MODEL_H}
+        model={decor}
+        offsetX={won ? WinLayout.DECOR_X : 0}
+        offsetY={won ? WinLayout.DECOR_Y : (shown ? Layout.LOST_DECOR_Y : 0)}
+        pitch={shown ? Layout.DECOR_PITCH : 0}
+        zoom={won ? WinLayout.DECOR_ZOOM : (shown ? Layout.LOST_DECOR_ZOOM : Layout.DECOR_ZOOM)}
+      />
+
+      <text
+        x={won ? WinLayout.TITLE_X : Layout.TITLE_X}
+        y={won ? WinLayout.TITLE_Y : Layout.TITLE_Y}
+        w={won ? WinLayout.TITLE_W : Layout.TITLE_W}
+        h={Layout.TITLE_H}
+        text={title}
+        font={GameoverFonts.TITLE}
+        color={GameoverColor.LABEL}
+        align="center"
+        valign="middle"
+        shadow
+      />
+
+      <text
+        x={won ? WinLayout.MESSAGE_X : Layout.MESSAGE_X}
+        y={won ? WinLayout.MESSAGE_Y : Layout.MESSAGE_Y}
+        w={won ? WinLayout.MESSAGE_W : Layout.MESSAGE_W}
+        h={won ? WinLayout.MESSAGE_H : Layout.MESSAGE_H}
+        text={message}
+        font={GameoverFonts.MESSAGE}
+        color={GameoverColor.LABEL}
+        align={won ? 'left' : 'center'}
+        valign="middle"
+        shadow
+        lineHeight={Layout.MESSAGE_LINE_H}
+      />
+    </>
+  );
+}
+
+export function clanwarsGameoverShow(won: Int, text: String): void {
+  const [, setOutcome] = useState(gameoverOutcome);
+  const [, setMessage] = useState(gameoverMessage);
+  if (won === 1) {
+    setOutcome(GameoverOutcome.WON);
+  } else {
+    setOutcome(GameoverOutcome.LOST);
+  }
+  setMessage(text);
 }

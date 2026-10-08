@@ -1,0 +1,13 @@
+import { useState } from 'ts2';
+
+import { craftingListening } from '../lib/game/varcs';
+
+export function craftingInit(): void {
+  const [, setListening] = useState(craftingListening);
+  setListening(1);
+}
+
+export function craftingClose(): void {
+  const [, setListening] = useState(craftingListening);
+  setListening(0);
+}

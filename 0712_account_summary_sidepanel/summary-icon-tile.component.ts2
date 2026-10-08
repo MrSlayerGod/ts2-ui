@@ -1,0 +1,45 @@
+import { EtchedBox } from '../0656_league_side_panel/etched-box.component';
+import { textLineCount } from '../lib/lib.engine';
+import { Layout, SummaryColor, SummaryFonts } from './account-summary-sidepanel.constants';
+
+const ICON_LABEL_MEASURE = 72;
+const ICON_LABEL_Y = 10;
+const ICON_ONLY_DY = 15;
+
+export function SummaryIconTile({
+  label,
+  icon,
+  height,
+  hovered = 0,
+}: {
+  label: String;
+  icon: Sprite;
+  height: Int;
+  hovered?: Int;
+}): Component {
+  const labelHeight: Int = textLineCount(label, ICON_LABEL_MEASURE, SummaryFonts.BODY) * Layout.LINE_H;
+  return (
+    <layer w="fill" h="fill">
+      <EtchedBox x={0} y={0} w={Layout.COLUMN_W} h={height} />
+      <text
+        x={Layout.LABEL_X}
+        y={ICON_LABEL_Y}
+        w={Layout.LABEL_W}
+        h={height}
+        text={label}
+        font={SummaryFonts.BODY}
+        color={hovered === 1 ? SummaryColor.HOVER : SummaryColor.LABEL}
+        align="center"
+        valign="top"
+        shadow
+      />
+      <sprite
+        x={Layout.COLUMN_W / 2 - Layout.ICON / 2}
+        y={labelHeight + ICON_ONLY_DY}
+        w={Layout.ICON}
+        h={Layout.ICON}
+        sprite={icon}
+      />
+    </layer>
+  );
+}

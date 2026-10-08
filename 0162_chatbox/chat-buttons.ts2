@@ -17,6 +17,7 @@ import {
 import { mobileGameframe } from '../lib/lib.overlay';
 import { onMobile, toplevelComponents } from '../lib/lib.helpers';
 import { CHAT_VIEW_COLLAPSED, ChatTab } from './chatbox.data';
+import { chatAlertMarks } from './chatbox.state';
 import {
   tab0PlateRef,
   tab0Ref,
@@ -154,14 +155,17 @@ export function chatButtonHover(entering: Int, tab: Int): void {
   const [highlight, setHighlight] = useState(chatHighlight);
   if (entering === 1) {
     setHighlight(tab);
+    chatAlertRepaint();
   } else if (highlight === tab) {
     setHighlight(-1);
+    chatAlertRepaint();
   }
 }
 
 export function chatAlertEnable(tab: Int): void {
   const [view] = useState(chatView);
   const [chatDisabled] = useState(osmChatboxDisabled);
+  const [marks, setMarks] = useState(chatAlertMarks);
 
   let onStone: Int = 0;
   if (onMobile() && chatDisabled === 1) {
@@ -181,10 +185,12 @@ export function chatAlertEnable(tab: Int): void {
     return;
   }
   chatAlertSet(tab, FLASH_START);
+  setMarks(CS2.bit_clear(CS2.bit_set(marks, tab + BOUND_BIT), tab));
 }
 
 export const FLASH_CYCLES = 25;
 export const FLASH_START = 249;
+const BOUND_BIT = 8;
 
 export function chatAlertTick(): void {
   chatAlertStep(ChatTab.GAME);
@@ -196,57 +202,63 @@ export function chatAlertTick(): void {
 }
 
 function chatAlertStep(tab: Int): void {
-  const remaining: Int = chatAlertGet(tab);
-  if (remaining <= FLASH_CYCLES) {
+  const [marks] = useState(chatAlertMarks);
+  if (!CS2.testbit(marks, tab + BOUND_BIT)) {
     return;
+  }
+  const remaining: Int = chatAlertGet(tab);
+  if (remaining % FLASH_CYCLES === 0) {
+    chatAlertRepaint();
+    if (remaining / FLASH_CYCLES <= 1) {
+      chatAlertUnbind(tab);
+      return;
+    }
   }
   chatAlertSet(tab, remaining - 1);
 }
 
+function chatAlertUnbind(tab: Int): void {
+  const [marks, setMarks] = useState(chatAlertMarks);
+  const current: Int = marks;
+  setMarks(CS2.bit_clear(current, tab + BOUND_BIT));
+}
+
+export function chatAlertRepaint(): void {
+  const [marks, setMarks] = useState(chatAlertMarks);
+  let next: Int = marks;
+  next = plateBit(next, ChatTab.GAME, chatAlertGet(ChatTab.GAME));
+  next = plateBit(next, ChatTab.PUBLIC, chatAlertGet(ChatTab.PUBLIC));
+  next = plateBit(next, ChatTab.PRIVATE, chatAlertGet(ChatTab.PRIVATE));
+  next = plateBit(next, ChatTab.CHANNEL, chatAlertGet(ChatTab.CHANNEL));
+  next = plateBit(next, ChatTab.CLAN, chatAlertGet(ChatTab.CLAN));
+  next = plateBit(next, ChatTab.TRADE, chatAlertGet(ChatTab.TRADE));
+  next = plateBit(next, ALERT_BIT_ANY, chatAlertGet(ANY_TAB));
+  setMarks(next);
+}
+
+function plateBit(marks: Int, bit: Int, counter: Int): Int {
+  if (counter / FLASH_CYCLES % 2 === 1) {
+    return CS2.bit_set(marks, bit);
+  }
+  return CS2.bit_clear(marks, bit);
+}
+
 export function chatAlertQuarters(): Int {
-  const [game] = useState(chatAlertGame);
-  const [publicChat] = useState(chatAlertPublic);
-  const [privateChat] = useState(chatAlertPrivate);
-  const [channel] = useState(chatAlertFriendschat);
-  const [clan] = useState(chatAlertClan);
-  const [trade] = useState(chatAlertTrade);
-
+  const [marks] = useState(chatAlertMarks);
   let bits: Int = 0;
-  if ((game / FLASH_CYCLES) % 2 === 1) {
-    bits = bits + 2;
-  }
-  if ((publicChat / FLASH_CYCLES) % 2 === 1) {
-    bits = bits + 4;
-  }
-  if ((privateChat / FLASH_CYCLES) % 2 === 1) {
-    bits = bits + 8;
-  }
-  if ((channel / FLASH_CYCLES) % 2 === 1) {
-    bits = bits + 16;
-  }
-  if ((clan / FLASH_CYCLES) % 2 === 1) {
-    bits = bits + 32;
-  }
-  if ((trade / FLASH_CYCLES) % 2 === 1) {
-    bits = bits + 64;
-  }
+  bits = litBit(bits, marks, ChatTab.GAME, chatAlertGet(ChatTab.GAME));
+  bits = litBit(bits, marks, ChatTab.PUBLIC, chatAlertGet(ChatTab.PUBLIC));
+  bits = litBit(bits, marks, ChatTab.PRIVATE, chatAlertGet(ChatTab.PRIVATE));
+  bits = litBit(bits, marks, ChatTab.CHANNEL, chatAlertGet(ChatTab.CHANNEL));
+  bits = litBit(bits, marks, ChatTab.CLAN, chatAlertGet(ChatTab.CLAN));
+  bits = litBit(bits, marks, ChatTab.TRADE, chatAlertGet(ChatTab.TRADE));
+  bits = litBit(bits, marks, ALERT_BIT_ANY, chatAlertGet(ANY_TAB));
+  return bits;
+}
 
-  let any: Int = 0;
-  if (game > 0) {
-    any = game;
-  } else if (publicChat > 0) {
-    any = publicChat;
-  } else if (privateChat > 0) {
-    any = privateChat;
-  } else if (channel > 0) {
-    any = channel;
-  } else if (clan > 0) {
-    any = clan;
-  } else if (trade > 0) {
-    any = trade;
-  }
-  if ((any / FLASH_CYCLES) % 2 === 1) {
-    bits = bits + 128;
+function litBit(bits: Int, marks: Int, bit: Int, counter: Int): Int {
+  if (counter > 0 && CS2.testbit(marks, bit)) {
+    return CS2.bit_set(bits, bit);
   }
   return bits;
 }

@@ -1,21 +1,20 @@
-import { useServerState } from 'ts2';
+import { useServerState, useState } from 'ts2';
 
 import { BoardButton } from '../lib/board-button.component';
-import { ScrollbarVertical } from '../lib/scrollbar-vertical.component';
 import { SteelBorderEntrypoint } from '../lib/steel-border-entrypoint.component';
 import { ThinBoxEntrypoint } from '../lib/thin-box-entrypoint.component';
 import { Varps } from '../lib/game/varps';
 import { resetRaidsPartyList } from './raids-lobby-partylist.helpers';
 import {
+  BoardPausebutton,
+  boardAnchorsRef,
   Copy,
   Layout,
-  RaidsPartylistColor,
-  RaidsPartylistFonts,
-  RaidsPartylistScrollbar,
-  RaidsPartylistSlots,
+  ListSort,
   RaidsPartylistSprites,
-  listRef,
 } from './raids-lobby-partylist.constants';
+import { RaidsListSortColumn, RaidsPartyListPane, RaidsRefreshButton } from './raids-lobby-partylist-rows.component';
+import { raidsListBuilt } from './raids-lobby-partylist.state';
 
 export function RaidsLobbyPartylist(): Component {
   return (
@@ -39,66 +38,49 @@ export function RaidsLobbyPartylist(): Component {
           />
 
           <layer x="center" y={0} w="fill" h={Layout.HEADER_H}>
-            <layer x={Layout.COL_MEMBERS_X} y="center" w={Layout.COL_MEMBERS_W} h={{ fill: Layout.HEADER_INSET_H }} />
-            <layer x={Layout.COL_SIZE_X} y="center" w={Layout.COL_SIZE_W} h={{ fill: Layout.HEADER_INSET_H }} />
-            <layer x={Layout.COL_LEADER_X} y="center" w={Layout.COL_LEADER_W} h={{ fill: Layout.HEADER_INSET_H }} />
-            <layer x={Layout.COL_COMBAT_X} y="center" w={Layout.COL_COMBAT_W} h={{ fill: Layout.HEADER_INSET_H }} />
-            <layer x={Layout.COL_TOTAL_X} y="center" w={Layout.COL_TOTAL_W} h={{ fill: Layout.HEADER_INSET_H }} />
-            <layer x={Layout.COL_SCALING_X} y="center" w={Layout.COL_SCALING_W} h={{ fill: Layout.HEADER_INSET_H }} />
-            <layer x={Layout.COL_CM_X} y="center" w={Layout.COL_CM_W} h={{ fill: Layout.HEADER_INSET_H }} />
-            <layer right={Layout.COL_AGE_RIGHT} y="center" w={Layout.COL_AGE_W} h={{ fill: Layout.HEADER_INSET_H }} />
+            <layer x={Layout.COL_MEMBERS_X} y="center" w={Layout.COL_MEMBERS_W} h={{ fill: Layout.HEADER_INSET_H }}>
+              <RaidsListSortColumn asc={ListSort.MEMBERS_ASC} desc={ListSort.MEMBERS_DESC} tip={Copy.TIP_MEMBERS} />
+            </layer>
+            <layer x={Layout.COL_SIZE_X} y="center" w={Layout.COL_SIZE_W} h={{ fill: Layout.HEADER_INSET_H }}>
+              <RaidsListSortColumn asc={ListSort.SIZE_ASC} desc={ListSort.SIZE_DESC} tip={Copy.TIP_SIZE} />
+            </layer>
+            <layer x={Layout.COL_LEADER_X} y="center" w={Layout.COL_LEADER_W} h={{ fill: Layout.HEADER_INSET_H }}>
+              <RaidsListSortColumn asc={ListSort.LEADER_ASC} desc={ListSort.LEADER_DESC} tip={Copy.TIP_LEADER} />
+            </layer>
+            <layer x={Layout.COL_COMBAT_X} y="center" w={Layout.COL_COMBAT_W} h={{ fill: Layout.HEADER_INSET_H }}>
+              <RaidsListSortColumn asc={ListSort.COMBAT_ASC} desc={ListSort.COMBAT_DESC} tip={Copy.TIP_COMBAT} />
+            </layer>
+            <layer x={Layout.COL_TOTAL_X} y="center" w={Layout.COL_TOTAL_W} h={{ fill: Layout.HEADER_INSET_H }}>
+              <RaidsListSortColumn asc={ListSort.TOTAL_ASC} desc={ListSort.TOTAL_DESC} tip={Copy.TIP_TOTAL} />
+            </layer>
+            <layer x={Layout.COL_SCALING_X} y="center" w={Layout.COL_SCALING_W} h={{ fill: Layout.HEADER_INSET_H }}>
+              <RaidsListSortColumn asc={ListSort.SCALING_ASC} desc={ListSort.SCALING_DESC} tip={Copy.TIP_SCALING} />
+            </layer>
+            <layer x={Layout.COL_CM_X} y="center" w={Layout.COL_CM_W} h={{ fill: Layout.HEADER_INSET_H }}>
+              <RaidsListSortColumn
+                asc={ListSort.CHALLENGE_ASC}
+                desc={ListSort.CHALLENGE_DESC}
+                tip={Copy.TIP_CHALLENGE}
+              />
+            </layer>
+            <layer right={Layout.COL_AGE_RIGHT} y="center" w={Layout.COL_AGE_W} h={{ fill: Layout.HEADER_INSET_H }}>
+              <RaidsListSortColumn asc={ListSort.AGE_ASC} desc={ListSort.AGE_DESC} tip={Copy.TIP_AGE} />
+            </layer>
             <ThinBoxEntrypoint />
           </layer>
 
-          <layer
-            ref={listRef}
-            x={Layout.LIST_X}
-            y={{ bottom: Layout.LIST_BOTTOM }}
-            w={{ fill: Layout.LIST_INSET_W }}
-            h={{ fill: Layout.LIST_INSET_H }}
-          >
-            {RaidsPartylistSlots.map(() => (
-              <layer x="center" y={0} w="fill" h={Layout.ROW_H} hide />
-            ))}
-            <text
-              x="center"
-              y="center"
-              w="fill"
-              h="fill"
-              text={Copy.LOADING}
-              font={RaidsPartylistFonts.BODY}
-              color={RaidsPartylistColor.LOADING}
-              align="center"
-              valign="middle"
-              shadow
-            />
-          </layer>
-
-          <layer
-            right={Layout.SCROLLBAR_RIGHT}
-            y={{ bottom: Layout.LIST_BOTTOM }}
-            w={Layout.SCROLLBAR_W}
-            h={{ fill: Layout.LIST_INSET_H }}
-          >
-            <ScrollbarVertical
-              content={listRef}
-              track={RaidsPartylistScrollbar.TRACK}
-              capTopSprite={RaidsPartylistScrollbar.CAP_TOP}
-              thumbSprite={RaidsPartylistScrollbar.THUMB}
-              capBottomSprite={RaidsPartylistScrollbar.CAP_BOTTOM}
-              arrowUp={RaidsPartylistScrollbar.ARROW_UP}
-              arrowDown={RaidsPartylistScrollbar.ARROW_DOWN}
-            />
+          <layer x={0} y={0} w="fill" h="fill">
+            <RaidsPartyListPane />
           </layer>
 
           <ThinBoxEntrypoint />
         </layer>
 
-        <layer x={Layout.REFRESH_X} y="bottom" w={Layout.BUTTON_W} h={Layout.BUTTON_H} hide>
-          <BoardButton label={Copy.REFRESH} />
+        <layer x={Layout.REFRESH_X} y="bottom" w={Layout.BUTTON_W} h={Layout.BUTTON_H}>
+          <RaidsRefreshButton />
         </layer>
 
-        <layer right={Layout.MYPARTY_RIGHT} y="bottom" w={Layout.BUTTON_W} h={Layout.BUTTON_H} hide>
+        <layer right={Layout.MYPARTY_RIGHT} y="bottom" w={Layout.BUTTON_W} h={Layout.BUTTON_H}>
           <RaidsMyPartyButton />
         </layer>
       </layer>
@@ -108,9 +90,14 @@ export function RaidsLobbyPartylist(): Component {
 
 export function RaidsMyPartyButton(): Component {
   const partyHeld: Int = useServerState(Varps.RAIDS_PARTY_GROUPHOLDER);
+  const [built] = useState(raidsListBuilt);
   return (
-    <layer w="fill" h="fill">
-      <BoardButton label={partyHeld !== -1 ? Copy.MY_PARTY : Copy.MAKE_PARTY} />
+    <layer w="fill" h="fill" hide={built !== 1}>
+      <BoardButton
+        label={partyHeld !== -1 ? Copy.MY_PARTY : Copy.MAKE_PARTY}
+        resumeIn={boardAnchorsRef}
+        resumeAt={BoardPausebutton.MY_PARTY}
+      />
     </layer>
   );
 }

@@ -13,12 +13,14 @@ import {
   Toggle,
 } from './adventurepath-side.constants';
 import { desktop } from './adventurepath-side.helpers';
+import { settingsRedraws } from './adventurepath-side.state';
 import { SettingsToggle } from './settings-toggle.component';
 import { StoneButtonFilled } from '../lib/stone-button-filled.component';
 import { StoneButtonPressedFilled } from '../lib/stone-button-pressed-filled.component';
 
 export function SettingsTab(): Component {
   const showing: Int = useServerState(SideVarbits.SETTINGS_SELECTED);
+  const [redraws] = useState(settingsRedraws);
   const toggles = useRef();
 
   return (
@@ -31,8 +33,9 @@ export function SettingsTab(): Component {
           w={{ fill: Toggle.PANE_INSET_W }}
           h={{ fill: Toggle.PANE_INSET_H }}
           scrollHeight={Toggle.CONTENT_H}
+          rebuildOn={redraws}
         >
-          <ToggleRows />
+          {redraws >= 0 && <ToggleRows />}
         </layer>
 
         <layer x={{ right: 7 }} y="center" w={Toggle.SCROLLBAR_W} h={{ fill: Toggle.PANE_INSET_H }}>
@@ -64,8 +67,8 @@ export function SettingsTab(): Component {
         lineHeight={Layout.TITLE_LINE_H}
       />
 
-      <layer x={0} y={0} w={75} h={30}>
-        <BackButton />
+      <layer x={0} y={0} w={75} h={30} rebuildOn={redraws}>
+        {redraws >= 0 && <BackButton />}
       </layer>
     </layer>
   );

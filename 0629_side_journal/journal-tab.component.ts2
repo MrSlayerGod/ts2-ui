@@ -1,8 +1,9 @@
-import { useState } from 'ts2';
+import { useInterval, useServerState, useState } from 'ts2';
 
+import { clientClock } from '../lib/lib.engine';
 import { onMobile } from '../lib/lib.helpers';
-import { JournalLayout, JournalSprites } from './side-journal.constants';
-import { selectJournalTab } from './side-journal.state';
+import { JournalLayout, JournalSprites, JournalVarbits } from './side-journal.constants';
+import { leagueIconFlashing, selectJournalTab } from './side-journal.state';
 
 export function JournalTab({
   index,
@@ -12,6 +13,7 @@ export function JournalTab({
   selected,
   transparent,
   painted,
+  blink = 0,
 }: {
   index: Int;
   icon: Sprite;
@@ -20,8 +22,11 @@ export function JournalTab({
   selected: Int;
   transparent: Int;
   painted: Int;
+  blink?: Int;
 }): Component {
   const [hovered, setHovered] = useState(0);
+  const [flashing] = useState(leagueIconFlashing);
+  const blinking: Int = blink === 1 && flashing === 1 ? 1 : 0;
 
   if (onMobile()) {
     return (
@@ -36,7 +41,15 @@ export function JournalTab({
           selectJournalTab(event.option, index);
         }}
       >
-        <JournalTabSkin icon={icon} selected={selected} transparent={transparent} painted={painted} hovered={0} />
+        <JournalTabSkin
+          icon={icon}
+          selected={selected}
+          transparent={transparent}
+          painted={painted}
+          hovered={0}
+          iconHidden={blinking}
+        />
+        {blinking === 1 ? <LeagueIconBlink icon={icon} /> : null}
       </layer>
     );
   }
@@ -56,7 +69,15 @@ export function JournalTab({
         selectJournalTab(event.option, index);
       }}
     >
-      <JournalTabSkin icon={icon} selected={selected} transparent={transparent} painted={painted} hovered={hovered} />
+      <JournalTabSkin
+        icon={icon}
+        selected={selected}
+        transparent={transparent}
+        painted={painted}
+        hovered={hovered}
+        iconHidden={blinking}
+      />
+      {blinking === 1 ? <LeagueIconBlink icon={icon} /> : null}
     </layer>
   );
 }
@@ -67,12 +88,14 @@ function JournalTabSkin({
   transparent,
   painted,
   hovered,
+  iconHidden,
 }: {
   icon: Sprite;
   selected: Int;
   transparent: Int;
   painted: Int;
   hovered: Int;
+  iconHidden: Int;
 }): Component {
   if (painted === 0) {
     return (
@@ -128,6 +151,7 @@ function JournalTabSkin({
           w={JournalLayout.ICON_BOX}
           h={JournalLayout.ICON_BOX}
           sprite={icon}
+          hide={iconHidden === 1}
         />
       </layer>
     );
@@ -187,6 +211,7 @@ function JournalTabSkin({
           w={JournalLayout.ICON_BOX}
           h={JournalLayout.ICON_BOX}
           sprite={icon}
+          hide={iconHidden === 1}
         />
       </layer>
     );
@@ -253,6 +278,40 @@ function JournalTabSkin({
         w={JournalLayout.ICON_BOX}
         h={JournalLayout.ICON_BOX}
         sprite={icon}
+        hide={iconHidden === 1}
+      />
+    </layer>
+  );
+}
+
+const LEAGUE_FLASH_PERIOD = 20;
+const LEAGUE_FLASH_LAST_STEP = 4;
+
+function LeagueIconBlink({ icon }: { icon: Sprite }): Component {
+  const [off, setOff] = useState(0);
+  const [, setFlashing] = useState(leagueIconFlashing);
+  const tutorial: Int = useServerState(JournalVarbits.LEAGUE_TUTORIAL);
+
+  useInterval(() => {
+    if (tutorial > LEAGUE_FLASH_LAST_STEP) {
+      setOff(0);
+      setFlashing(0);
+    } else if (clientClock() % LEAGUE_FLASH_PERIOD < LEAGUE_FLASH_PERIOD / 2) {
+      setOff(0);
+    } else {
+      setOff(1);
+    }
+  });
+
+  return (
+    <layer w="fill" h="fill">
+      <sprite
+        x="center"
+        y={{ bottom: JournalLayout.ICON_BOTTOM }}
+        w={JournalLayout.ICON_BOX}
+        h={JournalLayout.ICON_BOX}
+        sprite={icon}
+        hide={off === 1}
       />
     </layer>
   );

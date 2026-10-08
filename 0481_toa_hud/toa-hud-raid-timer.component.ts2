@@ -1,0 +1,75 @@
+import { CS2, sessionState, useInterval, useRef, useServerState, useState } from 'ts2';
+
+import { Varbits } from '../lib/game/varbits';
+import { speedrunClockLabel } from '../0779_speedrunning_panel/speedrunning-panel.helpers';
+import { Layout, ToaHudColor, ToaHudFonts } from './toa-hud.constants';
+
+export const raidClockRunning = sessionState(0);
+export const raidClockOffset = sessionState(0);
+export const raidClockPrecise = sessionState(0);
+export const raidClockSeparate = sessionState(0);
+export const raidClockText = sessionState('00:00');
+
+export function toaSpeedrunTimeUpdate(start: Int, frozen: Int): void {
+  const [, setRunning] = useState(raidClockRunning);
+  const [, setText] = useState(raidClockText);
+  if (start === -1) {
+    setRunning(0);
+    setText('-');
+    return;
+  }
+  const [, setOffset] = useState(raidClockOffset);
+  const [, setPrecise] = useState(raidClockPrecise);
+  const [, setSeparate] = useState(raidClockSeparate);
+  const offset: Int = start * 30 - CS2.clientclock();
+  const precise: Int = useServerState(Varbits.OPTION_PRECISE_TIMING);
+  const separate: Int = useServerState(Varbits.OPTION_SEPARATE_HOURS);
+  setOffset(offset);
+  setPrecise(precise);
+  setSeparate(separate);
+  if (frozen === 1) {
+    setRunning(0);
+    setText(speedrunClockLabel(offset, precise, separate));
+    return;
+  }
+  setRunning(1);
+}
+
+export function resetRaidClock(): void {
+  const [, setRunning] = useState(raidClockRunning);
+  const [, setText] = useState(raidClockText);
+  setRunning(0);
+  setText('00:00');
+}
+
+function raidClockTick(): void {
+  const [running] = useState(raidClockRunning);
+  if (running === 0) {
+    return;
+  }
+  const [offset] = useState(raidClockOffset);
+  const [precise] = useState(raidClockPrecise);
+  const [separate] = useState(raidClockSeparate);
+  const [, setText] = useState(raidClockText);
+  setText(speedrunClockLabel(offset, precise, separate));
+}
+
+export function RaidTimer(): Component {
+  const [text] = useState(raidClockText);
+  const self = useRef();
+  useInterval(() => raidClockTick(), self);
+  return (
+    <text
+      ref={self}
+      x={Layout.LEVEL_X}
+      y={Layout.TIMER_Y}
+      w={{ fill: Layout.LEVEL_INSET_W }}
+      h={Layout.LEVEL_H}
+      font={ToaHudFonts.LABEL}
+      text={text}
+      valign="middle"
+      shadow
+      color={ToaHudColor.TEXT}
+    />
+  );
+}

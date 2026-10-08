@@ -1,23 +1,226 @@
-import { CS2 } from 'ts2';
+import { CS2, intArray, useInventory, useOnResize, useState, useUniverse } from 'ts2';
 
+import { Inventories } from '../lib/game/inventories';
+import { pohCostumeRoomScroll } from '../lib/game/varcs';
+import { ScrollbarVertical } from '../lib/scrollbar-vertical.component';
+import { SteelBorderEntrypoint } from '../lib/steel-border-entrypoint.component';
 import { ThinBoxEntrypoint } from '../lib/thin-box-entrypoint.component';
+import { CostumeItem, CostumeSet } from './costume-grid.component';
+import { DepositAllButton, ModeButton, SearchButton, TierButton } from './costume-buttons.component';
 import {
-  Button,
+  CostumeAlternates,
+  CostumeCategories,
+  CostumeCategory,
+  CostumeEntries,
+  CostumeEntry,
+  CostumePiece,
+  CostumePieces,
+} from './poh-costumes.data';
+import { countMembers, entryHasAlternates } from './poh-costumes.helpers';
+import { costumeCanSet, costumeCategory } from './poh-costumes.state';
+import {
+  Grid,
   Layout,
-  PressedSkin,
-  RaisedSkin,
-  depositAllRef,
+  MAX_BORDERS,
+  MAX_ITEMS,
+  MAX_SETS,
+  OtherInventory,
+  Scrollbar,
+  SetArt,
+  SetMode,
+  SetState,
   itemsRef,
-  modeRef,
-  scrollbarRef,
-  searchRef,
-  tierRef,
 } from './poh-costumes.constants';
 
 export function PohCostumes(): Component {
+  const root = useUniverse();
+  useOnResize(root);
+  const [category] = useState(costumeCategory);
+  const [canSetCell] = useState(costumeCanSet);
+  const [remembered] = useState(pohCostumeRoomScroll);
+  const store = useInventory(Inventories.POH_COSTUMES);
+  const storeSize: Int = store.size;
+  const canSet: Boolean = canSetCell === 1;
+
+  const room: CostumeCategory | null = CostumeCategories.at(category);
+  const opened: Boolean = room !== null && storeSize >= 0;
+  const title: String = room === null ? '' : room.title;
+  const first: Int = room === null ? 0 : room.first;
+  const count: Int = room === null ? 0 : room.count;
+
+  let font: Font = SetArt.TITLE_P12;
+  let alternates: Boolean = false;
+  let k: Int = 0;
+  while (k < count) {
+    const entry: CostumeEntry | null = CostumeEntries.at(first + k);
+    const name: String = entry === null ? '' : entry.name;
+    if (font === SetArt.TITLE_P12 && CS2.parawidth(name, Grid.MEASURE_W, SetArt.TITLE_P12) > Grid.TITLE_FIT) {
+      font = SetArt.TITLE_P11;
+    }
+    if (entryHasAlternates(first + k)) {
+      alternates = true;
+    }
+    k = k + 1;
+  }
+
+  const mode = intArray(MAX_SETS);
+  k = 0;
+  while (k < count) {
+    if (k + 1 >= count || countMembers(first + k) > Grid.SHARE_MAX || countMembers(first + k + 1) > Grid.SHARE_MAX) {
+      mode[k] = SetMode.BIG;
+      k = k + 1;
+    } else {
+      mode[k] = SetMode.LEFT;
+      mode[k + 1] = SetMode.RIGHT;
+      k = k + 2;
+    }
+  }
+
+  const setTop = intArray(MAX_SETS);
+  const setHeight = intArray(MAX_SETS);
+  const setState = intArray(MAX_SETS);
+  const setDivider = intArray(MAX_SETS);
+  const slotItem = intArray<Item>(MAX_ITEMS);
+  const slotCount = intArray(MAX_ITEMS);
+  const slotX = intArray(MAX_ITEMS);
+  const slotY = intArray(MAX_ITEMS);
+  const borderTop = intArray(MAX_BORDERS);
+  const borderHeight = intArray(MAX_BORDERS);
+  let slots: Int = 0;
+  let borders: Int = 0;
+  let complete: Int = 0;
+  let y: Int = 0;
+  k = 0;
+  while (k < count) {
+    const entry: CostumeEntry | null = CostumeEntries.at(first + k);
+    const pieceFirst: Int = entry === null ? 0 : entry.pieceFirst;
+    const pieceCount: Int = entry === null ? 0 : entry.pieceCount;
+    const setMode: Int = mode[k];
+    const columns: Int = setMode === SetMode.BIG ? Grid.BIG_COLUMNS : Grid.SMALL_COLUMNS;
+    const inset: Int = setMode === SetMode.RIGHT ? Grid.INSET + Grid.HALF : Grid.INSET;
+    let column: Int = 0;
+    let row: Int = 0;
+    let used: Int = 0;
+    let anyHeld: Boolean = false;
+    let everyHeld: Boolean = true;
+
+    let p: Int = 0;
+    while (p < pieceCount) {
+      const piece: CostumePiece | null = CostumePieces.at(pieceFirst + p);
+      const base: Item = piece === null ? -1 : piece.item;
+      const altFirst: Int = piece === null ? 0 : piece.altFirst;
+      const altCount: Int = piece === null ? 0 : piece.altCount;
+      const single: Item = piece === null ? -1 : piece.single;
+      const exclusiveFlag: Int = piece === null ? 0 : piece.exclusive;
+      const exclusive: Boolean = exclusiveFlag === 1;
+      let tries: Int = altCount;
+      if (altCount === 0 && single !== -1) {
+        tries = 1;
+      }
+      let held: Boolean = false;
+      let stop: Boolean = false;
+      let t: Int = 0;
+      while (t <= tries && !stop) {
+        let item: Item = base;
+        if (t < tries) {
+          item = altCount > 0 ? (CostumeAlternates.at(altFirst + altCount - 1 - t) ?? -1) : single;
+        }
+        const n: Int = CS2.invother_total(OtherInventory.POH_COSTUMES, item);
+        let action: Int = -1;
+        if (t < tries) {
+          if (n > 0) {
+            action = 1;
+            held = true;
+            if (exclusive) {
+              stop = true;
+            }
+          } else if (!exclusive) {
+            action = 0;
+          }
+        } else if (!held || n > 0) {
+          action = 1;
+          if (n > 0) {
+            held = true;
+          }
+        } else {
+          action = 0;
+        }
+        if (action !== -1 && used < Grid.SLOT_LIMIT) {
+          if (action === 1) {
+            slotItem[slots] = item;
+            slotCount[slots] = n;
+            slotX[slots] = inset + Grid.STEP_X * column;
+            slotY[slots] = y + Grid.TITLE_H + Grid.STEP_Y * row;
+            slots = slots + 1;
+            column = column + 1;
+            if (column >= columns) {
+              column = 0;
+              row = row + 1;
+            }
+          }
+          used = used + 1;
+        }
+        t = t + 1;
+      }
+      if (held) {
+        anyHeld = true;
+      } else {
+        everyHeld = false;
+      }
+      p = p + 1;
+    }
+
+    let height: Int = Grid.TITLE_H + Grid.STEP_Y * row;
+    if (column > 0) {
+      height = height + Grid.STEP_Y;
+    }
+    setTop[k] = y;
+    setHeight[k] = height;
+    setState[k] = everyHeld ? SetState.COMPLETE : (anyHeld ? SetState.SOME : SetState.NONE);
+    if (everyHeld) {
+      complete = complete + 1;
+    }
+    setDivider[k] = -1;
+    if (setMode === SetMode.BIG) {
+      y = y + height;
+      if (k < count - 1) {
+        y = y + Grid.GAP;
+        setDivider[k] = y - Grid.TITLE_H;
+      }
+    } else if (setMode === SetMode.LEFT) {
+      if (k < count - 2) {
+        setDivider[k] = y + height + Grid.GAP - Grid.TITLE_H;
+      }
+      borderTop[borders] = y;
+      borderHeight[borders] = height;
+      borders = borders + 1;
+    } else if (k < count - 1) {
+      y = y + height + Grid.GAP;
+      setDivider[k] = y - Grid.TITLE_H;
+    } else {
+      y = y + height;
+    }
+    k = k + 1;
+  }
+
+  let filler: Int = -1;
+  if (opened && y < Grid.FILL_TO) {
+    filler = y + Grid.GAP - Grid.TITLE_H;
+    y = y + Math.max(Grid.FILL_MIN, Grid.FILL_TO - y);
+  }
+  const extent: Int = y;
+  const panelH: Int = opened
+    ? Math.min(Math.min(Grid.PANEL_MAX_H, extent + Grid.PANEL_CHROME), root.height - Grid.ROOT_SLACK)
+    : root.height - Layout.UNIVERSE_H_INSET;
+  const paneH: Int = panelH - Grid.PANE_CHROME;
+  const scrollHeight: Int = opened && extent > paneH ? extent : 0;
+  const scrollY: Int = scrollHeight > 0 ? Math.clamp(0, extent - paneH, remembered) : 0;
+
   return (
-    <layer x="center" y="center" w={Layout.UNIVERSE_W} h={{ fill: Layout.UNIVERSE_H_INSET }}>
-      <layer x="center" y="center" w="fill" h="fill" />
+    <layer x="center" y="center" w={Layout.UNIVERSE_W} h={panelH}>
+      <layer x="center" y="center" w="fill" h="fill">
+        {opened && <SteelBorderEntrypoint title={`${title} (${complete} / ${count})`} />}
+      </layer>
 
       <layer
         x={Layout.ITEMS_BOX_X}
@@ -31,14 +234,64 @@ export function PohCostumes(): Component {
           y="center"
           w={{ fill: Layout.ITEMS_W_INSET }}
           h={{ fill: Layout.ITEMS_H_INSET }}
-        />
+          scrollHeight={scrollHeight}
+          scrollY={scrollY}
+        >
+          {setTop.map(
+            (top, index) =>
+              index < count && (
+                <CostumeSet
+                  mode={mode[index]}
+                  top={top}
+                  height={setHeight[index]}
+                  state={setState[index]}
+                  divider={setDivider[index]}
+                  entryAt={first + index}
+                  font={font}
+                  canSet={canSet}
+                />
+              ),
+          )}
+          {slotItem.map(
+            (item, index) =>
+              index < slots && (
+                <CostumeItem item={item} count={slotCount[index]} x={slotX[index]} y={slotY[index]} canSet={canSet} />
+              ),
+          )}
+          {borderTop.map(
+            (top, index) =>
+              index < borders && (
+                <sprite
+                  x={Grid.HALF - Grid.BORDER_W}
+                  y={top}
+                  w={Grid.BORDER_W}
+                  h={borderHeight[index]}
+                  sprite={SetArt.BORDER}
+                  tiling
+                />
+              ),
+          )}
+          {filler !== -1 && <sprite x={0} y={filler} w={Grid.W} h={Grid.TITLE_H} sprite={SetArt.DIVIDER} tiling />}
+        </layer>
         <layer
-          ref={scrollbarRef}
           x={{ right: Layout.SCROLLBAR_RIGHT }}
           y="center"
           w={Layout.SCROLLBAR_W}
           h={{ fill: Layout.SCROLLBAR_H_INSET }}
-        />
+        >
+          {opened && (
+            <ScrollbarVertical
+              content={itemsRef}
+              track={Scrollbar.TRACK}
+              capTopSprite={Scrollbar.CAP_TOP}
+              thumbSprite={Scrollbar.THUMB}
+              capBottomSprite={Scrollbar.CAP_BOTTOM}
+              arrowUp={Scrollbar.ARROW_UP}
+              arrowDown={Scrollbar.ARROW_DOWN}
+              rebuilt
+            />
+          )}
+        </layer>
         <ThinBoxEntrypoint />
       </layer>
 
@@ -48,364 +301,11 @@ export function PohCostumes(): Component {
         w={Layout.BUTTONS_W}
         h={{ fill: Layout.BUTTONS_H_INSET }}
       >
-        <layer
-          ref={tierRef}
-          x="center"
-          y={{ bottom: Layout.TIER_BOTTOM }}
-          w="fill"
-          h={Layout.BUTTON_H}
-          options={['*', '*', '*', '*', '*', '*', '*']}
-        />
-        <layer
-          ref={modeRef}
-          x="center"
-          y={{ bottom: Layout.MODE_BOTTOM }}
-          w="fill"
-          h={Layout.BUTTON_H}
-          options={['*']}
-        />
-        <layer
-          ref={searchRef}
-          x="center"
-          y={{ bottom: Layout.SEARCH_BOTTOM }}
-          w="fill"
-          h={Layout.BUTTON_H}
-          options={['*', '*']}
-        />
-        <layer
-          ref={depositAllRef}
-          x="center"
-          y={{ bottom: Layout.DEPOSITALL_BOTTOM }}
-          w="fill"
-          h={Layout.BUTTON_H}
-          options={['*']}
-        />
+        <TierButton opened={opened} bottom={canSet && alternates ? Layout.TIER_BOTTOM : Layout.MODE_BOTTOM} />
+        <ModeButton opened={opened} shown={canSet && alternates} />
+        <SearchButton opened={opened} />
+        <DepositAllButton opened={opened} />
       </layer>
     </layer>
   );
-}
-
-function createGraphic(
-  container: ComponentId,
-  index: Int,
-  sprite: Sprite,
-  x: Int,
-  y: Int,
-  xMode: Int,
-  yMode: Int,
-  w: Int,
-  h: Int,
-  wMode: Int,
-  hMode: Int,
-  tiling: Boolean,
-): void {
-  CS2.cc_create(container, Button.SPRITE_TYPE, index, false);
-  CS2.cc_position_set(x, y, xMode, yMode);
-  CS2.cc_size_set(w, h, wMode, hMode);
-  CS2.cc_sprite_set(sprite);
-  CS2.cc_tiling_set(tiling);
-}
-
-function stoneButtonPressedFilled(container: ComponentId): void {
-  const w: Int = CS2.if_width_get(container);
-  const h: Int = CS2.if_height_get(container);
-  const right: Int = w - Button.CORNER;
-  const bottom: Int = h - Button.CORNER;
-  const spanW: Int = w - Button.EDGE_INSET;
-  const spanH: Int = h - Button.EDGE_INSET;
-
-  createGraphic(
-    container,
-    0,
-    PressedSkin.BACKDROP,
-    0,
-    0,
-    Button.POS_CENTER,
-    Button.POS_CENTER,
-    Button.BACKDROP_INSET,
-    Button.BACKDROP_INSET,
-    Button.SIZE_MINUS,
-    Button.SIZE_MINUS,
-    true,
-  );
-  createGraphic(
-    container,
-    1,
-    PressedSkin.TOP_LEFT,
-    0,
-    0,
-    Button.POS_LEFT,
-    Button.POS_TOP,
-    Button.CORNER,
-    Button.CORNER,
-    Button.SIZE_ABS,
-    Button.SIZE_ABS,
-    true,
-  );
-  createGraphic(
-    container,
-    2,
-    PressedSkin.TOP_RIGHT,
-    right,
-    0,
-    Button.POS_LEFT,
-    Button.POS_TOP,
-    Button.CORNER,
-    Button.CORNER,
-    Button.SIZE_ABS,
-    Button.SIZE_ABS,
-    true,
-  );
-  createGraphic(
-    container,
-    3,
-    PressedSkin.BOTTOM_LEFT,
-    0,
-    bottom,
-    Button.POS_LEFT,
-    Button.POS_TOP,
-    Button.CORNER,
-    Button.CORNER,
-    Button.SIZE_ABS,
-    Button.SIZE_ABS,
-    true,
-  );
-  createGraphic(
-    container,
-    4,
-    PressedSkin.BOTTOM_RIGHT,
-    right,
-    bottom,
-    Button.POS_LEFT,
-    Button.POS_TOP,
-    Button.CORNER,
-    Button.CORNER,
-    Button.SIZE_ABS,
-    Button.SIZE_ABS,
-    true,
-  );
-  createGraphic(
-    container,
-    5,
-    PressedSkin.LEFT,
-    0,
-    Button.CORNER,
-    Button.POS_LEFT,
-    Button.POS_TOP,
-    Button.CORNER,
-    spanH,
-    Button.SIZE_ABS,
-    Button.SIZE_ABS,
-    true,
-  );
-  createGraphic(
-    container,
-    6,
-    PressedSkin.TOP,
-    Button.CORNER,
-    0,
-    Button.POS_LEFT,
-    Button.POS_TOP,
-    spanW,
-    Button.CORNER,
-    Button.SIZE_ABS,
-    Button.SIZE_ABS,
-    true,
-  );
-  createGraphic(
-    container,
-    7,
-    PressedSkin.RIGHT,
-    right,
-    Button.CORNER,
-    Button.POS_LEFT,
-    Button.POS_TOP,
-    Button.CORNER,
-    spanH,
-    Button.SIZE_ABS,
-    Button.SIZE_ABS,
-    true,
-  );
-  createGraphic(
-    container,
-    8,
-    PressedSkin.BOTTOM,
-    Button.CORNER,
-    bottom,
-    Button.POS_LEFT,
-    Button.POS_TOP,
-    spanW,
-    Button.CORNER,
-    Button.SIZE_ABS,
-    Button.SIZE_ABS,
-    true,
-  );
-}
-
-function stoneButtonOutFilled(container: ComponentId): void {
-  const w: Int = CS2.if_width_get(container);
-  const h: Int = CS2.if_height_get(container);
-  const right: Int = w - Button.CORNER;
-  const bottom: Int = h - Button.CORNER;
-  const spanW: Int = w - Button.EDGE_INSET;
-  const spanH: Int = h - Button.EDGE_INSET;
-
-  createGraphic(
-    container,
-    0,
-    RaisedSkin.BACKDROP,
-    0,
-    0,
-    Button.POS_CENTER,
-    Button.POS_CENTER,
-    Button.BACKDROP_INSET,
-    Button.BACKDROP_INSET,
-    Button.SIZE_MINUS,
-    Button.SIZE_MINUS,
-    true,
-  );
-  createGraphic(
-    container,
-    1,
-    RaisedSkin.TOP_LEFT,
-    0,
-    0,
-    Button.POS_LEFT,
-    Button.POS_TOP,
-    Button.CORNER,
-    Button.CORNER,
-    Button.SIZE_ABS,
-    Button.SIZE_ABS,
-    true,
-  );
-  createGraphic(
-    container,
-    2,
-    RaisedSkin.TOP_RIGHT,
-    right,
-    0,
-    Button.POS_LEFT,
-    Button.POS_TOP,
-    Button.CORNER,
-    Button.CORNER,
-    Button.SIZE_ABS,
-    Button.SIZE_ABS,
-    true,
-  );
-  createGraphic(
-    container,
-    3,
-    RaisedSkin.BOTTOM_LEFT,
-    0,
-    bottom,
-    Button.POS_LEFT,
-    Button.POS_TOP,
-    Button.CORNER,
-    Button.CORNER,
-    Button.SIZE_ABS,
-    Button.SIZE_ABS,
-    true,
-  );
-  createGraphic(
-    container,
-    4,
-    RaisedSkin.BOTTOM_RIGHT,
-    right,
-    bottom,
-    Button.POS_LEFT,
-    Button.POS_TOP,
-    Button.CORNER,
-    Button.CORNER,
-    Button.SIZE_ABS,
-    Button.SIZE_ABS,
-    true,
-  );
-  createGraphic(
-    container,
-    5,
-    RaisedSkin.LEFT,
-    0,
-    Button.CORNER,
-    Button.POS_LEFT,
-    Button.POS_TOP,
-    Button.CORNER,
-    spanH,
-    Button.SIZE_ABS,
-    Button.SIZE_ABS,
-    true,
-  );
-  createGraphic(
-    container,
-    6,
-    RaisedSkin.TOP,
-    Button.CORNER,
-    0,
-    Button.POS_LEFT,
-    Button.POS_TOP,
-    spanW,
-    Button.CORNER,
-    Button.SIZE_ABS,
-    Button.SIZE_ABS,
-    true,
-  );
-  createGraphic(
-    container,
-    7,
-    RaisedSkin.RIGHT,
-    right,
-    Button.CORNER,
-    Button.POS_LEFT,
-    Button.POS_TOP,
-    Button.CORNER,
-    spanH,
-    Button.SIZE_ABS,
-    Button.SIZE_ABS,
-    true,
-  );
-  createGraphic(
-    container,
-    8,
-    RaisedSkin.BOTTOM,
-    Button.CORNER,
-    bottom,
-    Button.POS_LEFT,
-    Button.POS_TOP,
-    spanW,
-    Button.CORNER,
-    Button.SIZE_ABS,
-    Button.SIZE_ABS,
-    true,
-  );
-}
-
-function pohCostumesSetTrans(container: ComponentId, index: Int, transparency: Int): void {
-  if (CS2.cc_find(container, index)) {
-    CS2.cc_transparency_set(transparency);
-  }
-}
-
-export function pohCostumesButtonsDraw(button: ComponentId, sprite: Sprite, item: Item, selected: Boolean): void {
-  CS2.cc_all_delete(button);
-
-  if (selected === true) {
-    stoneButtonPressedFilled(button);
-  } else {
-    stoneButtonOutFilled(button);
-  }
-
-  const icon: Int = Button.CORNER;
-  CS2.cc_create(button, Button.SPRITE_TYPE, icon, false);
-  CS2.cc_position_set(0, 0, Button.POS_CENTER, Button.POS_CENTER);
-  if (item !== -1) {
-    CS2.cc_size_set(Button.ITEM_W, Button.ITEM_H, Button.SIZE_ABS, Button.SIZE_ABS);
-    CS2.cc_item_nonum_set(item, Button.ITEM_COUNT);
-    CS2.cc_outline_set(Button.ITEM_OUTLINE);
-  } else {
-    CS2.cc_size_set(Button.ICON_W, Button.ICON_H, Button.SIZE_ABS, Button.SIZE_ABS);
-    CS2.cc_sprite_set(sprite);
-  }
-  CS2.cc_transparency_set(Button.OPAQUE);
-
-  CS2.if_on_mouserepeat_set(() => pohCostumesSetTrans(button, icon, Button.HOVER_TRANS), button);
-  CS2.if_on_mouseleave_set(() => pohCostumesSetTrans(button, icon, Button.OPAQUE), button);
 }

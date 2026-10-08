@@ -71,7 +71,7 @@ export function CargoHoldPane(): Component {
 
   let lastRowY: Int = 0;
   if (drawn > 0) {
-    lastRowY = Grid.TOP + ((drawn - 1) / Grid.COLUMNS) * Grid.STRIDE_Y;
+    lastRowY = Grid.TOP + (drawn - 1) / Grid.COLUMNS * Grid.STRIDE_Y;
   }
   const extent: Int = lastRowY + Grid.H;
 

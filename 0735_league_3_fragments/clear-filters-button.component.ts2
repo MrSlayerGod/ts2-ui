@@ -1,4 +1,4 @@
-import { useState } from 'ts2';
+import { useRef, useState } from 'ts2';
 import {
   league3FragmentFilterCategory,
   league3FragmentFilterEffect,
@@ -8,15 +8,26 @@ import {
 import { StoneButtonEntrypoint } from '../lib/stone-button-entrypoint.component';
 import { StoneButtonPressedEntrypoint } from '../lib/stone-button-pressed-entrypoint.component';
 import { FragmentColors, FragmentFonts } from './league-3-fragments.constants';
+import { clearFilters } from './league-3-fragments.state';
 
 export function ClearFiltersButton(): Component {
   const [category] = useState(league3FragmentFilterCategory);
   const [effect] = useState(league3FragmentFilterEffect);
   const [level] = useState(league3FragmentFilterLevel);
   const [lock] = useState(league3FragmentFilterLock);
+  const normal = useRef();
+  const pressed = useRef();
 
   return category < 1 && effect < 1 && level < 1 && lock < 1 ? (
-    <layer x={127} y={99} w={110} h={30}>
+    <layer
+      x={127}
+      y={99}
+      w={110}
+      h={30}
+      options={['Clear']}
+      optionSubject="<col=ff9040>Filters</col>"
+      onOptionSelect={() => clearFilters()}
+    >
       <text
         w="fill"
         h="fill"
@@ -30,8 +41,29 @@ export function ClearFiltersButton(): Component {
       <StoneButtonPressedEntrypoint />
     </layer>
   ) : (
-    <layer x={127} y={99} w={110} h={30}>
-      <StoneButtonEntrypoint />
+    <layer
+      x={127}
+      y={99}
+      w={110}
+      h={30}
+      options={['Clear']}
+      optionSubject="<col=ff9040>Filters</col>"
+      onOptionSelect={() => clearFilters()}
+      onMouseEnter={() => {
+        normal.hide = true;
+        pressed.hide = false;
+      }}
+      onMouseLeave={() => {
+        normal.hide = false;
+        pressed.hide = true;
+      }}
+    >
+      <layer ref={normal} w="fill" h="fill">
+        <StoneButtonEntrypoint />
+      </layer>
+      <layer ref={pressed} w="fill" h="fill" hide>
+        <StoneButtonPressedEntrypoint />
+      </layer>
       <text
         w="fill"
         h="fill"

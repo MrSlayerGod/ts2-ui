@@ -43,7 +43,9 @@ import {
   toolbarRef,
 } from './adventurepath.constants';
 import { adventurePathInitEntrypoint, adventurePathRebuild } from './adventurepath.builders';
+import { setInfoTransmit, taskFocusTransmit, taskInitTransmit } from './adventurepath.task-page';
 import { ScrollbarVertical } from '../lib/scrollbar-vertical.component';
+import { ExtraBackButton } from './extra-back-button.component';
 import { stoneBorder, stoneBox, stonePanel } from './adventurepath.skins';
 
 export function AdventurePath(): Component {
@@ -51,6 +53,13 @@ export function AdventurePath(): Component {
     [Varps.ADVENTUREPATH_FOCUS_TRIGGER, Varps.ADVENTUREPATH_SELECTED_PATH],
     () => adventurePathRebuild(),
     pathsRef,
+  );
+  useWatch([Varps.ADVENTUREPATH_SELECTED_TASK, Varps.ADVENTUREPATH_SELECTED_PATH], () => setInfoTransmit(), frameRef);
+  useWatch([Varps.ADVENTUREPATH_SELECTED_TASK, Varps.ADVENTUREPATH_SELECTED_PATH], () => taskInitTransmit(), bodyRef);
+  useWatch(
+    [Varps.ADVENTUREPATH_FOCUS_TRIGGER, Varps.ADVENTUREPATH_SELECTED_TASK],
+    () => taskFocusTransmit(),
+    taskFocusRef,
   );
 
   return (
@@ -217,7 +226,9 @@ export function AdventurePath(): Component {
               align="center"
               valign="middle"
             />
-            <layer static ref={extraBackRef} x={0} y={0} w={{ fill: 330 }} h={28} />
+            <layer static ref={extraBackRef} x={0} y={0} w={{ fill: 330 }} h={28}>
+              <ExtraBackButton />
+            </layer>
           </layer>
         </layer>
       </layer>

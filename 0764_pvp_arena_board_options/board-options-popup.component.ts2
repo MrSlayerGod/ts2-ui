@@ -74,7 +74,7 @@ export function BoardOptionsPopup(): Component {
           scrollY={0}
         >
           {open === 0 &&
-            RankNames.map((name, i) => (
+            (RankNames.map((name, i) => (
               <DropdownEntry
                 index={i}
                 name={name}
@@ -84,7 +84,7 @@ export function BoardOptionsPopup(): Component {
                 bitStart={0}
                 bitEnd={2}
               />
-            ))}
+            )))}
         </layer>
 
         <layer
@@ -98,7 +98,7 @@ export function BoardOptionsPopup(): Component {
           scrollY={0}
         >
           {open === 1 &&
-            RankNames.map((name, i) => (
+            (RankNames.map((name, i) => (
               <DropdownEntry
                 index={i}
                 name={name}
@@ -108,7 +108,7 @@ export function BoardOptionsPopup(): Component {
                 bitStart={3}
                 bitEnd={5}
               />
-            ))}
+            )))}
         </layer>
 
         <layer
@@ -122,7 +122,7 @@ export function BoardOptionsPopup(): Component {
           scrollY={0}
         >
           {open === 2 &&
-            BuildNames.map((name, i) => (
+            (BuildNames.map((name, i) => (
               <DropdownEntry
                 index={i}
                 name={name}
@@ -132,7 +132,7 @@ export function BoardOptionsPopup(): Component {
                 bitStart={6}
                 bitEnd={7}
               />
-            ))}
+            )))}
         </layer>
 
         <layer

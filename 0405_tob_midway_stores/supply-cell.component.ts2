@@ -13,7 +13,7 @@ export function SupplyCell({
   lastX: Int;
 }): Component {
   const x: Int = (Grid.ICON_W + Grid.GAP_X) * (index % Grid.COLS);
-  const y: Int = (index / Grid.COLS) * (Grid.ICON_H + Grid.GAP_Y);
+  const y: Int = index / Grid.COLS * (Grid.ICON_H + Grid.GAP_Y);
   const subject: String = `${OP_BASE_PREFIX}${itemName(item as Item)}`;
 
   if (item === StoreItems.STAMINA_POTION) {

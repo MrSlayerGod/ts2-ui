@@ -1,0 +1,114 @@
+import { CS2, predictServerState, useServerState, useState } from 'ts2';
+
+import { Varbits } from '../lib/game/varbits';
+import { settingsDrawDistance } from '../lib/game/varcs';
+import { clickSound, onEnhancedAny } from './settings-side.helpers';
+import { hideSideTip } from './settings-side.tooltip.component';
+import { brightnessRevision } from './settings-side.state';
+
+export function settingsSideSliderClick(
+  setting: Int,
+  value: Int,
+  thumb: Int,
+  zone: Int,
+  steps: Int,
+  sprite: Int,
+  other: Int,
+  label: String,
+  description: String,
+  tooltip: Int,
+): void {
+  clickSound();
+  hideSideTip();
+  settingsSetSlider(setting, value);
+  const step: Int = settingsGetSlider(setting);
+  if (thumb === -1) {
+    return;
+  }
+  placeThumb(step, thumb as ComponentId, zone as ComponentId, steps);
+}
+
+const SliderSetting = {
+  MINIMAP_ZOOM: 310,
+  BRIGHTNESS: 15,
+  VIEW_DISTANCE: 168,
+  MINIMENU_SPACING: 393,
+} as const;
+
+const Option = { BRIGHTNESS: 6, BRIGHTNESS_STEP: 5, DRAW_DISTANCE: 14 } as const;
+const MINIMENU_SPACING_OPTION = 14;
+const Draw = { LOW: 25, HIGH: 90, STEPS: 33, MAX_STEP: 32 } as const;
+const MINIMAP_ZOOM_OFFSET = 2;
+
+function settingsSetSlider(setting: Int, value: Int): void {
+  predictServerState(Varbits.SETTINGS_SELECTED_SETTING, setting);
+  if (setting === SliderSetting.BRIGHTNESS) {
+    CS2.device_option_set(Option.BRIGHTNESS, Math.clamp(0, 100, value * Option.BRIGHTNESS_STEP));
+    const [revision, setRevision] = useState(brightnessRevision);
+    setRevision(revision + 1);
+    return;
+  }
+  if (setting === SliderSetting.VIEW_DISTANCE) {
+    const [, setDrawDistance] = useState(settingsDrawDistance);
+    setDrawDistance(CS2.interpolate(Draw.LOW, Draw.HIGH, 0, Draw.STEPS - 1, value));
+    settingsSetDrawDistance();
+    return;
+  }
+  if (setting === SliderSetting.MINIMENU_SPACING) {
+    const spacing: Int = Math.clamp(0, 100, value);
+    predictServerState(Varbits.SETTINGS_MINIMENU_SPACING, spacing);
+    CS2.game_option_set(MINIMENU_SPACING_OPTION, spacing);
+  }
+}
+
+function settingsSetDrawDistance(): void {
+  const [stored, setDrawDistance] = useState(settingsDrawDistance);
+  if (!onEnhancedAny()) {
+    return;
+  }
+  let distance: Int = stored;
+  if (stored < Draw.LOW || stored > Draw.HIGH) {
+    distance = Math.clamp(Draw.LOW, Draw.HIGH, CS2.device_option_get(Option.DRAW_DISTANCE));
+    setDrawDistance(distance);
+  }
+  if (useServerState(Varbits.DRAW_DISTANCE_MAX_OVERRIDE) === 1) {
+    distance = Draw.HIGH;
+  }
+  CS2.device_option_set(Option.DRAW_DISTANCE, distance);
+}
+
+function settingsGetSlider(setting: Int): Int {
+  if (setting === SliderSetting.MINIMAP_ZOOM) {
+    return CS2.native_minimap_zoom_get() - MINIMAP_ZOOM_OFFSET;
+  }
+  if (setting === SliderSetting.BRIGHTNESS) {
+    return CS2.device_option_get(Option.BRIGHTNESS) / Option.BRIGHTNESS_STEP;
+  }
+  if (setting === SliderSetting.VIEW_DISTANCE) {
+    const [stored, setDrawDistance] = useState(settingsDrawDistance);
+    let source: Int = stored;
+    if (stored < Draw.LOW || stored > Draw.HIGH) {
+      source = Math.clamp(Draw.LOW, Draw.HIGH, CS2.device_option_get(Option.DRAW_DISTANCE));
+      setDrawDistance(source);
+    }
+    return Math.clamp(0, Draw.MAX_STEP, CS2.interpolate(0, Draw.STEPS, Draw.LOW, Draw.HIGH, source));
+  }
+  if (setting === SliderSetting.MINIMENU_SPACING) {
+    return useServerState(Varbits.SETTINGS_MINIMENU_SPACING);
+  }
+  return 0;
+}
+
+function placeThumb(step: Int, thumb: ComponentId, zone: ComponentId, steps: Int): void {
+  const thumbW: Int = CS2.if_width_get(thumb);
+  const travel: Int = CS2.if_width_get(zone) - thumbW;
+  let x: Int = 0;
+  if (step === steps - 1) {
+    x = travel;
+  } else if (step !== 0) {
+    const low: Int = CS2.scale(step, steps, travel);
+    const high: Int = CS2.scale(step + 1, steps, travel);
+    x = Math.clamp(0, travel, thumbW / 2 + (low + ((high - low) / 2 - thumbW / 2)));
+  }
+  CS2.if_position_set(x, 0, 0, 0, thumb);
+}

@@ -1,21 +1,83 @@
-import { useState } from 'ts2';
+import { CS2, intArray, useState } from 'ts2';
 
 import { clanBoardSort } from '../lib/game/varcs';
 import { ClanBoardEntry } from './clan-board-entry.component';
-import { Layout, listRef } from './clans-board.constants';
+import { Layout, listRef, SLOT_COUNT } from './clans-board.constants';
 import { ClanBoardSlots } from './clans-board.data';
-import { normalisedSort, slotHeight, slotTop } from './clans-board.helpers';
+import { normalisedSort, packetFlags, packetLine, slotHeight, sortDescending, sortKey } from './clans-board.helpers';
+import { clanBoardLines, clanBoardLoaded } from './clans-board.state';
 
 export function ClanBoardRows(): Component {
   const [sortSetting] = useState(clanBoardSort);
+  const [board] = useState(clanBoardLines);
+  const [loaded] = useState(clanBoardLoaded);
   const sort: Int = normalisedSort(sortSetting);
   const wrapWidth: Int = listRef.width - Layout.ROW_INSET_W;
+
+  const heights = intArray(SLOT_COUNT);
+  const keyStart = intArray(SLOT_COUNT);
+  const keyEnd = intArray(SLOT_COUNT);
+  let keys: String = '';
+  let filled: Int = 0;
+  let at: Int = 0;
+  while (at < SLOT_COUNT) {
+    keyStart[at] = keys.length;
+    keys = `${keys}${sortKey(packetLine(board, at), at, sort)}`;
+    keyEnd[at] = keys.length;
+    heights[at] = slotHeight(board, at, wrapWidth);
+    if (heights[at] > 0) {
+      filled = filled + 1;
+    }
+    at = at + 1;
+  }
+
+  const ranks = intArray(SLOT_COUNT);
+  const drawn = intArray(SLOT_COUNT);
+  const descending: Boolean = sortDescending(sort);
+  at = 0;
+  while (at < SLOT_COUNT) {
+    const mine: String = keys.substring(keyStart[at], keyEnd[at]);
+    let rank: Int = 0;
+    let other: Int = 0;
+    while (other < SLOT_COUNT) {
+      if (other !== at && heights[other] > 0) {
+        const order: Int = CS2.compare(keys.substring(keyStart[other], keyEnd[other]), mine);
+        if (order < 0 || (order === 0 && other < at)) {
+          rank = rank + 1;
+        }
+      }
+      other = other + 1;
+    }
+    ranks[at] = rank;
+    if (heights[at] > 0) {
+      if (descending) {
+        drawn[filled - 1 - rank] = at;
+      } else {
+        drawn[rank] = at;
+      }
+    }
+    at = at + 1;
+  }
+
+  const tops = intArray(SLOT_COUNT);
+  let top: Int = 0;
+  let place: Int = 0;
+  while (place < filled) {
+    tops[drawn[place]] = top;
+    top = top + heights[drawn[place]];
+    place = place + 1;
+  }
 
   return (
     <>
       {ClanBoardSlots.map((slot) => (
-        <layer x="center" y={slotTop(slot, sort, wrapWidth)} w="fill" h={slotHeight(slot, wrapWidth)}>
-          <ClanBoardEntry slot={slot} />
+        <layer x="center" y={tops[slot]} w="fill" h={heights[slot]} hide={loaded === 0}>
+          <ClanBoardEntry
+            slot={slot}
+            line={packetLine(board, slot)}
+            flags={packetFlags(board, slot)}
+            rank={ranks[slot]}
+          />
         </layer>
       ))}
     </>

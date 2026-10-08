@@ -1,0 +1,8 @@
+import { sessionState } from 'ts2';
+
+export const guideSkill = sessionState(-1);
+
+export const guideTab = sessionState(0);
+
+export const guideFrom = sessionState(0);
+export const guideTo = sessionState(0);

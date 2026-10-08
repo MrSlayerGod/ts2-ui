@@ -116,8 +116,8 @@ export function SpellGrid(): Component {
         (row, index, at) => (
           <SpellCell
             row={row}
-            x={(at % cols) * (icon + colGap)}
-            y={(at / cols) * (icon + rowGap)}
+            x={at % cols * (icon + colGap)}
+            y={at / cols * (icon + rowGap)}
             icon={icon}
             mobile={mobile}
             flash={flashFade(row.spell, stored, phase)}
@@ -151,7 +151,7 @@ export function SpellGrid(): Component {
       ) : null}
       {Spells.filter((row) => placed && spellShown(row, book, unfiltered)).scan(
         (row, index, at) => (
-          <SpellLock row={row} x={(at % cols) * (icon + colGap)} y={(at / cols) * (icon + rowGap)} icon={icon} />
+          <SpellLock row={row} x={at % cols * (icon + colGap)} y={at / cols * (icon + rowGap)} icon={icon} />
         ),
         (row) => 1,
       )}
@@ -194,14 +194,14 @@ function InfoOverlay({
       {Spells.filter((row) => mobile && spellShown(row, book, unfiltered)).scan(
         (row, index, at) => (
           <sprite
-            x={(at % cols) * (icon + colGap)}
-            y={(at / cols) * (icon + rowGap)}
+            x={at % cols * (icon + colGap)}
+            y={at / cols * (icon + rowGap)}
             w={icon}
             h={icon}
             item={row.spell}
             itemCount={1}
             transparency={255}
-            onClick={() => tapSpellInfo(row.spell, (at / cols) * (icon + rowGap))}
+            onClick={() => tapSpellInfo(row.spell, at / cols * (icon + rowGap))}
           />
         ),
         (row) => 1,

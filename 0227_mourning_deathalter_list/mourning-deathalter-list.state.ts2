@@ -1,0 +1,28 @@
+import { CS2, createRef } from 'ts2';
+import { textLineCount } from '../lib/lib.engine';
+import { scrollbarVertical } from '../0458_poh_furniture_creation/scrollbar-vertical.skins';
+import { ListFonts, ScrollbarSprites as Bar } from './mourning-deathalter-list.constants';
+
+export const LIST_CONTAINER = createRef();
+
+export const LIST_TEXT = createRef();
+
+export const LIST_SCROLLBAR = createRef();
+
+export function mourningDeathalterListInit(): void {
+  const text: String = CS2.if_text_get(LIST_TEXT);
+  const extent: Int = textLineCount(text, CS2.if_width_get(LIST_CONTAINER), ListFonts.LIST) * 12 + 5;
+  LIST_CONTAINER.scrollY = 0;
+  LIST_CONTAINER.scrollHeight = extent;
+  scrollbarVertical(
+    LIST_SCROLLBAR,
+    LIST_CONTAINER,
+    Bar.TRACK,
+    Bar.CAP_TOP,
+    Bar.THUMB,
+    Bar.CAP_BOTTOM,
+    Bar.ARROW_UP,
+    Bar.ARROW_DOWN,
+    0,
+  );
+}

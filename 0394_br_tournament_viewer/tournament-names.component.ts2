@@ -1,0 +1,131 @@
+import { CS2, sessionState, useInterval, useRef, useState } from 'ts2';
+
+import { clientClock, hasBit, playSound } from '../lib/lib.engine';
+import { pipeHead, pipeTail } from '../lib/lib.format';
+import { NameRows, NamesColor, NamesSprites, ViewerFonts, ViewerSounds } from './br-tournament-viewer.constants';
+
+const ROWS = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+
+export const brTournamentNames = sessionState('');
+export const brTournamentBuilt = sessionState(0);
+export const brTournamentPressed = sessionState(-1);
+export const brTournamentDue = sessionState(0);
+export const brTournamentSent = sessionState(0);
+
+export function brTournamentSendnames(names: String): void {
+  const [, setNames] = useState(brTournamentNames);
+  const [, setBuilt] = useState(brTournamentBuilt);
+  const [, setPressed] = useState(brTournamentPressed);
+  const [, setSent] = useState(brTournamentSent);
+  setNames(names);
+  setPressed(-1);
+  setSent(0);
+  setBuilt(1);
+}
+
+export function resetBrTournamentNames(): void {
+  const [, setBuilt] = useState(brTournamentBuilt);
+  const [, setPressed] = useState(brTournamentPressed);
+  setBuilt(0);
+  setPressed(-1);
+}
+
+function afterField(text: String, at: Int): Int {
+  if (at >= text.length) {
+    return text.length;
+  }
+  const bar: Int = text.indexOf('|', at);
+  if (bar === -1) {
+    return text.length;
+  }
+  return bar + 1;
+}
+
+function rowStart(text: String, row: Int): Int {
+  let at: Int = 0;
+  let r: Int = 0;
+  while (r < row) {
+    const next: Int = afterField(text, at);
+    if (at < text.length && text.indexOf('|', at) !== at) {
+      at = afterField(text, next);
+    } else {
+      at = next;
+    }
+    r = r + 1;
+  }
+  return at;
+}
+
+function rowSlice(text: String, row: Int): String {
+  return text.substring(rowStart(text, row), rowStart(text, row + 1));
+}
+
+function brTournamentOp(row: Int): void {
+  const [, setPressed] = useState(brTournamentPressed);
+  const [, setDue] = useState(brTournamentDue);
+  playSound(ViewerSounds.CLICK);
+  setDue(clientClock() + NameRows.SUBMIT_DELAY);
+  setPressed(row);
+}
+
+function brTournamentSubmit(): void {
+  const [pressed, setPressed] = useState(brTournamentPressed);
+  if (pressed === -1) {
+    return;
+  }
+  const [due] = useState(brTournamentDue);
+  if (clientClock() < due) {
+    return;
+  }
+  const [names] = useState(brTournamentNames);
+  const [sent, setSent] = useState(brTournamentSent);
+  CS2.namedialog_resume(pipeHead(rowSlice(names, pressed)));
+  setSent(CS2.bit_set(sent, pressed));
+  setPressed(-1);
+}
+
+export function TournamentNames(): Component {
+  const [built] = useState(brTournamentBuilt);
+  const [names] = useState(brTournamentNames);
+  const [pressed] = useState(brTournamentPressed);
+  const [sent] = useState(brTournamentSent);
+  const self = useRef();
+  useInterval(() => brTournamentSubmit(), self);
+  return (
+    <layer ref={self} w="fill" h="fill">
+      {built === 1 &&
+        ROWS.map((row) => (
+          <sprite
+            x="center"
+            y={row * NameRows.ROW_H}
+            w="fill"
+            h={NameRows.ROW_H}
+            sprite={row % 2 === 0 ? NamesSprites.DARK : NamesSprites.MID}
+            tiling
+            hover={{ sprite: NamesSprites.LIGHT }}
+            options={pipeHead(rowSlice(names, row)).length > 0 ? ['Find'] : []}
+            optionSubject={`<col=ff9040>${pipeHead(rowSlice(names, row))}</col>`}
+            onOptionSelect={() => brTournamentOp(row)}
+          />
+        ))}
+      {built === 1 &&
+        ROWS.map(
+          (row) =>
+            pipeHead(rowSlice(names, row)).length > 0 && (
+              <text
+                x="center"
+                y={row * NameRows.ROW_H}
+                w="fill"
+                h={NameRows.ROW_H}
+                font={ViewerFonts.BODY}
+                shadow
+                align="center"
+                valign="middle"
+                color={hasBit(sent, row) ? NamesColor.SENT : pressed === row ? NamesColor.PRESSED : NamesColor.LABEL}
+                text={`<col=ffb83f>${pipeHead(rowSlice(names, row))}</col> ${pipeHead(pipeTail(rowSlice(names, row)))}`}
+              />
+            ),
+        )}
+    </layer>
+  );
+}

@@ -1,7 +1,6 @@
 import { CS2, useInterval, useRef, useState, useUniverse } from 'ts2';
 
 import { setColorTransparency } from '../lib/board-button.component';
-import { clanBoardSort } from '../lib/game/varcs';
 import { clientClock, playSound } from '../lib/lib.engine';
 import { onMobile } from '../lib/lib.helpers';
 import {
@@ -16,20 +15,25 @@ import {
 } from './clans-board.constants';
 import {
   interestsHeight,
-  normalisedSort,
   packetField,
-  packetFlags,
-  packetLine,
   requirementBits,
   requirementsText,
   formatInterests,
-  rowRank,
 } from './clans-board.helpers';
 
-export function ClanBoardEntry({ slot }: { slot: Int }): Component {
+export function ClanBoardEntry({
+  slot,
+  line,
+  flags,
+  rank,
+}: {
+  slot: Int;
+  line: String;
+  flags: Int;
+  rank: Int;
+}): Component {
   const mount = useUniverse();
   const stripe = useRef();
-  const [sortSetting] = useState(clanBoardSort);
   const [readyAt, setReadyAt] = useState(0);
 
   useInterval(() => {
@@ -38,10 +42,7 @@ export function ClanBoardEntry({ slot }: { slot: Int }): Component {
     }
   });
 
-  const line: String = packetLine(slot);
-  const flags: Int = packetFlags(slot);
   const filled: Int = line.length > 0 ? 1 : 0;
-  const sort: Int = normalisedSort(sortSetting);
   const wrapWidth: Int = listRef.width - Layout.ROW_INSET_W;
 
   const name: String = packetField(line, 0);
@@ -52,7 +53,7 @@ export function ClanBoardEntry({ slot }: { slot: Int }): Component {
   const interestsH: Int = interestsHeight(line, flags, wrapWidth);
   const requirements: Int = requirementBits(line);
 
-  const restTransparency: Int = rowRank(slot, sort) % 2 === 0 ? RowTransparency.EVEN : RowTransparency.ODD;
+  const restTransparency: Int = rank % 2 === 0 ? RowTransparency.EVEN : RowTransparency.ODD;
 
   let live: Boolean = false;
   if (filled === 1 && readyAt === 0) {

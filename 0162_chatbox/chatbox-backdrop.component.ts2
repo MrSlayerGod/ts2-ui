@@ -11,6 +11,7 @@ import {
   chatboxStripPlate,
 } from './chatbox.state';
 import { chatBackdropVisible } from './chatbox-chrome';
+import { ArcSmiley, arcSmileyAt } from './chatbox-arc-test';
 
 export function ChatBackdrop(): Component {
   const [arm] = useState(chatboxBackdrop);
@@ -61,7 +62,9 @@ export function ChatBackdrop(): Component {
 export function ChatHairlines(): Component {
   const [arm] = useState(chatboxBackdrop);
   const [repaint] = useState(chatboxRepaint);
+  const [smileyAt] = useState(arcSmileyAt);
   const visible: Int = useDerived(() => chatBackdropVisible());
+  const smiley: Boolean = smileyAt === repaint;
 
   const areaWidth: Int = chatboxAreaRef.width!;
   const step: Int = areaWidth / RAMP_BANDS;
@@ -69,12 +72,15 @@ export function ChatHairlines(): Component {
   return (
     <layer x={0} y={0} w="fill" h="fill" rebuildOn={repaint}>
       {visible === 1 && arm === CHAT_BACKDROP_OPAQUE && (
-        <rect x="center" y={{ bottom: HAIRLINE_Y }} w="fill" h={1} fill color={ChatboxColor.HAIRLINE} />
+        <>
+          <rect x="center" y={{ bottom: HAIRLINE_Y }} w="fill" h={1} fill color={ChatboxColor.HAIRLINE} />
+          {smiley && <ArcSmiley />}
+        </>
       )}
 
       {visible === 1 && arm === CHAT_BACKDROP_RAMP && (
         <>
-          {RAMP_BAND.map((at) => (
+          {RAMP_HEAD.map((at) => (
             <>
               <rect
                 x={step * at}
@@ -85,6 +91,7 @@ export function ChatHairlines(): Component {
                 color={ChatboxColor.HAIRLINE_TRANSPARENT}
                 transparency={CS2.interpolate(LINE_TOP, LINE_BOTTOM, 0, RAMP_BANDS, at)}
               />
+              {smiley && <ArcSmiley />}
               <rect
                 x={step * at}
                 y={{ bottom: HAIRLINE_Y }}
@@ -93,6 +100,31 @@ export function ChatHairlines(): Component {
                 fill
                 color={ChatboxColor.HAIRLINE_TRANSPARENT}
                 transparency={CS2.interpolate(LINE_TOP, LINE_BOTTOM, 0, RAMP_BANDS, at)}
+                hide={smiley}
+              />
+            </>
+          ))}
+          {RAMP_TAIL.map((at) => (
+            <>
+              <rect
+                x={step * at}
+                y={0}
+                w={step}
+                h={1}
+                fill
+                color={ChatboxColor.HAIRLINE_TRANSPARENT}
+                transparency={CS2.interpolate(LINE_TOP, LINE_BOTTOM, 0, RAMP_BANDS, at)}
+                hide={smiley && at <= 2}
+              />
+              <rect
+                x={step * at}
+                y={{ bottom: HAIRLINE_Y }}
+                w={step}
+                h={1}
+                fill
+                color={ChatboxColor.HAIRLINE_TRANSPARENT}
+                transparency={CS2.interpolate(LINE_TOP, LINE_BOTTOM, 0, RAMP_BANDS, at)}
+                hide={smiley && at === 1}
               />
             </>
           ))}
@@ -110,6 +142,7 @@ export function ChatHairlines(): Component {
             color={ChatboxColor.HAIRLINE_TRANSPARENT}
             transparency={MOBILE_LINE_TOP_ALPHA}
           />
+          {smiley && <ArcSmiley />}
           <rect
             x={0}
             y={{ bottom: HAIRLINE_Y }}
@@ -118,6 +151,7 @@ export function ChatHairlines(): Component {
             fill
             color={ChatboxColor.HAIRLINE_TRANSPARENT}
             transparency={MOBILE_LINE_BOTTOM_ALPHA}
+            hide={smiley}
           />
         </>
       )}
@@ -143,6 +177,10 @@ export function ChatStripPlate(): Component {
 }
 
 const RAMP_BAND = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19] as const;
+
+const RAMP_HEAD = [0] as const;
+
+const RAMP_TAIL = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19] as const;
 
 const RAMP_BANDS = 20;
 const RAMP_TOP = 193;

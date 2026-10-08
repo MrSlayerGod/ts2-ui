@@ -18,6 +18,7 @@ import {
   settingValue,
 } from './settings.helpers';
 import { hideRowTooltip, showRowTooltip } from './settings-tooltip.component';
+import { shiftclickToggle } from '../0149_inventory/inventory.drop-modes';
 
 export function SettingsToggle({
   row,
@@ -92,12 +93,12 @@ export function SettingsToggle({
         h={Row.checkbox.h}
         sprite={
           checked === 1
-            ? enabled && enabledFlag === 1
+            ? (enabled && enabledFlag === 1
               ? Art.CHECK_ON
-              : Art.CHECK_ON_GREY
-            : enabled && enabledFlag === 1
+              : Art.CHECK_ON_GREY)
+            : (enabled && enabledFlag === 1
               ? Art.CHECK_OFF
-              : Art.CHECK_OFF_GREY
+              : Art.CHECK_OFF_GREY)
         }
       />
 
@@ -302,6 +303,7 @@ function settingsSetToggle(row: SettingsRow): void {
         Varbits.DESKTOP_SHIFTCLICKDROP_ENABLED,
         1 - useServerState(Varbits.DESKTOP_SHIFTCLICKDROP_ENABLED),
       );
+      shiftclickToggle();
       break;
     case 54:
       if (onMobile()) {
@@ -1957,6 +1959,7 @@ function settingsSetToggle(row: SettingsRow): void {
         Varbits.SETTINGS_MOBILE_TAPTODROP_ENABLED,
         1 - useServerState(Varbits.SETTINGS_MOBILE_TAPTODROP_ENABLED),
       );
+      shiftclickToggle();
       break;
     case 414:
       if (!onMobile()) {

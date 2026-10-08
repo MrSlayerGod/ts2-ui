@@ -291,8 +291,8 @@ export function PrepotLoadoutContents({ loadout }: { loadout: Int }): Component 
               potion={potions[slot]}
               cap={caps[slot]}
               available={availability[slot]}
-              x={(slot % columns) * (Grid.W + gapX) + gapX / 2}
-              y={(slot / columns) * (Grid.H + gapY) + gapY / 2}
+              x={slot % columns * (Grid.W + gapX) + gapX / 2}
+              y={slot / columns * (Grid.H + gapY) + gapY / 2}
             />
           ),
       )}
@@ -303,8 +303,8 @@ export function PrepotLoadoutContents({ loadout }: { loadout: Int }): Component 
               potion={potions[slot]}
               cap={caps[slot]}
               available={availability[slot]}
-              x={(slot % columns) * (Grid.W + gapX) + gapX / 2}
-              y={(slot / columns) * (Grid.H + gapY) + gapY / 2}
+              x={slot % columns * (Grid.W + gapX) + gapX / 2}
+              y={slot / columns * (Grid.H + gapY) + gapY / 2}
             />
           ),
       )}

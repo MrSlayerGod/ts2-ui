@@ -10,7 +10,7 @@ export function IiElnockStorageSide(): Component {
       {STORAGE_TOOLS.map((tool, index) => (
         <layer
           x={index === 0 ? 0 : index === 1 ? { right: 0 } : 'center'}
-          y={(index / 2) * StorageSlot.HEIGHT}
+          y={index / 2 * StorageSlot.HEIGHT}
           w={StorageSlot.WIDTH}
           h={StorageSlot.HEIGHT}
         >

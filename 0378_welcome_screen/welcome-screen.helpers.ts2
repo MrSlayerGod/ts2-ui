@@ -1,5 +1,4 @@
 import { groupDigits } from '../lib/lib.format';
-import { onMobile } from '../lib/lib.helpers';
 
 export function minutesAsText(minutes: Int, stopAtHours: Int): String {
   if (minutes < 2) {
@@ -133,14 +132,4 @@ export function membershipPending(days: Int, member: Int): Boolean {
     return false;
   }
   return true;
-}
-
-export function hideUnlessMobile(hide: Int, component: ComponentId): void {
-  if (!onMobile()) {
-    if (hide === 1) {
-      component.hide = true;
-    } else {
-      component.hide = false;
-    }
-  }
 }

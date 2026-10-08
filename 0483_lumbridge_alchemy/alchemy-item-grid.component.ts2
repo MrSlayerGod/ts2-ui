@@ -27,8 +27,8 @@ export function AlchemyItemSlot({
   return (
     <sprite
       ref={cell}
-      x={(slot % Slot.COLUMNS) * Slot.STRIDE_X}
-      y={(slot / Slot.COLUMNS) * Slot.STRIDE_Y}
+      x={slot % Slot.COLUMNS * Slot.STRIDE_X}
+      y={slot / Slot.COLUMNS * Slot.STRIDE_Y}
       w={Slot.W}
       h={Slot.H}
       item={item}

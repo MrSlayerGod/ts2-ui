@@ -1,7 +1,8 @@
-import { createRef } from 'ts2';
+import { createRef, sessionState, useState } from 'ts2';
 
 import { Anchor, overlayInit } from '../lib/lib.overlay';
 import { Layout, YamaColor, YamaContentType, YamaDodge, YamaFont, YamaModel } from './yama-contract-fight.constants';
+import { yamaContractNamesOf } from './yama-contract-fight.data';
 
 const timerHost = createRef('0914_yama_contract_fight_timer_host');
 
@@ -17,31 +18,64 @@ export function YamaContractFight_(): Component {
         ref={timerHost}
         onLoad={() => overlayInit(timerHost, contents, YamaDodge.FLAGS, Anchor.LEFT, Anchor.TOP, 1)}
       >
-        <layer ref={contents} x={0} y={0} w={Layout.PLATE_W} h={Layout.PLATE_H}>
-          <text
-            x={Layout.LABEL_X}
-            y={Layout.LABEL_Y}
-            w={Layout.LABEL_W}
-            h={Layout.LABEL_H}
-            font={YamaFont.LABEL}
-            text="Contract X"
-            valign="middle"
-            shadow
-            color={YamaColor.CONTRACT}
-          />
-
-          <model
-            x={Layout.MODEL_X}
-            y={Layout.MODEL_Y}
-            w={Layout.MODEL_BOX}
-            h={Layout.MODEL_BOX}
-            model={YamaModel.SIGIL}
-            zoom={Layout.MODEL_ZOOM}
-            pitch={Layout.MODEL_PITCH}
-            orthogonal
-          />
+        <layer ref={contents} x={0} y={0} w={Layout.PLATE_W} h={Layout.PLATE_H} onLoad={() => resetYamaContract()}>
+          <ContractLabel />
+          <ContractSigil />
         </layer>
       </layer>
     </layer>
+  );
+}
+
+const yamaContractCalled = sessionState(0);
+const yamaContractName = sessionState('');
+const yamaContractModel = sessionState(-1);
+
+export function yamaContractFightShow(item: Item, model: Model): void {
+  const [, setCalled] = useState(yamaContractCalled);
+  const [, setName] = useState(yamaContractName);
+  const [, setModel] = useState(yamaContractModel);
+  setCalled(1);
+  setName(yamaContractNamesOf(item));
+  setModel(model as Int);
+}
+
+export function resetYamaContract(): void {
+  const [, setCalled] = useState(yamaContractCalled);
+  setCalled(0);
+}
+
+function ContractLabel(): Component {
+  const [called] = useState(yamaContractCalled);
+  const [name] = useState(yamaContractName);
+  return (
+    <text
+      x={Layout.LABEL_X}
+      y={Layout.LABEL_Y}
+      w={Layout.LABEL_W}
+      h={Layout.LABEL_H}
+      font={YamaFont.LABEL}
+      text={called === 1 ? name : 'Contract X'}
+      valign="middle"
+      shadow
+      color={YamaColor.CONTRACT}
+    />
+  );
+}
+
+function ContractSigil(): Component {
+  const [called] = useState(yamaContractCalled);
+  const [model] = useState(yamaContractModel);
+  return (
+    <model
+      x={Layout.MODEL_X}
+      y={Layout.MODEL_Y}
+      w={Layout.MODEL_BOX}
+      h={Layout.MODEL_BOX}
+      model={called === 1 ? model as Model : YamaModel.SIGIL}
+      zoom={Layout.MODEL_ZOOM}
+      pitch={Layout.MODEL_PITCH}
+      orthogonal
+    />
   );
 }

@@ -1,3 +1,5 @@
+import { Sprites } from '../lib/game/sprites';
+
 export enum PrepotLayout {
   ROOT_W = 200,
   ROOT_H = 150,
@@ -11,3 +13,12 @@ export const PREPOT_TITLE = 'Pre-pot Device Debug';
 export const INSPECT_SUBJECT = '<col=ff9040>Inspect</col>';
 
 export const INSPECT_VERB = 'Inspect';
+
+export declare const PrepotSprites: {
+  readonly INSPECT_ICON: typeof Sprites.BANKBUTTONS_2;
+};
+
+export enum InspectIcon {
+  W = 29,
+  H = 22,
+}

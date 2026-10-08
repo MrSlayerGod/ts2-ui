@@ -49,6 +49,13 @@ export function cancelBankpin(code: Int): void {
   setEntry(-1);
 }
 
+export function resetBankpin(): void {
+  const [, setStage] = useState(bankpinStage);
+  const [, setEntry] = useState(bankpinEntry);
+  setStage(Stage.FIRST);
+  setEntry(-1);
+}
+
 export function exitBankpin(): void {
   cancelBankpin(Cancel.EXIT_CODE);
 }

@@ -58,15 +58,15 @@ export function GauntletMap(): Component {
               hflip={room.hflip}
               sprite={
                 room.role === Role.BOSS
-                  ? corrupted === 1
+                  ? (corrupted === 1
                     ? GauntletMapArt.BOSS_CORRUPTED
-                    : GauntletMapArt.BOSS
+                    : GauntletMapArt.BOSS)
                   : room.role === Role.START_CANDIDATE
-                    ? start === room.index
-                      ? corrupted === 1
+                    ? (start === room.index
+                      ? (corrupted === 1
                         ? GauntletMapArt.START_CORRUPTED
-                        : GauntletMapArt.START
-                      : room.sprite
+                        : GauntletMapArt.START)
+                      : room.sprite)
                     : room.sprite
               }
               transparency={useServerState(room.found) === 1 ? RoomFade.FOUND : RoomFade.UNFOUND}

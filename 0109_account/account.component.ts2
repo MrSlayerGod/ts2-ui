@@ -1,4 +1,4 @@
-import { useInterval, useServerState, useState } from 'ts2';
+import { useInterval, useRef, useServerState, useState } from 'ts2';
 
 import { opsound } from '../lib/lib.helpers';
 import { clientClock } from '../lib/lib.engine';
@@ -122,23 +122,23 @@ function TabPlates({ state, transparent }: { state: Int; transparent: Boolean })
   const selected: Boolean = state === TabState.SELECTED;
   const hovered: Boolean = state === TabState.HOVERED;
   const plateEnd: Sprite = transparent
-    ? selected
+    ? (selected
       ? TabArt.T_SELECTED_END
       : hovered
         ? TabArt.T_HOVER_END
-        : TabArt.T_REST_END
-    : selected
+        : TabArt.T_REST_END)
+    : (selected
       ? TabArt.SELECTED_END
-      : TabArt.REST_END;
+      : TabArt.REST_END);
   const plateMid: Sprite = transparent
-    ? selected
+    ? (selected
       ? TabArt.T_SELECTED_MID
       : hovered
         ? TabArt.T_HOVER_MID
-        : TabArt.T_REST_MID
-    : selected
+        : TabArt.T_REST_MID)
+    : (selected
       ? TabArt.SELECTED_MID
-      : TabArt.REST_MID;
+      : TabArt.REST_MID);
   const sheenEnd: Sprite = !transparent && hovered ? TabArt.HOVER_END : TabArt.SHEEN_END;
   const sheenMid: Sprite = !transparent && hovered ? TabArt.HOVER_MID : TabArt.SHEEN_MID;
   const sheenAlpha: Int = transparent ? 0 : TabArt.SHEEN_TRANSPARENCY;
@@ -339,13 +339,14 @@ function CommunityPane(): Component {
   const shown: Boolean = openTab() === AccountTab.COMMUNITY;
   const running: Boolean = useServerState(AccountVars.POLL_RUNNING) === 1;
   const vote: Boolean = running && useServerState(AccountVars.POLL_SHOULD_VOTE) === 1;
+  const pollTrigger = useRef('poll_button_broadcasts');
 
   return (
     <layer x="center" y="center" w="fill" h="fill" hide={!shown}>
       <Title text="Community" />
       <layer y={Layout.poll.y} w={Layout.box.w} h={Layout.poll.h}>
         <Heading text={pollText(running)} />
-        <layer x="center" y={Layout.pollTrigger.y} w={1} h={1} options={['Vote Now']} />
+        <layer ref={pollTrigger} x="center" y={Layout.pollTrigger.y} w={1} h={1} options={['Vote Now']} />
         <layer
           x="center"
           y={Layout.button.top}
@@ -411,12 +412,12 @@ function PollLabel({ running, vote }: { running: Boolean; vote: Boolean }): Comp
   const drawn: Int = !running
     ? AccountColor.LABEL
     : vote
-      ? colour === -1
+      ? (colour === -1
         ? tobHudNameFlasher()
-        : colour
-      : hovered === 1
+        : colour)
+      : (hovered === 1
         ? AccountColor.LABEL_HOVER
-        : AccountColor.LABEL;
+        : AccountColor.LABEL);
 
   useInterval(
     vote

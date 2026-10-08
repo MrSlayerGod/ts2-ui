@@ -1,4 +1,8 @@
+import { Fonts } from '../lib/game/fonts';
+import { Inventories } from '../lib/game/inventories';
+import { Sounds } from '../lib/game/sounds';
 import { Sprites } from '../lib/game/sprites';
+import { Varbits } from '../lib/game/varbits';
 
 export declare const LockSprites: {
   readonly WINDOW: typeof Sprites.TRADEBACKING;
@@ -21,3 +25,63 @@ export enum Layout {
   DONE_W = 120,
   DONE_H = 30,
 }
+
+export declare const LockVars: {
+  readonly IGNORE_LOCKS: typeof Varbits.BANK_SIDE_SLOT_IGNOREINVLOCKS;
+  readonly OVERVIEW: typeof Varbits.BANK_SIDE_SLOT_OVERVIEW;
+  readonly SHOW_OP: typeof Varbits.BANK_SIDE_SLOT_SHOWOP;
+  readonly CHATBOX_FLOATER_OPENED: typeof Varbits.FLOATER_CHATBOX_OPENED;
+  readonly COLOUR_MODAL_OPENED: typeof Varbits.SETTINGS_COLOUR_MODAL_OPENED;
+  readonly TEXTFIELD_MODAL_OPENED: typeof Varbits.SETTINGS_TEXTFIELD_CSV_MODAL_OPENED;
+};
+
+export declare const LockInv: {
+  readonly INV: typeof Inventories.INV;
+};
+
+export declare const LockSounds: {
+  readonly SELECT: typeof Sounds.INTERFACE_SELECT1;
+};
+
+export declare const LockFonts: {
+  readonly BODY: typeof Fonts.P12_FULL;
+  readonly BOLD: typeof Fonts.B12_FULL;
+};
+
+export declare const LockRadio: {
+  readonly DISABLED: typeof Sprites.OPTIONS_RADIO_BUTTONS_0;
+  readonly OFF: typeof Sprites.OPTIONS_RADIO_BUTTONS_1;
+  readonly ON: typeof Sprites.OPTIONS_RADIO_BUTTONS_2;
+};
+
+export enum LockColors {
+  ORANGE = 0xff981f,
+  WHITE = 0xffffff,
+  RED = 0xff0000,
+  RED_HOVER = 0xff7070,
+  GREY = 0x9f9f9f,
+  SHADOW = 0x333333,
+}
+
+export enum Fade {
+  CLEAR = 255,
+  DIM = 150,
+  IN_CYCLES = 30,
+  OUT_CYCLES = 10,
+}
+
+export enum Grid {
+  COLUMNS = 4,
+  SLOT_W = 36,
+  SLOT_H = 32,
+  LIME_DUMMY = 11526,
+  ITEM_TRANSPARENCY = 100,
+  EMPTY_TRANSPARENCY = 150,
+}
+
+export const Copy = {
+  TITLE: 'Lock Inventory Slots',
+  BODY: "If you <col=ffffff>lock</col> inventory slots, the bank's standard <col=ffffff>Deposit</col> options will avoid depositing items from the locked slots.<br><col=ffffff>Select</col> slots in the <col=ffffff>grid</col> to lock them.",
+  ENABLE: 'Enable inventory locks',
+  DONE: '<col=0dc10d>Done</col>',
+};

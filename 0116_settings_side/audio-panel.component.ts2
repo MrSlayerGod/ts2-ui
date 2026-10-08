@@ -1,6 +1,7 @@
 import { CS2, predictServerState, useRef, useServerState } from 'ts2';
 import { onMobile } from '../lib/lib.helpers';
 import { SliderTrough } from './slider-trough.component';
+import { SideTip, TipAnchor, hideSideTip, showSideTip } from './settings-side.tooltip.component';
 import { clickSound, neq } from './settings-side.helpers';
 import { AudioArt, Layout, SideArt, SideTab, SideVars, VolumeSetting } from './settings-side.constants';
 
@@ -19,6 +20,7 @@ export function AudioPanel(): Component {
     >
       <VolumeRow
         setting={VolumeSetting.MASTER}
+        tip={SideTip.MASTER}
         volume={master}
         saved={useServerState(SideVars.MASTER_VOLUME_SAVED)}
         icon={AudioArt.ICON_MASTER}
@@ -28,6 +30,7 @@ export function AudioPanel(): Component {
       />
       <VolumeRow
         setting={VolumeSetting.MUSIC}
+        tip={SideTip.MUSIC}
         volume={useServerState(SideVars.MUSIC_VOLUME)}
         saved={useServerState(SideVars.MUSIC_VOLUME_SAVED)}
         icon={AudioArt.ICON_MUSIC}
@@ -37,6 +40,7 @@ export function AudioPanel(): Component {
       />
       <VolumeRow
         setting={VolumeSetting.EFFECTS}
+        tip={SideTip.EFFECTS}
         volume={useServerState(SideVars.EFFECTS_VOLUME)}
         saved={useServerState(SideVars.EFFECTS_VOLUME_SAVED)}
         icon={AudioArt.ICON_EFFECTS}
@@ -46,6 +50,7 @@ export function AudioPanel(): Component {
       />
       <VolumeRow
         setting={VolumeSetting.AREA}
+        tip={SideTip.AREA}
         volume={useServerState(SideVars.AREA_VOLUME)}
         saved={useServerState(SideVars.AREA_VOLUME_SAVED)}
         icon={AudioArt.ICON_AREA}
@@ -59,6 +64,7 @@ export function AudioPanel(): Component {
 
 function VolumeRow({
   setting,
+  tip,
   volume,
   saved,
   icon,
@@ -67,6 +73,7 @@ function VolumeRow({
   y,
 }: {
   setting: Int;
+  tip: Int;
   volume: Int;
   saved: Int;
   icon: Sprite;
@@ -75,10 +82,20 @@ function VolumeRow({
   y: Int;
 }): Component {
   const zone = useRef();
+  const tipTop: Int = TipAnchor.volumeY + y;
+  const thumbAt: Int = Math.clamp(0, Layout.slider.travel, CS2.scale(volume, 100, Layout.slider.travel));
 
   return (
     <layer x="center" y={y} w="fill" h={Layout.audioRow.h}>
-      <layer x="right" y="center" w={Layout.slider.troughW} h={Layout.slider.h} noClickThrough>
+      <layer
+        x="right"
+        y="center"
+        w={Layout.slider.troughW}
+        h={Layout.slider.h}
+        noClickThrough
+        onMouseRepeat={() => showSideTip(tip, TipAnchor.troughX, tipTop, TipAnchor.sliderH)}
+        onMouseLeave={() => hideSideTip()}
+      >
         <SliderTrough />
       </layer>
 
@@ -91,7 +108,7 @@ function VolumeRow({
         onClick={(event) => setVolume(setting, event.mouseX)}
       >
         <sprite
-          x={Math.clamp(0, Layout.slider.travel, CS2.scale(volume, 100, Layout.slider.travel))}
+          x={thumbAt}
           w={Layout.slider.thumb}
           h={Layout.slider.thumb}
           sprite={thumb}
@@ -101,6 +118,8 @@ function VolumeRow({
           dragDeadTime={0}
           onDrag={(event) => setVolume(setting, event.mouseX)}
           onDragComplete={(event) => setVolume(setting, event.mouseX)}
+          onMouseRepeat={() => showSideTip(tip, TipAnchor.zoneX + thumbAt, tipTop, TipAnchor.sliderH)}
+          onMouseLeave={() => hideSideTip()}
         />
       </layer>
 

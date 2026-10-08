@@ -118,16 +118,14 @@ export function barrowsZoom(height: Int): Int {
   } else if (clamped > Zoom.MAX_HEIGHT) {
     clamped = Zoom.MAX_HEIGHT;
   }
-  return (
-    Zoom.BASE -
+  return Zoom.BASE -
     CS2.interpolate(
       0,
       Math.sqrt(clamped - Zoom.MIN_HEIGHT),
       0,
       Math.sqrt(Zoom.MAX_HEIGHT - Zoom.MIN_HEIGHT),
       Zoom.RANGE,
-    )
-  );
+    );
 }
 
 export function rewardText(gravestone: Int, frame: Int, brothersKilled: Int, monstersKilled: Int): string {

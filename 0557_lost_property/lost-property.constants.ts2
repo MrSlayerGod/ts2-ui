@@ -12,10 +12,12 @@ export declare const LostPropertyArt: {
 
 export declare const LostPropertyFonts: {
   readonly TITLE: typeof Fonts.QUILL_OBLIQUE_LARGE;
+  readonly PRICE: typeof Fonts.P11_FULL;
 };
 
 export enum LostPropertyColors {
   TITLE = 0x46320a,
+  SHADOW = 0x333333,
 }
 
 export const Layout = {
@@ -41,4 +43,24 @@ export const Layout = {
 
 export const LostPropertyCopy = {
   TITLE: 'Lost Property shop',
+};
+
+export const Stock = {
+  LAST: 50,
+  COLUMNS: 6,
+  ITEM_W: 36,
+  ITEM_H: 32,
+  PRICE_H: 36,
+  GAP: 34,
+  MARGIN: 10,
+  ROW_PITCH: 68,
+};
+
+export declare const LostPropertyScrollbar: {
+  readonly TRACK: typeof Sprites.SCROLLBAR_PARCHMENT_DRAGGER_V2_3;
+  readonly CAP_TOP: typeof Sprites.SCROLLBAR_PARCHMENT_DRAGGER_V2_0;
+  readonly THUMB: typeof Sprites.SCROLLBAR_PARCHMENT_DRAGGER_V2_1;
+  readonly CAP_BOTTOM: typeof Sprites.SCROLLBAR_PARCHMENT_DRAGGER_V2_2;
+  readonly ARROW_UP: typeof Sprites.SCROLLBAR_PARCHMENT_V2_0;
+  readonly ARROW_DOWN: typeof Sprites.SCROLLBAR_PARCHMENT_V2_1;
 };

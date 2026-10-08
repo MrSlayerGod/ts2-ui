@@ -1,3 +1,5 @@
+import { sessionState } from 'ts2';
+
 import { Fonts } from '../lib/game/fonts';
 import { Sprites } from '../lib/game/sprites';
 
@@ -50,4 +52,20 @@ export const Layout = {
 
 export const MuseumCopy = {
   FRAME_TITLE: '',
+};
+
+export const museumTitle = sessionState('');
+export const museumText = sessionState('');
+export const museumModel = sessionState(-1);
+export const museumOffsetX = sessionState(0);
+export const museumOffsetY = sessionState(400);
+export const museumPitch = sessionState(0);
+export const museumYaw = sessionState(1938);
+export const museumRoll = sessionState(0);
+export const museumZoom = sessionState(900);
+export const museumSpin = sessionState(0);
+
+export const SpinStep = {
+  YAW: -1,
+  TURN: 2048,
 };

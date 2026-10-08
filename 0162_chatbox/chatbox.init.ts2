@@ -34,7 +34,13 @@ import {
   tradepartner,
 } from '../lib/game/varcs';
 import { releaseCrmOverlaySlot } from '../0065_crm_surprisepopup_side/crm-overlay-reset';
-import { chatboxBackground, chatboxRelayout, redrawChatInput, settleEmptyPaneExtent } from './chatbox-chrome';
+import {
+  chatboxBackground,
+  chatboxRelayout,
+  publishPaneTransparent,
+  redrawChatInput,
+  settleEmptyPaneExtent,
+} from './chatbox-chrome';
 import { chatboxRef, chatmodalRef, chatoverlayRef, line0Ref } from './chatbox.constants';
 import { toplevelComponents } from '../lib/lib.helpers';
 import { CHAT_VIEW_COLLAPSED, ChatTab } from './chatbox.data';
@@ -129,6 +135,7 @@ export function chatboxInit(): void {
 
   chatboxBackground();
   redrawChatInput();
+  publishPaneTransparent();
 
   releaseCrmOverlaySlot(CHATBOX_CRM_SLOT);
 }

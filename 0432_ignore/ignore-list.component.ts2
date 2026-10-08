@@ -74,7 +74,7 @@ export function IgnoreBody(): Component {
   }
 
   return (
-    <>
+    <layer w="fill" h="fill">
       <layer
         x="center"
         y="center"
@@ -148,6 +148,6 @@ export function IgnoreBody(): Component {
         valign="middle"
         shadow
       />
-    </>
+    </layer>
   );
 }

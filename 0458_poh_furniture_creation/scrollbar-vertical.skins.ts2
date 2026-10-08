@@ -43,7 +43,7 @@ export function scrollbarVertical(
   }
   let span: Int = 0;
   if (extent > 0) {
-    span = ((CS2.if_height_get(bar) - 32) * CS2.if_height_get(content)) / extent;
+    span = (CS2.if_height_get(bar) - 32) * CS2.if_height_get(content) / extent;
   } else {
     span = CS2.if_height_get(bar) - 32;
   }
@@ -107,7 +107,7 @@ export function setDragger(bar: ComponentId, content: ComponentId): void {
   const range: Int = Math.max(CS2.if_scroll_height_get(content) - CS2.if_height_get(content), 1);
   if (CS2.cc_find(bar, 1)) {
     const travel: Int = CS2.if_height_get(bar) - 32 - CS2.cc_height_get();
-    CS2.cc_position_set(0, 16 + (travel * CS2.if_scroll_y_get(content)) / range, 1, 0);
+    CS2.cc_position_set(0, 16 + travel * CS2.if_scroll_y_get(content) / range, 1, 0);
     const at: Int = CS2.cc_y_get();
     const h: Int = CS2.cc_height_get();
     if (CS2.cc_find(bar, 2)) {
@@ -150,6 +150,6 @@ function drag(bar: ComponentId, content: ComponentId, offset: Int, settle: Int, 
     }
     const travel: Int = CS2.if_height_get(bar) - 32 - h;
     const range: Int = CS2.if_scroll_height_get(content) - CS2.if_height_get(content);
-    scrollTo(bar, content, (offset * range) / Math.max(1, travel), settle, remember);
+    scrollTo(bar, content, offset * range / Math.max(1, travel), settle, remember);
   }
 }

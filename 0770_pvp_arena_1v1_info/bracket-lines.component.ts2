@@ -80,14 +80,12 @@ export function BracketLines(): Component {
 }
 
 export function gapFor(rounds: Int): Int {
-  return (
-    Layout.bracket.GAP_BASE +
+  return Layout.bracket.GAP_BASE +
     scaled(
       Layout.bracket.GAP_STEPS - (rounds - Layout.bracket.MIN_ROUNDS),
       Layout.bracket.GAP_STEPS,
       Layout.bracket.GAP_SPAN,
-    )
-  );
+    );
 }
 
 function spanOf(rounds: Int, round: Int): Int {

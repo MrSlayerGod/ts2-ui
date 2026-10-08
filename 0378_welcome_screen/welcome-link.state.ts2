@@ -1,0 +1,34 @@
+import { sessionState, useState } from 'ts2';
+import { onIos } from '../0654_league_info/league-info.helpers';
+import { openUrlRaw } from '../lib/lib.helpers';
+
+export const enum WelcomeLinkMode {
+  CACHE = 0,
+  LINK = 1,
+  CLEARED = 2,
+}
+
+export const welcomeLinkMode = sessionState(0);
+
+export const welcomeLinkLabel = sessionState('Open Link');
+
+export const welcomeLinkUrl = sessionState('');
+
+export function welcomeScreenSetLink(url: String, label: String): void {
+  const [, setMode] = useState(welcomeLinkMode);
+  const [, setLabel] = useState(welcomeLinkLabel);
+  const [, setUrl] = useState(welcomeLinkUrl);
+  setUrl(url);
+  setLabel(label.length > 0 ? label : 'Open Link');
+  setMode(url.length > 0 && !onIos() ? WelcomeLinkMode.LINK : WelcomeLinkMode.CLEARED);
+}
+
+export function openWelcomeLink(): void {
+  const [url] = useState(welcomeLinkUrl);
+  openUrlRaw(url, true, true);
+}
+
+export function resetWelcomeLink(): void {
+  const [, setMode] = useState(welcomeLinkMode);
+  setMode(WelcomeLinkMode.CACHE);
+}

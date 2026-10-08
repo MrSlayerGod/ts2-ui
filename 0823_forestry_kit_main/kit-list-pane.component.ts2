@@ -28,7 +28,7 @@ export function KitListPane(): Component {
     }
     scan = scan + 1;
   }
-  const content: Int = ((visibleCells + columns - 1) / columns) * (Cell.HEIGHT + Cell.GAP) + Cell.GAP;
+  const content: Int = (visibleCells + columns - 1) / columns * (Cell.HEIGHT + Cell.GAP) + Cell.GAP;
 
   onUpdated(() => {
     list.scrollY = list.scrollY;

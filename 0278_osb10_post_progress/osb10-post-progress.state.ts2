@@ -1,0 +1,36 @@
+import { CS2 } from 'ts2';
+import {
+  G1,
+  G2,
+  G3,
+  G4,
+  G5,
+  G6,
+  G7,
+  G8,
+  G9,
+  G10,
+  G11,
+  G12,
+  G13,
+  G14,
+  LeftRows,
+  RightRows,
+} from './osb10-post-progress.constants';
+
+export function osb10PostProgressShowItems(): void {
+  CS2.if_item_nonum_set(LeftRows[0].item, 1, G1);
+  CS2.if_item_nonum_set(LeftRows[1].item, 1, G2);
+  CS2.if_item_nonum_set(LeftRows[2].item, 1, G3);
+  CS2.if_item_nonum_set(LeftRows[3].item, 1, G4);
+  CS2.if_item_nonum_set(LeftRows[4].item, 1, G5);
+  CS2.if_item_nonum_set(LeftRows[5].item, 1, G6);
+  CS2.if_item_nonum_set(LeftRows[6].item, 1, G7);
+  CS2.if_item_nonum_set(RightRows[0].item, 1, G8);
+  CS2.if_item_nonum_set(RightRows[1].item, 1, G9);
+  CS2.if_item_nonum_set(RightRows[2].item, 1, G10);
+  CS2.if_item_nonum_set(RightRows[3].item, 1, G11);
+  CS2.if_item_nonum_set(RightRows[4].item, 1, G12);
+  CS2.if_item_nonum_set(RightRows[5].item, 1, G13);
+  CS2.if_item_nonum_set(RightRows[6].item, 1, G14);
+}

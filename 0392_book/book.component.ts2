@@ -1,8 +1,9 @@
-import { createRef } from 'ts2';
-import { closeInterface, graphicSwapperUnlessMobile } from '../lib/lib.helpers';
+import { createRef, onMounted, onUpdated } from 'ts2';
+import { closeInterface, graphicSwapperUnlessMobile, onMobile } from '../lib/lib.helpers';
 import { BookArt, BookColors, BookFonts, BookModels, Layout, LineY, PictureY } from './book.constants';
 
 const closeGraphic = createRef('book_close_graphic');
+const closeButton = createRef('book_close_button');
 const prevGraphic = createRef('book_page_left_graphic');
 const nextGraphic = createRef('book_page_right_graphic');
 
@@ -55,6 +56,8 @@ export function Book(): Component {
       />
 
       <layer
+        static
+        ref={closeButton}
         x={{ right: Layout.CLOSE_RIGHT }}
         y={Layout.CLOSE_TOP}
         w={Layout.CLOSE_W}
@@ -632,6 +635,26 @@ export function Book(): Component {
       >
         <sprite ref={nextGraphic} x="center" y="center" w={Layout.ARROW_W} h={Layout.ARROW_H} sprite={BookArt.NEXT} />
       </layer>
+
+      <CloseHitBox />
     </layer>
   );
+}
+
+function CloseHitBox(): Component {
+  const phone = onMobile();
+
+  onMounted(() => placeCloseButton(phone));
+  onUpdated(() => placeCloseButton(phone));
+
+  return <layer x={0} y={0} w={0} h={0} />;
+}
+
+function placeCloseButton(phone: Boolean): void {
+  closeButton.props = {
+    x: { right: phone ? 0 : Layout.CLOSE_RIGHT },
+    y: phone ? 0 : Layout.CLOSE_TOP,
+    w: phone ? Layout.CLOSE_MOBILE_W : Layout.CLOSE_W,
+    h: phone ? Layout.CLOSE_MOBILE_H : Layout.CLOSE_H,
+  };
 }

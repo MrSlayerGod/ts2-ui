@@ -34,4 +34,5 @@ export const Layout = {
   TEXT_W: 266,
   TEXT_H: 256,
   TEXT_LINE_H: 25,
+  TEXT_LINE_H_TIGHT: 17,
 };

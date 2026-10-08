@@ -310,9 +310,9 @@ function BallotImageOverlay({
       options={
         embedded
           ? [BallotLinkVerb.EMBEDDED]
-          : onMobile()
+          : (onMobile()
             ? ['', '', '', '', '', '', '', '', '', BallotLinkVerb.BROWSER]
-            : [BallotLinkVerb.BROWSER]
+            : [BallotLinkVerb.BROWSER])
       }
       onMouseEnter={(event) => {
         if (!onMobile()) {

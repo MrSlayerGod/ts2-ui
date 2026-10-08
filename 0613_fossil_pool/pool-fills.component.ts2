@@ -1,0 +1,64 @@
+import { useState, useUniverse } from 'ts2';
+
+import {
+  fossilBarColour,
+  fossilCalcium,
+  fossilPhosphate,
+  fossilPool,
+  fossilPoolPanelShown,
+  proportionWidth,
+} from '../0606_fossil_pool_overlay/fossil-pool.state';
+import { Layout, PoolColor, PoolFonts } from './fossil-pool.constants';
+
+export enum PoolBarKind {
+  CALCIUM = 0,
+  PHOSPHATE = 1,
+}
+
+export function PoolFill({ kind }: { kind: Int }): Component {
+  const [shown] = useState(fossilPoolPanelShown);
+  const [calcium] = useState(fossilCalcium);
+  const [phosphate] = useState(fossilPhosphate);
+  const box = useUniverse();
+  const level: Int = kind === PoolBarKind.CALCIUM ? calcium : phosphate;
+  return (
+    <rect
+      x={0}
+      y={kind === PoolBarKind.CALCIUM ? 'center' : 0}
+      w={shown === 1 ? proportionWidth(level, 10, box.width) : Layout.BAR_FILLED_W}
+      h="fill"
+      color={shown === 1 ? fossilBarColour(level, 2, 10) : PoolColor.BAR_FILLED}
+      fill
+    />
+  );
+}
+
+export function PoolCounter(): Component {
+  const [shown] = useState(fossilPoolPanelShown);
+  const [pool] = useState(fossilPool);
+  const box = useUniverse();
+  return (
+    <>
+      <rect
+        x={0}
+        y="center"
+        w={shown === 1 ? proportionWidth(pool, 28, box.width) : Layout.BAR_FILLED_W}
+        h="fill"
+        color={shown === 1 ? fossilBarColour(pool, 4, 28) : PoolColor.BAR_FILLED}
+        fill
+      />
+      <text
+        x="center"
+        y="center"
+        w="fill"
+        h="fill"
+        text={shown === 1 ? `${pool}/28` : '0/28'}
+        align="center"
+        valign="middle"
+        shadow
+        font={PoolFonts.COUNTER}
+        color={PoolColor.COUNTER}
+      />
+    </>
+  );
+}

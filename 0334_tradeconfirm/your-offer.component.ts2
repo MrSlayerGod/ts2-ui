@@ -31,7 +31,7 @@ export function YourOffer(): Component {
             <OfferRow
               line={offerText(item, trade.count(index))}
               x={twoColumns && rank[index] % 2 === 1 ? Offer.HALF : 0}
-              y={twoColumns ? (rank[index] / 2) * Offer.ROW_STEP : rank[index] * Offer.ROW_STEP}
+              y={twoColumns ? rank[index] / 2 * Offer.ROW_STEP : rank[index] * Offer.ROW_STEP}
               w={columnWidth}
               twoColumns={twoColumns}
             />

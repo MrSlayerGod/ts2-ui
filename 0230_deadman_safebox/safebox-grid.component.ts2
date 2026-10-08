@@ -6,8 +6,8 @@ function SafeboxSlot({ item, count, slot }: { item: Item; count: Int; slot: Int 
   if (item === -1) {
     return (
       <sprite
-        x={(slot % Layout.SLOT_COLUMNS) * Layout.SLOT_STRIDE_X}
-        y={(slot / Layout.SLOT_COLUMNS) * Layout.SLOT_STRIDE_Y}
+        x={slot % Layout.SLOT_COLUMNS * Layout.SLOT_STRIDE_X}
+        y={slot / Layout.SLOT_COLUMNS * Layout.SLOT_STRIDE_Y}
         w={Layout.SLOT_W}
         h={Layout.SLOT_H}
         item={SafeboxItems.BLANK}
@@ -23,8 +23,8 @@ function SafeboxSlot({ item, count, slot }: { item: Item; count: Int; slot: Int 
 
   return (
     <sprite
-      x={(slot % Layout.SLOT_COLUMNS) * Layout.SLOT_STRIDE_X}
-      y={(slot / Layout.SLOT_COLUMNS) * Layout.SLOT_STRIDE_Y}
+      x={slot % Layout.SLOT_COLUMNS * Layout.SLOT_STRIDE_X}
+      y={slot / Layout.SLOT_COLUMNS * Layout.SLOT_STRIDE_Y}
       w={Layout.SLOT_W}
       h={Layout.SLOT_H}
       item={item}

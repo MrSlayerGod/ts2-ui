@@ -1,23 +1,32 @@
+import { useInterval, useRef, useState } from 'ts2';
+
 import { SteelBorderEntrypoint } from '../lib/steel-border-entrypoint.component';
 import { ThinBoxEntrypoint } from '../lib/thin-box-entrypoint.component';
-import { DisplayArt, DisplayColors, DisplayCopy, DisplayFonts, Layout } from './trr-display.constants';
+import {
+  DisplayArt,
+  DisplayColors,
+  DisplayCopy,
+  DisplayFonts,
+  Layout,
+  SpinStep,
+  displayModel,
+  displayOffsetX,
+  displayOffsetY,
+  displayPitch,
+  displayRoll,
+  displaySpin,
+  displayText,
+  displayTitle,
+  displayYaw,
+  displayZoom,
+} from './trr-display.constants';
 
 export function TrrDisplay(): Component {
   return (
     <layer x="center" y="center" w={Layout.WINDOW_W} h={Layout.WINDOW_H}>
       <SteelBorderEntrypoint title={DisplayCopy.FRAME_TITLE} />
 
-      <text
-        x={0}
-        y={Layout.TITLE_Y}
-        w="fill"
-        h={Layout.TITLE_H}
-        font={DisplayFonts.TITLE}
-        color={DisplayColors.TITLE}
-        align="center"
-        valign="middle"
-        shadow
-      />
+      <DisplayTitle />
 
       <layer
         x="center"
@@ -36,15 +45,7 @@ export function TrrDisplay(): Component {
               tiling
             />
 
-            <model
-              x="center"
-              y="center"
-              w={Layout.MODEL_BOX}
-              h={Layout.MODEL_BOX}
-              zoom={Layout.MODEL_ZOOM}
-              yaw={Layout.MODEL_YAW}
-              offsetY={Layout.MODEL_OFFSET_Y}
-            />
+            <DisplayModel />
 
             <ThinBoxEntrypoint />
           </layer>
@@ -66,18 +67,7 @@ export function TrrDisplay(): Component {
               tiling
             />
 
-            <text
-              x="center"
-              y="center"
-              w={{ fill: Layout.TEXT_INSET_W }}
-              h={{ fill: Layout.TEXT_INSET_H }}
-              font={DisplayFonts.BODY}
-              color={DisplayColors.BODY}
-              align="center"
-              valign="middle"
-              shadow
-              lineHeight={Layout.TEXT_LINE_HEIGHT}
-            />
+            <DisplayText />
 
             <ThinBoxEntrypoint />
           </layer>
@@ -85,4 +75,110 @@ export function TrrDisplay(): Component {
       </layer>
     </layer>
   );
+}
+
+function DisplayTitle(): Component {
+  const [title] = useState(displayTitle);
+  return (
+    <text
+      x={0}
+      y={Layout.TITLE_Y}
+      w="fill"
+      h={Layout.TITLE_H}
+      text={title}
+      font={DisplayFonts.TITLE}
+      color={DisplayColors.TITLE}
+      align="center"
+      valign="middle"
+      shadow
+    />
+  );
+}
+
+function DisplayModel(): Component {
+  const [model] = useState(displayModel);
+  const [offsetX] = useState(displayOffsetX);
+  const [offsetY] = useState(displayOffsetY);
+  const [pitch] = useState(displayPitch);
+  const [yaw, setYaw] = useState(displayYaw);
+  const [roll] = useState(displayRoll);
+  const [zoom] = useState(displayZoom);
+  const [spin] = useState(displaySpin);
+  const slot = useRef();
+
+  useInterval(() => {
+    if (spin === 1) {
+      setYaw((yaw + SpinStep.TURN + SpinStep.YAW) % SpinStep.TURN);
+    }
+  }, slot);
+
+  return (
+    <model
+      ref={slot}
+      x="center"
+      y="center"
+      w={Layout.MODEL_BOX}
+      h={Layout.MODEL_BOX}
+      model={model as Model}
+      offsetX={offsetX}
+      offsetY={offsetY}
+      pitch={pitch}
+      yaw={yaw}
+      roll={roll}
+      zoom={zoom}
+    />
+  );
+}
+
+function DisplayText(): Component {
+  const [text] = useState(displayText);
+  return (
+    <text
+      x="center"
+      y="center"
+      w={{ fill: Layout.TEXT_INSET_W }}
+      h={{ fill: Layout.TEXT_INSET_H }}
+      text={text}
+      font={DisplayFonts.BODY}
+      color={DisplayColors.BODY}
+      align="center"
+      valign="middle"
+      shadow
+      lineHeight={Layout.TEXT_LINE_HEIGHT}
+    />
+  );
+}
+
+export function trrDisplayShow(
+  model: Model,
+  offsetX: Int,
+  offsetY: Int,
+  pitch: Int,
+  yaw: Int,
+  roll: Int,
+  zoom: Int,
+  spin: Int,
+  title: String,
+  text: String,
+): void {
+  const [, setModel] = useState(displayModel);
+  const [, setOffsetX] = useState(displayOffsetX);
+  const [, setOffsetY] = useState(displayOffsetY);
+  const [, setPitch] = useState(displayPitch);
+  const [, setYaw] = useState(displayYaw);
+  const [, setRoll] = useState(displayRoll);
+  const [, setZoom] = useState(displayZoom);
+  const [, setSpin] = useState(displaySpin);
+  const [, setTitle] = useState(displayTitle);
+  const [, setText] = useState(displayText);
+  setTitle(title);
+  setText(text);
+  setModel(model as Int);
+  setOffsetX(offsetX);
+  setOffsetY(offsetY);
+  setPitch(pitch);
+  setYaw(yaw);
+  setRoll(roll);
+  setZoom(zoom);
+  setSpin(spin === 1 ? 1 : 0);
 }

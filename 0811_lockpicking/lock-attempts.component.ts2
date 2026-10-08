@@ -83,7 +83,7 @@ export function LockAttempts(): Component {
               y={{ bottom: 0 * LockLayout.ATTEMPT_STEP }}
               w={LockLayout.ATTEMPT_CELL}
               h={LockLayout.ATTEMPT_TEXT_HEIGHT}
-              text={stringOf(((input1 / CS2.pow(6, column)) % 6) + 1)}
+              text={stringOf((input1 / CS2.pow(6, column)) % 6 + 1)}
               font={LockFonts.BODY}
               color={LockColors.DIGIT}
               shadow
@@ -123,7 +123,7 @@ export function LockAttempts(): Component {
               y={{ bottom: 1 * LockLayout.ATTEMPT_STEP }}
               w={LockLayout.ATTEMPT_CELL}
               h={LockLayout.ATTEMPT_TEXT_HEIGHT}
-              text={stringOf(((input2 / CS2.pow(6, column)) % 6) + 1)}
+              text={stringOf((input2 / CS2.pow(6, column)) % 6 + 1)}
               font={LockFonts.BODY}
               color={LockColors.DIGIT}
               shadow
@@ -163,7 +163,7 @@ export function LockAttempts(): Component {
               y={{ bottom: 2 * LockLayout.ATTEMPT_STEP }}
               w={LockLayout.ATTEMPT_CELL}
               h={LockLayout.ATTEMPT_TEXT_HEIGHT}
-              text={stringOf(((input3 / CS2.pow(6, column)) % 6) + 1)}
+              text={stringOf((input3 / CS2.pow(6, column)) % 6 + 1)}
               font={LockFonts.BODY}
               color={LockColors.DIGIT}
               shadow
@@ -203,7 +203,7 @@ export function LockAttempts(): Component {
               y={{ bottom: 3 * LockLayout.ATTEMPT_STEP }}
               w={LockLayout.ATTEMPT_CELL}
               h={LockLayout.ATTEMPT_TEXT_HEIGHT}
-              text={stringOf(((input4 / CS2.pow(6, column)) % 6) + 1)}
+              text={stringOf((input4 / CS2.pow(6, column)) % 6 + 1)}
               font={LockFonts.BODY}
               color={LockColors.DIGIT}
               shadow
@@ -243,7 +243,7 @@ export function LockAttempts(): Component {
               y={{ bottom: 4 * LockLayout.ATTEMPT_STEP }}
               w={LockLayout.ATTEMPT_CELL}
               h={LockLayout.ATTEMPT_TEXT_HEIGHT}
-              text={stringOf(((input5 / CS2.pow(6, column)) % 6) + 1)}
+              text={stringOf((input5 / CS2.pow(6, column)) % 6 + 1)}
               font={LockFonts.BODY}
               color={LockColors.DIGIT}
               shadow
@@ -283,7 +283,7 @@ export function LockAttempts(): Component {
               y={{ bottom: 5 * LockLayout.ATTEMPT_STEP }}
               w={LockLayout.ATTEMPT_CELL}
               h={LockLayout.ATTEMPT_TEXT_HEIGHT}
-              text={stringOf(((input6 / CS2.pow(6, column)) % 6) + 1)}
+              text={stringOf((input6 / CS2.pow(6, column)) % 6 + 1)}
               font={LockFonts.BODY}
               color={LockColors.DIGIT}
               shadow
@@ -323,7 +323,7 @@ export function LockAttempts(): Component {
               y={{ bottom: 6 * LockLayout.ATTEMPT_STEP }}
               w={LockLayout.ATTEMPT_CELL}
               h={LockLayout.ATTEMPT_TEXT_HEIGHT}
-              text={stringOf(((input7 / CS2.pow(6, column)) % 6) + 1)}
+              text={stringOf((input7 / CS2.pow(6, column)) % 6 + 1)}
               font={LockFonts.BODY}
               color={LockColors.DIGIT}
               shadow
@@ -363,7 +363,7 @@ export function LockAttempts(): Component {
               y={{ bottom: 7 * LockLayout.ATTEMPT_STEP }}
               w={LockLayout.ATTEMPT_CELL}
               h={LockLayout.ATTEMPT_TEXT_HEIGHT}
-              text={stringOf(((input8 / CS2.pow(6, column)) % 6) + 1)}
+              text={stringOf((input8 / CS2.pow(6, column)) % 6 + 1)}
               font={LockFonts.BODY}
               color={LockColors.DIGIT}
               shadow

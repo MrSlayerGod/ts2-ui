@@ -10,11 +10,11 @@ import { panelShown, tickPanelVisibility, xpDropsAnchor, xpDropsDodgeTop, xpDrop
 import { useServerState } from 'ts2';
 
 const tlidodger = createRef('xp_drops_tlidodger');
-const containerdodger = createRef('xp_drops_containerdodger');
 const statlistener = createRef('xp_drops_statlistener');
 
 export function XpDrops(): Component {
-  const container = useRef();
+  const containerdodger = useRef('containerdodger');
+  const container = useRef('container');
   useInterval(() => {
     if (firstInit <= 0) {
       setFirstInit(clientClock());

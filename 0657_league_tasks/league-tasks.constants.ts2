@@ -6,6 +6,7 @@ import { Sprites } from '../lib/game/sprites';
 
 export const leagueTasksRef = createRef('league_tasks');
 export const universeRef = createRef('league_tasks_universe');
+export const hotfixStoreRef = createRef('league_tasks_hotfixes');
 export const contentRef = createRef('league_tasks_content_outer');
 export const filtersRef = createRef('league_tasks_filters');
 export const tasksListRef = createRef('league_tasks_tasks_list');

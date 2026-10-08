@@ -51,7 +51,7 @@ export function LogDropdownOverlay(): Component {
   const contentH: Int = listH - 4;
   const wide: Boolean = mobile && rowH * count > contentH;
   const boxW: Int = wide ? buttonW * 2 : buttonW;
-  const contentW: Int = boxW - (scrollSpace ? 20 : 0);
+  const contentW: Int = buttonW - (scrollSpace ? 20 : 0);
   const perColumn: Int = contentH / rowH < 1 ? 1 : contentH / rowH;
   const scrollH: Int = mobile ? 0 : count * rowH;
   const arrowX: Int = mobile ? contentW - buttonH + 2 : 2;

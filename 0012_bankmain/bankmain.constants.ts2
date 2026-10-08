@@ -3,6 +3,7 @@ import { Inventories } from '../lib/game/inventories';
 import { Sounds } from '../lib/game/sounds';
 import { Sprites } from '../lib/game/sprites';
 import { Varbits } from '../lib/game/varbits';
+import { Varps } from '../lib/game/varps';
 
 export declare const Bank: {
   readonly INV: typeof Inventories.BANK;
@@ -148,3 +149,53 @@ export const SEARCH_MAX = 15;
 export const MESLAYER_SEARCH = 11;
 
 export const POTION_TAB = 15;
+
+export declare const PotionStoreVars: {
+  readonly UNLOCKED: typeof Varbits.MM_POTION_STORAGE_UNLOCKED;
+  readonly PREVIOUS_TAB: typeof Varbits.POTIONSTORE_PREVIOUS_TAB;
+  readonly FAVOURITE_1: typeof Varps.POTIONSTORE_FAVOURITE_1;
+  readonly FAVOURITE_2: typeof Varps.POTIONSTORE_FAVOURITE_2;
+  readonly FAVOURITE_3: typeof Varps.POTIONSTORE_FAVOURITE_3;
+  readonly FAVOURITE_4: typeof Varps.POTIONSTORE_FAVOURITE_4;
+  readonly FAVOURITE_5: typeof Varps.POTIONSTORE_FAVOURITE_5;
+  readonly FAVOURITE_6: typeof Varps.POTIONSTORE_FAVOURITE_6;
+  readonly FAVOURITE_7: typeof Varps.POTIONSTORE_FAVOURITE_7;
+  readonly FAVOURITE_8: typeof Varps.POTIONSTORE_FAVOURITE_8;
+  readonly VIALS: typeof Varps.POTIONSTORE_VIALS;
+};
+
+export declare const PotionStoreSprites: {
+  readonly GLYPH: typeof Sprites.BANK_STORAGE_2;
+  readonly LIGHT: typeof Sprites.TRADEBACKING;
+  readonly DARK: typeof Sprites.TRADEBACKING_DARK;
+  readonly FAVOURITE: typeof Sprites.FAVOURITE_ICONS_0;
+  readonly NOT_FAVOURITE: typeof Sprites.FAVOURITE_ICONS_1;
+};
+
+export enum PotionStore {
+  W = 409,
+  HALF = 204,
+  COL1_X = 205,
+  ROW_H = 36,
+  ITEM_DX = 1,
+  ITEM_DY = 2,
+  ITEM_W = 36,
+  ITEM_H = 32,
+  TEXT_DX = 38,
+  NAME_DY = 2,
+  DOSES_DY = 21,
+  STAR_DX = 188,
+  STAR_DY = 21,
+  STAR_W = 13,
+  STAR_H = 12,
+  MAX_FAVOURITES = 8,
+  RULE = 0x726451,
+  TITLE_H = 34,
+  VIALS_H = 16,
+  VIALS_DY = 18,
+  VIALS_RIGHT = 3,
+  INSET_W = 53,
+}
+
+export const POTION_STORE_HELP =
+  'In this potion storage space, you can store your potions, including unfinished ones.<br><br>When you deposit potions, their vials will be stored here, and you can deposit empty vials too. The vials will be needed when you withdraw your potions again.<br><br>The <img=53> icon allows you to mark up to 8 potions as your favourites. These will appear at the top of the list.';

@@ -40,7 +40,7 @@ export function Tab({
   const [hovered, setHovered] = useState(0);
 
   const left: Int = index * width;
-  const state: Int = selected ? TabState.SELECTED : hovered === 1 ? TabState.HOVERED : TabState.UNSELECTED;
+  const state: Int = selected ? TabState.SELECTED : (hovered === 1 ? TabState.HOVERED : TabState.UNSELECTED);
   const skin = TabSkins.at(state);
   const fill: Sprite = skin === null ? -1 : skin.fill;
   const edgeLeft: Sprite = skin === null ? -1 : skin.edgeLeft;

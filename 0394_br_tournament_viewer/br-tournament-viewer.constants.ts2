@@ -1,5 +1,6 @@
 import { Fonts } from '../lib/game/fonts';
 import { Sounds } from '../lib/game/sounds';
+import { Sprites } from '../lib/game/sprites';
 
 export const Layout = {
   TITLE_H: 20,
@@ -40,4 +41,21 @@ export declare const ViewerFonts: {
 
 export declare const ViewerSounds: {
   readonly CLICK: typeof Sounds.INTERFACE_SELECT1;
+};
+
+export const NameRows = {
+  ROW_H: 15,
+  SUBMIT_DELAY: 30,
+};
+
+export enum NamesColor {
+  LABEL = 0xff981f,
+  PRESSED = 0x8f8f8f,
+  SENT = 0xffffff,
+}
+
+export declare const NamesSprites: {
+  readonly DARK: typeof Sprites.TRADEBACKING_DARK;
+  readonly MID: typeof Sprites.TRADEBACKING;
+  readonly LIGHT: typeof Sprites.TRADEBACKING_LIGHT;
 };

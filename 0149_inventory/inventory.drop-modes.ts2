@@ -1,0 +1,50 @@
+import { CS2, useServerState } from 'ts2';
+
+import { Varbits } from '../lib/game/varbits';
+import { onMobile } from '../lib/lib.helpers';
+import { dropSettingOn } from './inventory.helpers';
+
+function onEnhancedMobile(): Boolean {
+  const type: Int = CS2.clienttype();
+  if (useServerState(Varbits.OSM_SIMULATE) === 1) {
+    if (type === 4 || type === 5 || type === 10) {
+      return true;
+    }
+  }
+  if (type === 7 || type === 8) {
+    return true;
+  }
+  return false;
+}
+
+export function dropModeWanted(): Boolean {
+  if (
+    onEnhancedMobile() &&
+    (useServerState(Varbits.SETTINGS_MOBILE_TILE_HIGHLIGHT_ENABLED) === 1 ||
+      useServerState(Varbits.OPTION_NPC_INDICATORS_TAGGING_ENABLED) === 1)
+  ) {
+    return true;
+  }
+  if (dropSettingOn() === 1) {
+    return true;
+  }
+  return false;
+}
+
+export function applyDropModes(): void {
+  if (onMobile()) {
+    CS2.tap_to_drop_set(dropModeWanted());
+    CS2.shift_click_enabled_set(true);
+  } else {
+    CS2.shift_click_enabled_set(dropModeWanted());
+    CS2.tap_to_drop_set(false);
+  }
+}
+
+export function shiftclickToggle(): void {
+  applyDropModes();
+}
+
+export function tapToDropOn(): Int {
+  return CS2.tap_to_drop_get() ? 1 : 0;
+}

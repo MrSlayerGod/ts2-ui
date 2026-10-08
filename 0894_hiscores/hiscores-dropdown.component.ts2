@@ -1,8 +1,15 @@
+import { useState } from 'ts2';
+
 import { textWidth } from '../lib/lib.engine';
+import { onMobile } from '../lib/lib.helpers';
+import { hiscoresType } from '../lib/game/varcs';
 import { onEnhancedMobile } from '../0134_settings/settings.helpers';
 
-import { Drop, Frame, HiscoresArt, HiscoresColour, HiscoresFonts } from './hiscores.constants';
-import { typeIcon, typeName } from './hiscores.helpers';
+import { Drop, Frame, HiscoresArt, HiscoresColour, HiscoresFonts, Layout } from './hiscores.constants';
+import { HiscoresTypeOrder } from './hiscores.data';
+import { clampType, typeIcon, typeName } from './hiscores.helpers';
+import { hiscoresLookup } from './hiscores.lookup';
+import { hiscoresDropOpen, hiscoresName } from './hiscores.state';
 
 export function HiscoresTypeControl({ type, open }: { type: Int; open: Boolean }): Component {
   const mobile: Boolean = onEnhancedMobile();
@@ -70,5 +77,100 @@ export function HiscoresTypeControl({ type, open }: { type: Int; open: Boolean }
         />
       )}
     </>
+  );
+}
+
+export function HiscoresTypeList({ width }: { width: Int }): Component {
+  const [open, setOpen] = useState(hiscoresDropOpen);
+  const [name] = useState(hiscoresName);
+  const [, setType] = useState(hiscoresType);
+  const mobile: Boolean = onMobile();
+  return (
+    <layer x="center" y="center" w="fill" h="fill" hide={open !== 1} noClickThrough>
+      <rect
+        x="center"
+        y="center"
+        w="fill"
+        h="fill"
+        fill
+        transparency={255}
+        options={['Close dropdown']}
+        onOptionSelect={() => setOpen(0)}
+      />
+      <layer
+        x={Drop.PANEL_X}
+        y={Layout.DROPDOWN_Y + Layout.DROPDOWN_H}
+        w={width}
+        h={HiscoresTypeOrder.length * Drop.ROW_H + Drop.PANEL_PAD}
+        noClickThrough
+      >
+        <sprite x="center" y="center" w="fill" h="fill" sprite={HiscoresArt.LIST_BACKING} tiling />
+        <layer x="center" y="center" w={{ fill: Drop.PANEL_PAD }} h={{ fill: Drop.PANEL_PAD }} noClickThrough>
+          {HiscoresTypeOrder.map((type, i) => (
+            <>
+              {mobile ? (
+                <rect
+                  x={0}
+                  y={i * Drop.ROW_H}
+                  w="fill"
+                  h={Drop.ROW_H}
+                  fill
+                  color={HiscoresColour.BLACK}
+                  transparency={i % 2 === 0 ? Drop.ROW_A : Drop.ROW_B}
+                />
+              ) : (
+                <rect
+                  x={0}
+                  y={i * Drop.ROW_H}
+                  w="fill"
+                  h={Drop.ROW_H}
+                  fill
+                  color={HiscoresColour.BLACK}
+                  transparency={i % 2 === 0 ? Drop.ROW_A : Drop.ROW_B}
+                  hover={{ transparency: Drop.ROW_HOVER }}
+                />
+              )}
+              <text
+                x={{ center: Drop.ROW_LABEL_DX }}
+                y={i * Drop.ROW_H}
+                w="fill"
+                h={Drop.ROW_H}
+                font={HiscoresFonts.VALUE}
+                shadow
+                color={HiscoresColour.ORANGE}
+                align="center"
+                valign="middle"
+                lineHeight={Drop.ROW_LINE_H}
+                text={typeName(type)}
+              />
+              <sprite
+                x={{ center: Drop.ROW_FLAG_DX - textWidth(typeName(type), Drop.MEASURE_W, HiscoresFonts.VALUE) / 2 }}
+                y={i * Drop.ROW_H + Drop.ROW_FLAG_DY}
+                w={Drop.FLAG}
+                h={Drop.FLAG}
+                sprite={typeIcon(type)}
+              />
+              <rect
+                x={0}
+                y={i * Drop.ROW_H}
+                w="fill"
+                h={Drop.ROW_H}
+                fill
+                color={HiscoresColour.BLACK}
+                transparency={255}
+                options={['Select']}
+                onOptionSelect={() => {
+                  setType(clampType(type));
+                  if (name.length > 0) {
+                    hiscoresLookup(name, clampType(type));
+                  }
+                  setOpen(0);
+                }}
+              />
+            </>
+          ))}
+        </layer>
+      </layer>
+    </layer>
   );
 }

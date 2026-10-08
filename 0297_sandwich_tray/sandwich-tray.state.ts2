@@ -1,0 +1,61 @@
+import { CS2, sessionState, useState } from 'ts2';
+import { Drift } from './sandwich-tray.constants';
+
+export const trayYaw0 = sessionState(0);
+export const trayYaw1 = sessionState(0);
+export const trayYaw2 = sessionState(0);
+export const trayYaw3 = sessionState(0);
+export const trayYaw4 = sessionState(0);
+export const trayYaw5 = sessionState(0);
+export const trayYaw6 = sessionState(0);
+export const trayYaw = [trayYaw0, trayYaw1, trayYaw2, trayYaw3, trayYaw4, trayYaw5, trayYaw6] as const;
+
+export const trayRoll0 = sessionState(0);
+export const trayRoll1 = sessionState(0);
+export const trayRoll2 = sessionState(0);
+export const trayRoll3 = sessionState(0);
+export const trayRoll4 = sessionState(0);
+export const trayRoll5 = sessionState(0);
+export const trayRoll6 = sessionState(0);
+export const trayRoll = [trayRoll0, trayRoll1, trayRoll2, trayRoll3, trayRoll4, trayRoll5, trayRoll6] as const;
+
+function yawOf(n: Int): Int {
+  const [yaw] = useState(trayYaw[n]);
+  return yaw;
+}
+
+function setYawOf(n: Int, value: Int): void {
+  const [, setYaw] = useState(trayYaw[n]);
+  setYaw(value);
+}
+
+function setRollOf(n: Int, value: Int): void {
+  const [, setRoll] = useState(trayRoll[n]);
+  setRoll(value);
+}
+
+export function sandwichTraySeed(): void {
+  let n: Int = 0;
+  while (n < 7) {
+    setYawOf(n, Random.int(Drift.TURN));
+    n = n + 1;
+  }
+  n = 0;
+  while (n < 7) {
+    setRollOf(n, Drift.ROLL_TOP - n * Drift.ROLL_STEP - CS2.randominc(Drift.ROLL_SPREAD));
+    n = n + 1;
+  }
+}
+
+export function sandwichTrayDrift(): void {
+  let n: Int = 0;
+  while (n < 7) {
+    setYawOf(n, (yawOf(n) + Random.int(Drift.STEP_SPREAD) + Drift.STEP_BASE) % Drift.TURN);
+    n = n + 1;
+  }
+  n = 0;
+  while (n < 7) {
+    setRollOf(n, (yawOf(n) + Random.int(Drift.STEP_SPREAD) + Drift.STEP_BASE) % Drift.TURN);
+    n = n + 1;
+  }
+}

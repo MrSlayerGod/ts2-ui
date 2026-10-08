@@ -56,3 +56,7 @@ export enum RaidsLimits {
 export enum RaidsOverlayDodge {
   DODGE = 65256,
 }
+
+export enum FaderSteps {
+  LAST = 25,
+}

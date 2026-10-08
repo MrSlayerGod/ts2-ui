@@ -68,7 +68,7 @@ export function ChatScrollbar(): Component {
           const travel: Int = Math.max(1, gutter.height - thumb.height);
           const offset: Int = Math.clamp(0, travel, event.mouseY - thumb.height / 2);
           const range: Int = line0Ref.scrollHeight - line0Ref.height;
-          line0Ref.scrollY = (offset * range) / travel;
+          line0Ref.scrollY = offset * range / travel;
           trackScroll(gutter, thumb, capTop, capBottom, line0Ref);
         }}
       />
@@ -76,7 +76,7 @@ export function ChatScrollbar(): Component {
         ref={thumb}
         y={
           ARROW +
-          ((gutter.height - thumbHeightOf(bar.height, line0Ref.height, extent, false)) * line0Ref.scrollY) /
+          (gutter.height - thumbHeightOf(bar.height, line0Ref.height, extent, false)) * line0Ref.scrollY /
             Math.max(1, line0Ref.scrollHeight - line0Ref.height)
         }
         w="fill"
@@ -94,7 +94,7 @@ export function ChatScrollbar(): Component {
 
           const travel: Int = Math.max(1, gutter.height - thumb.height);
           const range: Int = line0Ref.scrollHeight - line0Ref.height;
-          line0Ref.scrollY = (offset * range) / travel;
+          line0Ref.scrollY = offset * range / travel;
         }}
       />
       <sprite ref={capTop} y={thumb.y} w="fill" h={CAP} sprite={capTopSprite} transparency={pieceAlpha} />

@@ -1,7 +1,8 @@
 import { Cell, HiscoresColour, HiscoresFonts } from './hiscores.constants';
 import { HiscoresActivities, HiscoresBosses, HiscoresSkills } from './hiscores.data';
+import { hiscoreCount, hiscoreLevel } from './hiscores.helpers';
 
-export function SkillCells({ third, top }: { third: Int; top: Int }): Component {
+export function SkillCells({ third, top, loaded }: { third: Int; top: Int; loaded: Boolean }): Component {
   return (
     <>
       {HiscoresSkills.map((row, i) => (
@@ -23,7 +24,7 @@ export function SkillCells({ third, top }: { third: Int; top: Int }): Component 
             color={HiscoresColour.ORANGE}
             align="center"
             valign="middle"
-            text={Cell.PLACEHOLDER}
+            text={loaded ? `${hiscoreLevel(row.skill)}` : Cell.PLACEHOLDER}
           />
         </>
       ))}
@@ -31,7 +32,7 @@ export function SkillCells({ third, top }: { third: Int; top: Int }): Component 
   );
 }
 
-export function ActivityCells({ third, top }: { third: Int; top: Int }): Component {
+export function ActivityCells({ third, top, loaded }: { third: Int; top: Int; loaded: Boolean }): Component {
   return (
     <>
       {HiscoresActivities.map((row, i) => (
@@ -53,7 +54,7 @@ export function ActivityCells({ third, top }: { third: Int; top: Int }): Compone
             color={HiscoresColour.ORANGE}
             align="center"
             valign="middle"
-            text={Cell.PLACEHOLDER}
+            text={loaded ? hiscoreCount(row.varp) : Cell.PLACEHOLDER}
           />
         </>
       ))}
@@ -61,7 +62,7 @@ export function ActivityCells({ third, top }: { third: Int; top: Int }): Compone
   );
 }
 
-export function BossCells({ third, top }: { third: Int; top: Int }): Component {
+export function BossCells({ third, top, loaded }: { third: Int; top: Int; loaded: Boolean }): Component {
   return (
     <>
       {HiscoresBosses.map((row, i) => (
@@ -83,7 +84,7 @@ export function BossCells({ third, top }: { third: Int; top: Int }): Component {
             color={HiscoresColour.ORANGE}
             align="center"
             valign="middle"
-            text={Cell.PLACEHOLDER}
+            text={loaded ? hiscoreCount(row.varp) : Cell.PLACEHOLDER}
           />
         </>
       ))}

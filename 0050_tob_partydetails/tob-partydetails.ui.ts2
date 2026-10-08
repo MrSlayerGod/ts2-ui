@@ -1,4 +1,5 @@
-import { Layout, universeRef } from './tob-partydetails.constants';
+import { BoardAnchors } from '../lib/board-button.component';
+import { Anchor, Layout, anchorsRef, universeRef } from './tob-partydetails.constants';
 import {
   TobPartydetails,
   TobPartydetailsBack,
@@ -12,5 +13,13 @@ export const tobPartydetailsUi = (): UI => (
     <TobPartydetailsBack />
     <TobPartydetails />
     <TobPartydetailsTooltip />
+    <TobPartydetailsAnchors />
+    <layer x={0} y={0} w={0} h={0}>
+      <BoardAnchors universe={anchorsRef} count={Anchor.COUNT} />
+    </layer>
   </ui>
 );
+
+function TobPartydetailsAnchors(): Component {
+  return <layer ref={anchorsRef} x={0} y={0} w={0} h={0} />;
+}

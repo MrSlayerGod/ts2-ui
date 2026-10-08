@@ -92,7 +92,7 @@ export function FletchingTable(): Component {
       slotItem[slot] = product;
       if (product !== -1) {
         slotX[slot] = columnW * (placed % columns) + columnW / 2;
-        slotY[slot] = cursor + (placed / columns) * RecipeGrid.ROW_ADVANCE;
+        slotY[slot] = cursor + placed / columns * RecipeGrid.ROW_ADVANCE;
         placed = placed + 1;
       }
       slot = slot + 1;

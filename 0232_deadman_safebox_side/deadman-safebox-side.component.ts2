@@ -5,8 +5,8 @@ import { BLANK_ITEM, Grid, Safebox, SafeboxColor, Transparency } from './deadman
 function SafeboxSlot({ item, count, slot }: { item: Item; count: Int; slot: Int }): Component {
   return (
     <sprite
-      x={Grid.ORIGIN_X + (slot % Grid.COLUMNS) * Grid.STRIDE_X}
-      y={Grid.ORIGIN_Y + (slot / Grid.COLUMNS) * Grid.STRIDE_Y}
+      x={Grid.ORIGIN_X + slot % Grid.COLUMNS * Grid.STRIDE_X}
+      y={Grid.ORIGIN_Y + slot / Grid.COLUMNS * Grid.STRIDE_Y}
       w={Grid.W}
       h={Grid.H}
       item={item}
@@ -25,8 +25,8 @@ function SafeboxSlot({ item, count, slot }: { item: Item; count: Int; slot: Int 
 function SafeboxBlank({ slot }: { slot: Int }): Component {
   return (
     <sprite
-      x={Grid.ORIGIN_X + (slot % Grid.COLUMNS) * Grid.STRIDE_X}
-      y={Grid.ORIGIN_Y + (slot / Grid.COLUMNS) * Grid.STRIDE_Y}
+      x={Grid.ORIGIN_X + slot % Grid.COLUMNS * Grid.STRIDE_X}
+      y={Grid.ORIGIN_Y + slot / Grid.COLUMNS * Grid.STRIDE_Y}
       w={Grid.W}
       h={Grid.H}
       item={BLANK_ITEM}
@@ -46,7 +46,7 @@ export function DeadmanSafeboxGrid(): Component {
   return (
     <layer w="fill" h="fill">
       {bag.map((item, slot) =>
-        item === -1 ? <SafeboxBlank slot={slot} /> : <SafeboxSlot item={item} count={bag.count(slot)} slot={slot} />,
+        (item === -1 ? <SafeboxBlank slot={slot} /> : <SafeboxSlot item={item} count={bag.count(slot)} slot={slot} />),
       )}
     </layer>
   );

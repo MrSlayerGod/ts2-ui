@@ -7,9 +7,15 @@ export const toaPartylistRef = createRef('toa_partylist');
 
 export const panelRef = createRef('toa_partylist_panel');
 
-export const listRef = createRef('toa_partylist_list');
-
 export const tooltipRef = createRef('toa_partylist_tooltip');
+
+export const boardAnchorsRef = createRef('toa_partylist_board_anchors');
+
+export const BoardPausebutton = {
+  REFRESH: 0,
+  MY_PARTY: 1,
+  FILTER: 2,
+} as const;
 
 export declare const ToaPartylistFonts: {
   readonly BODY: typeof Fonts.P12_FULL;
@@ -42,6 +48,7 @@ export enum ToaPartylistColor {
   WASH = 0x000000,
   CELL = 0xff981f,
   AGE = 0x9f9f9f,
+  ROW = 0x000000,
 }
 
 export const Copy = {
@@ -51,6 +58,62 @@ export const Copy = {
   MAKE_PARTY: 'Make Party',
   MY_PARTY: 'My Party',
   FRIENDS_CLAN: 'Friends/Clan Only',
+  VIEW_PARTY: 'View Party:',
+  NO_COMPLETIONS: '<col=9f9f9f>-</col>',
+  NO_PARTIES: 'No parties are currently listed.',
+  NO_FRIENDS: 'You have no friends or clanmates in a party.',
+  TIP_MEMBERS: 'Sort by members',
+  TIP_LEADER: 'Sort by leader name',
+  TIP_COMPLETIONS: 'Sort by preferred completions',
+  TIP_INVOCATIONS: 'Sort by invocations',
+  TIP_LEVEL: 'Sort by raid level',
+  TIP_MODE: 'Sort by mode',
+  TIP_AGE: 'Sort by age',
+};
+
+export const ListSort = {
+  MEMBERS_ASC: 0,
+  MEMBERS_DESC: 1,
+  LEADER_ASC: 4,
+  LEADER_DESC: 5,
+  AGE_ASC: 12,
+  AGE_DESC: 13,
+  COMPLETIONS_ASC: 16,
+  COMPLETIONS_DESC: 17,
+  INVOCATIONS_ASC: 18,
+  INVOCATIONS_DESC: 19,
+  LEVEL_ASC: 20,
+  LEVEL_DESC: 21,
+  MODE_ASC: 22,
+  MODE_DESC: 23,
+};
+
+export const ListKey = {
+  MEMBERS: 0,
+  LEADER: 1,
+  COMPLETIONS: 2,
+  INVOCATIONS: 3,
+  LEVEL: 4,
+  MODE: 5,
+  AGE: 6,
+  W: 20,
+  CELL_W: 22,
+  SLOT_W: 154,
+  PAD: '                    ',
+  BITS: 30,
+};
+
+export const ListRow = {
+  EVEN: 242,
+  ODD: 228,
+  HOVER: 210,
+  PRESSED: 190,
+  BUSY_CYCLES: 80,
+  ARROW_DIM: 100,
+  ARROW_LIVE_HOVER: 120,
+  ARROW_DIM_HOVER: 200,
+  ICON_HOVER: 120,
+  TIP_WRAP: 256,
 };
 
 export const Layout = {
@@ -94,6 +157,13 @@ export const Layout = {
   LIST_INSET_H: 4,
 
   ROW_H: 18,
+  CELL_MEMBERS_X: 0,
+  CELL_LEADER_X: 50,
+  CELL_COMPLETIONS_X: 174,
+  CELL_INVOCATIONS_X: 224,
+  CELL_LEVEL_X: 274,
+  CELL_MODE_X: 324,
+  CELL_AGE_INSET_W: 380,
   ROW_H_LAID_OUT: 20,
   ROW_H_LAID_OUT_MOBILE: 28,
 
@@ -113,6 +183,8 @@ export const Layout = {
   SORT_ICON_H: 18,
   SORT_ICON_Y: 2,
 };
+
+export const SLOT_COUNT = 45;
 
 export const ToaPartylistSlots = [
   0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31,

@@ -1,4 +1,4 @@
-import { CS2, Engine, useRef, useRerenderOn, useServerState } from 'ts2';
+import { CS2, Engine, useRef, useRerenderOn, useServerState, useState, useWatch } from 'ts2';
 
 import { Varbits } from '../lib/game/varbits';
 import { StoneButton } from '../lib/stone-button.component';
@@ -16,44 +16,38 @@ import {
 import { joinchatOnop } from './chatchannel-current.state';
 
 function HoverStoneButton({ pressed }: { pressed: Int }): Component {
-  const base = useRef();
-  const down = useRef();
+  const [lit, setLit] = useState(0);
 
-  let baseHidden: Boolean = false;
-  let downHidden: Boolean = true;
-  if (pressed === 1) {
-    baseHidden = true;
-    downHidden = false;
+  const transmitAnchor = useRef();
+
+  useWatch(
+    [Varbits.CHATCHANNEL_BLOCKED, Varbits.RAIDS_CLIENT_INDUNGEON, Varbits.CLANWARS_MYTEAM],
+    () => setLit(0),
+    transmitAnchor,
+  );
+
+  let down: Boolean = false;
+  if (pressed === 1 || lit === 1) {
+    down = true;
   }
 
   return (
-    <layer
-      w="fill"
-      h="fill"
-      onMouseRepeat={
-        pressed === 0
-          ? () => {
-              base.hide = true;
-              down.hide = false;
-            }
-          : undefined
-      }
-      onMouseLeave={
-        pressed === 0
-          ? () => {
-              base.hide = false;
-              down.hide = true;
-            }
-          : undefined
-      }
-    >
-      <layer ref={base} w="fill" h="fill" hide={baseHidden}>
-        <StoneButton />
+    <>
+      <layer ref={transmitAnchor} w={1} h={1} />
+      <layer
+        w="fill"
+        h="fill"
+        onMouseRepeat={pressed === 0 ? () => setLit(1) : undefined}
+        onMouseLeave={pressed === 0 ? () => setLit(0) : undefined}
+      >
+        <layer w="fill" h="fill" hide={down}>
+          <StoneButton />
+        </layer>
+        <layer w="fill" h="fill" hide={!down}>
+          <StoneButtonPressed />
+        </layer>
       </layer>
-      <layer ref={down} w="fill" h="fill" hide={downHidden}>
-        <StoneButtonPressed />
-      </layer>
-    </layer>
+    </>
   );
 }
 

@@ -1,6 +1,8 @@
 import { XpForLevel } from '../lib/skills.data';
 import { groupDigits } from '../lib/lib.format';
-import { HiscoresTypeNames, HiscoresTypeIcons } from './hiscores.data';
+import { CS2 } from 'ts2';
+
+import { HiscoresSkills, HiscoresTypeNames, HiscoresTypeIcons } from './hiscores.data';
 import { HiscoresArt } from './hiscores.constants';
 
 export function clampType(raw: Int): Int {
@@ -74,10 +76,10 @@ export function combatHundredths(
   ranged: Int,
   magic: Int,
 ): Int {
-  const base: Int = ((hitpoints + defence) * 100 + (prayer / 2) * 100) / 4;
-  const melee: Int = ((attack + strength) * 100 * 13) / 40 + base;
-  const range: Int = (((ranged / 2 + ranged) * 13) / 40) * 100 + base;
-  const mage: Int = (((magic / 2 + magic) * 13) / 40) * 100 + base;
+  const base: Int = ((hitpoints + defence) * 100 + prayer / 2 * 100) / 4;
+  const melee: Int = (attack + strength) * 100 * 13 / 40 + base;
+  const range: Int = (ranged / 2 + ranged) * 13 / 40 * 100 + base;
+  const mage: Int = (magic / 2 + magic) * 13 / 40 * 100 + base;
   return Math.max(melee, Math.max(range, mage));
 }
 
@@ -95,4 +97,39 @@ export function combatFraction(hundredths: Int): String {
 
 export function withCommas(value: Int): String {
   return groupDigits(value, ',');
+}
+
+export function hiscoreLevel(skill: Int): Int {
+  return levelForXp(CS2.native_hiscore_skill_xp_get(skill));
+}
+
+export function hiscoreTotal(): Int {
+  let total: Int = 0;
+  let i: Int = 0;
+  while (i < HiscoresSkills.length) {
+    const row = HiscoresSkills.at(i);
+    if (row !== null) {
+      total = total + hiscoreLevel(row.skill);
+    }
+    i = i + 1;
+  }
+  return total;
+}
+
+export function hiscoreCombat(): String {
+  return combatWhole(
+    combatHundredths(
+      hiscoreLevel(5),
+      hiscoreLevel(3),
+      hiscoreLevel(1),
+      hiscoreLevel(0),
+      hiscoreLevel(2),
+      hiscoreLevel(4),
+      hiscoreLevel(6),
+    ),
+  );
+}
+
+export function hiscoreCount(varp: Int): String {
+  return abbreviateCount(Math.max(0, CS2.native_hiscore_boss_kills_get(varp)));
 }

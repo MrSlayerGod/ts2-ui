@@ -1,6 +1,6 @@
 import { CS2 } from 'ts2';
 
-export function playSound(sound: Int): void {
+export function playSound(sound: Sound): void {
   CS2.sound_effect(sound, 1, 0);
 }
 

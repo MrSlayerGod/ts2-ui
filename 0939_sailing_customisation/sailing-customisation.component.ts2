@@ -22,7 +22,8 @@ import {
   sailingBoatCustomisationTab,
 } from '../lib/game/varcs';
 import { errorMessage } from '../lib/lib.debug';
-import { textLineCount } from '../lib/lib.engine';
+import { textLineCount, textWidth } from '../lib/lib.engine';
+import { TooltipBox, TooltipChrome, tooltipUp } from '../lib/tooltip.component';
 import { ARROW, CAP, STEP, WHEEL } from '../lib/lib.constants';
 import { onMobile, trackScroll } from '../lib/lib.helpers';
 import { ScrollbarVertical, thumbHeightOf } from '../lib/scrollbar-vertical.component';
@@ -76,6 +77,10 @@ import {
   popupTextCell,
   popupTitleCell,
   selectTab,
+  tipHeight,
+  tipLeft,
+  tipText,
+  tipTop,
   toggleDetail,
   transmitRebuild,
 } from './sailing-customisation.state';
@@ -122,7 +127,9 @@ export function SailingCustomisation(): Component {
   const heldPaneH: Int = heldContentH - Layout.PANE_INSET_H;
   const heldExtent: Int = holding ? listExtent(heldTab, boat, heldPaneW, heldPaneH, heldBp) : 0;
   const heldThumb: Int = thumbHeightOf(heldContentH - 16, heldPaneH, heldExtent > 0 ? heldExtent : heldPaneH, false);
-  const extent: Int = holding ? heldExtent : drawn && !empty ? listExtent(shown, boat, paneW, paneH, breakpoint) : 0;
+  const originX: Int = (stage.width - boxW) / 2 + (resized === 1 ? (boxW - mainW) / 2 : 0) + Layout.CONTENT_X;
+  const originY: Int = (stage.height - boxH) / 2 + Layout.MAIN_Y + Layout.EDGE;
+  const extent: Int = holding ? heldExtent : (drawn && !empty ? listExtent(shown, boat, paneW, paneH, breakpoint) : 0);
 
   return (
     <>
@@ -157,7 +164,16 @@ export function SailingCustomisation(): Component {
               scrollHeight={extent}
               scrollY={scroll}
             >
-              <FacilityList shown={drawn} boat={boat} paneW={paneW} paneH={paneH} breakpoint={breakpoint} />
+              <FacilityList
+                shown={drawn}
+                boat={boat}
+                paneW={paneW}
+                paneH={paneH}
+                breakpoint={breakpoint}
+                pane={pane}
+                originX={originX}
+                originY={originY}
+              />
             </layer>
             <layer x={8} y={8} w={{ fill: 31 }} h={{ fill: 16 }}>
               {built === 1 && (
@@ -200,8 +216,42 @@ export function SailingCustomisation(): Component {
         </layer>
       </layer>
 
-      <layer x={0} y={0} w={1} h={1} />
+      <CustomisationTooltip hostW={stage.width} hostH={stage.height} />
     </>
+  );
+}
+
+function CustomisationTooltip({ hostW, hostH }: { hostW: Int; hostH: Int }): Component {
+  const [tip] = useState(tipText);
+  const [left] = useState(tipLeft);
+  const [top] = useState(tipTop);
+  const [box] = useState(tipHeight);
+  let text: String = '';
+  if (tooltipUp()) {
+    text = tip;
+  }
+  let measure: Int = 512;
+  if (measure > hostW) {
+    measure = hostW;
+  }
+  measure = measure - TooltipBox.padX;
+  const boxW: Int = TooltipBox.padX + textWidth(text, measure, TooltipBox.font);
+  const boxH: Int = TooltipBox.padY + TooltipBox.line * textLineCount(text, measure, TooltipBox.font);
+  let x: Int = left + TooltipBox.nudge;
+  if (x > hostW - boxW) {
+    x = hostW - boxW;
+  }
+  let y: Int = top + box + TooltipBox.nudge;
+  if (y > hostH - boxH) {
+    y = top - boxH - TooltipBox.nudge;
+  }
+  if (text.length === 0) {
+    return <layer x={0} y={0} w={1} h={1} />;
+  }
+  return (
+    <layer x={x} y={y} w={boxW} h={boxH}>
+      <TooltipChrome text={text} font={TooltipBox.font} lineHeight={0} />
+    </layer>
   );
 }
 
@@ -459,13 +509,20 @@ function FacilityList({
   paneW,
   paneH,
   breakpoint,
+  pane,
+  originX,
+  originY,
 }: {
   shown: Boolean;
   boat: Int;
   paneW: Int;
   paneH: Int;
   breakpoint: Int;
+  pane: Ref;
+  originX: Int;
+  originY: Int;
 }): Component {
+  const list = useRef();
   const type: Int = useServerState(CustomisationVarbits.TYPE);
   const hotspot: Int = useServerState(CustomisationVarbits.HOTSPOT_ID);
   const slot: Int = useServerState(CustomisationVarbits.BOAT_SLOT);
@@ -586,7 +643,7 @@ function FacilityList({
             ),
         )}
       </layer>
-      <layer x={0} y={1} w="fill" h={{ fill: 1 }}>
+      <layer ref={list} x={0} y={1} w="fill" h={{ fill: 1 }}>
         {header && <sprite x={5} y={(headerH - 16) / 2} w={16} h={16} sprite={icon} />}
         {header && (
           <text
@@ -613,6 +670,10 @@ function FacilityList({
             breakpoint={breakpoint}
             brief={brief}
             boat={boat}
+            listRef={list}
+            pane={pane}
+            originX={originX}
+            originY={originY}
           />
         ))}
       </layer>
@@ -823,7 +884,7 @@ function HeldScrollbar({ content, thumbHeight }: { content: Ref; thumbHeight: In
           const travel: Int = Math.max(1, gutter.height - thumb.height);
           const offset: Int = Math.clamp(0, travel, event.mouseY - thumb.height / 2);
           const range: Int = content.scrollHeight - content.height;
-          content.scrollY = (offset * range) / travel;
+          content.scrollY = offset * range / travel;
           trackScroll(gutter, thumb, capTop, capBottom, content);
         }}
       />
@@ -843,7 +904,7 @@ function HeldScrollbar({ content, thumbHeight }: { content: Ref; thumbHeight: In
           capBottom.y = offset + ARROW + thumb.height - CAP;
           const travel: Int = Math.max(1, gutter.height - thumb.height);
           const range: Int = content.scrollHeight - content.height;
-          content.scrollY = (offset * range) / travel;
+          content.scrollY = offset * range / travel;
         }}
       />
       <sprite ref={capTop} y={thumb.y} w="fill" h={CAP} sprite={CustomisationSprites.SCROLL_CAP_TOP} />

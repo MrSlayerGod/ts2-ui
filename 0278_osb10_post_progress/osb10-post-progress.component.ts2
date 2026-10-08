@@ -9,6 +9,20 @@ import {
   ProgressModel,
   ProgressText,
   RightRows,
+  G1,
+  G2,
+  G3,
+  G4,
+  G5,
+  G6,
+  G7,
+  G8,
+  G9,
+  G10,
+  G11,
+  G12,
+  G13,
+  G14,
 } from './osb10-post-progress.constants';
 
 export function Osb10PostProgress(): Component {
@@ -65,77 +79,469 @@ export function Osb10PostProgress(): Component {
           w={{ fill: Layout.rowBand.INSET_W }}
           h={{ fill: Layout.rowBand.INSET_H }}
         >
-          {LeftRows.map((row) => (
-            <>
-              <sprite
-                x={Layout.left.SLOT_X}
-                y={row.y}
-                w={Layout.row.SLOT_W}
-                h={Layout.row.SLOT_H}
-                outline={1}
-                shadowColor={ProgressColor.SLOT_SHADOW}
-                hflip
-              />
-              <text
-                x={Layout.left.TEXT_X}
-                y={row.y}
-                w={Layout.row.TEXT_W}
-                h={Layout.row.NAME_H}
-                text={row.name}
-                font={ProgressFont.ROW}
-                color={ProgressColor.WHITE}
-                shadow
-                align="center"
-              />
-              <text
-                x={Layout.left.TEXT_X}
-                y={row.y + Layout.row.VALUE_DY}
-                w={Layout.row.TEXT_W}
-                h={Layout.row.VALUE_H}
-                text={ProgressText.EMPTY}
-                font={ProgressFont.ROW}
-                color={ProgressColor.WHITE}
-                shadow
-                align="center"
-              />
-            </>
-          ))}
+          <sprite
+            static
+            ref={G1}
+            x={Layout.left.SLOT_X}
+            y={LeftRows[0].y}
+            w={Layout.row.SLOT_W}
+            h={Layout.row.SLOT_H}
+            outline={1}
+            shadowColor={ProgressColor.SLOT_SHADOW}
+            hflip
+          />
+          <text
+            x={Layout.left.TEXT_X}
+            y={LeftRows[0].y}
+            w={Layout.row.TEXT_W}
+            h={Layout.row.NAME_H}
+            text={LeftRows[0].name}
+            font={ProgressFont.ROW}
+            color={ProgressColor.WHITE}
+            shadow
+            align="center"
+          />
+          <text
+            x={Layout.left.TEXT_X}
+            y={LeftRows[0].y + Layout.row.VALUE_DY}
+            w={Layout.row.TEXT_W}
+            h={Layout.row.VALUE_H}
+            text={ProgressText.EMPTY}
+            font={ProgressFont.ROW}
+            color={ProgressColor.WHITE}
+            shadow
+            align="center"
+          />
+          <sprite
+            static
+            ref={G2}
+            x={Layout.left.SLOT_X}
+            y={LeftRows[1].y}
+            w={Layout.row.SLOT_W}
+            h={Layout.row.SLOT_H}
+            outline={1}
+            shadowColor={ProgressColor.SLOT_SHADOW}
+            hflip
+          />
+          <text
+            x={Layout.left.TEXT_X}
+            y={LeftRows[1].y}
+            w={Layout.row.TEXT_W}
+            h={Layout.row.NAME_H}
+            text={LeftRows[1].name}
+            font={ProgressFont.ROW}
+            color={ProgressColor.WHITE}
+            shadow
+            align="center"
+          />
+          <text
+            x={Layout.left.TEXT_X}
+            y={LeftRows[1].y + Layout.row.VALUE_DY}
+            w={Layout.row.TEXT_W}
+            h={Layout.row.VALUE_H}
+            text={ProgressText.EMPTY}
+            font={ProgressFont.ROW}
+            color={ProgressColor.WHITE}
+            shadow
+            align="center"
+          />
+          <sprite
+            static
+            ref={G3}
+            x={Layout.left.SLOT_X}
+            y={LeftRows[2].y}
+            w={Layout.row.SLOT_W}
+            h={Layout.row.SLOT_H}
+            outline={1}
+            shadowColor={ProgressColor.SLOT_SHADOW}
+            hflip
+          />
+          <text
+            x={Layout.left.TEXT_X}
+            y={LeftRows[2].y}
+            w={Layout.row.TEXT_W}
+            h={Layout.row.NAME_H}
+            text={LeftRows[2].name}
+            font={ProgressFont.ROW}
+            color={ProgressColor.WHITE}
+            shadow
+            align="center"
+          />
+          <text
+            x={Layout.left.TEXT_X}
+            y={LeftRows[2].y + Layout.row.VALUE_DY}
+            w={Layout.row.TEXT_W}
+            h={Layout.row.VALUE_H}
+            text={ProgressText.EMPTY}
+            font={ProgressFont.ROW}
+            color={ProgressColor.WHITE}
+            shadow
+            align="center"
+          />
+          <sprite
+            static
+            ref={G4}
+            x={Layout.left.SLOT_X}
+            y={LeftRows[3].y}
+            w={Layout.row.SLOT_W}
+            h={Layout.row.SLOT_H}
+            outline={1}
+            shadowColor={ProgressColor.SLOT_SHADOW}
+            hflip
+          />
+          <text
+            x={Layout.left.TEXT_X}
+            y={LeftRows[3].y}
+            w={Layout.row.TEXT_W}
+            h={Layout.row.NAME_H}
+            text={LeftRows[3].name}
+            font={ProgressFont.ROW}
+            color={ProgressColor.WHITE}
+            shadow
+            align="center"
+          />
+          <text
+            x={Layout.left.TEXT_X}
+            y={LeftRows[3].y + Layout.row.VALUE_DY}
+            w={Layout.row.TEXT_W}
+            h={Layout.row.VALUE_H}
+            text={ProgressText.EMPTY}
+            font={ProgressFont.ROW}
+            color={ProgressColor.WHITE}
+            shadow
+            align="center"
+          />
+          <sprite
+            static
+            ref={G5}
+            x={Layout.left.SLOT_X}
+            y={LeftRows[4].y}
+            w={Layout.row.SLOT_W}
+            h={Layout.row.SLOT_H}
+            outline={1}
+            shadowColor={ProgressColor.SLOT_SHADOW}
+            hflip
+          />
+          <text
+            x={Layout.left.TEXT_X}
+            y={LeftRows[4].y}
+            w={Layout.row.TEXT_W}
+            h={Layout.row.NAME_H}
+            text={LeftRows[4].name}
+            font={ProgressFont.ROW}
+            color={ProgressColor.WHITE}
+            shadow
+            align="center"
+          />
+          <text
+            x={Layout.left.TEXT_X}
+            y={LeftRows[4].y + Layout.row.VALUE_DY}
+            w={Layout.row.TEXT_W}
+            h={Layout.row.VALUE_H}
+            text={ProgressText.EMPTY}
+            font={ProgressFont.ROW}
+            color={ProgressColor.WHITE}
+            shadow
+            align="center"
+          />
+          <sprite
+            static
+            ref={G6}
+            x={Layout.left.SLOT_X}
+            y={LeftRows[5].y}
+            w={Layout.row.SLOT_W}
+            h={Layout.row.SLOT_H}
+            outline={1}
+            shadowColor={ProgressColor.SLOT_SHADOW}
+            hflip
+          />
+          <text
+            x={Layout.left.TEXT_X}
+            y={LeftRows[5].y}
+            w={Layout.row.TEXT_W}
+            h={Layout.row.NAME_H}
+            text={LeftRows[5].name}
+            font={ProgressFont.ROW}
+            color={ProgressColor.WHITE}
+            shadow
+            align="center"
+          />
+          <text
+            x={Layout.left.TEXT_X}
+            y={LeftRows[5].y + Layout.row.VALUE_DY}
+            w={Layout.row.TEXT_W}
+            h={Layout.row.VALUE_H}
+            text={ProgressText.EMPTY}
+            font={ProgressFont.ROW}
+            color={ProgressColor.WHITE}
+            shadow
+            align="center"
+          />
+          <sprite
+            static
+            ref={G7}
+            x={Layout.left.SLOT_X}
+            y={LeftRows[6].y}
+            w={Layout.row.SLOT_W}
+            h={Layout.row.SLOT_H}
+            outline={1}
+            shadowColor={ProgressColor.SLOT_SHADOW}
+            hflip
+          />
+          <text
+            x={Layout.left.TEXT_X}
+            y={LeftRows[6].y}
+            w={Layout.row.TEXT_W}
+            h={Layout.row.NAME_H}
+            text={LeftRows[6].name}
+            font={ProgressFont.ROW}
+            color={ProgressColor.WHITE}
+            shadow
+            align="center"
+          />
+          <text
+            x={Layout.left.TEXT_X}
+            y={LeftRows[6].y + Layout.row.VALUE_DY}
+            w={Layout.row.TEXT_W}
+            h={Layout.row.VALUE_H}
+            text={ProgressText.EMPTY}
+            font={ProgressFont.ROW}
+            color={ProgressColor.WHITE}
+            shadow
+            align="center"
+          />
 
-          {RightRows.map((row) => (
-            <>
-              <sprite
-                x={{ right: Layout.right.SLOT_X }}
-                y={row.y}
-                w={Layout.row.SLOT_W}
-                h={Layout.row.SLOT_H}
-                outline={1}
-                shadowColor={ProgressColor.SLOT_SHADOW}
-                hflip
-              />
-              <text
-                x={{ right: Layout.right.TEXT_X }}
-                y={row.y}
-                w={Layout.row.TEXT_W}
-                h={Layout.row.NAME_H}
-                text={row.name}
-                font={ProgressFont.ROW}
-                color={ProgressColor.WHITE}
-                shadow
-                align="center"
-              />
-              <text
-                x={{ right: Layout.right.TEXT_X }}
-                y={row.y + Layout.row.VALUE_DY}
-                w={Layout.row.TEXT_W}
-                h={Layout.row.VALUE_H}
-                text={ProgressText.EMPTY}
-                font={ProgressFont.ROW}
-                color={ProgressColor.WHITE}
-                shadow
-                align="center"
-              />
-            </>
-          ))}
+          <sprite
+            static
+            ref={G8}
+            x={{ right: Layout.right.SLOT_X }}
+            y={RightRows[0].y}
+            w={Layout.row.SLOT_W}
+            h={Layout.row.SLOT_H}
+            outline={1}
+            shadowColor={ProgressColor.SLOT_SHADOW}
+            hflip
+          />
+          <text
+            x={{ right: Layout.right.TEXT_X }}
+            y={RightRows[0].y}
+            w={Layout.row.TEXT_W}
+            h={Layout.row.NAME_H}
+            text={RightRows[0].name}
+            font={ProgressFont.ROW}
+            color={ProgressColor.WHITE}
+            shadow
+            align="center"
+          />
+          <text
+            x={{ right: Layout.right.TEXT_X }}
+            y={RightRows[0].y + Layout.row.VALUE_DY}
+            w={Layout.row.TEXT_W}
+            h={Layout.row.VALUE_H}
+            text={ProgressText.EMPTY}
+            font={ProgressFont.ROW}
+            color={ProgressColor.WHITE}
+            shadow
+            align="center"
+          />
+          <sprite
+            static
+            ref={G9}
+            x={{ right: Layout.right.SLOT_X }}
+            y={RightRows[1].y}
+            w={Layout.row.SLOT_W}
+            h={Layout.row.SLOT_H}
+            outline={1}
+            shadowColor={ProgressColor.SLOT_SHADOW}
+            hflip
+          />
+          <text
+            x={{ right: Layout.right.TEXT_X }}
+            y={RightRows[1].y}
+            w={Layout.row.TEXT_W}
+            h={Layout.row.NAME_H}
+            text={RightRows[1].name}
+            font={ProgressFont.ROW}
+            color={ProgressColor.WHITE}
+            shadow
+            align="center"
+          />
+          <text
+            x={{ right: Layout.right.TEXT_X }}
+            y={RightRows[1].y + Layout.row.VALUE_DY}
+            w={Layout.row.TEXT_W}
+            h={Layout.row.VALUE_H}
+            text={ProgressText.EMPTY}
+            font={ProgressFont.ROW}
+            color={ProgressColor.WHITE}
+            shadow
+            align="center"
+          />
+          <sprite
+            static
+            ref={G10}
+            x={{ right: Layout.right.SLOT_X }}
+            y={RightRows[2].y}
+            w={Layout.row.SLOT_W}
+            h={Layout.row.SLOT_H}
+            outline={1}
+            shadowColor={ProgressColor.SLOT_SHADOW}
+            hflip
+          />
+          <text
+            x={{ right: Layout.right.TEXT_X }}
+            y={RightRows[2].y}
+            w={Layout.row.TEXT_W}
+            h={Layout.row.NAME_H}
+            text={RightRows[2].name}
+            font={ProgressFont.ROW}
+            color={ProgressColor.WHITE}
+            shadow
+            align="center"
+          />
+          <text
+            x={{ right: Layout.right.TEXT_X }}
+            y={RightRows[2].y + Layout.row.VALUE_DY}
+            w={Layout.row.TEXT_W}
+            h={Layout.row.VALUE_H}
+            text={ProgressText.EMPTY}
+            font={ProgressFont.ROW}
+            color={ProgressColor.WHITE}
+            shadow
+            align="center"
+          />
+          <sprite
+            static
+            ref={G11}
+            x={{ right: Layout.right.SLOT_X }}
+            y={RightRows[3].y}
+            w={Layout.row.SLOT_W}
+            h={Layout.row.SLOT_H}
+            outline={1}
+            shadowColor={ProgressColor.SLOT_SHADOW}
+            hflip
+          />
+          <text
+            x={{ right: Layout.right.TEXT_X }}
+            y={RightRows[3].y}
+            w={Layout.row.TEXT_W}
+            h={Layout.row.NAME_H}
+            text={RightRows[3].name}
+            font={ProgressFont.ROW}
+            color={ProgressColor.WHITE}
+            shadow
+            align="center"
+          />
+          <text
+            x={{ right: Layout.right.TEXT_X }}
+            y={RightRows[3].y + Layout.row.VALUE_DY}
+            w={Layout.row.TEXT_W}
+            h={Layout.row.VALUE_H}
+            text={ProgressText.EMPTY}
+            font={ProgressFont.ROW}
+            color={ProgressColor.WHITE}
+            shadow
+            align="center"
+          />
+          <sprite
+            static
+            ref={G12}
+            x={{ right: Layout.right.SLOT_X }}
+            y={RightRows[4].y}
+            w={Layout.row.SLOT_W}
+            h={Layout.row.SLOT_H}
+            outline={1}
+            shadowColor={ProgressColor.SLOT_SHADOW}
+            hflip
+          />
+          <text
+            x={{ right: Layout.right.TEXT_X }}
+            y={RightRows[4].y}
+            w={Layout.row.TEXT_W}
+            h={Layout.row.NAME_H}
+            text={RightRows[4].name}
+            font={ProgressFont.ROW}
+            color={ProgressColor.WHITE}
+            shadow
+            align="center"
+          />
+          <text
+            x={{ right: Layout.right.TEXT_X }}
+            y={RightRows[4].y + Layout.row.VALUE_DY}
+            w={Layout.row.TEXT_W}
+            h={Layout.row.VALUE_H}
+            text={ProgressText.EMPTY}
+            font={ProgressFont.ROW}
+            color={ProgressColor.WHITE}
+            shadow
+            align="center"
+          />
+          <sprite
+            static
+            ref={G13}
+            x={{ right: Layout.right.SLOT_X }}
+            y={RightRows[5].y}
+            w={Layout.row.SLOT_W}
+            h={Layout.row.SLOT_H}
+            outline={1}
+            shadowColor={ProgressColor.SLOT_SHADOW}
+            hflip
+          />
+          <text
+            x={{ right: Layout.right.TEXT_X }}
+            y={RightRows[5].y}
+            w={Layout.row.TEXT_W}
+            h={Layout.row.NAME_H}
+            text={RightRows[5].name}
+            font={ProgressFont.ROW}
+            color={ProgressColor.WHITE}
+            shadow
+            align="center"
+          />
+          <text
+            x={{ right: Layout.right.TEXT_X }}
+            y={RightRows[5].y + Layout.row.VALUE_DY}
+            w={Layout.row.TEXT_W}
+            h={Layout.row.VALUE_H}
+            text={ProgressText.EMPTY}
+            font={ProgressFont.ROW}
+            color={ProgressColor.WHITE}
+            shadow
+            align="center"
+          />
+          <sprite
+            static
+            ref={G14}
+            x={{ right: Layout.right.SLOT_X }}
+            y={RightRows[6].y}
+            w={Layout.row.SLOT_W}
+            h={Layout.row.SLOT_H}
+            outline={1}
+            shadowColor={ProgressColor.SLOT_SHADOW}
+            hflip
+          />
+          <text
+            x={{ right: Layout.right.TEXT_X }}
+            y={RightRows[6].y}
+            w={Layout.row.TEXT_W}
+            h={Layout.row.NAME_H}
+            text={RightRows[6].name}
+            font={ProgressFont.ROW}
+            color={ProgressColor.WHITE}
+            shadow
+            align="center"
+          />
+          <text
+            x={{ right: Layout.right.TEXT_X }}
+            y={RightRows[6].y + Layout.row.VALUE_DY}
+            w={Layout.row.TEXT_W}
+            h={Layout.row.VALUE_H}
+            text={ProgressText.EMPTY}
+            font={ProgressFont.ROW}
+            color={ProgressColor.WHITE}
+            shadow
+            align="center"
+          />
         </layer>
       </layer>
     </>

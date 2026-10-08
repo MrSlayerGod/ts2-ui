@@ -1,15 +1,34 @@
-import { useServerState } from 'ts2';
+import { useServerState, useState } from 'ts2';
 
 import { Varps } from '../lib/game/varps';
-import { ClanBoardColor, ClanBoardFonts, Layout } from './clans-board.constants';
+import { ClanBoardColor, ClanBoardFonts, Copy, Layout } from './clans-board.constants';
 import { filledRowCount, noClansText } from './clans-board.helpers';
+import { clanBoardLines, clanBoardLoaded } from './clans-board.state';
 
 export function ClanBoardEmptyNotice(): Component {
   const included: Int = useServerState(Varps.MACRO_BEE_POS_3);
   const excluded: Int = useServerState(Varps.MACRO_BEE_POS_4);
-  const filled: Int = filledRowCount();
+  const [board] = useState(clanBoardLines);
+  const [loaded] = useState(clanBoardLoaded);
+  const filled: Int = filledRowCount(board);
   const filtered: Int = included !== 0 || excluded !== 0 ? 1 : 0;
 
+  if (loaded === 0) {
+    return (
+      <text
+        x="center"
+        y="center"
+        w="fill"
+        h="fill"
+        text={Copy.LOADING}
+        font={ClanBoardFonts.BODY}
+        color={ClanBoardColor.LOADING}
+        align="center"
+        valign="middle"
+        shadow
+      />
+    );
+  }
   return filled <= 0 ? (
     <text
       x="center"

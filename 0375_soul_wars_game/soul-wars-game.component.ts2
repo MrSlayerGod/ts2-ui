@@ -6,6 +6,7 @@ import { Anchor, overlayInit } from '../lib/lib.overlay';
 import { Layout, SoulWarsColor, SoulWarsDodge, SoulWarsFonts, SoulWarsSprites } from './soul-wars-game.constants';
 import { ActivityBar, SiteBar, SiteFrame, SiteWash } from './soul-wars-game.parts';
 import { Site } from './soul-wars-game.state';
+import { SoulWarsTimeLeft, resetSoulWarsClock } from './soul-wars-clock.component';
 import { SlimJoins } from './stone-panel-tinted.component';
 
 const timerHost2 = createRef('0375_soul_wars_game_timer_host2');
@@ -169,7 +170,13 @@ export function SoulWarsGame(): Component {
               />
             </layer>
 
-            <layer x="center" y={Layout.ROW_Y_TIME} w={{ fill: Layout.ROW_INSET }} h={Layout.ROW_H}>
+            <layer
+              x="center"
+              y={Layout.ROW_Y_TIME}
+              w={{ fill: Layout.ROW_INSET }}
+              h={Layout.ROW_H}
+              onLoad={() => resetSoulWarsClock()}
+            >
               <text
                 x={{ center: Layout.TIME_CAPTION_INSET }}
                 y={0}
@@ -182,18 +189,7 @@ export function SoulWarsGame(): Component {
                 shadow
                 color={SoulWarsColor.CAPTION}
               />
-              <text
-                x="center"
-                y="bottom"
-                w={{ fill: Layout.TIME_VALUE_INSET }}
-                h={Layout.CAPTION_H}
-                font={SoulWarsFonts.LABEL}
-                text="10:00"
-                align="center"
-                valign="middle"
-                shadow
-                color={SoulWarsColor.CAPTION}
-              />
+              <SoulWarsTimeLeft />
             </layer>
 
             <StonePanelEntrypoint divider={Layout.DIVIDER} />

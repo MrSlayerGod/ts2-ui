@@ -1,13 +1,24 @@
-import { CS2, useDerived, useInterval, useOnResize, useRef, useServerState, useState, useUniverse } from 'ts2';
+import { CS2, onMounted, onUpdated, useDerived, useInterval, useRef, useServerState, useState } from 'ts2';
 
 import { ThinBoxEntrypoint } from '../lib/thin-box-entrypoint.component';
 import { Varbits } from '../lib/game/varbits';
 import { tobClientLastprogress } from '../lib/game/varcs';
-import { Layout, PartyStatus, Progress, TobHudColor, TobHudFonts, WaveProgress } from './tob-hud.constants';
+import {
+  Layout,
+  PartyStatus,
+  Progress,
+  TobHudColor,
+  TobHudFonts,
+  WaveProgress,
+  hudRef,
+  middleDodgerRef,
+  progressRef,
+} from './tob-hud.constants';
 import {
   inTobRaid,
-  resetWaveProgress,
   stepWaveProgress,
+  stripIsShare,
+  stripReserve,
   waveProportion,
   waveTenths,
   wavePercentText,
@@ -15,6 +26,31 @@ import {
 
 function fillWidth(hostWidth: Int, proportion: Int): Int {
   return CS2.scale(proportion, Progress.PROPORTION, hostWidth);
+}
+
+function stripBarWidth(parentWidth: Int, share: Boolean, reserve: Int): Int {
+  if (share) {
+    return CS2.scale(
+        CS2.scale(Progress.SHARE_NUM, Progress.SHARE_DEN, Progress.PROPORTION),
+        Progress.PROPORTION,
+        parentWidth,
+      ) - Layout.PROGRESS_INSET;
+  }
+  return parentWidth - reserve - Layout.PROGRESS_INSET;
+}
+
+function widthOf(component: ComponentId): Int {
+  return CS2.if_width_get(component);
+}
+
+function placeStrip(drawn: Boolean, share: Boolean, reserve: Int): void {
+  if (!drawn) {
+    return;
+  }
+  progressRef.props = {
+    w: share ? '57.14%' : { fill: reserve },
+    h: Layout.PROGRESS_H,
+  };
 }
 
 function barBack(type: Int): Int {
@@ -49,8 +85,7 @@ function barLabel(type: Int, tenths: Int): String {
 
 export function TobHudProgress(): Component {
   const bar = useRef();
-  const universe = useUniverse();
-  useOnResize(universe);
+  const hudWidth: Int = useDerived(() => widthOf(hudRef));
 
   const inRaid: Int = useDerived(() => inTobRaid());
   const status: Int = useServerState(Varbits.TOB_CLIENT_PARTYSTATUS);
@@ -59,10 +94,16 @@ export function TobHudProgress(): Component {
   const [eased] = useState(tobClientLastprogress);
   const tenths: Int = useDerived(() => waveTenths());
 
-  useInterval(() => stepWaveProgress(target), bar);
+  const easing: Boolean = eased !== -1 && eased !== target;
+  useInterval(easing ? () => stepWaveProgress(target) : undefined, bar);
 
-  if (inRaid === 0 || status !== PartyStatus.READY || type === WaveProgress.NONE) {
-    resetWaveProgress();
+  const drawn: Boolean = inRaid === 1 && status === PartyStatus.READY;
+  const reserve: Int = stripReserve();
+  const share: Boolean = stripIsShare(hudWidth, reserve);
+  onMounted(() => placeStrip(drawn, share, reserve));
+  onUpdated(() => placeStrip(drawn, share, reserve));
+
+  if (!drawn || type === WaveProgress.NONE) {
     return null;
   }
 
@@ -75,7 +116,14 @@ export function TobHudProgress(): Component {
     <layer w="fill" h="fill">
       <layer ref={bar} x="center" y="center" w={{ fill: Layout.PROGRESS_INSET }} h={{ fill: Layout.PROGRESS_INSET }}>
         <rect x="center" y="center" w="fill" h="fill" color={back} fill />
-        <rect x={0} y="center" w={fillWidth(bar.width, shown)} h="fill" color={front} fill />
+        <rect
+          x={0}
+          y="center"
+          w={fillWidth(stripBarWidth(widthOf(middleDodgerRef), share, reserve), shown)}
+          h="fill"
+          color={front}
+          fill
+        />
       </layer>
       <text
         x="center"

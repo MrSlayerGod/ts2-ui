@@ -102,7 +102,7 @@ export function CaBurgerMenu({ current }: { current: Int }): Component {
                     align="center"
                     valign="middle"
                   />
-                ) : mobile ? (
+                ) : (mobile ? (
                   <text
                     x={CaBurger.ROW_X}
                     y={CaBurger.ROW_Y + rowH * i}
@@ -141,7 +141,7 @@ export function CaBurgerMenu({ current }: { current: Int }): Component {
                       setLit(0);
                     }}
                   />
-                )}
+                ))}
               </>
             ))}
           </layer>

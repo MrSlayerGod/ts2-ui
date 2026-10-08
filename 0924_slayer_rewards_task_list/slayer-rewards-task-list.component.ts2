@@ -1,12 +1,101 @@
-import { Fader, Layout } from './slayer-rewards-task-list.constants';
+import { CS2, stopTimer, useInterval, useRef, useServerState, useState } from 'ts2';
+
+import { Sprites } from '../lib/game/sprites';
+import { Fonts } from '../lib/game/fonts';
+import { Sounds } from '../lib/game/sounds';
+import { Varps } from '../lib/game/varps';
+import { clientClock, playSound } from '../lib/lib.engine';
+import { SteelBorder } from '../lib/steel-border.component';
+import { ThinBoxEntrypoint } from '../lib/thin-box-entrypoint.component';
+import { ScrollbarVertical } from '../lib/scrollbar-vertical.component';
+import { blockedByMaster } from '../0426_slayer_rewards/slayer-rewards.tasks';
+import { dismissDialog } from '../0862_bond_convert/bond-convert.helpers';
+import { Fade, Fader, FillerSlots, Layout, Modal, Row, TaskSlots } from './slayer-rewards-task-list.constants';
+import { MasterTaskRow, MasterTasks } from './slayer-rewards-task-list.data';
+import {
+  masterCount,
+  masterFrom,
+  masterInFocus,
+  rangeHigh,
+  rangeLow,
+  taskListOffHigh,
+  taskListOffLow,
+  taskListOpenedAt,
+  taskListShown,
+  taskOff,
+  totalWeight,
+} from './slayer-rewards-task-list.state';
 
 export function SlayerRewardsTaskList(): Component {
-  return (
-    <layer x="center" y="center" w="fill" h="fill">
-      <rect x="center" y="center" w="fill" h="fill" color={Fader.COLOR} fill transparency={Fader.TRANSPARENCY} />
+  const [shown] = useState(taskListShown);
+  const [openedAt] = useState(taskListOpenedAt);
+  const fader = useRef();
+  const pane = useRef();
 
+  useInterval(
+    shown === 1
+      ? () => {
+          fadeStep(fader, openedAt);
+        }
+      : undefined,
+    fader,
+  );
+
+  if (shown === 0) {
+    return (
       <layer x="center" y="center" w="fill" h="fill">
-        <layer x={0} y={0} w="fill" h="fill" />
+        <rect x="center" y="center" w="fill" h="fill" color={Fader.COLOR} fill transparency={Fader.TRANSPARENCY} />
+
+        <layer x="center" y="center" w="fill" h="fill">
+          <layer x={0} y={0} w="fill" h="fill" />
+
+          <layer x="center" y={Layout.CONTENT_Y} w="fill" h={{ fill: Layout.CONTENT_FILL_H }}>
+            <layer
+              x={Layout.PLATE_INSET}
+              y={Layout.PLATE_INSET}
+              w={{ fill: Layout.PLATE_FILL_W }}
+              h={{ fill: Layout.PLATE_FILL_H }}
+            />
+
+            <layer
+              x={Layout.PANE_INSET}
+              y={Layout.PANE_INSET}
+              w={{ fill: Layout.PANE_FILL_W }}
+              h={{ fill: Layout.PANE_FILL_H }}
+            >
+              <layer x={0} y={0} w="fill" h="fill" />
+              <layer x={0} y={0} w="fill" h="fill" />
+            </layer>
+
+            <layer
+              x={{ right: Layout.SCROLLBAR_INSET }}
+              y={Layout.SCROLLBAR_INSET}
+              w={Layout.SCROLLBAR_W}
+              h={{ fill: Layout.SCROLLBAR_FILL_H }}
+            />
+          </layer>
+        </layer>
+      </layer>
+    );
+  }
+
+  return (
+    <layer
+      x="center"
+      y={{ bottom: Modal.CLAMP_BOTTOM }}
+      w={{ fill: Modal.CLAMP_INSET_X }}
+      h={{ fill: Modal.CLAMP_INSET_Y }}
+      noClickThrough
+      onClick={() => {
+        dismissDialog(0);
+      }}
+    >
+      <rect ref={fader} x="center" y="center" w="fill" h="fill" color={Fader.COLOR} fill transparency={Fade.CLEAR} />
+
+      <layer x="center" y="center" w={Modal.WINDOW_W} h={Modal.WINDOW_H} noClickThrough>
+        <layer x={0} y={0} w="fill" h="fill">
+          <SteelBorder title="Slayer Tasks" titleColor={Row.INK} flags={1} />
+        </layer>
 
         <layer x="center" y={Layout.CONTENT_Y} w="fill" h={{ fill: Layout.CONTENT_FILL_H }}>
           <layer
@@ -14,16 +103,19 @@ export function SlayerRewardsTaskList(): Component {
             y={Layout.PLATE_INSET}
             w={{ fill: Layout.PLATE_FILL_W }}
             h={{ fill: Layout.PLATE_FILL_H }}
-          />
+          >
+            <ThinBoxEntrypoint />
+          </layer>
 
           <layer
+            ref={pane}
             x={Layout.PANE_INSET}
             y={Layout.PANE_INSET}
             w={{ fill: Layout.PANE_FILL_W }}
             h={{ fill: Layout.PANE_FILL_H }}
+            scrollHeight={Math.max(Row.H * masterCount(masterInFocus()), pane.height)}
           >
-            <layer x={0} y={0} w="fill" h="fill" />
-            <layer x={0} y={0} w="fill" h="fill" />
+            <TaskListPane />
           </layer>
 
           <layer
@@ -31,9 +123,197 @@ export function SlayerRewardsTaskList(): Component {
             y={Layout.SCROLLBAR_INSET}
             w={Layout.SCROLLBAR_W}
             h={{ fill: Layout.SCROLLBAR_FILL_H }}
-          />
+          >
+            <ScrollbarVertical
+              content={pane}
+              track={Sprites.SCROLLBAR_DRAGGER_V2_3}
+              capTopSprite={Sprites.SCROLLBAR_DRAGGER_V2_0}
+              thumbSprite={Sprites.SCROLLBAR_DRAGGER_V2_1}
+              capBottomSprite={Sprites.SCROLLBAR_DRAGGER_V2_2}
+              arrowUp={Sprites.SCROLLBAR_V2_0}
+              arrowDown={Sprites.SCROLLBAR_V2_1}
+            />
+          </layer>
         </layer>
       </layer>
     </layer>
+  );
+}
+
+function fadeStep(target: ComponentId, startedAt: Int): void {
+  const elapsed: Int = clientClock() - startedAt;
+  if (elapsed >= Fade.CYCLES) {
+    target.transparency = Fade.DIM;
+    stopTimer(target);
+    return;
+  }
+  target.transparency = Fade.CLEAR + CS2.scale(elapsed, Fade.CYCLES, Fade.DIM - Fade.CLEAR);
+}
+
+function TaskListPane(): Component {
+  const master: Int = masterInFocus();
+  const [offLow] = useState(taskListOffLow);
+  const [offHigh] = useState(taskListOffHigh);
+  const target: Int = useServerState(Varps.SLAYER_TARGET);
+  const from: Int = masterFrom(master);
+  const count: Int = masterCount(master);
+  const total: Int = totalWeight(master, offLow, offHigh);
+
+  return (
+    <>
+      <layer x={0} y={0} w="fill" h="fill">
+        {TaskSlots.map(
+          (i) =>
+            i < count && (
+              <TaskRow
+                row={MasterTasks.at(from + i)}
+                rank={rankOf(from, count, i)}
+                off={taskOff(i, offLow, offHigh)}
+                target={target}
+                master={master}
+                total={total}
+              />
+            ),
+        )}
+        {FillerSlots.map((i) => i >= count && <FillerStripe slot={i} />)}
+      </layer>
+      <layer x={0} y={0} w="fill" h="fill">
+        {TaskSlots.map((i) => i < count && <TaskHit row={MasterTasks.at(from + i)} rank={rankOf(from, count, i)} />)}
+      </layer>
+    </>
+  );
+}
+
+function rankOf(from: Int, count: Int, i: Int): Int {
+  const mine: MasterTaskRow | null = MasterTasks.at(from + i);
+  const key: String = mine === null ? '' : mine.name.toLowerCase();
+  let rank: Int = 0;
+  let j: Int = 0;
+  while (j < count) {
+    if (j !== i) {
+      const other: MasterTaskRow | null = MasterTasks.at(from + j);
+      const otherKey: String = other === null ? '' : other.name.toLowerCase();
+      if (CS2.compare(otherKey, key) < 0) {
+        rank = rank + 1;
+      }
+    }
+    j = j + 1;
+  }
+  return rank;
+}
+
+function stripeOf(k: Int): Int {
+  return k % 2 === 0 ? Row.STRIPE_EVEN : Row.STRIPE_ODD;
+}
+
+function TaskRow({
+  row,
+  rank,
+  off,
+  target,
+  master,
+  total,
+}: {
+  row: MasterTaskRow | null;
+  rank: Int;
+  off: Boolean;
+  target: Int;
+  master: Int;
+  total: Int;
+}): Component {
+  const task: Int = row === null ? -1 : row.task;
+  const name: String = row === null ? '' : row.name;
+  let weight: Int = row === null ? 0 : row.weight;
+  let toggle: Sprite = Sprites.TOGGLE_BOX_1;
+  if (task === target) {
+    toggle = Sprites.TOGGLE_BOX_7;
+    weight = 0;
+  } else if (off) {
+    toggle = Sprites.TOGGLE_BOX_5;
+    weight = 0;
+  }
+  if (blockedByMaster(task, master)) {
+    toggle = Sprites.TOGGLE_BOX_6;
+  }
+  let low: Int = row === null ? 0 : rangeLow(row);
+  let high: Int = row === null ? 0 : rangeHigh(row);
+  if (task === Row.BOSS_TASK) {
+    low = 0;
+    high = 0;
+  }
+  const label: String = low === 0 || high === 0 ? `${name} (Varies)` : `${name} (${low}-${high})`;
+  const share: Int = total > 0 && weight > 0 ? CS2.scale(weight, total, 1000) : 0;
+  const stripe: Int = stripeOf(rank);
+  const top: Int = rank * Row.H;
+
+  return (
+    <>
+      <text
+        x={Row.INSET}
+        y={top}
+        w={{ fill: Row.INSET }}
+        h={Row.H}
+        text={label}
+        font={Fonts.P12_FULL}
+        color={Row.INK}
+        shadow
+        align="left"
+        valign="middle"
+        lineHeight={Row.H}
+      />
+      <rect
+        x={0}
+        y={top}
+        w="fill"
+        h={Row.H}
+        color={0}
+        fill
+        transparency={stripe}
+        hover={{ transparency: stripe + Row.HOVER_LIFT }}
+      />
+      <sprite
+        x={{ right: Row.INSET }}
+        y={top + (Row.H - Row.TOGGLE) / 2}
+        w={Row.TOGGLE}
+        h={Row.TOGGLE}
+        sprite={toggle}
+      />
+      <text
+        x={{ right: Row.WEIGHT_RIGHT }}
+        y={top}
+        w={{ fill: Row.INSET }}
+        h={Row.H}
+        text={`${share / 10}.${share % 10}%`}
+        font={Fonts.P12_FULL}
+        color={Row.INK}
+        shadow
+        align="right"
+        valign="middle"
+        lineHeight={Row.H}
+      />
+    </>
+  );
+}
+
+function FillerStripe({ slot }: { slot: Int }): Component {
+  return <rect x={0} y={slot * Row.H} w="fill" h={Row.H} color={0} fill transparency={stripeOf(slot)} />;
+}
+
+function TaskHit({ row, rank }: { row: MasterTaskRow | null; rank: Int }): Component {
+  const name: String = row === null ? '' : row.name;
+  return (
+    <rect
+      x={0}
+      y={rank * Row.H}
+      w="fill"
+      h={Row.H}
+      color={0}
+      transparency={255}
+      options={['Block']}
+      optionSubject={`<col=ff9040>${name}`}
+      onClick={() => {
+        playSound(Sounds.INTERFACE_SELECT1);
+      }}
+    />
   );
 }

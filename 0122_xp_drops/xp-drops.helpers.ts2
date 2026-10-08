@@ -38,11 +38,9 @@ export function dropFont(): Font {
 }
 
 export function containerWidth(): Int {
-  return (
-    XpDropsLayout.counter.iconGutter +
+  return XpDropsLayout.counter.iconGutter +
     textWidth(XpDropsLayout.counter.widest, XpDropsLayout.counter.measureAt, dropFont()) +
-    XpDropsLayout.counter.tail
-  );
+    XpDropsLayout.counter.tail;
 }
 
 export function counterSkill(): Int {
@@ -214,7 +212,7 @@ function xpOf(skill: SkillRef<number>): Int {
 
 export function totalXpString(high: Int, low: Int): String {
   if (high > 0) {
-    return `${groupDigits(high, SEPARATOR)}${SEPARATOR}${padGroup(low / 1000000)}${SEPARATOR}${padGroup((low % 1000000) / 1000)}${SEPARATOR}${padGroup(low % 1000)}`;
+    return `${groupDigits(high, SEPARATOR)}${SEPARATOR}${padGroup(low / 1000000)}${SEPARATOR}${padGroup(low % 1000000 / 1000)}${SEPARATOR}${padGroup(low % 1000)}`;
   }
   return groupDigits(low, SEPARATOR);
 }

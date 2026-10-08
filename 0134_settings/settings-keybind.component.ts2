@@ -1,5 +1,5 @@
-import { CS2, predictServerState, useDerived, useRef, useServerState, useState } from 'ts2';
-import { playSound, textWidth } from '../lib/lib.engine';
+import { predictServerState, useDerived, useServerState, useState } from 'ts2';
+import { clientClock, playSound, textWidth } from '../lib/lib.engine';
 import { Sprites } from '../lib/game/sprites';
 import { NoOptions } from './settings-options.data';
 import { Varbits } from '../lib/game/varbits';
@@ -7,14 +7,18 @@ import { Art, Colour, SettingsFonts, SettingsVarbits, Sounds } from './settings.
 import type { SettingsRow } from './settings-rows.data';
 import { Grid, categoryBase } from './settings-layout';
 import {
-  Drop,
-  latchOpenComponents,
+  dropdownPickAt,
+  dropdownPickIndex,
+  dropdownPickSetting,
+  dropdownPickValue,
+  listOpen,
   openDropdownH,
   openDropdownRow,
   openDropdownSetting,
   openDropdownW,
   openDropdownX,
   openDropdownY,
+  pickShown,
 } from './settings-dropdown.component';
 import { settingEnabled } from './settings.helpers';
 
@@ -50,7 +54,7 @@ export function SettingsKeybind({
   const iconW: Int = size.x % Keybind.axisMask;
   const iconH: Int = size.z % Keybind.axisMask;
 
-  const cellX: Int = column === Grid.lastColumn ? (width / Grid.columns) * 2 : column === 1 ? width / Grid.columns : 0;
+  const cellX: Int = column === Grid.lastColumn ? width / Grid.columns * 2 : (column === 1 ? width / Grid.columns : 0);
   const cellW: Int = width / Grid.columns - Keybind.cellInsetW;
 
   const table: List<String> = options;
@@ -59,7 +63,8 @@ export function SettingsKeybind({
   const boxX: Int = cellX + Keybind.labelDx;
 
   const settingId: Int = row.settingId ?? 0;
-  const code: Int = useDerived(() => keybindCode(settingId));
+  const code: Int = useDerived(() => keybindShown(settingId));
+  const expanded: Int = useDerived(() => listOpen(settingId));
   const label: String = table.at(code) ?? fallback;
   const enabledFlag: Int = useDerived(() => settingEnabled(row));
   const [, setOpen] = useState(openDropdownSetting);
@@ -68,8 +73,6 @@ export function SettingsKeybind({
   const [, setOpenY] = useState(openDropdownY);
   const [, setOpenW] = useState(openDropdownW);
   const [, setOpenH] = useState(openDropdownH);
-  const caption = useRef();
-  const chevron = useRef();
 
   return (
     <>
@@ -112,16 +115,14 @@ export function SettingsKeybind({
           />
 
           <sprite
-            ref={chevron}
             x={boxX + labelW + Keybind.arrowDx}
             y={top + Keybind.arrowDy}
             w={Keybind.arrow}
             h={Keybind.arrow}
-            sprite={KeybindArt.CHEVRON}
+            sprite={expanded === 1 ? Art.BAR_ARROW_UP : KeybindArt.CHEVRON}
           />
 
           <text
-            ref={caption}
             x={boxX + Keybind.textDx}
             y={top + Keybind.arrowDy}
             w={labelW + Keybind.textPad}
@@ -175,9 +176,7 @@ export function SettingsKeybind({
                 setOpenY(top + Keybind.boxDy);
                 setOpenW(boxW);
                 setOpenH(Keybind.boxH);
-                latchOpenComponents(caption, chevron);
                 setOpen(settingId);
-                chevron.sprite = Art.BAR_ARROW_UP;
               }}
             />
           ) : (
@@ -206,8 +205,6 @@ export function KeybindEntry({
   count,
   entryH,
   mobile,
-  captionIndex,
-  chevronIndex,
 }: {
   row: SettingsRow;
   optionsId: List<String>;
@@ -215,8 +212,6 @@ export function KeybindEntry({
   count: Int;
   entryH: Int;
   mobile: Boolean;
-  captionIndex: Int;
-  chevronIndex: Int;
 }): Component {
   const [, setOpen] = useState(openDropdownSetting);
   const table: List<String> = optionsId;
@@ -271,7 +266,7 @@ export function KeybindEntry({
             transparency={Keybind.clickTransparency}
             options={['Select']}
             onOptionSelect={(event) => {
-              keybindEntryOp(event.component, captionIndex, chevronIndex, text, row, mobile, index);
+              keybindEntryOp(row, index);
               setOpen(-1);
             }}
           />
@@ -285,56 +280,25 @@ export function settingsSetKeybind(row: SettingsRow): void {
   predictServerState(SettingsVarbits.SELECTED_SETTING, row.settingId ?? 0);
 }
 
-export function keybindEntryOp(
-  mount: ComponentId,
-  captionIndex: Int,
-  chevronIndex: Int,
-  text: String,
-  row: SettingsRow,
-  mobile: Boolean,
-  index: Int,
-): void {
+export function keybindEntryOp(row: SettingsRow, index: Int): void {
+  const [, setPickSetting] = useState(dropdownPickSetting);
+  const [, setPickIndex] = useState(dropdownPickIndex);
+  const [, setPickValue] = useState(dropdownPickValue);
+  const [, setPickAt] = useState(dropdownPickAt);
   playSound(Sounds.TAB_SELECT);
-  if (CS2.cc_find(mount, captionIndex)) {
-    CS2.cc_text_set(text);
-    if (!(row.live ?? false)) {
-      settingsSetKeybind(row);
-      if (CS2.cc_find(mount, captionIndex)) {
-        CS2.cc_on_timer_set(() => keybindSynch(0, mount, captionIndex, row, mobile));
-      }
-    }
-  }
-  if (CS2.cc_find(mount, chevronIndex)) {
-    CS2.cc_sprite_set(KeybindArt.CHEVRON);
+  const settingId: Int = row.settingId ?? 0;
+  setPickSetting(settingId);
+  setPickIndex(index);
+  setPickValue(keybindCode(settingId));
+  setPickAt(-1);
+  if (!(row.live ?? false)) {
+    settingsSetKeybind(row);
+    setPickAt(clientClock());
   }
 }
 
-export function keybindSynch(
-  count: Int,
-  mount: ComponentId,
-  captionIndex: Int,
-  row: SettingsRow,
-  mobile: Boolean,
-): void {
-  if (!CS2.cc_find(mount, captionIndex)) {
-    return;
-  }
-  if (count < Drop.synchCycles) {
-    const next: Int = count + 1;
-    CS2.cc_on_timer_set(() => keybindSynch(next, mount, captionIndex, row, mobile));
-    return;
-  }
-  const options: List<String> =
-    mobile && (row.optionsMobile ?? NoOptions).length !== 0
-      ? (row.optionsMobile ?? NoOptions)
-      : (row.options ?? NoOptions);
-  const fallback: String =
-    mobile && (row.optionsMobile ?? NoOptions).length !== 0
-      ? (row.optionsMobileFallback ?? '')
-      : (row.optionsFallback ?? '');
-  const label: String = options.at(keybindCode(row.settingId ?? 0)) ?? fallback;
-  CS2.cc_text_set(label);
-  CS2.cc_on_timer_set(null);
+export function keybindShown(settingId: Int): Int {
+  return pickShown(settingId, keybindCode(settingId));
 }
 
 export function keybindCode(settingId: Int): Int {

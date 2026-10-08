@@ -238,7 +238,7 @@ export function ClansPermissions(): Component {
             scrollHeight={listContent > listView ? listContent : 0}
           >
             {ClanPermissionRows.map((row, index) =>
-              row.kind === RowKind.HEADER ? (
+              (row.kind === RowKind.HEADER ? (
                 <PermissionCategoryTitle top={boxY[index]} title={row.title} />
               ) : (
                 <PermissionButton
@@ -256,7 +256,7 @@ export function ClansPermissions(): Component {
                   enabled={permissionEnabled(row, asGuest, guestStatus, status)}
                   mobile={mobile}
                 />
-              ),
+              )),
             )}
           </layer>
 

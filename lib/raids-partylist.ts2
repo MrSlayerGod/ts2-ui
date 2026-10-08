@@ -1,0 +1,182 @@
+import { CS2, intArray } from 'ts2';
+
+import { clientClock } from './lib.engine';
+import { pipeHead, pipeTail } from './lib.format';
+
+const DIGITS = '0123456789';
+
+const CYCLES_PER_SECOND = 50;
+
+export function partylistClanmate(name: String): Boolean {
+  if (!CS2.activeclanchannel_affined_find(0)) {
+    return false;
+  }
+  const users: Int = CS2.activeclanchannel_user_count_get();
+  let at: Int = 0;
+  while (at < users) {
+    if (CS2.compare(CS2.activeclanchannel_user_display_name_get(at), name) === 0) {
+      return true;
+    }
+    at = at + 1;
+  }
+  return false;
+}
+
+export function partylistKnows(name: String): Boolean {
+  if (CS2.compare(name, CS2.chat_playername()) === 0) {
+    return true;
+  }
+  if (CS2.friend_test(name)) {
+    return true;
+  }
+  if (partylistClanmate(name)) {
+    return !CS2.ignore_test(name);
+  }
+  return false;
+}
+
+export function partylistAgeSeconds(field: String): Int {
+  let value: Int = 0;
+  let rest: String = field;
+  let left: Int = rest.length;
+  while (left > 0) {
+    const digit: Int = DIGITS.indexOf(rest.substring(0, 1), 0);
+    value = value + digit * Math.pow(10, left - 1);
+    rest = rest.substring(1, left);
+    left = left - 1;
+  }
+  return CS2.scale(60, 100, value);
+}
+
+export function partylistAgeText(seconds: Int): String {
+  const minutes: Int = seconds / 60;
+  const rest: Int = seconds % 60;
+  if (rest < 10) {
+    return `${minutes}:0${rest}`;
+  }
+  return `${minutes}:${rest}`;
+}
+
+export function partylistAgeNow(seconds: Int, fetchedAt: Int): Int {
+  const now: Int = clientClock();
+  if (now % CYCLES_PER_SECOND === 0) {
+    return -1;
+  }
+  return seconds + (now - fetchedAt) / CYCLES_PER_SECOND;
+}
+
+export const PARTYLIST_KEY_W = 20;
+export const PARTYLIST_KEY_CELL = 22;
+const KEY_PAD = '                    ';
+
+export function partylistField(line: String, n: Int): String {
+  let rest: String = line;
+  let skipped: Int = 0;
+  while (skipped < n) {
+    rest = pipeTail(rest);
+    skipped = skipped + 1;
+  }
+  return pipeHead(rest);
+}
+
+export function partylistRecordStart(lines: String, slot: Int): Int {
+  return lines.indexOf(`^${slot}~`, 0);
+}
+
+export function partylistLineOf(lines: String, slot: Int): String {
+  const start: Int = partylistRecordStart(lines, slot);
+  if (start === -1) {
+    return '';
+  }
+  const from: Int = lines.indexOf('~', start) + 1;
+  const end: Int = lines.indexOf('^', from);
+  return end === -1 ? lines.substring(from, lines.length) : lines.substring(from, end);
+}
+
+export function partylistWithoutSlot(lines: String, slot: Int): String {
+  const start: Int = partylistRecordStart(lines, slot);
+  if (start === -1) {
+    return lines;
+  }
+  const end: Int = lines.indexOf('^', start + 1);
+  if (end === -1) {
+    return lines.substring(0, start);
+  }
+  return `${lines.substring(0, start)}${lines.substring(end, lines.length)}`;
+}
+
+export function partylistKeyCell(key: String): String {
+  const cut: String = key.length > PARTYLIST_KEY_W ? key.substring(0, PARTYLIST_KEY_W) : key;
+  return `${`${cut.length}`.padStart(2, '0')}${cut}${KEY_PAD.substring(0, PARTYLIST_KEY_W - cut.length)}`;
+}
+
+export function partylistKeyOf(keys: String, slot: Int, slotWidth: Int, field: Int): String {
+  const at: Int = slot * slotWidth + field * PARTYLIST_KEY_CELL;
+  const length: Int = parseInt(keys.substring(at, at + 2));
+  return keys.substring(at + 2, at + 2 + length);
+}
+
+export function partylistBlankKeys(length: Int): String {
+  let out: String = '';
+  while (out.length + KEY_PAD.length <= length) {
+    out = `${out}${KEY_PAD}`;
+  }
+  return `${out}${KEY_PAD.substring(0, length - out.length)}`;
+}
+
+const MAX_SLOTS = 48;
+
+function sortKey(keys: String, slot: Int, slotWidth: Int, field: Int): String {
+  return field < 0 ? '' : partylistKeyOf(keys, slot, slotWidth, field);
+}
+
+export function partylistQuicksort(keys: String, slotWidth: Int, field: Int, filled: Ints, n: Int): Ints {
+  const order = intArray(MAX_SLOTS);
+  let at: Int = 0;
+  while (at < n) {
+    order[at] = filled[at];
+    at = at + 1;
+  }
+  const los = intArray(MAX_SLOTS);
+  const his = intArray(MAX_SLOTS);
+  let top: Int = 0;
+  if (n >= 2) {
+    los[0] = 0;
+    his[0] = n - 1;
+    top = 1;
+  }
+  while (top > 0) {
+    top = top - 1;
+    const lo: Int = los[top];
+    const hi: Int = his[top];
+    const mid: Int = (lo + hi) / 2;
+    const pivot: Int = order[mid];
+    order[mid] = order[hi];
+    order[hi] = pivot;
+    const pivotKey: String = sortKey(keys, pivot, slotWidth, field);
+    let low: Int = lo;
+    let j: Int = lo;
+    while (j < hi) {
+      if (CS2.compare(sortKey(keys, order[j], slotWidth, field), pivotKey) <= 0) {
+        const held: Int = order[j];
+        order[j] = order[low];
+        order[low] = held;
+        low = low + 1;
+      }
+      j = j + 1;
+    }
+    order[hi] = order[low];
+    order[low] = pivot;
+    if (lo < low - 1) {
+      los[top] = lo;
+      his[top] = low - 1;
+      top = top + 1;
+    }
+    if (low + 1 < hi) {
+      los[top] = low + 1;
+      his[top] = hi;
+      top = top + 1;
+    }
+  }
+  return order;
+}

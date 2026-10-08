@@ -1,11 +1,16 @@
 import { createRef } from 'ts2';
 
+import { BoardAnchors } from '../lib/board-button.component';
 import { PvpArenaBoard } from './pvp-arena-board.component';
+import { boardAnchorsRef } from './pvp-arena-board.constants';
 
 const pvpArenaBoardRef = createRef('pvp_arena_board');
 
 export const pvpArenaBoardUi = (): UI => (
   <ui ref={pvpArenaBoardRef} x="center" y="center">
     <PvpArenaBoard />
+    <layer ref={boardAnchorsRef} x={0} y={0} w={0} h={0}>
+      <BoardAnchors universe={boardAnchorsRef} count={4} />
+    </layer>
   </ui>
 );

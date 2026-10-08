@@ -70,3 +70,20 @@ export enum ButtonSkin {
   RAISED = 1,
   PRESSED = 2,
 }
+
+export enum TrickOrTreatWindow {
+  NONE = 0,
+  TARGET = 1,
+  INITIATOR = 2,
+}
+
+export enum TrickOrTreatClock {
+  CYCLES = 1500,
+  CYCLES_PER_SECOND = 50,
+}
+
+export const TrickOrTreatTitle = {
+  TEXT: 'Trick-or-Treat!',
+  COLOR: 0xff981f,
+  FLAGS: 1,
+};

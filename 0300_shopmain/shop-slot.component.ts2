@@ -24,8 +24,8 @@ export function ShopSlot({
   customQuantity: Int;
   fiftyOption: Boolean;
 }): Component {
-  const left: Int = (slot % Layout.COLUMNS) * stride;
-  const top: Int = (slot / Layout.COLUMNS) * stride;
+  const left: Int = slot % Layout.COLUMNS * stride;
+  const top: Int = slot / Layout.COLUMNS * stride;
 
   if (item === -1) {
     return (

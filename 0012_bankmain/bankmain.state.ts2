@@ -7,3 +7,5 @@ export enum BankView {
   WORN = 1,
   MENU = 2,
 }
+
+export const bankTabDropdown = sessionState(0);

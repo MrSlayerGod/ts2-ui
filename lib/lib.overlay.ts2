@@ -1,4 +1,4 @@
-import { CS2, useServerState, useState } from 'ts2';
+import { CS2, partOf, useServerState, useState } from 'ts2';
 
 import { scaled } from './lib.engine';
 import { onMobile, toplevelComponents } from './lib.helpers';
@@ -23,6 +23,11 @@ import {
 } from './game/varcs';
 
 import { dodgerRef as hpbarDodgerRef } from '../0303_hpbar_hud/hpbar-hud.constants';
+import { xpDropsRef } from '../0122_xp_drops/xp-drops.ui';
+
+const xpDropsDodger = partOf(xpDropsRef, 'containerdodger');
+const xpDropsContainer = partOf(xpDropsRef, 'container');
+
 import { hpbarPlateHeight, hpbarPlateShown } from '../0303_hpbar_hud/hpbar-hud.state';
 import { iconsRef as pvpIconsIconsRef } from '../0090_pvp_icons/pvp-icons.constants';
 import { contentRef as statBoostsContentRef } from '../0708_stat_boosts_hud/stat-boosts-hud.constants';
@@ -362,7 +367,7 @@ export function stackBelow(flags: Int, ran: Int, layout: Int, align: Int, conten
       dodgeDrops = 0;
     }
     if (dodgeDrops === 1) {
-      above = componentOf(122, 4);
+      aboveBottom = absoluteY(xpDropsRef) + xpDropsDodger.y + xpDropsContainer.y + xpDropsContainer.height;
     }
   }
 

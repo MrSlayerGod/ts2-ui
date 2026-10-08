@@ -5,6 +5,8 @@ import { Inventories } from '../lib/game/inventories';
 import { FossilItems, FossilKind, Layout, PoolArt, PoolColor, PoolFonts } from './fossil-pool.constants';
 import { poolLabelColour } from './fossil-pool.helpers';
 import { StoneHoverSkin } from './stone-hover-skin.component';
+import { PoolBarKind, PoolCounter, PoolFill } from './pool-fills.component';
+import { resetFossilPoolPanel } from '../0606_fossil_pool_overlay/fossil-pool.state';
 
 export function FossilPool(): Component {
   return (
@@ -75,7 +77,7 @@ export function FossilPool(): Component {
         <SlotFace kind={FossilKind.RARE} label="Rare Fossil" icon={FossilItems.RARE_1} />
       </layer>
 
-      <layer x="center" y="bottom" w="fill" h={Layout.FOOTER_H}>
+      <layer x="center" y="bottom" w="fill" h={Layout.FOOTER_H} onLoad={() => resetFossilPoolPanel()}>
         <layer
           x={{ right: Layout.BUTTON_RIGHT }}
           y={Layout.BUTTON_TOP_Y}
@@ -87,7 +89,9 @@ export function FossilPool(): Component {
         </layer>
 
         <layer x={Layout.BAR_X} y={Layout.BAR_TOP_Y} w={Layout.BAR_W} h={Layout.BAR_H}>
-          <rect x={0} y="center" w={Layout.BAR_FILLED_W} h="fill" color={PoolColor.BAR_FILLED} fill />
+          <layer x={0} y={0} w="fill" h="fill">
+            <PoolFill kind={PoolBarKind.CALCIUM} />
+          </layer>
           <rect x="center" y="center" w="fill" h="fill" color={PoolColor.BAR_BORDER} />
         </layer>
 
@@ -102,24 +106,16 @@ export function FossilPool(): Component {
         </layer>
 
         <layer x={Layout.BAR_X} y={Layout.BAR_BOTTOM_Y} w={Layout.BAR_W} h={Layout.BAR_H}>
-          <rect x={0} y={0} w={Layout.BAR_FILLED_W} h="fill" color={PoolColor.BAR_FILLED} fill />
+          <layer x={0} y={0} w="fill" h="fill">
+            <PoolFill kind={PoolBarKind.PHOSPHATE} />
+          </layer>
           <rect x="center" y="center" w="fill" h="fill" color={PoolColor.BAR_BORDER} />
         </layer>
 
         <layer x={Layout.COUNTER_X} y={Layout.COUNTER_Y} w={{ fill: Layout.COUNTER_INSET_W }} h={Layout.COUNTER_H}>
-          <rect x={0} y="center" w={Layout.BAR_FILLED_W} h="fill" color={PoolColor.BAR_FILLED} fill />
-          <text
-            x="center"
-            y="center"
-            w="fill"
-            h="fill"
-            text="0/28"
-            align="center"
-            valign="middle"
-            shadow
-            font={PoolFonts.COUNTER}
-            color={PoolColor.COUNTER}
-          />
+          <layer x={0} y={0} w="fill" h="fill">
+            <PoolCounter />
+          </layer>
           <rect x="center" y="center" w="fill" h="fill" color={PoolColor.BAR_BORDER} />
         </layer>
       </layer>

@@ -1,17 +1,12 @@
 import { createRef } from 'ts2';
 
+import { Fonts } from '../lib/game/fonts';
+import { Sounds } from '../lib/game/sounds';
 import { Sprites } from '../lib/game/sprites';
 
 export const pohCostumesRef = createRef('poh_costumes');
 
 export const itemsRef = createRef('poh_costumes_items');
-
-export const scrollbarRef = createRef('poh_costumes_scrollbar');
-
-export const tierRef = createRef('poh_costumes_tier');
-export const modeRef = createRef('poh_costumes_mode');
-export const searchRef = createRef('poh_costumes_search');
-export const depositAllRef = createRef('poh_costumes_depositall');
 
 export const Layout = {
   ROOT_Y: 3,
@@ -65,6 +60,7 @@ export const Button = {
 
   OPAQUE: 0,
   HOVER_TRANS: 100,
+  PRESS_CYCLES: 30,
 };
 
 export declare const PressedSkin: {
@@ -90,3 +86,107 @@ export declare const RaisedSkin: {
   readonly RIGHT: typeof Sprites.V2_STONE_BUTTON_OUT_6;
   readonly BOTTOM: typeof Sprites.V2_STONE_BUTTON_OUT_7;
 };
+
+export const ButtonText = {
+  DEPOSIT_ALL: 'Deposit inventory',
+  DEPOSIT_MODE: 'Deposit mode',
+  SEARCH: 'Search',
+  TIERS: 'Tiers',
+  BEGINNER: 'Beginner',
+  EASY: 'Easy',
+  MEDIUM: 'Medium',
+  HARD: 'Hard',
+  ELITE: 'Elite',
+  MASTER: 'Master',
+};
+
+export const ButtonArt = {
+  DEPOSIT_ALL: Sprites.BANKBUTTONS_0,
+  MODE: Sprites.BANKBUTTONS_8,
+  SEARCH: Sprites.BANKBUTTONS_2,
+  TIER_ITEM: 10668,
+  CLICK: Sounds.INTERFACE_SELECT1,
+};
+
+export const Grid = {
+  W: 420,
+  HALF: 210,
+  TITLE_FIT: 190,
+  MEASURE_W: 512,
+  SLOT_LIMIT: 38,
+  SHARE_MAX: 4,
+  BIG_COLUMNS: 10,
+  SMALL_COLUMNS: 4,
+  INSET: 3,
+  STEP_X: 42,
+  STEP_Y: 37,
+  TITLE_H: 20,
+  GAP: 3,
+  ARROW_INSET: 3,
+  ARROW_INSET_LEFT: 216,
+  ARROW_W: 12,
+  ARROW_H: 10,
+  ARROW_Y: 5,
+  ARROW_TRANS: 50,
+  BORDER_W: 16,
+  ITEM_W: 36,
+  ITEM_H: 32,
+  ITEM_SHADOW: 0x333333,
+  FILL_TO: 250,
+  FILL_MIN: 40,
+  PANEL_MAX_H: 800,
+  PANEL_CHROME: 54,
+  ROOT_SLACK: 10,
+  PANE_CHROME: 54,
+};
+
+export const MAX_SETS = 139;
+export const MAX_ITEMS = 448;
+export const MAX_BORDERS = 70;
+
+export const SetArt = {
+  LIGHT: Sprites.TRADEBACKING_LIGHT,
+  DARK: Sprites.TRADEBACKING_DARK,
+  ARROW: Sprites.BANKBUTTON_ARROW_GREEN,
+  DIVIDER: Sprites.V2_BORDERS_SLIM_8,
+  BORDER: Sprites.V2_BORDERS_SLIM_1,
+  LIGHT_REST: 120,
+  LIGHT_HOVER: 40,
+  LIGHT_FLASH: 0,
+  DARK_REST: 0,
+  DARK_HOVER: 80,
+  DARK_FLASH: 120,
+  HELD_REST: 0,
+  HELD_FLASH: 100,
+  MISSING_REST: 140,
+  MISSING_FLASH: 180,
+  TITLE_HELD: 0xff981f,
+  TITLE_NONE: 0x9f9f9f,
+  TITLE_P12: Fonts.P12_FULL,
+  TITLE_P11: Fonts.P11_FULL,
+};
+
+export const SetMode = {
+  BIG: 0,
+  LEFT: 1,
+  RIGHT: 2,
+};
+
+export const SetState = {
+  NONE: 0,
+  SOME: 1,
+  COMPLETE: 2,
+};
+
+export const Scrollbar = {
+  TRACK: Sprites.SCROLLBAR_DRAGGER_V2_3,
+  CAP_TOP: Sprites.SCROLLBAR_DRAGGER_V2_0,
+  THUMB: Sprites.SCROLLBAR_DRAGGER_V2_1,
+  CAP_BOTTOM: Sprites.SCROLLBAR_DRAGGER_V2_2,
+  ARROW_UP: Sprites.SCROLLBAR_V2_0,
+  ARROW_DOWN: Sprites.SCROLLBAR_V2_1,
+};
+
+export enum OtherInventory {
+  POH_COSTUMES = 637,
+}

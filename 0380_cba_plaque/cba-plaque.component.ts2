@@ -1,5 +1,18 @@
+import { onMounted, useRef, useState } from 'ts2';
+
+import { textLineCount } from '../lib/lib.engine';
 import { closeInterface, graphicSwapper } from '../lib/lib.helpers';
-import { Layout, PlaqueArt, PlaqueColors, PlaqueFonts, PlaqueModels } from './cba-plaque.constants';
+import { ScrollbarVertical } from '../lib/scrollbar-vertical.component';
+import {
+  Layout,
+  PlaqueArt,
+  PlaqueBar,
+  PlaqueColors,
+  PlaqueFonts,
+  PlaqueModels,
+  PlaqueText,
+} from './cba-plaque.constants';
+import { plaqueBody, plaqueCalls, plaqueSplit, resetCbaPlaque } from './cba-plaque.state';
 
 export function CbaPlaque(): Component {
   return (
@@ -26,30 +39,9 @@ export function CbaPlaque(): Component {
         shadow
       />
 
-      <layer x={Layout.BODY_X} y={Layout.BODY_Y} w={Layout.BODY_W} h={Layout.BODY_H}>
-        <text
-          x={0}
-          y={0}
-          w={Layout.BODY_W}
-          h={Layout.BODY_H}
-          font={PlaqueFonts.BODY}
-          color={PlaqueColors.HEADING}
-          align="center"
-          shadow
-        />
-
-        <text
-          x={0}
-          y={0}
-          w={Layout.BODY_W}
-          h={Layout.BODY_H}
-          font={PlaqueFonts.BODY}
-          color={PlaqueColors.WINNERS}
-          align="center"
-        />
+      <layer x={0} y={0} w="fill" h="fill">
+        <PlaqueBody />
       </layer>
-
-      <layer x={Layout.SCROLLBAR_X} y={Layout.SCROLLBAR_Y} w={Layout.SCROLLBAR_W} h={Layout.SCROLLBAR_H} />
 
       <sprite
         x={Layout.CLOSE_X}
@@ -62,6 +54,81 @@ export function CbaPlaque(): Component {
         onMouseEnter={(event) => graphicSwapper(event.component, PlaqueArt.CLOSE_HOVER)}
         onMouseLeave={(event) => graphicSwapper(event.component, PlaqueArt.CLOSE)}
       />
+    </>
+  );
+}
+
+function PlaqueBody(): Component {
+  const [body] = useState(plaqueBody);
+  const [split] = useState(plaqueSplit);
+  const [calls] = useState(plaqueCalls);
+  const pane = useRef();
+  onMounted(() => {
+    resetCbaPlaque();
+  });
+  const headers: String = body.substring(0, split);
+  const winners: String = body.substring(split, body.length);
+  const called: Boolean = calls > 0;
+  const lines: Int = Math.max(
+    textLineCount(headers, Layout.BODY_W, PlaqueFonts.BODY),
+    textLineCount(winners, Layout.BODY_W, PlaqueFonts.BODY),
+  );
+  const extent: Int = lines * PlaqueText.LINE_H + PlaqueText.PAD;
+  const textH: Int = called ? extent : Layout.BODY_H;
+
+  return (
+    <>
+      <layer
+        ref={pane}
+        x={Layout.BODY_X}
+        y={Layout.BODY_Y}
+        w={Layout.BODY_W}
+        h={Layout.BODY_H}
+        scrollHeight={called && extent > Layout.BODY_H ? extent : 0}
+      >
+        <text
+          x={0}
+          y={0}
+          w={Layout.BODY_W}
+          h={textH}
+          text={headers}
+          font={PlaqueFonts.BODY}
+          color={PlaqueColors.HEADING}
+          align="center"
+          shadow
+        />
+
+        <text
+          x={0}
+          y={0}
+          w={Layout.BODY_W}
+          h={textH}
+          text={winners}
+          font={PlaqueFonts.BODY}
+          color={PlaqueColors.WINNERS}
+          align="center"
+        />
+      </layer>
+
+      <layer
+        x={Layout.SCROLLBAR_X}
+        y={Layout.SCROLLBAR_Y}
+        w={Layout.SCROLLBAR_W}
+        h={Layout.SCROLLBAR_H}
+        rebuildOn={calls}
+      >
+        {called ? (
+          <ScrollbarVertical
+            content={pane}
+            track={PlaqueBar.TRACK}
+            capTopSprite={PlaqueBar.CAP_TOP}
+            thumbSprite={PlaqueBar.THUMB}
+            capBottomSprite={PlaqueBar.CAP_BOTTOM}
+            arrowUp={PlaqueBar.ARROW_UP}
+            arrowDown={PlaqueBar.ARROW_DOWN}
+          />
+        ) : null}
+      </layer>
     </>
   );
 }

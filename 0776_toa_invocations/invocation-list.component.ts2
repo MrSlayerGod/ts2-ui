@@ -26,7 +26,7 @@ export function InvocationList(): Component {
     <>
       <layer ref={content} x={2} y="center" w={{ fill: 20 }} h={{ fill: 4 }} scrollHeight={extent}>
         {Invocations.map((row, index) =>
-          row.category !== EVENT_CATEGORY || showEvent ? <InvocationRow row={row} index={index} /> : null,
+          (row.category !== EVENT_CATEGORY || showEvent ? <InvocationRow row={row} index={index} /> : null),
         )}
       </layer>
 

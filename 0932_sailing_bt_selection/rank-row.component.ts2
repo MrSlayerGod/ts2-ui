@@ -59,7 +59,7 @@ export function RankRow({
         h={Layout.TEXT_H}
         text={
           row.targetTicks > 0
-            ? formatDuration((row.targetTicks * Layout.TICK_NUMERATOR) / Layout.TICK_DENOMINATOR)
+            ? formatDuration(row.targetTicks * Layout.TICK_NUMERATOR / Layout.TICK_DENOMINATOR)
             : '-'
         }
         font={SailingFonts.SMALL}

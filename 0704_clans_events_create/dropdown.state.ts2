@@ -4,6 +4,8 @@ import { Dropdown, EventField, Layout } from './clans-events-create.constants';
 
 export const openField = sessionState(-1);
 
+export const openSet = sessionState(0);
+
 export function dropdownRowHeight(): Int {
   if (onMobile()) {
     return Dropdown.MOBILE_ROW_H;

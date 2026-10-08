@@ -166,8 +166,7 @@ function spend(remaining: Int, cap: Int, weight: Int, gained: Int): Int {
 }
 
 export function f2pTotalLevel(): Int {
-  return (
-    useSkillBase(Skills.ATTACK) +
+  return useSkillBase(Skills.ATTACK) +
     useSkillBase(Skills.STRENGTH) +
     useSkillBase(Skills.RANGED) +
     useSkillBase(Skills.MAGIC) +
@@ -181,8 +180,7 @@ export function f2pTotalLevel(): Int {
     useSkillBase(Skills.FISHING) +
     useSkillBase(Skills.COOKING) +
     useSkillBase(Skills.FIREMAKING) +
-    useSkillBase(Skills.WOODCUTTING)
-  );
+    useSkillBase(Skills.WOODCUTTING);
 }
 
 export function equilibriumXp(skill: Skill): Int {

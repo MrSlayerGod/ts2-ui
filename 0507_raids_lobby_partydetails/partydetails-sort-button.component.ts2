@@ -1,4 +1,4 @@
-import { useRef, useState } from 'ts2';
+import { useState } from 'ts2';
 
 import { raidsListsortDetails } from '../lib/game/varcs';
 import { playSound } from '../lib/lib.engine';
@@ -11,7 +11,7 @@ import {
 import { normalisedSort } from './raids-lobby-partydetails.helpers';
 
 export function PartydetailsSortButton({ ascending, descending }: { ascending: Int; descending: Int }): Component {
-  const arrow = useRef();
+  const [hovered, setHovered] = useState(0);
   const [sortSetting, setSort] = useState(raidsListsortDetails);
   const sort: Int = normalisedSort(sortSetting);
 
@@ -25,25 +25,20 @@ export function PartydetailsSortButton({ ascending, descending }: { ascending: I
     <layer
       w="fill"
       h="fill"
-      onMouseRepeat={() => {
-        arrow.transparency = hover;
-      }}
-      onMouseLeave={() => {
-        arrow.transparency = rest;
-      }}
+      onMouseRepeat={() => setHovered(1)}
+      onMouseLeave={() => setHovered(0)}
       onClick={() => {
         playSound(PartydetailsSounds.CLICK);
         setSort(next);
       }}
     >
       <sprite
-        ref={arrow}
         x="center"
         y="center"
         w={Layout.ARROW_W}
         h={Layout.ARROW_H}
         sprite={state === 2 ? PartydetailsSprites.SORT_DESC : PartydetailsSprites.SORT_ASC}
-        transparency={rest}
+        transparency={hovered === 1 ? hover : rest}
       />
     </layer>
   );

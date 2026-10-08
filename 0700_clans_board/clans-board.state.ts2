@@ -1,0 +1,36 @@
+import { CS2, sessionState, useState } from 'ts2';
+
+import { clanBoardSort } from '../lib/game/varcs';
+import { GameframeSlot, gameframeSlot } from '../lib/lib.gameframe';
+import { SLOT_COUNT } from './clans-board.constants';
+import { withRecord } from './clans-board.helpers';
+
+export const clanBoardLines = sessionState('');
+
+export const clanBoardLoaded = sessionState(0);
+
+export function clanBoardAddline(slot: Int, line: String, flags: Int): void {
+  if (!CS2.if_sub_has(gameframeSlot(GameframeSlot.VIEWPORT))) {
+    return;
+  }
+  if (slot < 0 || slot >= SLOT_COUNT) {
+    return;
+  }
+  const [lines, setLines] = useState(clanBoardLines);
+  setLines(withRecord(lines, slot, line, flags));
+  if (slot >= SLOT_COUNT - 1) {
+    const [sortSetting, setSort] = useState(clanBoardSort);
+    if (sortSetting < 0 || sortSetting > 5) {
+      setSort(5);
+    }
+    const [, setLoaded] = useState(clanBoardLoaded);
+    setLoaded(1);
+  }
+}
+
+export function resetClanBoard(): void {
+  const [, setLines] = useState(clanBoardLines);
+  const [, setLoaded] = useState(clanBoardLoaded);
+  setLines('');
+  setLoaded(0);
+}

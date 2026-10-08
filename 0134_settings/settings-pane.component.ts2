@@ -33,8 +33,6 @@ import { buttonCellHeight } from './settings-actionbutton.component';
 import {
   Drop,
   DropdownEntry,
-  openDropdownCaption,
-  openDropdownChevron,
   openDropdownH,
   openDropdownRow,
   openDropdownSetting,
@@ -330,8 +328,6 @@ function SettingsDropdownOverlay({
   const [anchorY] = useState(openDropdownY);
   const [anchorW] = useState(openDropdownW);
   const [anchorH] = useState(openDropdownH);
-  const [captionIndex] = useState(openDropdownCaption);
-  const [chevronIndex] = useState(openDropdownChevron);
 
   let row: SettingsRow | null = null;
   if (open >= 0 && slot >= 0) {
@@ -392,10 +388,7 @@ function SettingsDropdownOverlay({
           color={Colour.BLACK}
           transparency={Drop.plateRest}
           options={['Close dropdown']}
-          onOptionSelect={(event) => {
-            if (CS2.cc_find(event.component, chevronIndex)) {
-              CS2.cc_sprite_set(Art.BAR_ARROW_DOWN);
-            }
+          onOptionSelect={() => {
             setOpen(-1);
           }}
         />
@@ -427,7 +420,7 @@ function SettingsDropdownOverlay({
             scrollHeight={scroll}
           >
             {!keybind &&
-              [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((index) => (
+              ([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((index) => (
                 <DropdownEntry
                   row={row}
                   optionsId={optionsId}
@@ -435,12 +428,10 @@ function SettingsDropdownOverlay({
                   count={count}
                   entryH={entryH}
                   mobile={mobile}
-                  captionIndex={captionIndex}
-                  chevronIndex={chevronIndex}
                 />
-              ))}
+              )))}
             {keybind &&
-              [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13].map((index) => (
+              ([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13].map((index) => (
                 <KeybindEntry
                   row={row}
                   optionsId={optionsId}
@@ -448,10 +439,8 @@ function SettingsDropdownOverlay({
                   count={count}
                   entryH={entryH}
                   mobile={mobile}
-                  captionIndex={captionIndex}
-                  chevronIndex={chevronIndex}
                 />
-              ))}
+              )))}
           </layer>
 
           <layer

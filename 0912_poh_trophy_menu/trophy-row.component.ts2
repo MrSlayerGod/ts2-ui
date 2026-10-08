@@ -61,7 +61,7 @@ export function TrophyRow({ tier, title, min, max }: { tier: Int; title: String;
 
       {Trophies.filter((trophy) => trophy.set === set && trophy.level >= min && trophy.level < max).map(
         (trophy, index) =>
-          hasBit(owned, trophy.id) ? (
+          (hasBit(owned, trophy.id) ? (
             <sprite
               x={Layout.INSET + index * Layout.STRIDE}
               y={{ bottom: Layout.ICON_BOTTOM }}
@@ -101,7 +101,7 @@ export function TrophyRow({ tier, title, min, max }: { tier: Int; title: String;
                 flashFor(event.self, Fade.MISSING_PRESSED, Fade.MISSING_REST);
               }}
             />
-          ),
+          )),
       )}
 
       <text

@@ -1,4 +1,5 @@
-import { createRef, useServerState } from 'ts2';
+import { useServerState, useServerStateOnce, useState, useWatch } from 'ts2';
+import { Varps } from '../lib/game/varps';
 import { ThinStoneBoxEntrypoint } from '../lib/thin-stone-box.component';
 import { BuildList } from '../lib/pvp-arena/build-list.component';
 import { StatColumn, StatSide } from '../lib/pvp-arena/stat-column-side.component';
@@ -14,8 +15,6 @@ import {
   SuppliesSprites,
   SuppliesVarbits,
 } from './pvp-arena-stagingarea-supplies.constants';
-
-const statsStatusText = createRef('pvp_arena_stagingarea_supplies:stats_status');
 
 export function StatsDisplay(): Component {
   return (
@@ -130,33 +129,55 @@ export function StatsDisplay(): Component {
         offsetY={FighterCamera.bottomRight.offsetY}
       />
 
-      <text
-        static
-        ref={statsStatusText}
-        x="center"
-        y="bottom"
-        w="fill"
-        h={Layout.status.h}
-        text=""
-        font={SuppliesFonts.BODY}
-        color={SuppliesColor.LABEL}
-        shadow
-        align="center"
-        valign="bottom"
-      />
+      <StatsStatus />
     </>
   );
 }
 
-export function paintStatsStatus(): void {
+export enum StatsLine {
+  KEEP = 0,
+  SETTLED = 1,
+  BROWSE = 2,
+}
+
+export function statsStatusLine(): Int {
   const canEdit: Int = useServerState(SuppliesVarbits.CAN_EDIT_BUILD);
   if (canEdit === 1) {
-    return;
+    return StatsLine.KEEP;
   }
   const battleType: Int = useServerState(SuppliesVarbits.BATTLE_TYPE);
   if (battleSettled(battleType)) {
-    statsStatusText.text = Copy.STATS_SETTLED;
-    return;
+    return StatsLine.SETTLED;
   }
-  statsStatusText.text = Copy.STATS_BROWSE;
+  return StatsLine.BROWSE;
+}
+
+export function StatsStatus(): Component {
+  const [line, setLine] = useState(useServerStateOnce(() => statsStatusLine()));
+  useWatch(Varps.PVPA_TEMP_TRANSMIT_1, () => {
+    const next: Int = statsStatusLine();
+    if (next !== StatsLine.KEEP) {
+      setLine(next);
+    }
+  });
+  let text: String = '';
+  if (line === StatsLine.SETTLED) {
+    text = Copy.STATS_SETTLED;
+  } else if (line === StatsLine.BROWSE) {
+    text = Copy.STATS_BROWSE;
+  }
+  return (
+    <text
+      x="center"
+      y="bottom"
+      w="fill"
+      h={Layout.status.h}
+      text={text}
+      font={SuppliesFonts.BODY}
+      color={SuppliesColor.LABEL}
+      shadow
+      align="center"
+      valign="bottom"
+    />
+  );
 }

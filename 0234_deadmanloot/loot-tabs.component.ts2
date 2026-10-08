@@ -1,4 +1,4 @@
-import { useInventory, useServerState } from 'ts2';
+import { onMounted, useInventory, useServerState, useState } from 'ts2';
 
 import { graphicSwapper } from '../lib/lib.helpers';
 import {
@@ -12,15 +12,20 @@ import {
   TabStrip,
 } from './deadmanloot.constants';
 import { chooseLootTab } from './deadmanloot.helpers';
+import { tabValueOf, tabValues } from './deadmanloot.state';
 
 export function LootTabs(): Component {
   const tab: Int = useServerState(LootVarbits.TAB);
   const carried = useInventory(LootInventories.CARRIED);
+  const [values, setValues] = useState(tabValues);
+  onMounted(() => {
+    setValues('||||');
+  });
 
   return (
     <>
       {LootTabRows.map((row) =>
-        tab === row.page ? (
+        (tab === row.page ? (
           <sprite
             x={row.page * TabStrip.PITCH}
             y={0}
@@ -55,7 +60,7 @@ export function LootTabs(): Component {
             onMouseRepeat={(event) => graphicSwapper(event.self, LootArt.TAB_LIT)}
             onMouseLeave={(event) => graphicSwapper(event.self, LootArt.TAB_REST)}
           />
-        ),
+        )),
       )}
 
       {LootTabRows.map((row) => (
@@ -79,6 +84,7 @@ export function LootTabs(): Component {
           y={0}
           w={TabStrip.CAPTION_W}
           h={TabStrip.CAPTION_H}
+          text={tabValueOf(values, row.page)}
           font={LootFonts.BODY}
           color={LootColor.HOVER}
           shadow

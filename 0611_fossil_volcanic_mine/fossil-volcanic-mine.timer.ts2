@@ -1,0 +1,52 @@
+import { createRef, sessionState, useServerState, useState } from 'ts2';
+
+import { Varbits } from '../lib/game/varbits';
+import { clientClock } from '../lib/lib.engine';
+import { MineRules } from './fossil-volcanic-mine.constants';
+
+export const timeTitle = createRef('fossil_volcanic_mine_time_title');
+export const time = createRef('fossil_volcanic_mine_time');
+
+export const mineTimerArmed = sessionState(0);
+
+export function volcanicMineSetupTimer(): void {
+  const [, setArmed] = useState(mineTimerArmed);
+  setArmed(1);
+}
+
+export function mineTimerReset(): void {
+  const [, setArmed] = useState(mineTimerArmed);
+  setArmed(0);
+}
+
+export function mineTimerTransmit(): void {
+  const [armed] = useState(mineTimerArmed);
+  if (armed !== 1) {
+    return;
+  }
+  const progress: Int = useServerState(Varbits.FOSSIL_MINE_PROGRESS_STATUS);
+  if (progress >= MineRules.RUN_STARTED) {
+    timeTitle.text = 'Time Remaining';
+  } else {
+    timeTitle.text = 'Starting in';
+  }
+  const start: Int = clientClock();
+  const remaining: Int = useServerState(Varbits.FOSSIL_MINE_TIME_REMAINING);
+  mineTimerShow(remaining * 30 - (clientClock() - start));
+}
+
+export function mineTimerShow(cycles: Int): void {
+  let left: Int = cycles;
+  if (left < 0) {
+    left = 0;
+  }
+  const seconds: Int = left / 50;
+  const minutes: Int = seconds / 60;
+  const rest: Int = seconds % 60;
+  if (rest < 10) {
+    time.text = `${minutes}:0${rest}`;
+  } else {
+    time.text = `${minutes}:${rest}`;
+  }
+  time.onTimer = () => mineTimerShow(left - 1);
+}

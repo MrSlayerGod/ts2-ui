@@ -1,3 +1,6 @@
+import { useInterval, useState } from 'ts2';
+
+import { SteelBorder } from '../lib/steel-border.component';
 import { TrickOrTreatButton } from './trickortreat-button.component';
 import {
   TrickOrTreatColors,
@@ -5,13 +8,37 @@ import {
   TrickOrTreatLayout,
   TrickOrTreatModel,
   TrickOrTreatText,
+  TrickOrTreatTitle,
+  TrickOrTreatWindow,
 } from './hw22-trickortreat.constants';
+import {
+  trickOrTreatName,
+  trickOrTreatSecondsLeft,
+  trickOrTreatStart,
+  trickOrTreatWindow,
+} from './hw22-trickortreat.state';
 
 export function Hw22TrickOrTreat(): Component {
+  const [shown] = useState(trickOrTreatWindow);
+  const [name] = useState(trickOrTreatName);
+  const [start] = useState(trickOrTreatStart);
+
   return (
     <layer x="center" y="center" w="fill" h="fill">
-      <layer x="center" y="center" w={TrickOrTreatLayout.TARGET_W} h={TrickOrTreatLayout.TARGET_H} hide>
-        <layer x={0} y={0} w="fill" h="fill" />
+      <layer
+        x="center"
+        y="center"
+        w={TrickOrTreatLayout.TARGET_W}
+        h={TrickOrTreatLayout.TARGET_H}
+        hide={shown !== TrickOrTreatWindow.TARGET}
+      >
+        <layer x={0} y={0} w="fill" h="fill">
+          <SteelBorder
+            title={TrickOrTreatTitle.TEXT}
+            titleColor={TrickOrTreatTitle.COLOR}
+            flags={TrickOrTreatTitle.FLAGS}
+          />
+        </layer>
 
         <layer
           x="center"
@@ -19,17 +46,7 @@ export function Hw22TrickOrTreat(): Component {
           w={{ fill: TrickOrTreatLayout.WELL_INSET_X }}
           h={{ fill: TrickOrTreatLayout.WELL_INSET_Y }}
         >
-          <text
-            x={TrickOrTreatLayout.COUNTER_X}
-            y={{ bottom: TrickOrTreatLayout.COUNTER_BOTTOM }}
-            w={TrickOrTreatLayout.COUNTER_W}
-            h={TrickOrTreatLayout.COUNTER_H}
-            text={TrickOrTreatText.COUNTER}
-            font={TrickOrTreatFonts.COUNTER}
-            color={TrickOrTreatColors.COUNTER}
-            shadow
-            valign="middle"
-          />
+          <TrickOrTreatCountdown start={start} />
 
           <model
             x={0}
@@ -136,12 +153,25 @@ export function Hw22TrickOrTreat(): Component {
             align="center"
             valign="middle"
             lineHeight={TrickOrTreatLayout.PROMPT_LINE_HEIGHT}
+            text={`<col=ffffff>${name}</col> has Trick-or-Treated you!<br>What will you give them?`}
           />
         </layer>
       </layer>
 
-      <layer x="center" y="center" w={TrickOrTreatLayout.INITIATOR_W} h={TrickOrTreatLayout.INITIATOR_H} hide>
-        <layer x={0} y={0} w="fill" h="fill" />
+      <layer
+        x="center"
+        y="center"
+        w={TrickOrTreatLayout.INITIATOR_W}
+        h={TrickOrTreatLayout.INITIATOR_H}
+        hide={shown !== TrickOrTreatWindow.INITIATOR}
+      >
+        <layer x={0} y={0} w="fill" h="fill">
+          <SteelBorder
+            title={TrickOrTreatTitle.TEXT}
+            titleColor={TrickOrTreatTitle.COLOR}
+            flags={TrickOrTreatTitle.FLAGS}
+          />
+        </layer>
 
         <layer
           x="center"
@@ -149,17 +179,7 @@ export function Hw22TrickOrTreat(): Component {
           w={{ fill: TrickOrTreatLayout.WELL_INSET_X }}
           h={{ fill: TrickOrTreatLayout.WELL_INSET_Y }}
         >
-          <text
-            x={TrickOrTreatLayout.COUNTER_X}
-            y={{ bottom: TrickOrTreatLayout.COUNTER_BOTTOM }}
-            w={TrickOrTreatLayout.COUNTER_W}
-            h={TrickOrTreatLayout.COUNTER_H}
-            text={TrickOrTreatText.COUNTER}
-            font={TrickOrTreatFonts.COUNTER}
-            color={TrickOrTreatColors.COUNTER}
-            shadow
-            valign="middle"
-          />
+          <TrickOrTreatCountdown start={start} />
 
           <model
             x={{ right: TrickOrTreatLayout.INITIATOR_PUMPKIN_RIGHT }}
@@ -200,6 +220,7 @@ export function Hw22TrickOrTreat(): Component {
             align="center"
             valign="middle"
             lineHeight={TrickOrTreatLayout.PROMPT_LINE_HEIGHT}
+            text={`<col=ffffff>${name}</col> looks at you, trying to decide whether to trick or treat.`}
           />
 
           <layer
@@ -226,5 +247,26 @@ export function Hw22TrickOrTreat(): Component {
         </layer>
       </layer>
     </layer>
+  );
+}
+
+function TrickOrTreatCountdown({ start }: { start: Int }): Component {
+  const [seconds, setSeconds] = useState(-1);
+  useInterval(() => {
+    setSeconds(trickOrTreatSecondsLeft(start));
+  });
+  const text: String = seconds < 0 ? TrickOrTreatText.COUNTER : `${seconds}`;
+  return (
+    <text
+      x={TrickOrTreatLayout.COUNTER_X}
+      y={{ bottom: TrickOrTreatLayout.COUNTER_BOTTOM }}
+      w={TrickOrTreatLayout.COUNTER_W}
+      h={TrickOrTreatLayout.COUNTER_H}
+      text={text}
+      font={TrickOrTreatFonts.COUNTER}
+      color={TrickOrTreatColors.COUNTER}
+      shadow
+      valign="middle"
+    />
   );
 }

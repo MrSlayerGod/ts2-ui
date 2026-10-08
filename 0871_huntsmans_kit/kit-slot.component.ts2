@@ -49,8 +49,8 @@ export function KitSlot({
   armed: Int;
   pane: Ref;
 }): Component {
-  const x: Int = margin + (slot % Slot.COLUMNS) * (Slot.W + gap);
-  const y: Int = (slot / Slot.COLUMNS) * (Slot.H + gap);
+  const x: Int = margin + slot % Slot.COLUMNS * (Slot.W + gap);
+  const y: Int = slot / Slot.COLUMNS * (Slot.H + gap);
 
   if (item === -1) {
     return (

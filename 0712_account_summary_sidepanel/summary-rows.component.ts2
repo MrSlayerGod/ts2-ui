@@ -186,9 +186,9 @@ export function TimePlayedRow(): Component {
         text={
           shown === 1
             ? `${Copy.TIME_PLAYED} <col=0dc10d>${minutesAsText(playtime, 1)}</col>`
-            : mobile
+            : (mobile
               ? `${Copy.TIME_PLAYED} ${Copy.REVEAL_MOBILE}`
-              : `${Copy.TIME_PLAYED} ${Copy.REVEAL_DESKTOP}`
+              : `${Copy.TIME_PLAYED} ${Copy.REVEAL_DESKTOP}`)
         }
         height={Layout.ROW5_H}
         hovered={hovered}

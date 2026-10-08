@@ -52,9 +52,9 @@ export function RewardRow({
     refusal === 1
       ? "You must be on a members' world to purchase that item."
       : refusal === 2
-        ? winsNeeded > 1
+        ? (winsNeeded > 1
           ? `You must achieve ${stringOf(winsNeeded)} wins before you can have that item.`
-          : 'You must achieve one win before you can have that item.'
+          : 'You must achieve one win before you can have that item.')
         : `You need ${costPoints(price)} to claim that reward.`;
 
   const priceRest: Int =
@@ -134,9 +134,9 @@ export function RewardRow({
               : price > 0
                 ? costPoints(price)
                 : winsNeeded > 0
-                  ? winsNeeded > 1
+                  ? (winsNeeded > 1
                     ? `${stringOf(winsNeeded)} wins`
-                    : 'One win'
+                    : 'One win')
                   : 'Free'
         }
         font={RewardFonts.PRICE}

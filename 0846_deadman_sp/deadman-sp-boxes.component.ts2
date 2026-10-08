@@ -1,0 +1,121 @@
+import { sessionState, useInterval, useRef, useState, useUniverse } from 'ts2';
+
+import { clientClock, playSound } from '../lib/lib.engine';
+import { Sounds } from '../lib/lib.constants';
+import { CellBoxes } from '../0823_forestry_kit_main/forestry-kit-main.constants';
+import { StructBoxFrame } from '../0823_forestry_kit_main/struct-box-frame.component';
+import { RankButtonSkin } from '../0932_sailing_bt_selection/rank-button-skin.component';
+import { soundSynth } from '../0874_quetzal_menu/quetzal-menu.helpers';
+import { BadgeColor, BADGE_FLASH_CYCLES, SpColor } from './deadman-sp.constants';
+
+export const deadmanSpBuilt = sessionState(0);
+
+export function deadmanSpInit(): void {
+  const [, setBuilt] = useState(deadmanSpBuilt);
+  setBuilt(1);
+}
+
+export function resetDeadmanSp(): void {
+  const [, setBuilt] = useState(deadmanSpBuilt);
+  setBuilt(0);
+}
+
+export function SpBox(): Component {
+  const [built] = useState(deadmanSpBuilt);
+  const box = useUniverse();
+  const style = CellBoxes.at(0);
+  if (built !== 1 || style === null) {
+    return null;
+  }
+  return (
+    <>
+      <rect x={1} y={1} w={box.width - 2} h={box.height - 2} fill color={SpColor.BOX_BED} />
+      <StructBoxFrame x={0} y={0} w={box.width} h={box.height} style={style} />
+    </>
+  );
+}
+
+export function SpStoneSkin({ label }: { label: String }): Component {
+  const [built] = useState(deadmanSpBuilt);
+  if (built !== 1) {
+    return null;
+  }
+  return (
+    <layer x={0} y={0} w="fill" h="fill">
+      <RankButtonSkin label={label} />
+    </layer>
+  );
+}
+
+export function SpStoneClick({ label }: { label: String }): Component {
+  const [built] = useState(deadmanSpBuilt);
+  if (built !== 1) {
+    return null;
+  }
+  return (
+    <rect
+      x={0}
+      y={0}
+      w="fill"
+      h="fill"
+      transparency={255}
+      options={[label]}
+      onOptionSelect={() => soundSynth(Sounds.CLICK, 1, 0)}
+    />
+  );
+}
+
+export function RefreshBadge({ option, subject }: { option: String; subject: String }): Component {
+  const [built] = useState(deadmanSpBuilt);
+  const me = useUniverse();
+  const hit = useRef();
+  const [tone, setTone] = useState(BadgeColor.GREY);
+  const [flash, setFlash] = useState(0);
+  const deadline: Int = clientClock() + BADGE_FLASH_CYCLES;
+  useInterval(
+    flash === 1
+      ? () => {
+          if (clientClock() >= deadline) {
+            setFlash(0);
+            setTone(BadgeColor.AMBER);
+          }
+        }
+      : undefined,
+    hit,
+  );
+  const bedColor: Int = flash === 1 ? BadgeColor.CREAM : tone;
+  let hoverable: Boolean = false;
+  if (flash === 0) {
+    hoverable = true;
+  }
+  const style = CellBoxes.at(0);
+  if (built !== 1 || style === null) {
+    return null;
+  }
+  return (
+    <>
+      <rect
+        ref={hit}
+        x={0}
+        y={0}
+        w="fill"
+        h="fill"
+        fill
+        color={BadgeColor.WHITE}
+        transparency={255}
+        options={[option]}
+        optionSubject={subject}
+        onMouseRepeat={hoverable ? () => setTone(BadgeColor.YELLOW) : undefined}
+        onMouseLeave={hoverable ? () => setTone(BadgeColor.GREY) : undefined}
+        onOptionSelect={() => {
+          playSound(Sounds.CLICK);
+          setFlash(1);
+        }}
+      />
+      <rect x={1} y={1} w={me.width - 2} h={me.height - 2} fill color={bedColor} />
+      <layer x={0} y={0} w="fill" h="fill">
+        <StructBoxFrame x={0} y={0} w={me.width} h={me.height} style={style} />
+      </layer>
+    </>
+  );
+}

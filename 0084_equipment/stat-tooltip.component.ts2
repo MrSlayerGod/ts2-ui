@@ -75,7 +75,7 @@ export function StatTooltip(): Component {
     y = anchorY - boxH - TooltipBox.nudge;
   }
 
-  if (!tooltipUp()) {
+  if (!tooltipUp() || key < 0 || row === null) {
     return <layer w={EquipmentLayout.TIP_HOST_W} h={EquipmentLayout.TIP_HOST_H} />;
   }
 

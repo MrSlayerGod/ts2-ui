@@ -35,30 +35,24 @@ export function clanStatusText(asGuest: Int, guestStatus: Int, status: Int): Str
 }
 
 export function recruitButtonWidth(): Int {
-  return (
-    Math.max(
+  return Math.max(
       textWidth(Copy.INVITE, Layout.MEASURE_W, ApplicantsFonts.BODY),
       textWidth(Copy.STOP_INVITING, Layout.MEASURE_W, ApplicantsFonts.BODY),
-    ) + Layout.BUTTON_PAD
-  );
+    ) + Layout.BUTTON_PAD;
 }
 
 export function combatButtonWidth(): Int {
-  return (
-    Math.max(
+  return Math.max(
       textWidth(Copy.COMBAT_MEASURE, Layout.MEASURE_W, ApplicantsFonts.BODY),
       textWidth(Copy.LOADING_TAG, Layout.MEASURE_W, ApplicantsFonts.BODY),
-    ) + Layout.BUTTON_PAD
-  );
+    ) + Layout.BUTTON_PAD;
 }
 
 export function skillButtonWidth(): Int {
-  return (
-    Math.max(
+  return Math.max(
       textWidth(Copy.SKILL_MEASURE, Layout.MEASURE_W, ApplicantsFonts.BODY),
       textWidth(Copy.LOADING_TAG, Layout.MEASURE_W, ApplicantsFonts.BODY),
-    ) + Layout.BUTTON_PAD
-  );
+    ) + Layout.BUTTON_PAD;
 }
 
 export function layoutPropertyButtons(): void {

@@ -6,6 +6,6 @@ export function modulo(value: Int, base: Int): Int {
     return value % base;
   }
   const magnitude: Int = 0 - value;
-  const lifted: Int = value + (magnitude - (magnitude % base)) + base;
+  const lifted: Int = value + (magnitude - magnitude % base) + base;
   return lifted % base;
 }

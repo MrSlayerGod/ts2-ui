@@ -1,0 +1,716 @@
+import { useState } from 'ts2';
+
+import {
+  slotinfo00,
+  slotinfo01,
+  slotinfo02,
+  slotinfo03,
+  slotinfo04,
+  slotinfo05,
+  slotinfo06,
+  slotinfo07,
+  slotinfo08,
+  slotinfo09,
+  slotinfo10,
+  slotinfo11,
+  slotinfo12,
+  slotinfo13,
+  slotinfo14,
+  slotinfo15,
+  slotinfo16,
+  slotinfo17,
+  slotinfo18,
+  slotinfo19,
+  slotinfo20,
+  slotinfo21,
+  slotinfo22,
+  slotinfo23,
+  slotinfo24,
+  slotinfo25,
+  slotinfo26,
+  slotinfo27,
+  slotinfoOther00,
+  slotinfoOther01,
+  slotinfoOther02,
+  slotinfoOther03,
+  slotinfoOther04,
+  slotinfoOther05,
+  slotinfoOther06,
+  slotinfoOther07,
+  slotinfoOther08,
+  slotinfoOther09,
+  slotinfoOther10,
+  slotinfoOther11,
+  slotinfoOther12,
+  slotinfoOther13,
+  slotinfoOther14,
+  slotinfoOther15,
+  slotinfoOther16,
+  slotinfoOther17,
+  slotinfoOther18,
+  slotinfoOther19,
+  slotinfoOther20,
+  slotinfoOther21,
+  slotinfoOther22,
+  slotinfoOther23,
+  slotinfoOther24,
+  slotinfoOther25,
+  slotinfoOther26,
+  slotinfoOther27,
+  tradeSlot0Changed,
+  tradeSlot1Changed,
+  tradeSlot2Changed,
+  tradeSlot3Changed,
+  tradeSlot4Changed,
+  tradeSlot5Changed,
+  tradeSlot6Changed,
+  tradeSlot7Changed,
+  tradeSlot8Changed,
+  tradeSlot9Changed,
+  tradeSlot10Changed,
+  tradeSlot11Changed,
+  tradeSlot12Changed,
+  tradeSlot13Changed,
+  tradeSlot14Changed,
+  tradeSlot15Changed,
+  tradeSlot16Changed,
+  tradeSlot17Changed,
+  tradeSlot18Changed,
+  tradeSlot19Changed,
+  tradeSlot20Changed,
+  tradeSlot21Changed,
+  tradeSlot22Changed,
+  tradeSlot23Changed,
+  tradeSlot24Changed,
+  tradeSlot25Changed,
+  tradeSlot26Changed,
+  tradeSlot27Changed,
+} from '../lib/game/varcs';
+import { clientClock } from '../lib/lib.engine';
+import { hideTradeTip } from './trade-tooltip.component';
+import {
+  yourSlot0Changed,
+  yourSlot1Changed,
+  yourSlot2Changed,
+  yourSlot3Changed,
+  yourSlot4Changed,
+  yourSlot5Changed,
+  yourSlot6Changed,
+  yourSlot7Changed,
+  yourSlot8Changed,
+  yourSlot9Changed,
+  yourSlot10Changed,
+  yourSlot11Changed,
+  yourSlot12Changed,
+  yourSlot13Changed,
+  yourSlot14Changed,
+  yourSlot15Changed,
+  yourSlot16Changed,
+  yourSlot17Changed,
+  yourSlot18Changed,
+  yourSlot19Changed,
+  yourSlot20Changed,
+  yourSlot21Changed,
+  yourSlot22Changed,
+  yourSlot23Changed,
+  yourSlot24Changed,
+  yourSlot25Changed,
+  yourSlot26Changed,
+  yourSlot27Changed,
+} from './trademain.state';
+
+export function stampOtherSlot(slot: Int): void {
+  const now: Int = clientClock();
+  switch (slot) {
+    case 0: {
+      const [, s] = useState(tradeSlot0Changed);
+      s(now);
+      return;
+    }
+    case 1: {
+      const [, s] = useState(tradeSlot1Changed);
+      s(now);
+      return;
+    }
+    case 2: {
+      const [, s] = useState(tradeSlot2Changed);
+      s(now);
+      return;
+    }
+    case 3: {
+      const [, s] = useState(tradeSlot3Changed);
+      s(now);
+      return;
+    }
+    case 4: {
+      const [, s] = useState(tradeSlot4Changed);
+      s(now);
+      return;
+    }
+    case 5: {
+      const [, s] = useState(tradeSlot5Changed);
+      s(now);
+      return;
+    }
+    case 6: {
+      const [, s] = useState(tradeSlot6Changed);
+      s(now);
+      return;
+    }
+    case 7: {
+      const [, s] = useState(tradeSlot7Changed);
+      s(now);
+      return;
+    }
+    case 8: {
+      const [, s] = useState(tradeSlot8Changed);
+      s(now);
+      return;
+    }
+    case 9: {
+      const [, s] = useState(tradeSlot9Changed);
+      s(now);
+      return;
+    }
+    case 10: {
+      const [, s] = useState(tradeSlot10Changed);
+      s(now);
+      return;
+    }
+    case 11: {
+      const [, s] = useState(tradeSlot11Changed);
+      s(now);
+      return;
+    }
+    case 12: {
+      const [, s] = useState(tradeSlot12Changed);
+      s(now);
+      return;
+    }
+    case 13: {
+      const [, s] = useState(tradeSlot13Changed);
+      s(now);
+      return;
+    }
+    case 14: {
+      const [, s] = useState(tradeSlot14Changed);
+      s(now);
+      return;
+    }
+    case 15: {
+      const [, s] = useState(tradeSlot15Changed);
+      s(now);
+      return;
+    }
+    case 16: {
+      const [, s] = useState(tradeSlot16Changed);
+      s(now);
+      return;
+    }
+    case 17: {
+      const [, s] = useState(tradeSlot17Changed);
+      s(now);
+      return;
+    }
+    case 18: {
+      const [, s] = useState(tradeSlot18Changed);
+      s(now);
+      return;
+    }
+    case 19: {
+      const [, s] = useState(tradeSlot19Changed);
+      s(now);
+      return;
+    }
+    case 20: {
+      const [, s] = useState(tradeSlot20Changed);
+      s(now);
+      return;
+    }
+    case 21: {
+      const [, s] = useState(tradeSlot21Changed);
+      s(now);
+      return;
+    }
+    case 22: {
+      const [, s] = useState(tradeSlot22Changed);
+      s(now);
+      return;
+    }
+    case 23: {
+      const [, s] = useState(tradeSlot23Changed);
+      s(now);
+      return;
+    }
+    case 24: {
+      const [, s] = useState(tradeSlot24Changed);
+      s(now);
+      return;
+    }
+    case 25: {
+      const [, s] = useState(tradeSlot25Changed);
+      s(now);
+      return;
+    }
+    case 26: {
+      const [, s] = useState(tradeSlot26Changed);
+      s(now);
+      return;
+    }
+    case 27: {
+      const [, s] = useState(tradeSlot27Changed);
+      s(now);
+      return;
+    }
+  }
+}
+
+function stampYourSlot(slot: Int): void {
+  const now: Int = clientClock();
+  switch (slot) {
+    case 0: {
+      const [, s] = useState(yourSlot0Changed);
+      s(now);
+      return;
+    }
+    case 1: {
+      const [, s] = useState(yourSlot1Changed);
+      s(now);
+      return;
+    }
+    case 2: {
+      const [, s] = useState(yourSlot2Changed);
+      s(now);
+      return;
+    }
+    case 3: {
+      const [, s] = useState(yourSlot3Changed);
+      s(now);
+      return;
+    }
+    case 4: {
+      const [, s] = useState(yourSlot4Changed);
+      s(now);
+      return;
+    }
+    case 5: {
+      const [, s] = useState(yourSlot5Changed);
+      s(now);
+      return;
+    }
+    case 6: {
+      const [, s] = useState(yourSlot6Changed);
+      s(now);
+      return;
+    }
+    case 7: {
+      const [, s] = useState(yourSlot7Changed);
+      s(now);
+      return;
+    }
+    case 8: {
+      const [, s] = useState(yourSlot8Changed);
+      s(now);
+      return;
+    }
+    case 9: {
+      const [, s] = useState(yourSlot9Changed);
+      s(now);
+      return;
+    }
+    case 10: {
+      const [, s] = useState(yourSlot10Changed);
+      s(now);
+      return;
+    }
+    case 11: {
+      const [, s] = useState(yourSlot11Changed);
+      s(now);
+      return;
+    }
+    case 12: {
+      const [, s] = useState(yourSlot12Changed);
+      s(now);
+      return;
+    }
+    case 13: {
+      const [, s] = useState(yourSlot13Changed);
+      s(now);
+      return;
+    }
+    case 14: {
+      const [, s] = useState(yourSlot14Changed);
+      s(now);
+      return;
+    }
+    case 15: {
+      const [, s] = useState(yourSlot15Changed);
+      s(now);
+      return;
+    }
+    case 16: {
+      const [, s] = useState(yourSlot16Changed);
+      s(now);
+      return;
+    }
+    case 17: {
+      const [, s] = useState(yourSlot17Changed);
+      s(now);
+      return;
+    }
+    case 18: {
+      const [, s] = useState(yourSlot18Changed);
+      s(now);
+      return;
+    }
+    case 19: {
+      const [, s] = useState(yourSlot19Changed);
+      s(now);
+      return;
+    }
+    case 20: {
+      const [, s] = useState(yourSlot20Changed);
+      s(now);
+      return;
+    }
+    case 21: {
+      const [, s] = useState(yourSlot21Changed);
+      s(now);
+      return;
+    }
+    case 22: {
+      const [, s] = useState(yourSlot22Changed);
+      s(now);
+      return;
+    }
+    case 23: {
+      const [, s] = useState(yourSlot23Changed);
+      s(now);
+      return;
+    }
+    case 24: {
+      const [, s] = useState(yourSlot24Changed);
+      s(now);
+      return;
+    }
+    case 25: {
+      const [, s] = useState(yourSlot25Changed);
+      s(now);
+      return;
+    }
+    case 26: {
+      const [, s] = useState(yourSlot26Changed);
+      s(now);
+      return;
+    }
+    case 27: {
+      const [, s] = useState(yourSlot27Changed);
+      s(now);
+      return;
+    }
+  }
+}
+
+export function yourSlotChangedAt(slot: Int): Int {
+  switch (slot) {
+    case 0: {
+      const [v] = useState(yourSlot0Changed);
+      return v;
+    }
+    case 1: {
+      const [v] = useState(yourSlot1Changed);
+      return v;
+    }
+    case 2: {
+      const [v] = useState(yourSlot2Changed);
+      return v;
+    }
+    case 3: {
+      const [v] = useState(yourSlot3Changed);
+      return v;
+    }
+    case 4: {
+      const [v] = useState(yourSlot4Changed);
+      return v;
+    }
+    case 5: {
+      const [v] = useState(yourSlot5Changed);
+      return v;
+    }
+    case 6: {
+      const [v] = useState(yourSlot6Changed);
+      return v;
+    }
+    case 7: {
+      const [v] = useState(yourSlot7Changed);
+      return v;
+    }
+    case 8: {
+      const [v] = useState(yourSlot8Changed);
+      return v;
+    }
+    case 9: {
+      const [v] = useState(yourSlot9Changed);
+      return v;
+    }
+    case 10: {
+      const [v] = useState(yourSlot10Changed);
+      return v;
+    }
+    case 11: {
+      const [v] = useState(yourSlot11Changed);
+      return v;
+    }
+    case 12: {
+      const [v] = useState(yourSlot12Changed);
+      return v;
+    }
+    case 13: {
+      const [v] = useState(yourSlot13Changed);
+      return v;
+    }
+    case 14: {
+      const [v] = useState(yourSlot14Changed);
+      return v;
+    }
+    case 15: {
+      const [v] = useState(yourSlot15Changed);
+      return v;
+    }
+    case 16: {
+      const [v] = useState(yourSlot16Changed);
+      return v;
+    }
+    case 17: {
+      const [v] = useState(yourSlot17Changed);
+      return v;
+    }
+    case 18: {
+      const [v] = useState(yourSlot18Changed);
+      return v;
+    }
+    case 19: {
+      const [v] = useState(yourSlot19Changed);
+      return v;
+    }
+    case 20: {
+      const [v] = useState(yourSlot20Changed);
+      return v;
+    }
+    case 21: {
+      const [v] = useState(yourSlot21Changed);
+      return v;
+    }
+    case 22: {
+      const [v] = useState(yourSlot22Changed);
+      return v;
+    }
+    case 23: {
+      const [v] = useState(yourSlot23Changed);
+      return v;
+    }
+    case 24: {
+      const [v] = useState(yourSlot24Changed);
+      return v;
+    }
+    case 25: {
+      const [v] = useState(yourSlot25Changed);
+      return v;
+    }
+    case 26: {
+      const [v] = useState(yourSlot26Changed);
+      return v;
+    }
+    case 27: {
+      const [v] = useState(yourSlot27Changed);
+      return v;
+    }
+  }
+  return -1;
+}
+
+export function tradeSlotChanged(other: Boolean, slot: Int): void {
+  if (other) {
+    stampOtherSlot(slot);
+    return;
+  }
+  stampYourSlot(slot);
+}
+
+export function tradeYourPrices(
+  p0: Int,
+  p1: Int,
+  p2: Int,
+  p3: Int,
+  p4: Int,
+  p5: Int,
+  p6: Int,
+  p7: Int,
+  p8: Int,
+  p9: Int,
+  p10: Int,
+  p11: Int,
+  p12: Int,
+  p13: Int,
+  p14: Int,
+  p15: Int,
+  p16: Int,
+  p17: Int,
+  p18: Int,
+  p19: Int,
+  p20: Int,
+  p21: Int,
+  p22: Int,
+  p23: Int,
+  p24: Int,
+  p25: Int,
+  p26: Int,
+  p27: Int,
+): void {
+  const [, s0] = useState(slotinfo00);
+  s0(p0);
+  const [, s1] = useState(slotinfo01);
+  s1(p1);
+  const [, s2] = useState(slotinfo02);
+  s2(p2);
+  const [, s3] = useState(slotinfo03);
+  s3(p3);
+  const [, s4] = useState(slotinfo04);
+  s4(p4);
+  const [, s5] = useState(slotinfo05);
+  s5(p5);
+  const [, s6] = useState(slotinfo06);
+  s6(p6);
+  const [, s7] = useState(slotinfo07);
+  s7(p7);
+  const [, s8] = useState(slotinfo08);
+  s8(p8);
+  const [, s9] = useState(slotinfo09);
+  s9(p9);
+  const [, s10] = useState(slotinfo10);
+  s10(p10);
+  const [, s11] = useState(slotinfo11);
+  s11(p11);
+  const [, s12] = useState(slotinfo12);
+  s12(p12);
+  const [, s13] = useState(slotinfo13);
+  s13(p13);
+  const [, s14] = useState(slotinfo14);
+  s14(p14);
+  const [, s15] = useState(slotinfo15);
+  s15(p15);
+  const [, s16] = useState(slotinfo16);
+  s16(p16);
+  const [, s17] = useState(slotinfo17);
+  s17(p17);
+  const [, s18] = useState(slotinfo18);
+  s18(p18);
+  const [, s19] = useState(slotinfo19);
+  s19(p19);
+  const [, s20] = useState(slotinfo20);
+  s20(p20);
+  const [, s21] = useState(slotinfo21);
+  s21(p21);
+  const [, s22] = useState(slotinfo22);
+  s22(p22);
+  const [, s23] = useState(slotinfo23);
+  s23(p23);
+  const [, s24] = useState(slotinfo24);
+  s24(p24);
+  const [, s25] = useState(slotinfo25);
+  s25(p25);
+  const [, s26] = useState(slotinfo26);
+  s26(p26);
+  const [, s27] = useState(slotinfo27);
+  s27(p27);
+  hideTradeTip();
+}
+
+export function tradeOtherPrices(
+  p0: Int,
+  p1: Int,
+  p2: Int,
+  p3: Int,
+  p4: Int,
+  p5: Int,
+  p6: Int,
+  p7: Int,
+  p8: Int,
+  p9: Int,
+  p10: Int,
+  p11: Int,
+  p12: Int,
+  p13: Int,
+  p14: Int,
+  p15: Int,
+  p16: Int,
+  p17: Int,
+  p18: Int,
+  p19: Int,
+  p20: Int,
+  p21: Int,
+  p22: Int,
+  p23: Int,
+  p24: Int,
+  p25: Int,
+  p26: Int,
+  p27: Int,
+): void {
+  const [, s0] = useState(slotinfoOther00);
+  s0(p0);
+  const [, s1] = useState(slotinfoOther01);
+  s1(p1);
+  const [, s2] = useState(slotinfoOther02);
+  s2(p2);
+  const [, s3] = useState(slotinfoOther03);
+  s3(p3);
+  const [, s4] = useState(slotinfoOther04);
+  s4(p4);
+  const [, s5] = useState(slotinfoOther05);
+  s5(p5);
+  const [, s6] = useState(slotinfoOther06);
+  s6(p6);
+  const [, s7] = useState(slotinfoOther07);
+  s7(p7);
+  const [, s8] = useState(slotinfoOther08);
+  s8(p8);
+  const [, s9] = useState(slotinfoOther09);
+  s9(p9);
+  const [, s10] = useState(slotinfoOther10);
+  s10(p10);
+  const [, s11] = useState(slotinfoOther11);
+  s11(p11);
+  const [, s12] = useState(slotinfoOther12);
+  s12(p12);
+  const [, s13] = useState(slotinfoOther13);
+  s13(p13);
+  const [, s14] = useState(slotinfoOther14);
+  s14(p14);
+  const [, s15] = useState(slotinfoOther15);
+  s15(p15);
+  const [, s16] = useState(slotinfoOther16);
+  s16(p16);
+  const [, s17] = useState(slotinfoOther17);
+  s17(p17);
+  const [, s18] = useState(slotinfoOther18);
+  s18(p18);
+  const [, s19] = useState(slotinfoOther19);
+  s19(p19);
+  const [, s20] = useState(slotinfoOther20);
+  s20(p20);
+  const [, s21] = useState(slotinfoOther21);
+  s21(p21);
+  const [, s22] = useState(slotinfoOther22);
+  s22(p22);
+  const [, s23] = useState(slotinfoOther23);
+  s23(p23);
+  const [, s24] = useState(slotinfoOther24);
+  s24(p24);
+  const [, s25] = useState(slotinfoOther25);
+  s25(p25);
+  const [, s26] = useState(slotinfoOther26);
+  s26(p26);
+  const [, s27] = useState(slotinfoOther27);
+  s27(p27);
+  hideTradeTip();
+}

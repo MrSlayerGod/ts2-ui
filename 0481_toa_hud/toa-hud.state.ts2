@@ -1,5 +1,6 @@
-import { CS2, useServerState, useSkill, useSkillBase, useState } from 'ts2';
+import { CS2, sessionState, useServerState, useSkill, useSkillBase, useState } from 'ts2';
 
+import { clientClock } from '../lib/lib.engine';
 import { Varbits } from '../lib/game/varbits';
 import {
   toaClientName0,
@@ -10,6 +11,7 @@ import {
   toaClientName5,
   toaClientName6,
   toaClientName7,
+  toaClientNextrefresh,
 } from '../lib/game/varcs';
 import { Health, Layout, ToaHudSkills } from './toa-hud.constants';
 
@@ -98,7 +100,7 @@ export function activeSlots(): Int {
 }
 
 export function nameRows(active: Int): Int {
-  return Math.max(((active * 10) / 2 + 5) / 10, 1);
+  return Math.max((active * 10 / 2 + 5) / 10, 1);
 }
 
 export function namesHeight(rows: Int): Int {
@@ -117,36 +119,83 @@ export function myOrbHeight(): Int {
   return height;
 }
 
+export const shownName0 = sessionState('');
+export const shownName1 = sessionState('');
+export const shownName2 = sessionState('');
+export const shownName3 = sessionState('');
+export const shownName4 = sessionState('');
+export const shownName5 = sessionState('');
+export const shownName6 = sessionState('');
+export const shownName7 = sessionState('');
+
+const REFRESH = 30;
+
+export function drawToaHud(): void {
+  const [, setNextRefresh] = useState(toaClientNextrefresh);
+  const [raw0] = useState(toaClientName0);
+  const [raw1] = useState(toaClientName1);
+  const [raw2] = useState(toaClientName2);
+  const [raw3] = useState(toaClientName3);
+  const [raw4] = useState(toaClientName4);
+  const [raw5] = useState(toaClientName5);
+  const [raw6] = useState(toaClientName6);
+  const [raw7] = useState(toaClientName7);
+  const [, set0] = useState(shownName0);
+  const [, set1] = useState(shownName1);
+  const [, set2] = useState(shownName2);
+  const [, set3] = useState(shownName3);
+  const [, set4] = useState(shownName4);
+  const [, set5] = useState(shownName5);
+  const [, set6] = useState(shownName6);
+  const [, set7] = useState(shownName7);
+  setNextRefresh(clientClock() + REFRESH);
+  set0(raw0);
+  set1(raw1);
+  set2(raw2);
+  set3(raw3);
+  set4(raw4);
+  set5(raw5);
+  set6(raw6);
+  set7(raw7);
+}
+
+export function toaHudDrawTick(): void {
+  const [nextRefresh] = useState(toaClientNextrefresh);
+  if (clientClock() >= nextRefresh) {
+    drawToaHud();
+  }
+}
+
 export function name0(): String {
-  const [n] = useState(toaClientName0);
+  const [n] = useState(shownName0);
   return n;
 }
 export function name1(): String {
-  const [n] = useState(toaClientName1);
+  const [n] = useState(shownName1);
   return n;
 }
 export function name2(): String {
-  const [n] = useState(toaClientName2);
+  const [n] = useState(shownName2);
   return n;
 }
 export function name3(): String {
-  const [n] = useState(toaClientName3);
+  const [n] = useState(shownName3);
   return n;
 }
 export function name4(): String {
-  const [n] = useState(toaClientName4);
+  const [n] = useState(shownName4);
   return n;
 }
 export function name5(): String {
-  const [n] = useState(toaClientName5);
+  const [n] = useState(shownName5);
   return n;
 }
 export function name6(): String {
-  const [n] = useState(toaClientName6);
+  const [n] = useState(shownName6);
   return n;
 }
 export function name7(): String {
-  const [n] = useState(toaClientName7);
+  const [n] = useState(shownName7);
   return n;
 }
 

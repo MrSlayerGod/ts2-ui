@@ -179,7 +179,7 @@ export function totalXpText(): String {
   }
 
   if (high > 0) {
-    return `${groupDigits(high, Copy.SEPARATOR)}${Copy.SEPARATOR}${padGroup(low / 1000000)}${Copy.SEPARATOR}${padGroup((low % 1000000) / 1000)}${Copy.SEPARATOR}${padGroup(low % 1000)}`;
+    return `${groupDigits(high, Copy.SEPARATOR)}${Copy.SEPARATOR}${padGroup(low / 1000000)}${Copy.SEPARATOR}${padGroup(low % 1000000 / 1000)}${Copy.SEPARATOR}${padGroup(low % 1000)}`;
   }
   return groupDigits(low, Copy.SEPARATOR);
 }
@@ -192,8 +192,7 @@ function xpOf(skill: SkillRef<number>): Int {
 }
 
 export function diariesCompleted(): Int {
-  return (
-    useServerState(Varbits.KARAMJA_EASY_COUNT) +
+  return useServerState(Varbits.KARAMJA_EASY_COUNT) +
     useServerState(Varbits.KARAMJA_MED_COUNT) +
     useServerState(Varbits.KARAMJA_HARD_COUNT) +
     useServerState(Varbits.KARAMJA_ELITE_COUNT) +
@@ -240,13 +239,11 @@ export function diariesCompleted(): Int {
     useServerState(Varbits.KOUREND_EASY_COUNT) +
     useServerState(Varbits.KOUREND_MED_COUNT) +
     useServerState(Varbits.KOUREND_HARD_COUNT) +
-    useServerState(Varbits.KOUREND_ELITE_COUNT)
-  );
+    useServerState(Varbits.KOUREND_ELITE_COUNT);
 }
 
 export function diariesTotal(): Int {
-  return (
-    regionTotal(
+  return regionTotal(
       DiaryTaskTotals.KARAMJA.easy,
       DiaryTaskTotals.KARAMJA.medium,
       DiaryTaskTotals.KARAMJA.hard,
@@ -317,8 +314,7 @@ export function diariesTotal(): Int {
       DiaryTaskTotals.KOUREND.medium,
       DiaryTaskTotals.KOUREND.hard,
       DiaryTaskTotals.KOUREND.elite,
-    )
-  );
+    );
 }
 
 function regionTotal(easy: Int, medium: Int, hard: Int, elite: Int): Int {
@@ -326,14 +322,12 @@ function regionTotal(easy: Int, medium: Int, hard: Int, elite: Int): Int {
 }
 
 export function combatTasksCompleted(): Int {
-  return (
-    useServerState(CombatTaskVarbits.EASY) +
+  return useServerState(CombatTaskVarbits.EASY) +
     useServerState(CombatTaskVarbits.MEDIUM) +
     useServerState(CombatTaskVarbits.HARD) +
     useServerState(CombatTaskVarbits.ELITE) +
     useServerState(CombatTaskVarbits.MASTER) +
-    useServerState(CombatTaskVarbits.GRANDMASTER)
-  );
+    useServerState(CombatTaskVarbits.GRANDMASTER);
 }
 
 export function combatTasksTotal(): Int {
@@ -349,8 +343,7 @@ export function combatTasksTotal(): Int {
   if (!isGroupIronman(ironman)) {
     return total;
   }
-  return (
-    total -
+  return total -
     excludedForSize(
       groupSize,
       GroupIronExcludedElite.SIZE2,
@@ -371,8 +364,7 @@ export function combatTasksTotal(): Int {
       GroupIronExcludedGrandmaster.SIZE3,
       GroupIronExcludedGrandmaster.SIZE4,
       GroupIronExcludedGrandmaster.SIZE5,
-    )
-  );
+    );
 }
 
 function excludedForSize(groupSize: Int, size2: Int, size3: Int, size4: Int, size5: Int): Int {

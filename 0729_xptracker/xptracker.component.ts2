@@ -170,7 +170,7 @@ export function XptrackerScrollbar(): Component {
           const travel: Int = Math.max(1, gutter.height - thumb.height);
           const offset: Int = Math.clamp(0, travel, event.mouseY - thumb.height / 2);
           const range: Int = xptrackerPaneRef.scrollHeight - xptrackerPaneRef.height;
-          xptrackerPaneRef.scrollY = (offset * range) / travel;
+          xptrackerPaneRef.scrollY = offset * range / travel;
           trackPaneScroll(gutter, thumb, capTop, capBottom);
         }}
       />
@@ -178,8 +178,8 @@ export function XptrackerScrollbar(): Component {
         ref={thumb}
         y={
           ARROW +
-          ((gutter.height - thumbHeightOf(bar.height, xptrackerPaneRef.height, extent, false)) *
-            xptrackerPaneRef.scrollY) /
+          (gutter.height - thumbHeightOf(bar.height, xptrackerPaneRef.height, extent, false)) *
+            xptrackerPaneRef.scrollY /
             Math.max(1, xptrackerPaneRef.scrollHeight - xptrackerPaneRef.height)
         }
         w="fill"
@@ -196,7 +196,7 @@ export function XptrackerScrollbar(): Component {
 
           const travel: Int = Math.max(1, gutter.height - thumb.height);
           const range: Int = xptrackerPaneRef.scrollHeight - xptrackerPaneRef.height;
-          xptrackerPaneRef.scrollY = (offset * range) / travel;
+          xptrackerPaneRef.scrollY = offset * range / travel;
         }}
       />
       <sprite ref={capTop} y={thumb.y} w="fill" h={CAP} sprite={Sprites.SCROLLBAR_DRAGGER_V2_0} />
@@ -236,7 +236,7 @@ export function XptrackerScrollbar(): Component {
 function trackPaneScroll(gutter: Ref, thumb: Ref, capTop: Ref, capBottom: Ref): void {
   const range: Int = Math.max(1, xptrackerPaneRef.scrollHeight - xptrackerPaneRef.height);
   const travel: Int = gutter.height - thumb.height;
-  const y: Int = ARROW + (travel * xptrackerPaneRef.scrollY) / range;
+  const y: Int = ARROW + travel * xptrackerPaneRef.scrollY / range;
 
   thumb.y = y;
   capTop.y = y;
@@ -500,7 +500,7 @@ function RowBar({ skill, y, hidden, ghost }: { skill: Int; y: Int; hidden: Int; 
   const target: Int = trackerTarget(mode, level, goalEnd);
   const base: Int = trackerBase(mode, level, goalStart);
   const done: Boolean = mode === TrackerMode.DONE;
-  const barW: Int = (trackerBarWidth(xp, base, target) * Layout.BAR_PARENT_W) / 16384;
+  const barW: Int = trackerBarWidth(xp, base, target) * Layout.BAR_PARENT_W / 16384;
 
   const shift: Int = isGhost ? Layout.INSET : 0;
   const boxW: Int = Layout.BAR_PARENT_W;
@@ -526,8 +526,8 @@ function RowBar({ skill, y, hidden, ghost }: { skill: Int; y: Int; hidden: Int; 
         hide={hide}
         noClickThrough={blocksClicks}
         onMouseLeave={isGhost || mobile ? null : () => clearPopoutTip()}
-        onMouseRepeat={tipOnRepeat ? () => showGoalTip(skill, y) : null}
-        onClick={tipOnClick ? () => showGoalTip(skill, y) : null}
+        onMouseRepeat={tipOnRepeat ? (event) => showGoalTip(skill, event.component, event.subId) : null}
+        onClick={tipOnClick ? (event) => showGoalTip(skill, event.component, event.subId) : null}
       />
       <rect
         x={shift}
@@ -697,7 +697,7 @@ function dragAutoscroll(pane: ComponentId, mouseY: Int, scrollAt: Int): Int {
   return scrollAt + 1;
 }
 
-export function showGoalTip(skill: Int, rowY: Int): void {
+export function showGoalTip(skill: Int, anchor: ComponentId, sub: Int): void {
   const xp: Int = trackerXp(skill);
   const [start, end] = trackerGoal(skill);
   if (trackerMode(xp, end) !== TrackerMode.GOAL) {
@@ -720,7 +720,7 @@ export function showGoalTip(skill: Int, rowY: Int): void {
   if (left.length === 0 || right.length === 0) {
     return;
   }
-  showPopoutTip(left, right, rowY);
+  showPopoutTip(anchor, sub, left, right);
 }
 
 function goalLevelText(xp: Int): String {

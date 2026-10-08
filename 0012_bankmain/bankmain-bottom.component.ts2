@@ -1,4 +1,4 @@
-import { predictServerState, stopTimer, useRef, useServerState } from 'ts2';
+import { createRef, predictServerState, stopTimer, useRef, useServerState } from 'ts2';
 import { clientClock, playSound } from '../lib/lib.engine';
 import { setTransparency } from '../lib/lib.components';
 import { groupDigits } from '../lib/lib.format';
@@ -23,6 +23,8 @@ function depositFlash(target: ComponentId, option: Int): void {
     stopTimer(target);
   };
 }
+
+const depositInventory = createRef('bankmain_depositinv');
 
 export function BankBottomBar(): Component {
   const insertGraphic = useRef();
@@ -212,6 +214,7 @@ export function BankBottomBar(): Component {
         sprite={BankSprites.DEPOSIT_CONTAINERS}
       />
       <sprite
+        ref={depositInventory}
         x={invX}
         y={0}
         w={Bar.BUTTON}

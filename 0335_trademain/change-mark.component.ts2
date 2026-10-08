@@ -1,0 +1,46 @@
+import { CS2, stopTimer, useInterval, useRef } from 'ts2';
+
+import { clientClock } from '../lib/lib.engine';
+import { Grid, TradeSprites } from './trademain.constants';
+
+export const FLASH_CYCLES = 750;
+
+export function flashingSince(): Int {
+  return CS2.max(clientClock() - FLASH_CYCLES, 0);
+}
+
+enum Blink {
+  PERIOD = 40,
+  OFF_FROM = 20,
+}
+
+export function ChangeMark({ x, y, changedAt }: { x: Int; y: Int; changedAt: Int }): Component {
+  const mark = useRef();
+  useInterval(() => fade(mark, changedAt), mark);
+  return (
+    <sprite
+      ref={mark}
+      x={x}
+      y={y}
+      w={Grid.MARK_W}
+      h={Grid.CELL_H}
+      sprite={TradeSprites.CHANGED}
+      transparency={Grid.MARK_TRANSPARENCY}
+    />
+  );
+}
+
+function fade(mark: ComponentId, changedAt: Int): void {
+  const now: Int = clientClock();
+  const elapsed: Int = now - changedAt;
+  if (elapsed >= FLASH_CYCLES) {
+    mark.transparency = 255;
+    stopTimer(mark);
+    return;
+  }
+  if (now % Blink.PERIOD >= Blink.OFF_FROM) {
+    mark.transparency = 255;
+    return;
+  }
+  mark.transparency = CS2.interpolate(0, elapsed, 0, FLASH_CYCLES, 255);
+}

@@ -1,0 +1,13 @@
+import { sessionState } from 'ts2';
+
+export const hiscoresDropOpen = sessionState(0);
+
+export const hiscoresName = sessionState('');
+
+export const hiscoresLoading = sessionState(0);
+
+export const hiscoresLoaded = sessionState(0);
+
+export const hiscoresFailed = sessionState(0);
+
+export const hiscoresFailedAt = sessionState(0);

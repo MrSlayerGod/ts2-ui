@@ -247,11 +247,11 @@ function keyLabel(keyIndex: Int): String {
     ? ''
     : keyIndex <= DIGIT_KEYS
       ? CS2.tostring(keyIndex)
-      : (TeleportKeyLabels.get(keyIndex - DIGIT_KEYS) ?? '');
+      : TeleportKeyLabels.get(keyIndex - DIGIT_KEYS) ?? '';
 }
 
 function keyLower(keyIndex: Int): String {
-  return keyIndex <= DIGIT_KEYS ? '' : (TeleportKeyChars.get(keyIndex - DIGIT_KEYS) ?? '');
+  return keyIndex <= DIGIT_KEYS ? '' : TeleportKeyChars.get(keyIndex - DIGIT_KEYS) ?? '';
 }
 
 function KeyListener({ keyIndex }: { keyIndex: Int }): Component {

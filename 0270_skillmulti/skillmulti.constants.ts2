@@ -5,6 +5,13 @@ import { Sprites } from '../lib/game/sprites';
 
 export enum Layout {
   USABLE_WIDTH = 499,
+  ROOT_WIDTH = 519,
+  ROOT_HEIGHT = 142,
+  SLOT_TOP = 51,
+  TIP_WRAP = 479,
+  TIP_DWELL = 25,
+  PRESS_HOLD = 40,
+  PADS = 29,
   SLOT_WIDTH = 100,
   GAP = 20,
   MIN_GAP = 4,
@@ -12,6 +19,16 @@ export enum Layout {
   LABEL_HEIGHT = 14,
   ROW_Y = 14,
   SLOTS = 18,
+  ROW_MAX = 10,
+  GRID_COLUMNS = 9,
+  GRID_RESERVE = 16,
+  GRID_PITCH = 86,
+  HOLDER_X = 10,
+  HOLDER_Y = 45,
+  HOLDER_HEIGHT = 92,
+  BAR_X = 494,
+  BAR_Y = 43,
+  BAR_WIDTH = 16,
 }
 
 export declare const SlotSkinOut: {
@@ -41,6 +58,12 @@ export enum SlotColors {
   PRESSED_FILL = 0x89785e,
   TITLE = 0x403020,
   HINT = 0x605048,
+  HOURGLASS_SHADOW = 0x333333,
+}
+
+export enum SkillMultiGate {
+  THIS_PANEL = 270,
+  NO_SUB = -1,
 }
 
 export declare const SkillMultiFonts: {

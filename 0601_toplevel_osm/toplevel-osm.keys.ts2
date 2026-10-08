@@ -1,0 +1,80 @@
+import { CS2, useServerState, useState } from 'ts2';
+import { crmOverlayDismiss } from '../0065_crm_surprisepopup_side/crm-overlay-dismiss';
+import { keybindPanel } from '../0161_toplevel_osrs_stretch/toplevel-osrs-stretch.keys';
+import { chatmodalRef } from '../0162_chatbox/chatbox.constants';
+import { Varbits } from '../lib/game/varbits';
+import { crmOverlayActive, meslayermode, toplevelPanel } from '../lib/game/varcs';
+import { dialogueMayAdvance } from '../lib/lib.dialogue';
+import { Panel, SideSlots, controlRef, floaterRef, mainmodalRef, sidemodalRef } from './toplevel-osm.constants';
+import { DESELECTS_OPEN_TAB } from './toplevel-osm.data';
+import { switchSidePanel, toplevelOsmInit } from './toplevel-osm.helpers';
+import { rendererNoticeBuild } from '../lib/enhanced/renderer-notice.component';
+
+export function osmKeypress(key: Int): void {
+  if (dialogueMayAdvance(-1, -1) === false) {
+    return;
+  }
+  if (key === Keys.ESCAPE) {
+    const [mode] = useState(meslayermode);
+    if (mode === 14 || mode === 17 || mode === 18 || mode === 11) {
+      return;
+    }
+    if (useServerState(Varbits.KEYBINDING_ESC_TO_CLOSE) === 1) {
+      const dismissed: Boolean = crmOverlayDismiss();
+      if (CS2.if_sub_has(floaterRef)) {
+        return;
+      }
+      if (osmMountOpen(Panel.INVENTORY) && CS2.if_sub_has(mainmodalRef)) {
+        CS2.if_close();
+        return;
+      }
+      if (osmMountOpen(Panel.INVENTORY) && CS2.if_sub_has(sidemodalRef)) {
+        CS2.if_close();
+        return;
+      } else if (CS2.if_sub_has(chatmodalRef)) {
+        CS2.if_close();
+        return;
+      } else if (dismissed) {
+        return;
+      }
+    }
+  }
+  const panel: Int = keybindPanel(key);
+  if (panel === -1 || panel === useServerState(Varbits.FLASHSIDE) - 1) {
+    return;
+  }
+  if (osmMountOpen(panel)) {
+    osmTabHotkey(panel);
+  }
+}
+
+function osmTabHotkey(panel: Int): void {
+  const [active] = useState(crmOverlayActive);
+  if (CS2.testbit(active, 1)) {
+    crmOverlayDismiss();
+  }
+  let target: Int = panel;
+  const [selected] = useState(toplevelPanel);
+  if (useServerState(Varbits.HOTKEY_CANNOT_CLOSE_SIDEPANEL) === 0 && selected === panel && DESELECTS_OPEN_TAB) {
+    target = Panel.NONE;
+  }
+  switchSidePanel(target, 0);
+}
+
+function osmMountOpen(panel: Int): Boolean {
+  const slot: ComponentId = SideSlots.at(panel) ?? -1;
+  if (slot !== -1 && CS2.if_sub_has(slot)) {
+    return true;
+  }
+  return false;
+}
+
+enum Keys {
+  ESCAPE = 13,
+}
+
+export function toplevelOsmLoad(): void {
+  toplevelOsmInit();
+  controlRef.onKey = (event) => osmKeypress(event.keyCode);
+  rendererNoticeBuild();
+}

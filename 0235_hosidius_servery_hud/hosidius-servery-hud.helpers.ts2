@@ -43,7 +43,7 @@ export function serveryAppreciation(dish: Item): Int {
 export function serveryRow(icon: ComponentId, outline: ComponentId, fill: ComponentId, dish: Item): void {
   CS2.if_item_nonum_set(dish, 1, icon);
   const held: Int = serveryAppreciation(dish);
-  CS2.if_size_set((held * Appreciation.PROPORTION) / Appreciation.FULL, 0, SizeMode.PROPORTION, SizeMode.MINUS, fill);
+  CS2.if_size_set(held * Appreciation.PROPORTION / Appreciation.FULL, 0, SizeMode.PROPORTION, SizeMode.MINUS, fill);
   let red: Int = 0;
   let green: Int = 0;
   if (held <= Appreciation.HALF) {

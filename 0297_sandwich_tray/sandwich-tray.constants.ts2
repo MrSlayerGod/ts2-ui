@@ -35,6 +35,9 @@ export const Drift = {
   STEP_SPREAD: 8,
   STEP_BASE: 15,
   TURN: 2048,
+  ROLL_TOP: 800,
+  ROLL_STEP: 100,
+  ROLL_SPREAD: 50,
 };
 
 export const Layout = {

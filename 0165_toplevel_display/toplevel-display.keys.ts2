@@ -1,0 +1,142 @@
+import { CS2, useServerState, useState } from 'ts2';
+import { crmOverlayDismiss } from '../0065_crm_surprisepopup_side/crm-overlay-dismiss';
+import {
+  deadmanAreaSwitch,
+  deadmanArenasTele,
+  deadmanFinalArea1Tele,
+  deadmanFinalArea2Tele,
+  deadmanMapEnable,
+} from '../0080_toplevel_spectator/deadman-keys';
+import { keybindPanel } from '../0161_toplevel_osrs_stretch/toplevel-osrs-stretch.keys';
+import { chatmodalRef } from '../0162_chatbox/chatbox.constants';
+import { Panel } from '../0548_toplevel/toplevel.constants';
+import { switchSidePanel } from '../0548_toplevel/toplevel.helpers';
+import { Varbits } from '../lib/game/varbits';
+import { crmOverlayActive, meslayermode } from '../lib/game/varcs';
+import { dialogueMayAdvance } from '../lib/lib.dialogue';
+import {
+  controlRef,
+  floaterRef,
+  mainmodalRef,
+  side0Ref,
+  side10Ref,
+  side11Ref,
+  side12Ref,
+  side13Ref,
+  side1Ref,
+  side2Ref,
+  side3Ref,
+  side4Ref,
+  side5Ref,
+  side6Ref,
+  side7Ref,
+  side8Ref,
+  side9Ref,
+  sidemodalRef,
+} from './toplevel-display.constants';
+import { displayToplevelInit } from './toplevel-display.helpers';
+import { rendererNoticeBuild } from '../lib/enhanced/renderer-notice.component';
+
+export function displayFrameKeypress(key: Int): void {
+  if (useServerState(Varbits.DEADMAN_WORLDMAP_ENABLED) === 1) {
+    deadmanMapKeypress(key);
+    return;
+  }
+  displayToplevelKeypress(key);
+}
+
+export function deadmanMapKeypress(key: Int): void {
+  if (key === Keys.F3) {
+    deadmanMapEnable();
+  } else if (key === Keys.F4) {
+    deadmanAreaSwitch();
+  } else if (key === Keys.F5) {
+    deadmanFinalArea1Tele();
+  } else if (key === Keys.F6) {
+    deadmanFinalArea2Tele();
+  } else if (key === Keys.F7) {
+    deadmanArenasTele();
+  }
+}
+
+function displayToplevelKeypress(key: Int): void {
+  if (dialogueMayAdvance(-1, -1) === false) {
+    return;
+  }
+  if (key === Keys.ESCAPE) {
+    const [mode] = useState(meslayermode);
+    if (mode === 14 || mode === 17 || mode === 18 || mode === 11) {
+      return;
+    }
+    if (useServerState(Varbits.KEYBINDING_ESC_TO_CLOSE) === 1) {
+      const dismissed: Boolean = crmOverlayDismiss();
+      if (CS2.if_sub_has(floaterRef)) {
+        return;
+      }
+      if (displayMountOpen(Panel.INVENTORY) && CS2.if_sub_has(mainmodalRef)) {
+        CS2.if_close();
+        return;
+      }
+      if (displayMountOpen(Panel.INVENTORY) && CS2.if_sub_has(sidemodalRef)) {
+        CS2.if_close();
+        return;
+      } else if (CS2.if_sub_has(chatmodalRef)) {
+        CS2.if_close();
+        return;
+      } else if (dismissed) {
+        return;
+      }
+    }
+  }
+  const panel: Int = keybindPanel(key);
+  if (panel === -1 || panel === useServerState(Varbits.FLASHSIDE) - 1) {
+    return;
+  }
+  if (displayMountOpen(panel)) {
+    const [active] = useState(crmOverlayActive);
+    if (CS2.testbit(active, 1)) {
+      crmOverlayDismiss();
+    }
+    switchSidePanel(panel, 0, false);
+  }
+}
+
+const DisplaySideSlots = listOf<ComponentId>([
+  side0Ref,
+  side1Ref,
+  side2Ref,
+  side3Ref,
+  side4Ref,
+  side5Ref,
+  side6Ref,
+  side7Ref,
+  side8Ref,
+  side9Ref,
+  side10Ref,
+  side11Ref,
+  side12Ref,
+  side13Ref,
+]);
+
+function displayMountOpen(panel: Int): Boolean {
+  const slot: ComponentId = DisplaySideSlots.at(panel) ?? -1;
+  if (slot !== -1 && CS2.if_sub_has(slot)) {
+    return true;
+  }
+  return false;
+}
+
+enum Keys {
+  F3 = 3,
+  F4 = 4,
+  F5 = 5,
+  F6 = 6,
+  F7 = 7,
+  ESCAPE = 13,
+}
+
+export function displayToplevelLoad(): void {
+  displayToplevelInit();
+  controlRef.onKey = (event) => displayFrameKeypress(event.keyCode);
+  rendererNoticeBuild();
+}

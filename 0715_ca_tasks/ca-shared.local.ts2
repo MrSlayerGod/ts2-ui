@@ -503,7 +503,7 @@ export function CaBurgerMenu({ current, mobile }: { current: Int; mobile: Boolea
                     align="center"
                     valign="middle"
                   />
-                ) : mobile ? (
+                ) : (mobile ? (
                   <text
                     x={CaBurger.ROW_X}
                     y={CaBurger.ROW_Y + rowH * i}
@@ -542,7 +542,7 @@ export function CaBurgerMenu({ current, mobile }: { current: Int; mobile: Boolea
                       setLit(0);
                     }}
                   />
-                )}
+                ))}
               </>
             ))}
           </layer>

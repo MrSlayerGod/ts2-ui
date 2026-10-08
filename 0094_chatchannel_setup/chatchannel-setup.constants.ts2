@@ -129,6 +129,7 @@ export const FriendRowLayout = {
   TAIL_PAD: 5,
   MAX_FRIENDS: 400,
   RANK_OPS: 7,
+  RANK_UNPICKED: -2,
   REVEAL_CYCLES: 150,
   BADGE_HIDDEN: 255,
   BADGE_SHOWN: 0,

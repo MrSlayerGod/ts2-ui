@@ -5,6 +5,7 @@ import { StoneButtonPressed } from '../lib/stone-button-pressed.component';
 import { SteelborderColor } from '../lib/lib.constants';
 import { onMobile } from '../lib/lib.helpers';
 import { groupDigits } from '../lib/lib.format';
+import { CrmLoadingIcon } from '../0284_membership_benefits_prompt/crm-loading-icon.component';
 import { rewardCost, rewardDescription, rewardName, rewardShopIsInfoOnly } from './league-rewards.helpers';
 import { buyReward, closeRewardConfirm } from './league-rewards.state';
 import {
@@ -16,6 +17,8 @@ import {
   RewardText,
   SelectedReward,
 } from './league-rewards.constants';
+
+const SPINNER_DROP = 30;
 
 function OverlayButton({ label, confirms }: { label: String; confirms: Int }): Component {
   const [hovered, setHovered] = useState(0);
@@ -144,6 +147,9 @@ export function RewardOverlay(): Component {
         {buying === 1 ? (
           <layer x={0} y={0} w="fill" h="fill" noClickThrough>
             <rect x={0} y={0} w="fill" h="fill" fill color={0x000000} transparency={RewardLayout.DIM_TRANSPARENCY} />
+            <layer x={0} y={SPINNER_DROP} w="fill" h="fill">
+              <CrmLoadingIcon />
+            </layer>
           </layer>
         ) : null}
       </layer>

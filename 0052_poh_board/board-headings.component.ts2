@@ -1,0 +1,381 @@
+import { CS2, useInterval, useRef, useServerState, useState, useUniverse } from 'ts2';
+
+import { pohBoardListsort, pohBoardScroll, tooltipBuilt } from '../lib/game/varcs';
+import { clientClock, textLineCount, textWidth } from '../lib/lib.engine';
+import { onMobile } from '../lib/lib.helpers';
+import { ScrollbarVertical } from '../lib/scrollbar-vertical.component';
+import { TooltipBox, TooltipChrome, tooltipStale } from '../lib/tooltip.component';
+import {
+  BoardBar,
+  BoardColor,
+  BoardVarbits,
+  Heading,
+  Layout,
+  RowColor,
+  RowFonts,
+  RowHeight,
+  RowLayout,
+  RowSprites,
+  SortCopy,
+} from './poh-board.constants';
+import { boardLoc, normalisedSort, visibleRows } from './poh-board.helpers';
+import {
+  boardTip,
+  hideBoardTip,
+  hoverHeading,
+  pohBoardClicksort,
+  pohBoardLines,
+  pohBoardLoaded,
+  pohBoardSendAt,
+  pohBoardSendName,
+} from './poh-board.state';
+
+const SortTips = listOf<String>([
+  'Sort by name',
+  'Sort by name',
+  'Sort by Construction level',
+  'Sort by Gilded altar',
+  'Sort by nexus tier',
+  'Sort by jewellery box',
+  'Sort by tier of pool',
+  'Sort by occult altar',
+  'Sort by armour stand',
+]);
+
+function SortButton({
+  x,
+  icon,
+  ascending,
+  sort,
+  tip,
+  withName,
+  nameSort,
+}: {
+  x: Int;
+  icon: Sprite;
+  ascending: Int;
+  sort: Int;
+  tip: Int;
+  withName: Boolean;
+  nameSort: Int;
+}): Component {
+  const iconRef = useRef();
+  const arrowRef = useRef();
+  const nameText = useRef();
+  const descending: Int = ascending + 1;
+  const active: Boolean = sort === ascending || sort === descending;
+  const next: Int = sort === descending ? ascending : descending;
+  const iconX: Int = x - Heading.ICON_BACK;
+  return (
+    <>
+      {withName && (
+        <text
+          ref={nameText}
+          x={Heading.NAME_X}
+          y={0}
+          w={Heading.NAME_W}
+          h="fill"
+          text={SortCopy.NAME_HEADING}
+          font={RowFonts.CELL}
+          color={RowColor.CELL}
+          align="left"
+          valign="middle"
+          shadow
+          transparency={0}
+          onMouseRepeat={() => {
+            nameText.transparency = Heading.HOVER_ALPHA;
+            iconRef.transparency = Heading.HOVER_ALPHA;
+            hoverHeading(1);
+          }}
+          onMouseLeave={() => {
+            nameText.transparency = 0;
+            hideBoardTip();
+          }}
+          onClick={() => pohBoardClicksort(nameSort)}
+        />
+      )}
+      <sprite ref={iconRef} x={iconX} y="center" w={Heading.ICON} h={Heading.ICON} sprite={icon} transparency={0} />
+      <sprite
+        ref={arrowRef}
+        x={x}
+        y="center"
+        w={Heading.ARROW_W}
+        h={Heading.ARROW_H}
+        sprite={sort === descending ? RowSprites.SORT_DESC : RowSprites.SORT_ASC}
+        transparency={active ? 0 : Heading.IDLE_ALPHA}
+      />
+      <layer
+        x={iconX}
+        y={0}
+        w={Heading.HIT_W}
+        h="fill"
+        onMouseRepeat={() => {
+          iconRef.transparency = Heading.HOVER_ALPHA;
+          arrowRef.transparency = Heading.HOVER_ALPHA;
+          hoverHeading(tip);
+        }}
+        onMouseLeave={() => {
+          iconRef.transparency = 0;
+          hideBoardTip();
+        }}
+        onClick={() => pohBoardClicksort(next)}
+      />
+    </>
+  );
+}
+
+export function BoardHeadings(): Component {
+  const [loaded] = useState(pohBoardLoaded);
+  const [board] = useState(pohBoardLines);
+  const [sortSetting] = useState(pohBoardListsort);
+  if (loaded === 0 || board.length === 0) {
+    return null;
+  }
+  const sort: Int = normalisedSort(sortSetting);
+  const first: Int = Heading.FIRST_X;
+  const step: Int = Heading.STEP;
+
+  return (
+    <>
+      <SortButton x={first} icon={-1} ascending={0} sort={sort} tip={0} withName={false} nameSort={0} />
+      <SortButton
+        x={first + step}
+        icon={RowSprites.LEVEL}
+        ascending={2}
+        sort={sort}
+        tip={2}
+        withName
+        nameSort={sort === 0 ? 1 : 0}
+      />
+      <SortButton
+        x={first + step * 2}
+        icon={RowSprites.ALTAR}
+        ascending={4}
+        sort={sort}
+        tip={3}
+        withName={false}
+        nameSort={0}
+      />
+      <SortButton
+        x={first + step * 3}
+        icon={RowSprites.NEXUS}
+        ascending={6}
+        sort={sort}
+        tip={4}
+        withName={false}
+        nameSort={0}
+      />
+      <SortButton
+        x={first + step * 4}
+        icon={RowSprites.GLORY}
+        ascending={8}
+        sort={sort}
+        tip={5}
+        withName={false}
+        nameSort={0}
+      />
+      <SortButton
+        x={first + step * 5}
+        icon={RowSprites.POOL}
+        ascending={10}
+        sort={sort}
+        tip={6}
+        withName={false}
+        nameSort={0}
+      />
+      <SortButton
+        x={first + step * 6}
+        icon={RowSprites.SPELLBOOK}
+        ascending={12}
+        sort={sort}
+        tip={7}
+        withName={false}
+        nameSort={0}
+      />
+      <SortButton
+        x={first + step * 7}
+        icon={RowSprites.ARMOUR}
+        ascending={14}
+        sort={sort}
+        tip={8}
+        withName={false}
+        nameSort={0}
+      />
+    </>
+  );
+}
+
+function VLine({ x }: { x: Int }): Component {
+  return (
+    <>
+      <line x={x + Heading.LINE_GAP} y={0} w={0} h="fill" lineWidth={1} color={RowColor.LINE_LIGHT} />
+      <line x={x + Heading.LINE_GAP + 1} y={0} w={0} h="fill" lineWidth={1} color={RowColor.LINE_DARK} />
+    </>
+  );
+}
+
+export function BoardVLines(): Component {
+  const [loaded] = useState(pohBoardLoaded);
+  const [board] = useState(pohBoardLines);
+  if (loaded === 0 || board.length === 0) {
+    return null;
+  }
+  const first: Int = Heading.FIRST_X;
+  const step: Int = Heading.STEP;
+  return (
+    <>
+      <VLine x={first} />
+      <VLine x={first + step} />
+      <VLine x={first + step * 2} />
+      <VLine x={first + step * 3} />
+      <VLine x={first + step * 4} />
+      <VLine x={first + step * 5} />
+      <VLine x={first + step * 6} />
+      <VLine x={first + step * 7} />
+    </>
+  );
+}
+
+export function BoardNotice(): Component {
+  const [loaded] = useState(pohBoardLoaded);
+  const [board] = useState(pohBoardLines);
+  const rowHeight: Int = onMobile() ? RowHeight.MOBILE : RowHeight.DESKTOP;
+  if (loaded === 0) {
+    return (
+      <text
+        x={0}
+        y={0}
+        w="fill"
+        h="fill"
+        text="Loading..."
+        font={RowFonts.CELL}
+        color={BoardColor.LABEL}
+        align="center"
+        valign="middle"
+        shadow
+      />
+    );
+  }
+  if (board.length > 0) {
+    return null;
+  }
+  return (
+    <text
+      x="center"
+      y={rowHeight * RowLayout.EMPTY_ROWS}
+      w="fill"
+      h={rowHeight}
+      text={SortCopy.EMPTY}
+      font={RowFonts.CELL}
+      color={RowColor.CELL}
+      align="center"
+      valign="middle"
+      shadow
+    />
+  );
+}
+
+export function BoardScrollbar({ pane }: { pane: Ref }): Component {
+  const [loaded] = useState(pohBoardLoaded);
+  const [board] = useState(pohBoardLines);
+  const [remembered] = useState(pohBoardScroll);
+  const filtered: Int = useServerState(BoardVarbits.FILTERED);
+  const lastLoc: Int = useServerState(BoardVarbits.LAST_LOC);
+  const rowHeight: Int = onMobile() ? RowHeight.MOBILE : RowHeight.DESKTOP;
+  if (loaded === 1) {
+    const extent: Int = visibleRows(board, filtered, boardLoc(`${lastLoc}`)) * rowHeight;
+    if (extent > pane.height) {
+      pane.scrollHeight = extent;
+      pane.scrollY = Math.clamp(0, extent - pane.height, remembered);
+    } else {
+      pane.scrollHeight = 0;
+      pane.scrollY = 0;
+    }
+  }
+  return (
+    <ScrollbarVertical
+      content={pane}
+      track={BoardBar.TRACK}
+      capTopSprite={BoardBar.CAP_TOP}
+      thumbSprite={BoardBar.THUMB}
+      capBottomSprite={BoardBar.CAP_BOTTOM}
+      arrowUp={BoardBar.ARROW_UP}
+      arrowDown={BoardBar.ARROW_DOWN}
+    />
+  );
+}
+
+export function BoardNameSender(): Component {
+  const [sendAt, setSendAt] = useState(pohBoardSendAt);
+  const [name] = useState(pohBoardSendName);
+  return (
+    <layer
+      x={0}
+      y={0}
+      w={0}
+      h={0}
+      onTimer={
+        sendAt === -1
+          ? null
+          : () => {
+              if (clientClock() < sendAt) {
+                return;
+              }
+              CS2.namedialog_resume(name);
+              setSendAt(-1);
+            }
+      }
+    />
+  );
+}
+
+export function BoardTooltip(): Component {
+  const root = useUniverse();
+  const [built] = useState(tooltipBuilt);
+  const [tip] = useState(boardTip);
+
+  useInterval(
+    built === 1
+      ? () => {
+          if (tooltipStale()) {
+            hideBoardTip();
+          }
+        }
+      : undefined,
+  );
+
+  const rowHeight: Int = onMobile() ? RowHeight.MOBILE : RowHeight.DESKTOP;
+  const text: String = SortTips.at(tip) ?? '';
+  const panelX: Int = (root.width - Layout.PANEL_W) / 2 + Layout.BODY_W_INSET / 2;
+  const panelY: Int = (root.height - Layout.PANEL_H) / 2 + Layout.BODY_Y;
+  const anchorX: Int =
+    tip === 1
+      ? panelX + Heading.NAME_X
+      : panelX + Heading.FIRST_X + Heading.STEP * Math.max(0, tip - 1) - Heading.ICON_BACK;
+  const anchorY: Int = tip === 1 ? panelY : panelY + (rowHeight - Heading.ICON) / 2;
+  const anchorH: Int = tip === 1 ? rowHeight : Heading.ICON;
+
+  let measure: Int = Heading.TIP_WRAP;
+  if (measure > root.width) {
+    measure = root.width;
+  }
+  measure = measure - TooltipBox.padX;
+  const boxW: Int = TooltipBox.padX + textWidth(text, measure, RowFonts.CELL);
+  const boxH: Int = TooltipBox.padY + TooltipBox.line * textLineCount(text, measure, RowFonts.CELL);
+  let x: Int = anchorX + TooltipBox.nudge;
+  if (x > root.width - boxW) {
+    x = root.width - boxW;
+  }
+  let y: Int = anchorY + anchorH + TooltipBox.nudge;
+  if (y > root.height - boxH) {
+    y = anchorY - boxH - TooltipBox.nudge;
+  }
+  if (built !== 1 || tip < 0) {
+    return null;
+  }
+  return (
+    <layer x={x} y={y} w={boxW} h={boxH}>
+      <TooltipChrome text={text} font={RowFonts.CELL} lineHeight={0} />
+    </layer>
+  );
+}

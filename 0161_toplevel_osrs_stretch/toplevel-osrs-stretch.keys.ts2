@@ -1,0 +1,104 @@
+import { CS2, useServerState, useState } from 'ts2';
+import { crmOverlayDismiss } from '../0065_crm_surprisepopup_side/crm-overlay-dismiss';
+import { chatmodalRef } from '../0162_chatbox/chatbox.constants';
+import { switchSidePanel } from '../0601_toplevel_osm/toplevel-osm.helpers';
+import { Varbits } from '../lib/game/varbits';
+import { crmOverlayActive, meslayermode } from '../lib/game/varcs';
+import { dialogueMayAdvance } from '../lib/lib.dialogue';
+import { controlRef, floaterRef, mainmodalRef, sidemodalRef } from './toplevel-osrs-stretch.constants';
+import { mountOpen, stretchInit } from './toplevel-osrs-stretch.helpers';
+
+export function toplevelKeypress(key: Int): void {
+  if (dialogueMayAdvance(-1, -1) === false) {
+    return;
+  }
+  if (key === Keys.ESCAPE) {
+    const [mode] = useState(meslayermode);
+    if (mode === 14 || mode === 17 || mode === 18 || mode === 11) {
+      return;
+    }
+    if (useServerState(Varbits.KEYBINDING_ESC_TO_CLOSE) === 1) {
+      const dismissed: Boolean = crmOverlayDismiss();
+      if (CS2.if_sub_has(floaterRef)) {
+        return;
+      }
+      if (mountOpen(INVENTORY_PANEL) && CS2.if_sub_has(mainmodalRef)) {
+        CS2.if_close();
+        return;
+      }
+      if (mountOpen(INVENTORY_PANEL) && CS2.if_sub_has(sidemodalRef)) {
+        CS2.if_close();
+        return;
+      } else if (CS2.if_sub_has(chatmodalRef)) {
+        CS2.if_close();
+        return;
+      } else if (dismissed) {
+        return;
+      }
+    }
+  }
+  const panel: Int = keybindPanel(key);
+  if (panel === -1 || panel === useServerState(Varbits.FLASHSIDE) - 1) {
+    return;
+  }
+  if (mountOpen(panel)) {
+    sideTabHotkey(panel);
+  }
+}
+
+function sideTabHotkey(panel: Int): void {
+  const [active] = useState(crmOverlayActive);
+  if (CS2.testbit(active, 1)) {
+    crmOverlayDismiss();
+  }
+  switchSidePanel(panel, 0);
+}
+
+export function keybindPanel(key: Int): Int {
+  if (key === keyCodeOf(useServerState(Varbits.STONE_COMBAT_KEY))) return 0;
+  if (key === keyCodeOf(useServerState(Varbits.STONE_STATS_KEY))) return 1;
+  if (key === keyCodeOf(useServerState(Varbits.STONE_JOURNAL_KEY))) return 2;
+  if (key === keyCodeOf(useServerState(Varbits.STONE_INV_KEY))) return 3;
+  if (key === keyCodeOf(useServerState(Varbits.STONE_WORN_KEY))) return 4;
+  if (key === keyCodeOf(useServerState(Varbits.STONE_PRAYER_KEY))) return 5;
+  if (key === keyCodeOf(useServerState(Varbits.STONE_MAGIC_KEY))) return 6;
+  if (key === keyCodeOf(useServerState(Varbits.STONE_CLANCHAT_KEY))) return 7;
+  if (key === keyCodeOf(useServerState(Varbits.STONE_FRIENDS_KEY))) return 9;
+  if (key === keyCodeOf(useServerState(Varbits.STONE_ACCOUNT_KEY))) return 8;
+  if (key === keyCodeOf(useServerState(Varbits.STONE_OPTIONS1_KEY))) return 11;
+  if (key === keyCodeOf(useServerState(Varbits.STONE_OPTIONS2_KEY))) return 12;
+  if (key === keyCodeOf(useServerState(Varbits.STONE_MUSIC_KEY))) return 13;
+  if (key === keyCodeOf(useServerState(Varbits.STONE_LOGOUT_KEY))) return 10;
+  return -1;
+}
+
+function keyCodeOf(setting: Int): Int {
+  return KeybindKeyCodes.get(setting) ?? 0;
+}
+
+const KeybindKeyCodes = mapOf<Int, Int>([
+  [1, 1],
+  [2, 2],
+  [3, 3],
+  [4, 4],
+  [5, 5],
+  [6, 6],
+  [7, 7],
+  [8, 8],
+  [9, 9],
+  [10, 10],
+  [11, 11],
+  [12, 12],
+  [13, 13],
+]);
+
+enum Keys {
+  ESCAPE = 13,
+}
+
+const INVENTORY_PANEL = 3;
+
+export function stretchLoad(): void {
+  stretchInit();
+  controlRef.onKey = (event) => toplevelKeypress(event.keyCode);
+}

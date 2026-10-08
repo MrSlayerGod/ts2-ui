@@ -24,7 +24,7 @@ export function BenefitDetail(): Component {
       />
 
       {Benefits.map((benefit, index) =>
-        shown === index ? (
+        (shown === index ? (
           <>
             <text
               x={{ center: Layout.DETAIL_TITLE_DX }}
@@ -65,7 +65,7 @@ export function BenefitDetail(): Component {
               sprite={benefit.image}
             />
           </>
-        ) : null,
+        ) : null),
       )}
     </layer>
   );

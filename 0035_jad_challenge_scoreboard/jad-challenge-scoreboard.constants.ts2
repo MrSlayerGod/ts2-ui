@@ -10,6 +10,15 @@ export declare const ScoreboardArt: {
   readonly CLOSE_HOVER: typeof Sprites.CLOSE_BUTTONS_13;
 };
 
+export enum ScoreboardBar {
+  TRACK = 2959,
+  CAP_TOP = 2956,
+  THUMB = 2957,
+  CAP_BOTTOM = 2958,
+  ARROW_UP = 2954,
+  ARROW_DOWN = 2955,
+}
+
 export declare const ScoreboardFonts: {
   readonly BODY: typeof Fonts.P12_FULL;
 };
@@ -48,4 +57,6 @@ export const Layout = {
   BODY_INSET_W: 8,
   BODY_H: 210,
   BODY_LINE_HEIGHT: 15,
+
+  BODY_LINE_PAD: 2,
 };

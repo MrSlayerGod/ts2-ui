@@ -260,7 +260,7 @@ export function tileColour(skill: Skill): Int {
 }
 
 function interpolated(from: Int, to: Int, start: Int, end: Int, at: Int): Int {
-  return from + ((to - from) * (at - start)) / (end - start);
+  return from + (to - from) * (at - start) / (end - start);
 }
 
 function restoreColumnPx(up: Boolean): Int {
@@ -373,7 +373,7 @@ export function intClient(legacy: Int, enhanced: Int): Int {
 export function timeConvert(ticks: Int, keepMinutes: Int): String {
   let out: String = '';
   let seconds: Int = scaled(60, 100, ticks);
-  if (((ticks % 10) * 6) % 10 >= 5) {
+  if (ticks % 10 * 6 % 10 >= 5) {
     seconds = seconds + 1;
   }
   let minutes: Int = seconds / 60;

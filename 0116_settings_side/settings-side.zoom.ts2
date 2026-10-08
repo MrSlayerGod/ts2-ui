@@ -1,0 +1,160 @@
+import { CS2, sessionState, useServerState, useState } from 'ts2';
+
+import {
+  cameraZoomBig,
+  cameraZoomBigMax,
+  cameraZoomBigMin,
+  cameraZoomSmall,
+  cameraZoomSmallMax,
+  cameraZoomSmallMin,
+} from '../lib/game/varcs';
+import { cameraDoZoom } from '../0016_oculus/oculus.camera';
+import { FovClamped, VIEWPORT_REFERENCE } from '../0016_oculus/oculus.constants';
+import { clickSound } from './settings-side.helpers';
+import { Layout } from './settings-side.constants';
+
+export const zoomThumbAt = sessionState(-1);
+export const zoomSeenSmall = sessionState(-1);
+export const zoomSeenBig = sessionState(-1);
+export const zoomTimerOff = sessionState(0);
+
+export const settingsZoomFade = sessionState(-1);
+
+export function resetZoomSlider(): void {
+  const [small] = useState(cameraZoomSmall);
+  const [big] = useState(cameraZoomBig);
+  const [, setAt] = useState(zoomThumbAt);
+  const [, setSeenSmall] = useState(zoomSeenSmall);
+  const [, setSeenBig] = useState(zoomSeenBig);
+  const [, setOff] = useState(zoomTimerOff);
+  setAt(-1);
+  setSeenSmall(small);
+  setSeenBig(big);
+  setOff(0);
+}
+
+export function zoomSliderPosition(): void {
+  const [smallMin] = useState(cameraZoomSmallMin);
+  const [smallMax] = useState(cameraZoomSmallMax);
+  const [bigMin] = useState(cameraZoomBigMin);
+  const [bigMax] = useState(cameraZoomBigMax);
+  const [small] = useState(cameraZoomSmall);
+  const [big] = useState(cameraZoomBig);
+  const [, setAt] = useState(zoomThumbAt);
+  const bigRange: Int = bigMax - bigMin;
+  const smallRange: Int = smallMax - smallMin;
+  if (bigRange === 0 || smallRange === 0) {
+    setAt(0);
+    return;
+  }
+  const travel: Int = Layout.slider.travel;
+  const [viewportWidth, viewportHeight] = CS2.viewport_effective_size_get();
+  if (viewportWidth > VIEWPORT_REFERENCE) {
+    setAt((big - bigMin) * travel / bigRange);
+    return;
+  }
+  setAt((small - smallMin) * travel / smallRange);
+}
+
+export function zoomTimer(): void {
+  const [off] = useState(zoomTimerOff);
+  const [small] = useState(cameraZoomSmall);
+  const [big] = useState(cameraZoomBig);
+  const [seenSmall, setSeenSmall] = useState(zoomSeenSmall);
+  const [seenBig, setSeenBig] = useState(zoomSeenBig);
+  if (off === 1) {
+    return;
+  }
+  if (small === seenSmall && big === seenBig) {
+    return;
+  }
+  zoomSliderPosition();
+  setSeenSmall(small);
+  setSeenBig(big);
+}
+
+export function zoomSliderSpecificPos(position: Int): void {
+  if (useServerState(FovClamped) !== 0) {
+    return;
+  }
+  const [smallMin] = useState(cameraZoomSmallMin);
+  const [smallMax] = useState(cameraZoomSmallMax);
+  const [bigMin] = useState(cameraZoomBigMin);
+  const [bigMax] = useState(cameraZoomBigMax);
+  const travel: Int = Layout.slider.travel;
+  const at: Int = Math.clamp(0, travel, position);
+  const big: Int = at * (bigMax - bigMin) / travel + bigMin;
+  const small: Int = at * (smallMax - smallMin) / travel + smallMin;
+  cameraDoZoom(small, big);
+  zoomSliderPosition();
+}
+
+export function zoomSliderClick(mouseX: Int): void {
+  clickSound();
+  zoomSliderSpecificPos(mouseX - Layout.slider.thumb / 2);
+  armZoomFade();
+}
+
+export function zoomSliderDrag(dragX: Int): void {
+  const [, setOff] = useState(zoomTimerOff);
+  zoomSliderSpecificPos(dragX);
+  setOff(1);
+  armZoomFade();
+}
+
+export function zoomSliderDragComplete(): void {
+  const [small] = useState(cameraZoomSmall);
+  const [big] = useState(cameraZoomBig);
+  const [, setSeenSmall] = useState(zoomSeenSmall);
+  const [, setSeenBig] = useState(zoomSeenBig);
+  const [, setOff] = useState(zoomTimerOff);
+  clickSound();
+  if (useServerState(FovClamped) !== 0) {
+    return;
+  }
+  zoomSliderPosition();
+  setSeenSmall(small);
+  setSeenBig(big);
+  setOff(0);
+}
+
+export function zoomSliderMax(): void {
+  zoomSliderSpecificPos(0);
+}
+
+export function settingsSideZoomRefresh(): void {
+  zoomSliderPosition();
+}
+
+function armZoomFade(): void {
+  const [, setFade] = useState(settingsZoomFade);
+  setFade(0);
+}
+
+export function settingsZoomTransTimer(): void {
+  const [step, setStep] = useState(settingsZoomFade);
+  if (step < 0) {
+    return;
+  }
+  if (step > 24) {
+    setStep(-1);
+    return;
+  }
+  setStep(step + 1);
+}
+
+export function settingsZoomFadeTransparency(): Int {
+  const [step] = useState(settingsZoomFade);
+  if (step >= 1) {
+    return 150;
+  }
+  return 0;
+}
+
+export function settingsZoomWheelOff(): Boolean {
+  const [step] = useState(settingsZoomFade);
+  if (step >= 1 && step <= 10) {
+    return true;
+  }
+  return false;
+}

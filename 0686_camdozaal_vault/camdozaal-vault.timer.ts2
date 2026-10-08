@@ -1,0 +1,44 @@
+import { createRef } from 'ts2';
+
+import { clientClock } from '../lib/lib.engine';
+import { VaultColor } from './camdozaal-vault.constants';
+
+export const timer = createRef('camdozaal_vault_timer');
+
+export const timerText = createRef('camdozaal_vault_timer_text');
+
+const FLASH = 0xfc0000;
+
+export function camdozaalTimerUpdate(seconds: Int): void {
+  const deadline: Int = clientClock() + seconds * 30;
+  timer.onTimer = () => camdozaalTimer(deadline);
+}
+
+export function camdozaalTimerPause(value: Int): void {
+  if (value > 1) {
+    timer.onTimer = () => camdozaalTimer(value);
+  }
+}
+
+function camdozaalTimer(deadline: Int): void {
+  camdozaalTimerText(deadline);
+}
+
+export function camdozaalTimerText(deadline: Int): void {
+  const left: Int = deadline - clientClock();
+  const seconds: Int = left / 50;
+  const minutes: Int = seconds / 60;
+  const rest: Int = seconds % 60;
+  let line: String = 'Time Left: ';
+  if (rest >= 10) {
+    line = `${line}${minutes}:${rest}`;
+  } else {
+    line = `${line}${minutes}:0${rest}`;
+  }
+  timerText.text = line;
+  if (clientClock() % 20 < 10 && seconds <= 10) {
+    timerText.color = FLASH;
+  } else {
+    timerText.color = VaultColor.TIMER;
+  }
+}

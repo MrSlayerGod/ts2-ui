@@ -1,7 +1,20 @@
-import { CS2, Engine, onMounted, onUpdated, useInterval, useRerenderOn, useServerState, useState, useWatch } from 'ts2';
+import {
+  CS2,
+  Engine,
+  onMounted,
+  onUpdated,
+  useInterval,
+  useRef,
+  useRerenderOn,
+  useServerState,
+  useState,
+  useWatch,
+} from 'ts2';
 
 import { cameraZoom } from '../0016_oculus/oculus.camera';
 import { enhancedAny } from '../0134_settings/settings.helpers';
+import { logoutTimerNotifierStep } from '../lib/enhanced/logout-notifier';
+import { MouseoverOps } from '../lib/enhanced/mouseover.component';
 import {
   applyClientSettings,
   applySavedZoom,
@@ -88,7 +101,8 @@ import {
   xpDropsRef,
   zeahRef,
 } from './toplevel.constants';
-import { desktopFov, fixedHelperInit, fixedTabOp, fixedToplevelInit, wikiMinimapMask } from './toplevel.helpers';
+import { desktopFov, fixedHelperInit, fixedTabOp, wikiMinimapMask } from './toplevel.helpers';
+import { fixedToplevelLoad } from './toplevel.keys';
 import { graveElapsed, graveStart, graveTicks } from './toplevel.state';
 
 export function ToplevelFixed(): Component {
@@ -102,7 +116,7 @@ export function ToplevelFixed(): Component {
         w={4}
         h={334}
         sprite={Sprites.BACKLEFT1}
-        onLoad={() => fixedToplevelInit()}
+        onLoad={() => fixedToplevelLoad()}
       />
 
       <layer static ref={gameframeRef} x={0} y={0} w="fill" h="fill">
@@ -221,7 +235,9 @@ export function ToplevelFixed(): Component {
       <layer static ref={ehcListenerRef} x={0} y={0} w="fill" h="fill">
         <EhcHooks />
       </layer>
-      <layer static ref={mouseoverRef} x={0} y={0} w="fill" h="fill" />
+      <layer static ref={mouseoverRef} x={0} y={0} w="fill" h="fill">
+        <MouseoverOps />
+      </layer>
       <layer static ref={uiHighlightsRef} x={0} y={0} w="fill" h="fill" />
 
       <layer x={0} y={0} w="fill" h="fill">
@@ -817,11 +833,13 @@ function graveResynch(): void {
 
 export function EhcHooks(): Component {
   const enhanced: Boolean = enhancedAny();
+  const logoutTimer = useRef();
+  useInterval(() => logoutTimerNotifierStep(), logoutTimer);
   return (
     <>
       {enhanced && (
         <>
-          <rect x={0} y={0} w={1} h={1} transparency={255} />
+          <rect ref={logoutTimer} x={0} y={0} w={1} h={1} transparency={255} />
           <rect x={0} y={0} w={1} h={1} transparency={255} />
           <rect x={0} y={0} w={1} h={1} transparency={255} />
           <rect x={0} y={0} w={1} h={1} transparency={255} />

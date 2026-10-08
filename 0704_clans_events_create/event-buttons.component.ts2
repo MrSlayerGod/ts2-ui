@@ -1,11 +1,11 @@
-import { CS2, useServerState } from 'ts2';
+import { CS2, useServerStateOnce } from 'ts2';
 import { opsound } from '../lib/lib.helpers';
 import { SteelBorder } from '../lib/steel-border.component';
 import { StoneButtonInit } from './stone-button.component';
 import { EventColor, EventFonts, EventVarbits, Layout } from './clans-events-create.constants';
 
 export function EventButtonRow(): Component {
-  const slot: Int = useServerState(EventVarbits.EDIT_SLOT);
+  const slot: Int = useServerStateOnce(EventVarbits.EDIT_SLOT);
   let editing: Int = 0;
   if (slot > 0) {
     editing = 1;
@@ -59,7 +59,7 @@ export function EventButtonRow(): Component {
 }
 
 export function EventFrame(): Component {
-  const affinity: Int = useServerState(EventVarbits.AFFINITY);
+  const affinity: Int = useServerStateOnce(EventVarbits.AFFINITY);
 
   let title: String = '';
   if (affinity === 3 && CS2.activeclansettings_affined_find(0)) {

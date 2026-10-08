@@ -181,9 +181,9 @@ function totalGoalRemaining(): [Int, Int] {
   const units: Int = low % 1000;
   if (units > 0) {
     short = short - 1;
-    return [short / 1000000, (short % 1000000) * 1000 + (1000 - units)];
+    return [short / 1000000, short % 1000000 * 1000 + (1000 - units)];
   }
-  return [short / 1000000, (short % 1000000) * 1000];
+  return [short / 1000000, short % 1000000 * 1000];
 }
 
 const TRACK = 100;

@@ -1,0 +1,151 @@
+import { sessionState, useServerState, useState } from 'ts2';
+
+import { textLineCount, textWidth } from '../lib/lib.engine';
+import { onMobile } from '../lib/lib.helpers';
+import {
+  TooltipBox,
+  TooltipChrome,
+  tooltipDown,
+  tooltipDwellElapsed,
+  tooltipHide,
+  tooltipMark,
+  tooltipRaise,
+  tooltipUp,
+} from '../lib/tooltip.component';
+import { onEnhancedAny } from './settings-side.helpers';
+import { Layout, SideVars } from './settings-side.constants';
+
+export const sideTip = sessionState(-1);
+export const sideTipLeft = sessionState(-1);
+export const sideTipTop = sessionState(-1);
+export const sideTipHeight = sessionState(-1);
+
+export enum SideTip {
+  MASTER = 0,
+  MUSIC = 1,
+  EFFECTS = 2,
+  AREA = 3,
+  BRIGHTNESS = 4,
+  ZOOM = 5,
+  ZOOM_TOGGLE = 6,
+}
+
+export const TipAnchor = {
+  troughX: 37,
+  zoneX: 53,
+  volumeY: 66,
+  brightnessY: 68,
+  zoomY: 105,
+  toggleX: 11,
+  toggleY: 97,
+  sliderH: 16,
+  toggleH: 32,
+} as const;
+
+const WRAP = 190;
+const DWELL = 25;
+
+export function showSideTip(tip: Int, left: Int, top: Int, height: Int): void {
+  const [, setTip] = useState(sideTip);
+  const [, setLeft] = useState(sideTipLeft);
+  const [, setTop] = useState(sideTipTop);
+  const [, setHeight] = useState(sideTipHeight);
+  if (onMobile()) {
+    return;
+  }
+  if (onEnhancedAny()) {
+    return;
+  }
+  tooltipMark();
+  if (!tooltipDwellElapsed(DWELL)) {
+    return;
+  }
+  if (!tooltipDown()) {
+    return;
+  }
+  setTip(tip);
+  setLeft(left);
+  setTop(top);
+  setHeight(height);
+  tooltipRaise();
+}
+
+export function hideSideTip(): void {
+  const [, setTip] = useState(sideTip);
+  tooltipHide();
+  setTip(-1);
+}
+
+function percent(value: Int): String {
+  return stringOf(Math.clamp(0, 100, value));
+}
+
+function zoomToggleText(mouseZoomOff: Int, mobile: Boolean): String {
+  const verb: String = mobile ? 'Tap' : 'Click';
+  const how: String = mobile ? 'the pinch gesture' : 'the mouse scroll wheel';
+  if (mouseZoomOff === 0) {
+    return `${verb} here to disable zooming using ${how}.`;
+  }
+  return `${verb} here to enable zooming using ${how}.`;
+}
+
+export function SideTooltip(): Component {
+  const [tip] = useState(sideTip);
+  const [left] = useState(sideTipLeft);
+  const [top] = useState(sideTipTop);
+  const [height] = useState(sideTipHeight);
+  const master: Int = useServerState(SideVars.MASTER_VOLUME);
+  const music: Int = useServerState(SideVars.MUSIC_VOLUME);
+  const effects: Int = useServerState(SideVars.EFFECTS_VOLUME);
+  const area: Int = useServerState(SideVars.AREA_VOLUME);
+  const mouseZoomOff: Int = useServerState(SideVars.ZOOM_MOUSE_DISABLED);
+  const mobile: Boolean = onMobile();
+
+  let text: String = '';
+  if (tooltipUp()) {
+    if (tip === SideTip.MASTER) {
+      text = `Adjust Master Volume (${percent(master)}%)`;
+    } else if (tip === SideTip.MUSIC) {
+      text = `Adjust Music Volume (${percent(music)}%)`;
+    } else if (tip === SideTip.EFFECTS) {
+      text = `Adjust Sound Effects Volume (${percent(effects)}%)`;
+    } else if (tip === SideTip.AREA) {
+      text = `Adjust Area Sounds Volume (${percent(area)}%)`;
+    } else if (tip === SideTip.BRIGHTNESS) {
+      text = 'Adjust Brightness';
+    } else if (tip === SideTip.ZOOM) {
+      text = 'Adjust Camera Zoom';
+    } else if (tip === SideTip.ZOOM_TOGGLE) {
+      text = zoomToggleText(mouseZoomOff, mobile);
+    }
+  }
+
+  const hostW: Int = Layout.root.w;
+  const hostH: Int = Layout.root.h;
+  let measure: Int = WRAP;
+  if (measure > hostW) {
+    measure = hostW;
+  }
+  measure = measure - TooltipBox.padX;
+  const boxW: Int = TooltipBox.padX + textWidth(text, measure, TooltipBox.font);
+  const boxH: Int = TooltipBox.padY + TooltipBox.line * textLineCount(text, measure, TooltipBox.font);
+
+  let x: Int = left + TooltipBox.nudge;
+  if (x > hostW - boxW) {
+    x = hostW - boxW;
+  }
+  let y: Int = top + height + TooltipBox.nudge;
+  if (y > hostH - boxH) {
+    y = top - boxH - TooltipBox.nudge;
+  }
+
+  if (text.length === 0) {
+    return <layer w={Layout.tooltip.w} h={Layout.tooltip.h} />;
+  }
+
+  return (
+    <layer x={x} y={y} w={boxW} h={boxH}>
+      <TooltipChrome text={text} font={TooltipBox.font} lineHeight={0} />
+    </layer>
+  );
+}

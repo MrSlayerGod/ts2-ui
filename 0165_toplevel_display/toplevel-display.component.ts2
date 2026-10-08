@@ -53,7 +53,8 @@ import {
   xpDropsRef,
   zeahRef,
 } from './toplevel-display.constants';
-import { displayHelperInit, displayToplevelInit } from './toplevel-display.helpers';
+import { displayHelperInit } from './toplevel-display.helpers';
+import { displayToplevelLoad } from './toplevel-display.keys';
 
 export function ToplevelDisplay(): Component {
   return (
@@ -109,7 +110,7 @@ export function ToplevelDisplay(): Component {
         <layer static ref={uiHighlightsRef} x={0} y={0} w={512} h={334} />
       </layer>
 
-      <layer static ref={controlRef} x={0} y={0} w="fill" h="fill" onLoad={() => displayToplevelInit()}>
+      <layer static ref={controlRef} x={0} y={0} w="fill" h="fill" onLoad={() => displayToplevelLoad()}>
         <rect static ref={blackoutRef} x="center" y="center" w="fill" h="fill" color={0x000000} fill />
         <layer static ref={displaymodalRef} x="center" y="center" w="fill" h="fill" />
         <layer static ref={floaterRef} x="center" y="center" w="fill" h="fill" />

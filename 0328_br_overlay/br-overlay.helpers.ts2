@@ -27,7 +27,7 @@ export function timerTransmit(loadedAt: Int, now: Int): Int {
     return BrTimerTransmit.HUD;
   }
   const replacedAt: Int =
-    loadedAt + ((OVERLAY_THROTTLE_CYCLES - (loadedAt % OVERLAY_THROTTLE_CYCLES)) % OVERLAY_THROTTLE_CYCLES);
+    loadedAt + (OVERLAY_THROTTLE_CYCLES - loadedAt % OVERLAY_THROTTLE_CYCLES) % OVERLAY_THROTTLE_CYCLES;
   if (now <= replacedAt) {
     return BrTimerTransmit.HUD;
   }

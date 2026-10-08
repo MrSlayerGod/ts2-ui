@@ -2,10 +2,9 @@ import { createRef } from 'ts2';
 
 import { Anchor, overlayInit } from '../lib/lib.overlay';
 import { Layout, VaultColor, VaultFonts, VaultOverlay } from './camdozaal-vault.constants';
+import { timer, timerText } from './camdozaal-vault.timer';
 
 const timerHost = createRef('0686_camdozaal_vault_timer_host');
-
-const timer = createRef('camdozaal_vault_timer');
 
 export function CamdozaalVault(): Component {
   return (
@@ -20,6 +19,7 @@ export function CamdozaalVault(): Component {
       >
         <layer ref={timer} x="center" y={Layout.TIMER_Y} w={{ fill: Layout.TIMER_MARGIN }} h={Layout.TIMER_H}>
           <text
+            ref={timerText}
             x={Layout.TEXT_X}
             y={Layout.TEXT_Y}
             w={{ fill: Layout.TEXT_MARGIN }}

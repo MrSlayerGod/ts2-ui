@@ -1,6 +1,8 @@
 export { SlotIcons } from './tables.data';
 
 import { Inventories as GameInventories } from '../lib/game/inventories';
+import { Varbits } from '../lib/game/varbits';
+import { Varps } from '../lib/game/varps';
 
 export enum ActionIcons {
   EQUIPMENT_STATS = 675,
@@ -38,4 +40,32 @@ export enum EquipSlot {
   FEET = 10,
   RING = 12,
   AMMO = 13,
+}
+
+export declare const CarriedInventories: {
+  readonly INV: typeof GameInventories.INV;
+};
+
+export declare const WornVarbits: {
+  readonly POUCH_SLOT_4: typeof Varbits.XBOWS_POUCH_SLOT4;
+  readonly POUCH_NUM_4: typeof Varbits.XBOWS_POUCH_NUM4;
+  readonly SIGIL_SLOT_0: typeof Varbits.DEADMAN_SIGIL_SLOT_0;
+  readonly SIGIL_SLOT_1: typeof Varbits.DEADMAN_SIGIL_SLOT_1;
+  readonly SIGIL_SLOT_2: typeof Varbits.DEADMAN_SIGIL_SLOT_2;
+};
+
+export declare const WornVarps: {
+  readonly TUTORIAL: typeof Varps.TUTORIAL;
+  readonly TUTORIAL_2: typeof Varps.TUTORIAL_2;
+};
+
+export const BOLT_POUCH = 9433;
+
+export enum ExtraSlotSprites {
+  PLATE = 170,
+  EMPTY_AMMO = 166,
+}
+
+export enum TutorialStep {
+  EQUIPMENT = 400,
 }

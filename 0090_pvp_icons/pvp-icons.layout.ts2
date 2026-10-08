@@ -626,7 +626,7 @@ export function deadmanBroadcast(text: String): void {
 }
 
 export function teleblockSeconds(): Int {
-  return ((useServerState(PvpVarbits.TELEBLOCK_CYCLES) - 100) * 30) / 50;
+  return (useServerState(PvpVarbits.TELEBLOCK_CYCLES) - 100) * 30 / 50;
 }
 
 export function teleblockTipText(): String {

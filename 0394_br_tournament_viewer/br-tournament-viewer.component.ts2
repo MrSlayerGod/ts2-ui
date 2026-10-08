@@ -1,6 +1,7 @@
 import { ThinBoxEntrypoint } from '../lib/thin-box-entrypoint.component';
 import { Layout, ViewerColor, ViewerFonts } from './br-tournament-viewer.constants';
 import { TournamentButton } from './tournament-button.component';
+import { resetBrTournamentNames, TournamentNames } from './tournament-names.component';
 
 export function BrTournamentViewer(): Component {
   return (
@@ -18,8 +19,10 @@ export function BrTournamentViewer(): Component {
         valign="middle"
       />
 
-      <layer x="center" y={Layout.LIST_Y} w={Layout.LIST_W} h={Layout.LIST_H}>
-        <layer x="center" y="center" w={{ fill: Layout.NAMES_INSET }} h={{ fill: Layout.NAMES_INSET }} />
+      <layer x="center" y={Layout.LIST_Y} w={Layout.LIST_W} h={Layout.LIST_H} onLoad={() => resetBrTournamentNames()}>
+        <layer x="center" y="center" w={{ fill: Layout.NAMES_INSET }} h={{ fill: Layout.NAMES_INSET }}>
+          <TournamentNames />
+        </layer>
 
         <ThinBoxEntrypoint />
       </layer>

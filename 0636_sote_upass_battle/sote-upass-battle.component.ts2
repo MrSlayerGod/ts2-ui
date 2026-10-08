@@ -1,11 +1,24 @@
-import { createRef } from 'ts2';
+import { createRef, onMounted, onUpdated, useInterval, useState } from 'ts2';
 
+import { clientClock } from '../lib/lib.engine';
 import { Anchor, overlayInit } from '../lib/lib.overlay';
-import { Layout, UpassBattleColor, UpassBattleDodge, UpassBattleFont } from './sote-upass-battle.constants';
+import {
+  Clock,
+  CLOCK_CACHE_TEXT,
+  Layout,
+  UpassBattleColor,
+  UpassBattleDodge,
+  UpassBattleFont,
+} from './sote-upass-battle.constants';
+import { upassBarrier, upassClockLabel, upassDeadline } from './sote-upass-battle.state';
 
 const timerHost = createRef('0636_sote_upass_battle_timer_host');
 
 const content = createRef('sote_upass_battle_content');
+
+const healthBackground = createRef('sote_upass_battle_health_background');
+const healthForeground = createRef('sote_upass_battle_health_foreground');
+const timerText = createRef('sote_upass_battle_timer_text');
 
 export function SoteUpassBattle_(): Component {
   return (
@@ -19,6 +32,8 @@ export function SoteUpassBattle_(): Component {
         <layer ref={content} x={0} y={0} w={Layout.PLATE_W} h={Layout.PLATE_H}>
           <layer x="center" y={Layout.BAR_Y} w={{ fill: Layout.BAR_INSET }} h={Layout.BAR_H}>
             <rect
+              static
+              ref={healthBackground}
               x={{ right: Layout.BAR_X }}
               y={Layout.BAR_TOP}
               w={Layout.BAR_W}
@@ -28,6 +43,8 @@ export function SoteUpassBattle_(): Component {
             />
 
             <rect
+              static
+              ref={healthForeground}
               x={Layout.BAR_X}
               y={Layout.BAR_TOP}
               w={Layout.BAR_W}
@@ -59,6 +76,8 @@ export function SoteUpassBattle_(): Component {
 
           <layer x="center" y={{ bottom: Layout.CLOCK_BOTTOM }} w={{ fill: Layout.BAR_INSET }} h={Layout.CLOCK_STRIP_H}>
             <text
+              static
+              ref={timerText}
               x={Layout.CLOCK_X}
               y={Layout.CLOCK_Y}
               w={Layout.CLOCK_W}
@@ -72,6 +91,42 @@ export function SoteUpassBattle_(): Component {
           </layer>
         </layer>
       </layer>
+
+      <UpassBattleState />
     </layer>
   );
+}
+
+function UpassBattleState(): Component {
+  const [barrier] = useState(upassBarrier);
+  const [deadline, setDeadline] = useState(upassDeadline);
+  const [seconds, setSeconds] = useState(-1);
+
+  useInterval(() => {
+    if (deadline > 0) {
+      const left: Int = deadline - clientClock();
+      if (left <= 0) {
+        setDeadline(0);
+      } else {
+        setSeconds(left / Clock.CYCLES_PER_SECOND);
+      }
+    }
+  });
+
+  const green: Int = barrier;
+  let text: String = CLOCK_CACHE_TEXT;
+  if (seconds >= 0) {
+    text = upassClockLabel(seconds);
+  }
+
+  onMounted(() => paintBattle(green, text));
+  onUpdated(() => paintBattle(green, text));
+
+  return <layer x={0} y={0} w={0} h={0} />;
+}
+
+function paintBattle(barrier: Int, text: String): void {
+  healthForeground.props = { w: barrier, h: Layout.BAR_ROW_H };
+  healthBackground.props = { w: Layout.BAR_W - barrier, h: Layout.BAR_ROW_H };
+  timerText.props = { text: text };
 }

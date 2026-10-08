@@ -1,19 +1,19 @@
 import { CS2, useServerState, useSkill, useSkillBase, useState } from 'ts2';
 
 import { inInstance } from '../0077_quickprayer/quickprayer.helpers';
-import { Anchor, overlayRelayout } from '../lib/lib.overlay';
 import { coordInBox, onMobile } from '../lib/lib.helpers';
-import { playerCoord } from '../lib/lib.engine';
+import { clientClock, playerCoord } from '../lib/lib.engine';
 import { Varbits } from '../lib/game/varbits';
 import {
   tobClientLastprogress,
   tobClientName0,
+  tobClientNextrefresh,
   tobClientName1,
   tobClientName2,
   tobClientName3,
   tobClientName4,
 } from '../lib/game/varcs';
-import { Health, Layout, LobbyZone, PartyStatus, Progress, TobHudDodge, WaveProgress } from './tob-hud.constants';
+import { Health, Layout, LobbyZone, PartyStatus, Progress, WaveProgress } from './tob-hud.constants';
 
 export declare const TobHudSkills: {
   readonly HITPOINTS: SkillRef<3>;
@@ -153,45 +153,34 @@ export function resetWaveProgress(): void {
   setShown(-1);
 }
 
-function widthOf(component: ComponentId): Int {
-  return CS2.if_width_get(component);
+export function drawWaveProgress(): void {
+  const [, setNextRefresh] = useState(tobClientNextrefresh);
+  setNextRefresh(clientClock() + Progress.REFRESH);
+  if (
+    inTobRaid() === 1 &&
+    useServerState(Varbits.TOB_CLIENT_PARTYSTATUS) === PartyStatus.READY &&
+    useServerState(Varbits.TOB_CLIENT_WAVEPROGRESS_TYPE) !== WaveProgress.NONE
+  ) {
+    stepWaveProgress(waveProportion());
+    return;
+  }
+  resetWaveProgress();
 }
 
-export function tobHudStatusTick(dodger: ComponentId, column: ComponentId): void {
-  overlayRelayout(dodger, column, TobHudDodge.LEFT, Anchor.LEFT, Anchor.TOP, 1);
-  if (inTobRaid() === 0) {
-    return;
+export function tobHudDrawTick(): void {
+  const [nextRefresh] = useState(tobClientNextrefresh);
+  if (clientClock() >= nextRefresh) {
+    drawWaveProgress();
   }
-  if (useServerState(Varbits.TOB_CLIENT_PARTYSTATUS) !== PartyStatus.READY) {
-    return;
-  }
-  if (useServerState(Varbits.TOB_CLIENT_PARTYSLOT) === 0) {
-    column.height = Layout.COLUMN_H_FULL;
-    return;
-  }
-  column.height = Layout.COLUMN_H_SHORT;
 }
 
-export function tobHudMiddleTick(dodger: ComponentId, strip: ComponentId, hud: ComponentId): void {
-  overlayRelayout(dodger, strip, TobHudDodge.MIDDLE, Anchor.CENTRE, Anchor.TOP, 0);
-  if (inTobRaid() === 0) {
-    return;
-  }
-  if (useServerState(Varbits.TOB_CLIENT_PARTYSTATUS) !== PartyStatus.READY) {
-    return;
-  }
-  if (useServerState(Varbits.TOB_CLIENT_WAVEPROGRESS_TYPE) === WaveProgress.NONE) {
-    return;
-  }
-  const hudWidth: Int = widthOf(hud);
-  const share: Int = CS2.scale(Progress.SHARE_NUM, Progress.SHARE_DEN, hudWidth);
-  let reserve: Int = Progress.RESERVE;
+export function stripIsShare(hudWidth: Int, reserve: Int): Boolean {
+  return CS2.scale(Progress.SHARE_NUM, Progress.SHARE_DEN, hudWidth) <= hudWidth - reserve;
+}
+
+export function stripReserve(): Int {
   if (onMobile()) {
-    reserve = Progress.RESERVE_MOBILE;
+    return Progress.RESERVE_MOBILE;
   }
-  if (share <= hudWidth - reserve) {
-    strip.width = share;
-    return;
-  }
-  strip.width = hudWidth - reserve;
+  return Progress.RESERVE;
 }

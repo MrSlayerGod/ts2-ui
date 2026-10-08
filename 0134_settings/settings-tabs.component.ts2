@@ -87,7 +87,7 @@ function SettingsTab({
   height: Int;
   mobile: Boolean;
 }): Component {
-  const caption = useRef();
+  const [hovered, setHovered] = useState(false);
   const [, setOpen] = useState(openDropdownSetting);
   const bottom: Int = height + Tab.corner + top;
   const edgeInset: Int = selected ? Tab.selectedEdgeInset : Tab.unselectedEdgeInset;
@@ -108,19 +108,20 @@ function SettingsTab({
           onOptionSelect={() => {
             selectCategory(categoryId);
             setOpen(-1);
+            setHovered(false);
           }}
           onMouseEnter={
             mobile
               ? undefined
               : () => {
-                  caption.color = Colour.WHITE;
+                  setHovered(true);
                 }
           }
           onMouseLeave={
             mobile
               ? undefined
               : () => {
-                  caption.color = Colour.AMBER;
+                  setHovered(false);
                 }
           }
         />
@@ -163,7 +164,6 @@ function SettingsTab({
           <sprite x={{ right: Tab.corner }} y={top + Tab.corner} w={Tab.corner} h={height} sprite={Art.TAB_OFF_RIGHT} />
           <sprite x="center" y={top + Tab.corner} w={{ fill: edgeInset }} h={height} sprite={Art.TAB_OFF_FILL} />
           <text
-            ref={caption}
             x="center"
             y={top + Tab.corner}
             w={{ fill: labelInset }}
@@ -171,7 +171,7 @@ function SettingsTab({
             text={label}
             font={SettingsFonts.BODY}
             shadow
-            color={Colour.AMBER}
+            color={hovered === true ? Colour.WHITE : Colour.AMBER}
             align="center"
             valign="middle"
             lineHeight={Tab.lineHeight}

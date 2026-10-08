@@ -1,125 +1,98 @@
-import { intArray, useServerState } from 'ts2';
+import { useState } from 'ts2';
 import { Sprites } from '../lib/game/sprites';
-import { Varps } from '../lib/game/varps';
+import { GridScrollbar } from './grid-scrollbar.component';
 import { ProductSlot } from './product-slot.component';
 import { QuantityButton } from './quantity-button.component';
-import { onMobile, textDevice } from '../lib/lib.helpers';
-import { Layout, SkillMultiFonts, SlotColors, SlotKeyLabels, SlotSpaceHint } from './skillmulti.constants';
+import { SkillMultiTooltip, skillMultiRootRef } from './skill-multi-tooltip.component';
+import { textDevice } from '../lib/lib.helpers';
+import { smCount, smKind, smMax, smQuantity, smSuggested, smTitle } from './skillmulti.cells';
+import { KindHasFreeEntry, KindHasQuantity, Layout, SkillMultiFonts, SlotColors } from './skillmulti.constants';
+import { isGrid } from './skillmulti.layout';
 
-export function SkillMulti({
-  kind,
-  maxQuantity,
-  quantity,
-  title,
-  item0 = -1,
-  item1 = -1,
-  item2 = -1,
-  item3 = -1,
-  item4 = -1,
-  item5 = -1,
-  item6 = -1,
-  item7 = -1,
-  item8 = -1,
-  item9 = -1,
-  item10 = -1,
-  item11 = -1,
-  item12 = -1,
-  item13 = -1,
-  item14 = -1,
-  item15 = -1,
-  item16 = -1,
-  item17 = -1,
-}: {
-  kind: Int;
-  maxQuantity: Int;
-  quantity: Int;
-  title: String;
-  item0?: Item;
-  item1?: Item;
-  item2?: Item;
-  item3?: Item;
-  item4?: Item;
-  item5?: Item;
-  item6?: Item;
-  item7?: Item;
-  item8?: Item;
-  item9?: Item;
-  item10?: Item;
-  item11?: Item;
-  item12?: Item;
-  item13?: Item;
-  item14?: Item;
-  item15?: Item;
-  item16?: Item;
-  item17?: Item;
-}): Component {
-  const items = intArray<Item>(Layout.SLOTS, [
-    item0,
-    item1,
-    item2,
-    item3,
-    item4,
-    item5,
-    item6,
-    item7,
-    item8,
-    item9,
-    item10,
-    item11,
-    item12,
-    item13,
-    item14,
-    item15,
-    item16,
-    item17,
-  ]);
+export function SkillMulti(): Component {
+  return (
+    <layer ref={skillMultiRootRef} x="center" y="center" w={519} h={142}>
+      <sprite x={0} y={0} w="fill" h="fill" sprite={Sprites.CHAT_BACKGROUND} />
+      <SkillMultiHeader />
+      <layer static x={0} y={0} w="fill" h="fill">
+        <ProductSlot index={0} />
+      </layer>
+      <layer static x={0} y={0} w="fill" h="fill">
+        <ProductSlot index={1} />
+      </layer>
+      <layer static x={0} y={0} w="fill" h="fill">
+        <ProductSlot index={2} />
+      </layer>
+      <layer static x={0} y={0} w="fill" h="fill">
+        <ProductSlot index={3} />
+      </layer>
+      <layer static x={0} y={0} w="fill" h="fill">
+        <ProductSlot index={4} />
+      </layer>
+      <layer static x={0} y={0} w="fill" h="fill">
+        <ProductSlot index={5} />
+      </layer>
+      <layer static x={0} y={0} w="fill" h="fill">
+        <ProductSlot index={6} />
+      </layer>
+      <layer static x={0} y={0} w="fill" h="fill">
+        <ProductSlot index={7} />
+      </layer>
+      <layer static x={0} y={0} w="fill" h="fill">
+        <ProductSlot index={8} />
+      </layer>
+      <layer static x={0} y={0} w="fill" h="fill">
+        <ProductSlot index={9} />
+      </layer>
+      <layer static x={0} y={0} w="fill" h="fill">
+        <ProductSlot index={10} />
+      </layer>
+      <layer static x={0} y={0} w="fill" h="fill">
+        <ProductSlot index={11} />
+      </layer>
+      <layer static x={0} y={0} w="fill" h="fill">
+        <ProductSlot index={12} />
+      </layer>
+      <layer static x={0} y={0} w="fill" h="fill">
+        <ProductSlot index={13} />
+      </layer>
+      <layer static x={0} y={0} w="fill" h="fill">
+        <ProductSlot index={14} />
+      </layer>
+      <layer static x={0} y={0} w="fill" h="fill">
+        <ProductSlot index={15} />
+      </layer>
+      <layer static x={0} y={0} w="fill" h="fill">
+        <ProductSlot index={16} />
+      </layer>
+      <layer static x={0} y={0} w="fill" h="fill">
+        <ProductSlot index={17} />
+      </layer>
+      <SkillMultiTooltip />
+    </layer>
+  );
+}
 
-  let count: Int = 0;
-  while (count < Layout.SLOTS && items[count] !== -1) {
-    count = count + 1;
-  }
+function SkillMultiHeader(): Component {
+  const [count] = useState(smCount);
+  const [kind] = useState(smKind);
+  const [title] = useState(smTitle);
+  const hasQuantity: Boolean = KindHasQuantity.get(kind) ?? true;
 
-  let slotWidth: Int = Layout.SLOT_WIDTH;
-  let gap: Int = Layout.GAP;
-  if (count > 1) {
-    const gaps: Int = count - 1;
-    if (slotWidth * count + gap * gaps > Layout.USABLE_WIDTH) {
-      gap = (Layout.USABLE_WIDTH - slotWidth * count) / gaps;
-      const floor: Int = Layout.MIN_GAP + 2 * (7 - count > 0 ? 7 - count : 0);
-      if (gap < floor) {
-        slotWidth = (Layout.USABLE_WIDTH - floor * gaps) / count;
-        gap = floor;
-      }
+  let instructions: String = 'Choose a quantity, then click an item to begin.';
+  if (count > 0) {
+    if (hasQuantity) {
+      instructions = `Choose a quantity, then ${textDevice('click', 'tap')} an item to begin.`;
+    } else {
+      instructions = `${textDevice('Click', 'Tap')} an item to begin.`;
     }
   }
-  let onePressed: Boolean = false;
-  let fivePressed: Boolean = false;
-  let tenPressed: Boolean = false;
-  if (quantity === 1) {
-    onePressed = true;
-  }
-  if (quantity === 5) {
-    fivePressed = true;
-  }
-  if (quantity === 10) {
-    tenPressed = true;
-  }
-
-  const keySlot: Int = useServerState(Varps.SKILLMULTI_PREVIOUSSELECTION);
-  let spaceHint: Boolean = false;
-  if (!onMobile()) {
-    spaceHint = SlotSpaceHint.get(kind) ?? true;
-  }
-
-  const stride: Int = slotWidth + gap;
-  const rowWidth: Int = count * slotWidth + (count - 1) * gap;
+  const rowWidth: Int = count > 0 && hasQuantity ? quantityRowWidth() : 0;
 
   return (
-    <layer x="center" y="center" w={519} h={142}>
-      <sprite x={0} y={0} w="fill" h="fill" sprite={Sprites.CHAT_BACKGROUND} />
-
+    <>
       <layer x={{ center: 1 }} y={15} w={480} h={30}>
-        <layer x={0} y="center" w={{ fill: 100 }} h="fill">
+        <layer x={0} y="center" w={{ fill: rowWidth }} h="fill">
           <text
             x={0}
             y={0}
@@ -136,62 +109,114 @@ export function SkillMulti({
             y={0}
             w="fill"
             h="fill"
-            text={`Choose a quantity, then ${textDevice('click', 'tap')} an item to begin.`}
+            text={instructions}
             align="center"
             valign="bottom"
             font={SkillMultiFonts.LABEL}
             color={SlotColors.HINT}
           />
         </layer>
-
-        <layer x="right" y="center" w={100} h={30}>
-          <QuantityButton label="1" x={0} selected={onePressed} />
-          {maxQuantity >= 5 && <QuantityButton label="5" x={35} selected={fivePressed} />}
-          {maxQuantity >= 10 && <QuantityButton label="10" x={70} selected={tenPressed} />}
-        </layer>
+        {count > 0 && hasQuantity && <QuantityRow />}
       </layer>
+      <layer x={0} y={0} w={Layout.ROOT_WIDTH} h={Layout.ROOT_HEIGHT}>
+        {isGrid(count) && <GridScrollbar />}
+      </layer>
+    </>
+  );
+}
 
-      <layer x={{ center: 1 }} y={{ bottom: 5 }} w={rowWidth} h={{ fill: 50 }}>
-        {items.map(
-          (item, index) =>
-            index < count && (
-              <>
-                <ProductSlot
-                  item={item}
-                  w={slotWidth}
-                  h={Layout.SLOT_HEIGHT}
-                  x={index * stride}
-                  y={{ bottom: Layout.ROW_Y }}
-                />
-                {index === keySlot && spaceHint ? (
-                  <text
-                    x={index * stride}
-                    y="bottom"
-                    w={slotWidth}
-                    h={Layout.LABEL_HEIGHT}
-                    text={SlotKeyLabels.at(36)}
-                    align="center"
-                    valign="middle"
-                    font={SkillMultiFonts.LABEL}
-                    color={SlotColors.TITLE}
-                  />
-                ) : (
-                  <text
-                    x={index * stride}
-                    y="bottom"
-                    w={slotWidth}
-                    h={Layout.LABEL_HEIGHT}
-                    text={SlotKeyLabels.at(index) ?? ''}
-                    align="center"
-                    valign="middle"
-                    font={SkillMultiFonts.LABEL}
-                    color={SlotColors.TITLE}
-                  />
-                )}
-              </>
-            ),
+function showOther(max: Int, suggested: Int): Boolean {
+  if (suggested === 1 || suggested === 5 || suggested === 10 || suggested === max) {
+    return false;
+  }
+  if (suggested < 1 || suggested > max) {
+    return false;
+  }
+  return true;
+}
+
+function quantityRowWidth(): Int {
+  const [kind] = useState(smKind);
+  const [max] = useState(smMax);
+  const [suggested] = useState(smSuggested);
+  let x: Int = 0;
+  if (KindHasFreeEntry.get(kind) ?? true) {
+    if (max > 1) {
+      x = x + 35;
+    }
+    if (max > 5) {
+      x = x + 35;
+    }
+    if (max > 10) {
+      x = x + 35;
+    }
+    if (showOther(max, suggested)) {
+      x = x + 35;
+    }
+    if (max > 2) {
+      x = x + 35;
+    }
+    x = x + 40;
+  } else {
+    x = x + 35;
+    if (max >= 5) {
+      x = x + 35;
+    }
+    if (max >= 10) {
+      x = x + 35;
+    }
+  }
+  return x - 5;
+}
+
+function QuantityRow(): Component {
+  const [kind] = useState(smKind);
+  const [max] = useState(smMax);
+  const [quantity] = useState(smQuantity);
+  const [suggested] = useState(smSuggested);
+  const width: Int = quantityRowWidth();
+
+  if (KindHasFreeEntry.get(kind) ?? true) {
+    let x1: Int = 0;
+    let x5: Int = x1;
+    if (max > 1) {
+      x5 = x1 + 35;
+    }
+    let x10: Int = x5;
+    if (max > 5) {
+      x10 = x5 + 35;
+    }
+    let xOther: Int = x10;
+    if (max > 10) {
+      xOther = x10 + 35;
+    }
+    const other: Boolean = showOther(max, suggested);
+    let xX: Int = xOther;
+    if (other) {
+      xX = xOther + 35;
+    }
+    let xAll: Int = xX;
+    if (max > 2) {
+      xAll = xX + 35;
+    }
+    return (
+      <layer x="right" y="center" w={width} h={30}>
+        {max > 1 && <QuantityButton label="1" amount={1} x={x1} selected={quantity === 1} />}
+        {max > 5 && <QuantityButton label="5" amount={5} x={x5} selected={quantity === 5} />}
+        {max > 10 && <QuantityButton label="10" amount={10} x={x10} selected={quantity === 10} />}
+        {other && (
+          <QuantityButton label={`${suggested}`} amount={suggested} x={xOther} selected={quantity === suggested} />
         )}
+        {max > 2 && <QuantityButton label="X" amount={0} x={xX} isX />}
+        <QuantityButton label="All" amount={max} x={xAll} w={35} selected={quantity >= max} />
       </layer>
+    );
+  }
+  return (
+    <layer x="right" y="center" w={width} h={30}>
+      <QuantityButton label="1" amount={1} x={0} selected={quantity === 1} />
+      {max >= 5 && <QuantityButton label="5" amount={5} x={35} selected={quantity === 5} />}
+      {max >= 10 && <QuantityButton label="10" amount={10} x={70} selected={quantity === 10} />}
     </layer>
   );
 }

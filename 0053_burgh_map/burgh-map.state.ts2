@@ -1,0 +1,58 @@
+import { sessionState, useState } from 'ts2';
+
+export const burghHi = sessionState(0);
+export const burghTravel = sessionState(0);
+export const burghHoverOn = sessionState(0);
+
+export function burghMapReset(): void {
+  const [, setHi] = useState(burghHi);
+  const [, setTravel] = useState(burghTravel);
+  const [, setHoverOn] = useState(burghHoverOn);
+  setHi(0);
+  setTravel(0);
+  setHoverOn(0);
+}
+
+export function burghSetHover(): void {
+  const [, setHoverOn] = useState(burghHoverOn);
+  setHoverOn(1);
+}
+
+function burghHighlight(route: Int): void {
+  const [, setHi] = useState(burghHi);
+  setHi(route);
+}
+
+function burghClear(): void {
+  const [, setHi] = useState(burghHi);
+  const [, setTravel] = useState(burghTravel);
+  setHi(0);
+  setTravel(0);
+}
+
+export function burghHighlight1Entrypoint(): void {
+  const [, setTravel] = useState(burghTravel);
+  burghHighlight(1);
+  setTravel(1);
+}
+
+export function burghHighlight2Entrypoint(): void {
+  const [, setTravel] = useState(burghTravel);
+  burghHighlight(2);
+  setTravel(2);
+}
+
+export function burghRouteRepeat(route: Int): void {
+  const [on] = useState(burghHoverOn);
+  if (on === 1) {
+    burghHighlight(route);
+  }
+}
+
+export function burghRouteLeave(route: Int): void {
+  const [on] = useState(burghHoverOn);
+  const [travel] = useState(burghTravel);
+  if (on === 1 && travel !== route) {
+    burghClear();
+  }
+}

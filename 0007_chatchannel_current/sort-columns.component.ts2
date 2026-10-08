@@ -1,0 +1,214 @@
+import { useRef, useServerStateOnce, useState, useWatch } from 'ts2';
+
+import { Varbits } from '../lib/game/varbits';
+import { tooltipHide } from '../lib/tooltip.component';
+import { ChannelSort, ChannelSprites, Layout, SortArrow } from './chatchannel-current.constants';
+import { chooseSort, currentSort } from './chatchannel-current.state';
+
+export function SortColumns(): Component {
+  const [shown, setShown] = useState(useServerStateOnce(() => currentSort()));
+  const [rankLit, setRankLit] = useState(0);
+  const [nameLit, setNameLit] = useState(0);
+  const [recentLit, setRecentLit] = useState(0);
+  const [worldLit, setWorldLit] = useState(0);
+  const [legacyLit, setLegacyLit] = useState(0);
+
+  const transmitAnchor = useRef();
+
+  useWatch(
+    [Varbits.CHATCHANNEL_BLOCKED, Varbits.RAIDS_CLIENT_INDUNGEON, Varbits.CLANWARS_MYTEAM],
+    () => {
+      setRankLit(0);
+      setNameLit(0);
+      setRecentLit(0);
+      setWorldLit(0);
+      setLegacyLit(0);
+    },
+    transmitAnchor,
+  );
+
+  const rankNext: Int = columnNext(shown, ChannelSort.RANK_ASC, ChannelSort.RANK_DESC, ChannelSort.RANK_ASC);
+  const nameNext: Int = columnNext(shown, ChannelSort.NAME_ASC, ChannelSort.NAME_DESC, ChannelSort.NAME_ASC);
+  const recentNext: Int = columnNext(shown, ChannelSort.RECENT_ASC, ChannelSort.RECENT_DESC, ChannelSort.RECENT_DESC);
+  const worldNext: Int = columnNext(shown, ChannelSort.WORLD_ASC, ChannelSort.WORLD_DESC, ChannelSort.WORLD_ASC);
+  const legacyNext: Int = columnNext(shown, ChannelSort.LEGACY, ChannelSort.LEGACY_REVERSED, ChannelSort.LEGACY);
+
+  return (
+    <>
+      <layer ref={transmitAnchor} w={1} h={1} />
+      <layer
+        x={Layout.SORT_RANK_X}
+        y="center"
+        w={Layout.SORT_RANK_W}
+        h={{ fill: Layout.HEADER_DROP }}
+        onMouseRepeat={() => setRankLit(1)}
+        onMouseLeave={() => {
+          setRankLit(0);
+          tooltipHide();
+        }}
+        onClick={() => {
+          setShown(rankNext);
+          setRankLit(0);
+          setNameLit(0);
+          setRecentLit(0);
+          setWorldLit(0);
+          setLegacyLit(0);
+          chooseSort(rankNext);
+        }}
+      >
+        <sprite
+          x="center"
+          y="center"
+          w={Layout.ARROW_W}
+          h={Layout.ARROW_H}
+          sprite={columnSprite(shown, ChannelSort.RANK_DESC)}
+          transparency={columnFace(shown, ChannelSort.RANK_ASC, ChannelSort.RANK_DESC, rankLit)}
+        />
+      </layer>
+
+      <layer
+        x={Layout.SORT_NAME_X}
+        y="center"
+        w={Layout.SORT_NAME_W}
+        h={{ fill: Layout.HEADER_DROP }}
+        onMouseRepeat={() => setNameLit(1)}
+        onMouseLeave={() => {
+          setNameLit(0);
+          tooltipHide();
+        }}
+        onClick={() => {
+          setShown(nameNext);
+          setRankLit(0);
+          setNameLit(0);
+          setRecentLit(0);
+          setWorldLit(0);
+          setLegacyLit(0);
+          chooseSort(nameNext);
+        }}
+      >
+        <sprite
+          x="center"
+          y="center"
+          w={Layout.ARROW_W}
+          h={Layout.ARROW_H}
+          sprite={columnSprite(shown, ChannelSort.NAME_DESC)}
+          transparency={columnFace(shown, ChannelSort.NAME_ASC, ChannelSort.NAME_DESC, nameLit)}
+        />
+      </layer>
+
+      <layer
+        x={Layout.SORT_RECENT_X}
+        y="center"
+        w={Layout.SORT_RECENT_W}
+        h={{ fill: Layout.HEADER_DROP }}
+        onMouseRepeat={() => setRecentLit(1)}
+        onMouseLeave={() => {
+          setRecentLit(0);
+          tooltipHide();
+        }}
+        onClick={() => {
+          setShown(recentNext);
+          setRankLit(0);
+          setNameLit(0);
+          setRecentLit(0);
+          setWorldLit(0);
+          setLegacyLit(0);
+          chooseSort(recentNext);
+        }}
+      >
+        <sprite
+          x="center"
+          y="center"
+          w={Layout.ARROW_W}
+          h={Layout.ARROW_H}
+          sprite={columnSprite(shown, ChannelSort.RECENT_DESC)}
+          transparency={columnFace(shown, ChannelSort.RECENT_ASC, ChannelSort.RECENT_DESC, recentLit)}
+        />
+      </layer>
+
+      <layer
+        x={{ right: Layout.SORT_WORLD_RIGHT }}
+        y="center"
+        w={Layout.SORT_WORLD_W}
+        h={{ fill: Layout.HEADER_DROP }}
+        onMouseRepeat={() => setWorldLit(1)}
+        onMouseLeave={() => {
+          setWorldLit(0);
+          tooltipHide();
+        }}
+        onClick={() => {
+          setShown(worldNext);
+          setRankLit(0);
+          setNameLit(0);
+          setRecentLit(0);
+          setWorldLit(0);
+          setLegacyLit(0);
+          chooseSort(worldNext);
+        }}
+      >
+        <sprite
+          x="center"
+          y="center"
+          w={Layout.ARROW_W}
+          h={Layout.ARROW_H}
+          sprite={columnSprite(shown, ChannelSort.WORLD_DESC)}
+          transparency={columnFace(shown, ChannelSort.WORLD_ASC, ChannelSort.WORLD_DESC, worldLit)}
+        />
+      </layer>
+
+      <layer
+        x={{ right: Layout.SORT_LEGACY_RIGHT }}
+        y="center"
+        w={Layout.SORT_LEGACY_W}
+        h={{ fill: Layout.HEADER_DROP }}
+        onMouseRepeat={() => setLegacyLit(1)}
+        onMouseLeave={() => {
+          setLegacyLit(0);
+          tooltipHide();
+        }}
+        onClick={() => {
+          setShown(legacyNext);
+          setRankLit(0);
+          setNameLit(0);
+          setRecentLit(0);
+          setWorldLit(0);
+          setLegacyLit(0);
+          chooseSort(legacyNext);
+        }}
+      >
+        <sprite
+          x="center"
+          y="center"
+          w={Layout.ARROW_W}
+          h={Layout.ARROW_H}
+          sprite={columnSprite(shown, ChannelSort.LEGACY_REVERSED)}
+          transparency={columnFace(shown, ChannelSort.LEGACY, ChannelSort.LEGACY_REVERSED, legacyLit)}
+        />
+      </layer>
+    </>
+  );
+}
+
+function columnSprite(sort: Int, second: Int): Sprite {
+  if (sort === second) {
+    return ChannelSprites.SORT_REVERSED;
+  }
+  return ChannelSprites.SORT_DEFAULT;
+}
+
+function columnFace(sort: Int, first: Int, second: Int, lit: Int): Int {
+  if (sort === first || sort === second) {
+    return lit === 1 ? SortArrow.ACTIVE_HOVER : SortArrow.ACTIVE;
+  }
+  return lit === 1 ? SortArrow.IDLE_HOVER : SortArrow.IDLE;
+}
+
+function columnNext(sort: Int, first: Int, second: Int, idle: Int): Int {
+  if (sort === second) {
+    return first;
+  }
+  if (sort === first) {
+    return second;
+  }
+  return idle;
+}

@@ -1,4 +1,5 @@
 import { SkillQuantityStrip } from '../lib/skillmain-quantity.component';
+import { craftingInit } from '../0446_crafting_gold/crafting-gold.state';
 import { SteelBorderEntrypoint } from '../lib/steel-border-entrypoint.component';
 import { JewelleryCell } from './jewellery-cell.component';
 import { JewelleryTitle } from './jewellery-title.component';
@@ -329,6 +330,8 @@ export function SilverCrafting(): Component {
           <SkillQuantityStrip dx={Strip.DX} dy={Strip.DY} declared={Strip.MATERIAL} />
         </layer>
       </layer>
+
+      <layer x={0} y={0} w={0} h={0} onLoad={() => craftingInit()} />
     </>
   );
 }

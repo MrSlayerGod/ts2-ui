@@ -28,6 +28,7 @@ import {
   previewRef,
   rotateRef,
   sideContentRef,
+  tooltipRef,
   room01Ref,
   room02Ref,
   room03Ref,
@@ -67,13 +68,14 @@ import {
   room37Ref,
   room38Ref,
 } from './poh-viewer.constants';
-import { pohViewerFloorWatch, pohViewerPreviewFollow } from './poh-viewer.map';
+import { pohViewerFloorWatch, pohViewerRoomIndicators, pohViewerPreviewFollow } from './poh-viewer.map';
 import { pohViewerSideUpdate } from './poh-viewer.side';
 
 export function PohViewer(): Component {
   useWatch(ViewerVarbits.TYPE, () => pohViewerSideUpdate(), sideContentRef);
   useWatch(ViewerVarbits.TYPE, () => pohViewerPreviewFollow(), frameRef);
   useWatch(ViewerVarbits.TYPE, () => pohViewerFloorWatch(), layerButtonsRef);
+  useWatch(ViewerVarbits.SELECTED_ROOM, () => pohViewerRoomIndicators(), mapRef);
   return (
     <layer x="center" y="center" w={Layout.BOUNDARY_W} h={Layout.BOUNDARY_H}>
       <sprite x="center" y="center" w="fill" h="fill" sprite={297} tiling />
@@ -271,6 +273,6 @@ export function PohViewer(): Component {
 export const pohViewerUi = (): UI => (
   <ui ref={pohViewerRef} x="center" y="center" w="fill" h="fill">
     <PohViewer />
-    <layer x={0} y={0} w={1} h={1} />
+    <layer ref={tooltipRef} x={0} y={0} w={1} h={1} />
   </ui>
 );

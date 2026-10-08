@@ -1,4 +1,4 @@
-import { predictServerState } from 'ts2';
+import { predictServerState, sessionState, useState } from 'ts2';
 
 import { FifthTab, JournalLayout, JournalTab, JournalVarbits } from './side-journal.constants';
 
@@ -55,4 +55,11 @@ export function visibleTab(selected: Int, fifth: Int): Int {
     return JournalTab.QUESTS;
   }
   return selected;
+}
+
+export const leagueIconFlashing = sessionState(0);
+
+export function journalLeagueIconFlash(): void {
+  const [, setFlashing] = useState(leagueIconFlashing);
+  setFlashing(1);
 }

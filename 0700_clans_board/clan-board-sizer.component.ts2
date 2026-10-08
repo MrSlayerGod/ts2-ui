@@ -1,21 +1,30 @@
-import { useOnResize, useUniverse } from 'ts2';
+import { onMounted, onUpdated, useOnResize, useState, useUniverse } from 'ts2';
 
 import { onMobile } from '../lib/lib.helpers';
 import { Layout, filtersRef, listRef, universeRef } from './clans-board.constants';
 import { boardHeight, filtersExtent, filtersScrollHeight, listExtent, listScrollHeight } from './clans-board.helpers';
+import { clanBoardLines, clanBoardLoaded } from './clans-board.state';
 
 export function ClanBoardSizer(): Component {
   const slot = useUniverse();
   useOnResize(slot);
+  const [board] = useState(clanBoardLines);
+  const [loaded] = useState(clanBoardLoaded);
 
   const filterRowHeight: Int = onMobile() ? Layout.FILTER_ROW_H_MOBILE : Layout.FILTER_ROW_H;
   const filtersContent: Int = filtersExtent(filterRowHeight);
-  const listContent: Int = listExtent(listRef.width - Layout.ROW_INSET_W);
+  const listContent: Int = listExtent(board, listRef.width - Layout.ROW_INSET_W);
   const height: Int = boardHeight(slot.height, filtersContent, listContent);
 
-  universeRef.height = height;
-  filtersRef.scrollHeight = filtersScrollHeight(slot.height, filterRowHeight);
-  listRef.scrollHeight = listScrollHeight(slot.height, filterRowHeight, listRef.width);
+  const panelHeight: Int = loaded === 0 ? Layout.PANEL_H : height;
+  onMounted(() => placeUniverse(panelHeight));
+  onUpdated(() => placeUniverse(panelHeight));
+  filtersRef.scrollHeight = filtersScrollHeight(board, slot.height, filterRowHeight);
+  listRef.scrollHeight = loaded === 0 ? 0 : listScrollHeight(board, slot.height, filterRowHeight, listRef.width);
 
   return <layer w={1} h={1} />;
+}
+
+function placeUniverse(panelHeight: Int): void {
+  universeRef.props = { x: 'center', y: 'center', w: Layout.PANEL_W, h: panelHeight };
 }

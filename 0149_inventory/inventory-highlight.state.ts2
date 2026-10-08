@@ -139,7 +139,7 @@ export function highlightExpired(since: Int, duration: Int): Int {
 
 export function pulseTransparency(a: Int, b: Int, step: Int): Int {
   const phase: Int = clientClock() % step;
-  if ((clientClock() / step) % 2 === 0) {
+  if (clientClock() / step % 2 === 0) {
     return CS2.interpolate(a, b, 0, step - 1, phase);
   }
   return CS2.interpolate(0, a, 0, step - 1, phase);

@@ -1,0 +1,135 @@
+import { sessionState, useRef, useState } from 'ts2';
+
+import { hasBit, itemName } from '../lib/lib.engine';
+import { groupDigits } from '../lib/lib.format';
+import { ScrollbarVertical } from '../lib/scrollbar-vertical.component';
+import { Layout, LostPropertyColors, LostPropertyFonts, LostPropertyScrollbar, Stock } from './lost-property.constants';
+import { LostPropertyItems, LostPropertyPrices } from './lost-property.data';
+
+export const lostPropertyLow = sessionState(0);
+export const lostPropertyHigh = sessionState(0);
+export const lostPropertyFocus = sessionState(-1);
+export const lostPropertyBuilt = sessionState(0);
+
+export function lostPropertyInit(low: Int, high: Int, focus: Int): void {
+  const [, setLow] = useState(lostPropertyLow);
+  const [, setHigh] = useState(lostPropertyHigh);
+  const [, setFocus] = useState(lostPropertyFocus);
+  const [, setBuilt] = useState(lostPropertyBuilt);
+  setLow(low);
+  setHigh(high);
+  setFocus(focus);
+  setBuilt(1);
+}
+
+export function resetLostProperty(): void {
+  const [, setBuilt] = useState(lostPropertyBuilt);
+  setBuilt(0);
+}
+
+function inStock(low: Int, high: Int, n: Int): Boolean {
+  if (n < 32) {
+    return hasBit(low, n);
+  }
+  return hasBit(high, n - 32);
+}
+
+function focusY(low: Int, high: Int, focus: Int): Int {
+  let n: Int = 0;
+  let shown: Int = 0;
+  while (n <= Stock.LAST) {
+    if (inStock(low, high, n)) {
+      if (n === focus) {
+        return shown / Stock.COLUMNS * Stock.ROW_PITCH;
+      }
+      shown = shown + 1;
+    }
+    n = n + 1;
+  }
+  return 0;
+}
+
+function stockCount(low: Int, high: Int): Int {
+  let n: Int = 0;
+  let shown: Int = 0;
+  while (n <= Stock.LAST) {
+    if (inStock(low, high, n)) {
+      shown = shown + 1;
+    }
+    n = n + 1;
+  }
+  return shown;
+}
+
+export function LostPropertyList(): Component {
+  const [built] = useState(lostPropertyBuilt);
+  const [low] = useState(lostPropertyLow);
+  const [high] = useState(lostPropertyHigh);
+  const [focus] = useState(lostPropertyFocus);
+  const pane = useRef();
+  const lines: Int = (stockCount(low, high) + Stock.COLUMNS - 1) / Stock.COLUMNS;
+  const extent: Int = lines * Stock.ROW_PITCH;
+  const overflow: Boolean = built === 1 && extent > Layout.LIST_H;
+  const top: Int = overflow ? Math.max(Math.min(focusY(low, high, focus), extent - Layout.LIST_H), 0) : 0;
+  return (
+    <>
+      <layer
+        ref={pane}
+        x="center"
+        y={Layout.LIST_Y}
+        w={Layout.LIST_W}
+        h={Layout.LIST_H}
+        scrollHeight={overflow ? extent : 0}
+        scrollY={top}
+      >
+        {LostPropertyItems.scan(
+          (item, n, k) =>
+            built === 1 && (
+              <>
+                <sprite
+                  x={k % Stock.COLUMNS * (Stock.ITEM_W + Stock.GAP) + Stock.MARGIN}
+                  y={k / Stock.COLUMNS * Stock.ROW_PITCH}
+                  w={Stock.ITEM_W}
+                  h={Stock.ITEM_H}
+                  hide={!inStock(low, high, n)}
+                  item={item}
+                  itemCount={1}
+                  outline={1}
+                  shadowColor={LostPropertyColors.SHADOW}
+                  options={['Buy', '', '', '', '', '', '', '', '', 'Examine']}
+                  optionSubject={`<col=ff9040>${itemName(item as Item)}`}
+                />
+                <text
+                  x={k % Stock.COLUMNS * (Stock.ITEM_W + Stock.GAP) + Stock.MARGIN}
+                  y={k / Stock.COLUMNS * Stock.ROW_PITCH + Stock.ITEM_H}
+                  w={Stock.ITEM_W}
+                  h={Stock.PRICE_H}
+                  hide={!inStock(low, high, n)}
+                  font={LostPropertyFonts.PRICE}
+                  color={LostPropertyColors.TITLE}
+                  align="center"
+                  valign="top"
+                  text={groupDigits(LostPropertyPrices.at(n) ?? -1, ',')}
+                />
+              </>
+            ),
+          (item, n) => (inStock(low, high, n) ? 1 : 0),
+        )}
+      </layer>
+
+      <layer x={{ right: Layout.SCROLLBAR_RIGHT }} y={Layout.LIST_Y} w={16} h={Layout.LIST_H}>
+        {overflow && (
+          <ScrollbarVertical
+            content={pane}
+            track={LostPropertyScrollbar.TRACK}
+            capTopSprite={LostPropertyScrollbar.CAP_TOP}
+            thumbSprite={LostPropertyScrollbar.THUMB}
+            capBottomSprite={LostPropertyScrollbar.CAP_BOTTOM}
+            arrowUp={LostPropertyScrollbar.ARROW_UP}
+            arrowDown={LostPropertyScrollbar.ARROW_DOWN}
+          />
+        )}
+      </layer>
+    </>
+  );
+}

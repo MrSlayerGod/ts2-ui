@@ -1,7 +1,8 @@
-import { createRef } from 'ts2';
+import { createRef, useInterval, useRef, useState } from 'ts2';
 
 import { Anchor, overlayInit } from '../lib/lib.overlay';
 import { BoatDefendColor, BoatDefendDodge, BoatDefendFont, Layout } from './ds2-boat-defend.constants';
+import { boatClockDeadline, boatClockText, boatIntegrityPx, ds2BoatDefendTick } from './ds2-boat-defend.state';
 
 const timerHost = createRef('0304_ds2_boat_defend_timer_host');
 
@@ -17,61 +18,83 @@ export function Ds2BoatDefend_(): Component {
         onLoad={() => overlayInit(timerHost, content, BoatDefendDodge.FLAGS, Anchor.LEFT, Anchor.TOP, 1)}
       >
         <layer ref={content} x={0} y={0} w={Layout.PLATE_W} h={Layout.PLATE_H}>
-          <layer x="center" y={Layout.BAR_Y} w={{ fill: Layout.BAR_INSET }} h={Layout.BAR_H}>
-            <rect
-              x={{ right: Layout.BAR_X }}
-              y={Layout.BAR_TOP}
-              w={Layout.BAR_W}
-              h={Layout.BAR_ROW_H}
-              color={BoatDefendColor.DAMAGE}
-              fill
-            />
-
-            <rect
-              x={Layout.BAR_X}
-              y={Layout.BAR_TOP}
-              w={Layout.BAR_W}
-              h={Layout.BAR_ROW_H}
-              color={BoatDefendColor.INTEGRITY}
-              fill
-            />
-
-            <rect
-              x={Layout.OUTLINE_X}
-              y={Layout.OUTLINE_Y}
-              w={Layout.OUTLINE_W}
-              h={Layout.OUTLINE_H}
-              color={BoatDefendColor.OUTLINE}
-            />
-
-            <text
-              x={Layout.BAR_X}
-              y={Layout.BAR_TOP}
-              w={Layout.BAR_W}
-              h={Layout.BAR_ROW_H}
-              font={BoatDefendFont.LABEL}
-              text="Ship Integrity"
-              align="center"
-              valign="middle"
-              color={BoatDefendColor.OUTLINE}
-            />
-          </layer>
-
-          <layer x="center" y={{ bottom: Layout.CLOCK_BOTTOM }} w={{ fill: Layout.BAR_INSET }} h={Layout.CLOCK_STRIP_H}>
-            <text
-              x={Layout.CLOCK_X}
-              y={Layout.CLOCK_Y}
-              w={Layout.CLOCK_W}
-              h={Layout.CLOCK_H}
-              font={BoatDefendFont.LABEL}
-              text="Time Left: 5:00"
-              valign="middle"
-              shadow
-              color={BoatDefendColor.CLOCK}
-            />
-          </layer>
+          <BoatDefendPlate />
         </layer>
       </layer>
     </layer>
+  );
+}
+
+function BoatDefendPlate(): Component {
+  const [integrity] = useState(boatIntegrityPx);
+  const [deadline] = useState(boatClockDeadline);
+  const [clock] = useState(boatClockText);
+  const strip = useRef();
+  useInterval(deadline !== -1 ? () => ds2BoatDefendTick() : undefined, strip);
+  const greenW: Int = integrity === -1 ? Layout.BAR_W : integrity;
+  const redW: Int = integrity === -1 ? Layout.BAR_W : Layout.BAR_W - integrity;
+
+  return (
+    <>
+      <layer x="center" y={Layout.BAR_Y} w={{ fill: Layout.BAR_INSET }} h={Layout.BAR_H}>
+        <rect
+          x={{ right: Layout.BAR_X }}
+          y={Layout.BAR_TOP}
+          w={redW}
+          h={Layout.BAR_ROW_H}
+          color={BoatDefendColor.DAMAGE}
+          fill
+        />
+
+        <rect
+          x={Layout.BAR_X}
+          y={Layout.BAR_TOP}
+          w={greenW}
+          h={Layout.BAR_ROW_H}
+          color={BoatDefendColor.INTEGRITY}
+          fill
+        />
+
+        <rect
+          x={Layout.OUTLINE_X}
+          y={Layout.OUTLINE_Y}
+          w={Layout.OUTLINE_W}
+          h={Layout.OUTLINE_H}
+          color={BoatDefendColor.OUTLINE}
+        />
+
+        <text
+          x={Layout.BAR_X}
+          y={Layout.BAR_TOP}
+          w={Layout.BAR_W}
+          h={Layout.BAR_ROW_H}
+          font={BoatDefendFont.LABEL}
+          text="Ship Integrity"
+          align="center"
+          valign="middle"
+          color={BoatDefendColor.OUTLINE}
+        />
+      </layer>
+
+      <layer
+        ref={strip}
+        x="center"
+        y={{ bottom: Layout.CLOCK_BOTTOM }}
+        w={{ fill: Layout.BAR_INSET }}
+        h={Layout.CLOCK_STRIP_H}
+      >
+        <text
+          x={Layout.CLOCK_X}
+          y={Layout.CLOCK_Y}
+          w={Layout.CLOCK_W}
+          h={Layout.CLOCK_H}
+          font={BoatDefendFont.LABEL}
+          text={clock}
+          valign="middle"
+          shadow
+          color={BoatDefendColor.CLOCK}
+        />
+      </layer>
+    </>
   );
 }

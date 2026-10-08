@@ -1,4 +1,4 @@
-import { predictServerState, sessionState, useState } from 'ts2';
+import { CS2, predictServerState, sessionState, useState } from 'ts2';
 
 import { playSound } from '../lib/lib.engine';
 import { LootSounds, LootVarbits } from './wildy-loot-chest.constants';
@@ -29,4 +29,88 @@ export function selectWithdrawMode(want: Int, current: Int): void {
   }
   predictServerState(LootVarbits.WITHDRAW_NOTES, want);
   playSound(LootSounds.SELECT);
+}
+
+export const tabCaptions = sessionState('');
+export const tabCaptionLen0 = sessionState(0);
+export const tabCaptionLen1 = sessionState(0);
+export const tabCaptionLen2 = sessionState(0);
+export const tabCaptionLen3 = sessionState(0);
+export const tabCaptionLen4 = sessionState(0);
+
+export function captionStart(tab: Int, l0: Int, l1: Int, l2: Int, l3: Int): Int {
+  let start: Int = 0;
+  if (tab > 0) {
+    start = start + l0;
+  }
+  if (tab > 1) {
+    start = start + l1;
+  }
+  if (tab > 2) {
+    start = start + l2;
+  }
+  if (tab > 3) {
+    start = start + l3;
+  }
+  return start;
+}
+
+export function captionLength(tab: Int, l0: Int, l1: Int, l2: Int, l3: Int, l4: Int): Int {
+  if (tab === 0) {
+    return l0;
+  }
+  if (tab === 1) {
+    return l1;
+  }
+  if (tab === 2) {
+    return l2;
+  }
+  if (tab === 3) {
+    return l3;
+  }
+  return l4;
+}
+
+export function wildyLootTabCaption(tab: Int, text: String): void {
+  if (tab < 0 || tab > 4) {
+    return;
+  }
+  const [all, setAll] = useState(tabCaptions);
+  const [l0, set0] = useState(tabCaptionLen0);
+  const [l1, set1] = useState(tabCaptionLen1);
+  const [l2, set2] = useState(tabCaptionLen2);
+  const [l3, set3] = useState(tabCaptionLen3);
+  const [l4, set4] = useState(tabCaptionLen4);
+  const start: Int = captionStart(tab, l0, l1, l2, l3);
+  const end: Int = start + captionLength(tab, l0, l1, l2, l3, l4);
+  const before: String = CS2.substring(all, 0, start);
+  const after: String = CS2.substring(all, end, CS2.string_length(all));
+  const length: Int = CS2.string_length(text);
+  setAll(`${before}${text}${after}`);
+  if (tab === 0) {
+    set0(length);
+  } else if (tab === 1) {
+    set1(length);
+  } else if (tab === 2) {
+    set2(length);
+  } else if (tab === 3) {
+    set3(length);
+  } else {
+    set4(length);
+  }
+}
+
+export function clearTabCaptions(): void {
+  const [, setAll] = useState(tabCaptions);
+  const [, set0] = useState(tabCaptionLen0);
+  const [, set1] = useState(tabCaptionLen1);
+  const [, set2] = useState(tabCaptionLen2);
+  const [, set3] = useState(tabCaptionLen3);
+  const [, set4] = useState(tabCaptionLen4);
+  setAll('');
+  set0(0);
+  set1(0);
+  set2(0);
+  set3(0);
+  set4(0);
 }

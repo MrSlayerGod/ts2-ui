@@ -1,0 +1,235 @@
+import { predictServerState, useServerState, useState } from 'ts2';
+
+import { Varbits } from '../lib/game/varbits';
+import { Varps } from '../lib/game/varps';
+import { clientClock, playSound } from '../lib/lib.engine';
+import { StoneButtonOutFilled } from '../lib/stone-button-out-filled.component';
+import { StoneButtonPressedFilled } from '../lib/stone-button-pressed-filled.component';
+import { Button, ButtonArt, ButtonText, Layout } from './poh-costumes.constants';
+
+function ButtonFace({
+  pressed,
+  sprite,
+  item,
+  hovered,
+}: {
+  pressed: Boolean;
+  sprite: Sprite;
+  item: Item;
+  hovered: Boolean;
+}): Component {
+  return (
+    <>
+      {pressed ? <StoneButtonPressedFilled /> : <StoneButtonOutFilled />}
+      {item !== -1 ? (
+        <sprite
+          x="center"
+          y="center"
+          w={Button.ITEM_W}
+          h={Button.ITEM_H}
+          item={item}
+          itemCount={Button.ITEM_COUNT}
+          itemCountMode="never"
+          outline={Button.ITEM_OUTLINE}
+          transparency={hovered ? Button.HOVER_TRANS : Button.OPAQUE}
+        />
+      ) : (
+        <sprite
+          x="center"
+          y="center"
+          w={Button.ICON_W}
+          h={Button.ICON_H}
+          sprite={sprite}
+          transparency={hovered ? Button.HOVER_TRANS : Button.OPAQUE}
+        />
+      )}
+    </>
+  );
+}
+
+export function DepositAllButton({ opened }: { opened: Boolean }): Component {
+  const [until, setUntil] = useState(-1);
+  const [hovered, setHovered] = useState(0);
+  const pressed: Boolean = until !== -1;
+  if (!opened) {
+    return <layer x="center" y={{ bottom: Layout.DEPOSITALL_BOTTOM }} w="fill" h={Layout.BUTTON_H} options={['*']} />;
+  }
+  return (
+    <layer
+      x="center"
+      y={{ bottom: Layout.DEPOSITALL_BOTTOM }}
+      w="fill"
+      h={Layout.BUTTON_H}
+      options={[ButtonText.DEPOSIT_ALL]}
+      onOptionSelect={
+        pressed
+          ? null
+          : (event) => {
+              if (event.option !== 1) {
+                return;
+              }
+              playSound(ButtonArt.CLICK);
+              setUntil(clientClock() + Button.PRESS_CYCLES);
+            }
+      }
+      onTimer={
+        pressed
+          ? () => {
+              if (clientClock() >= until) {
+                setUntil(-1);
+              }
+            }
+          : null
+      }
+      onMouseRepeat={() => {
+        setHovered(1);
+      }}
+      onMouseLeave={() => {
+        setHovered(0);
+      }}
+    >
+      <ButtonFace pressed={pressed} sprite={ButtonArt.DEPOSIT_ALL} item={-1} hovered={hovered === 1} />
+    </layer>
+  );
+}
+
+export function TierButton({ opened, bottom }: { opened: Boolean; bottom: Int }): Component {
+  const level: Int = useServerState(Varps.IF2);
+  const [until, setUntil] = useState(-1);
+  const [hovered, setHovered] = useState(0);
+  const pressed: Boolean = until !== -1;
+  if (!opened) {
+    return (
+      <layer
+        x="center"
+        y={{ bottom: Layout.TIER_BOTTOM }}
+        w="fill"
+        h={Layout.BUTTON_H}
+        options={['*', '*', '*', '*', '*', '*', '*']}
+      />
+    );
+  }
+  if (level === -1) {
+    return <layer x="center" y={{ bottom: bottom }} w="fill" h={Layout.BUTTON_H} hide />;
+  }
+  return (
+    <layer
+      x="center"
+      y={{ bottom: bottom }}
+      w="fill"
+      h={Layout.BUTTON_H}
+      options={[
+        ButtonText.TIERS,
+        ButtonText.BEGINNER,
+        level >= 1 ? ButtonText.EASY : '',
+        level >= 2 ? ButtonText.MEDIUM : '',
+        level >= 3 ? ButtonText.HARD : '',
+        level >= 4 ? ButtonText.ELITE : '',
+        level >= 5 ? ButtonText.MASTER : '',
+      ]}
+      onOptionSelect={
+        pressed
+          ? null
+          : (event) => {
+              if (event.option !== 1) {
+                return;
+              }
+              playSound(ButtonArt.CLICK);
+              setUntil(clientClock() + Button.PRESS_CYCLES);
+            }
+      }
+      onTimer={
+        pressed
+          ? () => {
+              if (clientClock() >= until) {
+                setUntil(-1);
+              }
+            }
+          : null
+      }
+      onMouseRepeat={() => {
+        setHovered(1);
+      }}
+      onMouseLeave={() => {
+        setHovered(0);
+      }}
+    >
+      <ButtonFace pressed={pressed} sprite={-1} item={ButtonArt.TIER_ITEM} hovered={hovered === 1} />
+    </layer>
+  );
+}
+
+export function ModeButton({ opened, shown }: { opened: Boolean; shown: Boolean }): Component {
+  const mode: Int = useServerState(Varbits.POH_COSTUMES_MODE);
+  const [until, setUntil] = useState(-1);
+  const [hovered, setHovered] = useState(0);
+  const locked: Boolean = until !== -1;
+  if (!opened) {
+    return <layer x="center" y={{ bottom: Layout.MODE_BOTTOM }} w="fill" h={Layout.BUTTON_H} options={['*']} />;
+  }
+  if (!shown) {
+    return <layer x="center" y={{ bottom: Layout.MODE_BOTTOM }} w="fill" h={Layout.BUTTON_H} hide />;
+  }
+  return (
+    <layer
+      x="center"
+      y={{ bottom: Layout.MODE_BOTTOM }}
+      w="fill"
+      h={Layout.BUTTON_H}
+      options={[ButtonText.DEPOSIT_MODE]}
+      onOptionSelect={
+        locked
+          ? null
+          : (event) => {
+              if (event.option !== 1) {
+                return;
+              }
+              playSound(ButtonArt.CLICK);
+              predictServerState(Varbits.POH_COSTUMES_MODE, 1 - mode);
+              setUntil(clientClock() + Button.PRESS_CYCLES);
+            }
+      }
+      onTimer={
+        locked
+          ? () => {
+              if (clientClock() >= until) {
+                setUntil(-1);
+              }
+            }
+          : null
+      }
+      onMouseRepeat={() => {
+        setHovered(1);
+      }}
+      onMouseLeave={() => {
+        setHovered(0);
+      }}
+    >
+      <ButtonFace pressed={mode === 1} sprite={ButtonArt.MODE} item={-1} hovered={hovered === 1} />
+    </layer>
+  );
+}
+
+export function SearchButton({ opened }: { opened: Boolean }): Component {
+  const [hovered, setHovered] = useState(0);
+  if (!opened) {
+    return <layer x="center" y={{ bottom: Layout.SEARCH_BOTTOM }} w="fill" h={Layout.BUTTON_H} options={['*', '*']} />;
+  }
+  return (
+    <layer
+      x="center"
+      y={{ bottom: Layout.SEARCH_BOTTOM }}
+      w="fill"
+      h={Layout.BUTTON_H}
+      options={[ButtonText.SEARCH]}
+      onMouseRepeat={() => {
+        setHovered(1);
+      }}
+      onMouseLeave={() => {
+        setHovered(0);
+      }}
+    >
+      <ButtonFace pressed={false} sprite={ButtonArt.SEARCH} item={-1} hovered={hovered === 1} />
+    </layer>
+  );
+}

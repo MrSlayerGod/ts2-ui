@@ -71,9 +71,9 @@ export function ClanChannelPane({ asGuest }: { asGuest: Int }): Component {
 
   const listening: Boolean =
     status === AffinityStatus.LIVE && loaded
-      ? asGuest === 1
+      ? (asGuest === 1
         ? CS2.activeclanchannel_listened_find()
-        : CS2.activeclanchannel_affined_find(0)
+        : CS2.activeclanchannel_affined_find(0))
       : false;
 
   const users: Int = listening ? CS2.activeclanchannel_user_count_get() : 0;

@@ -481,7 +481,7 @@ export function BingoRewardPopout({ w, h }: { w: Int; h: Int }): Component {
     iconColW = rowH;
   }
   const rowIcon: Int = rowH - Reward.ICON_INSET;
-  const nameIcon: Int = (Reward.NAME_ICON_NUM * rowIcon) / Reward.NAME_ICON_DEN;
+  const nameIcon: Int = Reward.NAME_ICON_NUM * rowIcon / Reward.NAME_ICON_DEN;
 
   const stripInset: Int = (cardX + Reward.GAP) * 2 + iconColW + Reward.GAP;
   const stripW: Int = w - stripInset;

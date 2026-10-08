@@ -1,12 +1,20 @@
 import type { FragmentSetsRow } from './fragment-sets.data';
-import { CS2, intArray, useRef } from 'ts2';
+import { CS2, intArray, useRef, useState } from 'ts2';
 import { ScrollbarVertical } from '../lib/scrollbar-vertical.component';
 import { ThinBoxEntrypoint } from '../lib/thin-box-entrypoint.component';
-import { FragmentColors, FragmentFonts, FragmentSets, ScrollbarSprites as Bar } from './league-3-fragments.constants';
+import {
+  FragmentColors,
+  FragmentFonts,
+  FragmentSets,
+  Fragments,
+  XP_MAX,
+  ScrollbarSprites as Bar,
+} from './league-3-fragments.constants';
 import {
   fragmentEffect,
   fragmentName,
   fragmentTier,
+  fragmentXp,
   leagueColour,
   loadoutSlot,
   setBlockHeight,
@@ -16,6 +24,12 @@ import {
   setMet,
 } from './league-3-fragments.helpers';
 import { textLineCount } from '../lib/lib.engine';
+import { fragmentPane, Pane } from './league-3-fragments.state';
+import { PassiveLines, PassiveTiers } from './passive-effects.data';
+import { FragmentIcon } from './fragment-icon.component';
+import { onMobile } from '../lib/lib.helpers';
+import { Sprites } from '../lib/game/sprites';
+import { unlockedTier } from '../0736_league_3_side_panel/league-3-side-panel.helpers';
 
 const LOADOUT_SLOTS = [0, 1, 2, 3, 4, 5, 6];
 
@@ -128,6 +142,32 @@ enum Body {
 }
 
 export function FragmentDetail(): Component {
+  const [pane] = useState(fragmentPane);
+  return (
+    <>
+      <layer right={27} y={{ bottom: 12 }} w={210} h={171}>
+        <ThinBoxEntrypoint />
+      </layer>
+      {pane === Pane.ACTIVE && (
+        <layer w="fill" h="fill">
+          <ActivePane />
+        </layer>
+      )}
+      {pane === Pane.PASSIVE && (
+        <layer w="fill" h="fill">
+          <PassivePane />
+        </layer>
+      )}
+      {pane > 0 && (
+        <layer w="fill" h="fill">
+          <FragmentPage id={pane} />
+        </layer>
+      )}
+    </>
+  );
+}
+
+function ActivePane(): Component {
   const content = useRef();
 
   const headingY = intArray(7);
@@ -170,10 +210,6 @@ export function FragmentDetail(): Component {
 
   return (
     <>
-      <layer right={27} y={{ bottom: 12 }} w={210} h={171}>
-        <ThinBoxEntrypoint />
-      </layer>
-
       <layer ref={content} right={29} y={{ bottom: 14 }} w={206} h={167} scrollHeight={scroll}>
         <rect x={0} y={0} w="fill" h="fill" color={0x000000} fill transparency={200} />
 
@@ -255,6 +291,289 @@ export function FragmentDetail(): Component {
           arrowDown={Bar.ARROW_DOWN}
         />
       </layer>
+    </>
+  );
+}
+
+function PaneTitle({ title, subtitle }: { title: String; subtitle: String }): Component {
+  return (
+    <>
+      <text
+        x={5}
+        y={5}
+        w={{ fill: 10 }}
+        h={15}
+        text={title}
+        align="center"
+        valign="middle"
+        shadow
+        font={FragmentFonts.HEADER}
+        color={leagueColour(3)}
+      />
+      <text
+        x={5}
+        y={22}
+        w={{ fill: 10 }}
+        h={15}
+        text={subtitle}
+        align="center"
+        valign="middle"
+        shadow
+        font={FragmentFonts.LABEL}
+        color={FragmentColors.LABEL_DISABLED}
+      />
+    </>
+  );
+}
+
+export function PassivePane(): Component {
+  const content = useRef();
+  const reached: Int = unlockedTier();
+  const tierY = intArray(7);
+  const lineY = intArray(24);
+  const lineH = intArray(24);
+  let cursor: Int = 40;
+  let tier: Int = -1;
+  let i: Int = 0;
+  while (i < PassiveLines.length) {
+    const line = PassiveLines.at(i);
+    if (line !== null) {
+      if (line.tier !== tier) {
+        if (tier >= 0) {
+          cursor = cursor + 5;
+        }
+        tier = line.tier;
+        tierY[tier] = cursor;
+        cursor = cursor + 18;
+      }
+      lineY[i] = cursor;
+      lineH[i] = textLineCount(line.text, Body.TEXT_WIDTH, FragmentFonts.BODY) * Body.LINE;
+      cursor = cursor + lineH[i] + 5;
+    }
+    i = i + 1;
+  }
+  const extent: Int = cursor + 5;
+  return (
+    <>
+      <layer ref={content} right={29} y={{ bottom: 14 }} w={206} h={167} scrollHeight={extent > 167 ? extent : 0}>
+        <rect x={0} y={0} w="fill" h="fill" color={0x000000} fill transparency={200} />
+        <PaneTitle title="Passive Effects" subtitle="Effects gained from League Tiers." />
+        {PassiveTiers.map((row, t) => (
+          <>
+            <rect x={0} y={tierY[t] - 1} w="fill" h={18} color={0x000000} fill transparency={200} />
+            <text
+              x={Body.MARGIN}
+              y={tierY[t]}
+              w={{ fill: Body.MARGIN * 2 }}
+              h={Body.LINE}
+              text={row.name}
+              align="left"
+              valign="top"
+              lineHeight={Body.LINE}
+              shadow
+              font={FragmentFonts.HEADER}
+              color={t === 0 || reached > t ? leagueColour(3) : FragmentColors.LABEL_DISABLED}
+            />
+            <text
+              x={Body.MARGIN}
+              y={tierY[t]}
+              w={{ fill: Body.MARGIN * 2 }}
+              h={Body.LINE}
+              text={row.points === 0 ? 'Free unlock' : `Unlocked at ${stringOf(row.points)} points`}
+              align="right"
+              valign="top"
+              lineHeight={Body.LINE}
+              shadow
+              font={FragmentFonts.BODY}
+              color={t === 0 || reached > t ? leagueColour(3) : FragmentColors.LABEL_DISABLED}
+            />
+          </>
+        ))}
+        {PassiveLines.map((line, n) => (
+          <text
+            x={Body.MARGIN}
+            y={lineY[n]}
+            w={{ fill: Body.MARGIN * 2 }}
+            h={lineH[n]}
+            text={line.text}
+            align="left"
+            valign="top"
+            lineHeight={Body.LINE}
+            shadow
+            font={FragmentFonts.BODY}
+            color={FragmentColors.LABEL_DISABLED}
+          />
+        ))}
+      </layer>
+      <layer right={12} y={{ bottom: 12 }} w={16} h={171}>
+        <ScrollbarVertical
+          content={content}
+          track={Bar.TRACK}
+          capTopSprite={Bar.CAP_TOP}
+          thumbSprite={Bar.THUMB}
+          capBottomSprite={Bar.CAP_BOTTOM}
+          arrowUp={Bar.ARROW_UP}
+          arrowDown={Bar.ARROW_DOWN}
+        />
+      </layer>
+    </>
+  );
+}
+
+enum BarInk {
+  FRAME = 0x726451,
+}
+
+export function FragmentPage({ id }: { id: Int }): Component {
+  const content = useRef();
+  const row = Fragments.get(id);
+  const name: String = row === null ? '' : row.name;
+  const description: String = row === null ? '' : row.description;
+  const icon: Int = row === null ? -1 : row.icon;
+  const xp: Int = Math.min(fragmentXp(id), XP_MAX);
+  const level: Int = fragmentTier(id);
+  const mobile: Boolean = onMobile();
+  const colour: Int = leagueColour(3);
+
+  const effect1: String = row === null ? '' : row.effect1;
+  const effect2: String = row === null ? '' : row.effect2;
+  const effect3: String = row === null ? '' : row.effect3;
+  const h1: Int = textLineCount(effect1, Body.TEXT_WIDTH, FragmentFonts.BODY) * Body.LINE;
+  const h2: Int = textLineCount(effect2, Body.TEXT_WIDTH, FragmentFonts.BODY) * Body.LINE;
+  const h3: Int = textLineCount(effect3, Body.TEXT_WIDTH, FragmentFonts.BODY) * Body.LINE;
+  const y1: Int = 122;
+  const y2: Int = y1 + Body.LINE + h1 + 10;
+  const y3: Int = y2 + Body.LINE + h2 + 10;
+  const setsY: Int = y3 + Body.LINE + h3 + 10;
+
+  const setA = FragmentSets.get(row === null ? -1 : row.setA);
+  const setB = FragmentSets.get(row === null ? -1 : row.setB);
+  const aY: Int = setsY + 22;
+  const bY: Int =
+    setA === null ? aY : aY + setBlockHeight(setA, Body.TEXT_WIDTH, FragmentFonts.HEADER, FragmentFonts.BODY);
+  const aMembers: Int = setA === null ? 0 : setMembers(setA.group);
+  const bMembers: Int = setB === null ? 0 : setMembers(setB.group);
+  const extent: Int =
+    setB === null ? bY : bY + setBlockHeight(setB, Body.TEXT_WIDTH, FragmentFonts.HEADER, FragmentFonts.BODY);
+
+  return (
+    <>
+      <layer ref={content} right={29} y={{ bottom: 14 }} w={206} h={167} scrollHeight={extent > 167 ? extent : 0}>
+        <rect x={0} y={0} w="fill" h="fill" color={0x000000} fill transparency={200} />
+        <PaneTitle title={name} subtitle={description} />
+        <FragmentIcon iconKey={icon} xp={xp} equipped={false} x={206 / 2 - 16} y={38} inLoadout={false} />
+        <rect x={24} y={84} w={{ fill: 48 }} h={4} color={BarInk.FRAME} />
+        <rect x={23} y={82} w={3} h={8} color={BarInk.FRAME} />
+        <rect x={24} y={83} w={1} h={6} color={level < 1 ? 0x000000 : colour} />
+        <rect x={63} y={82} w={3} h={8} color={BarInk.FRAME} />
+        <rect right={23} y={82} w={3} h={8} color={BarInk.FRAME} />
+        <rect right={24} y={83} w={1} h={6} color={level < 3 ? 0x000000 : colour} />
+        <rect x={25} y={85} w={{ fill: 50 }} h={2} color={0x000000} fill />
+        <rect x={25} y={85} w={xp * (206 - 49) / XP_MAX} h={2} color={colour} fill />
+        <rect x={64} y={83} w={1} h={6} color={level < 2 ? 0x000000 : colour} />
+        {!mobile && (
+          <>
+            <sprite x={14} y={92} w={20} h={6} sprite={Sprites.LEAGUE_3_FRAGMENT_BAR_LABELS_0} tiling />
+            <sprite x={55} y={92} w={20} h={6} sprite={Sprites.LEAGUE_3_FRAGMENT_BAR_LABELS_1} tiling />
+            <sprite x={172} y={92} w={20} h={6} sprite={Sprites.LEAGUE_3_FRAGMENT_BAR_LABELS_2} tiling />
+          </>
+        )}
+        <text
+          x={5}
+          y={70}
+          w={{ fill: 10 }}
+          h={15}
+          text={level === 0 ? 'Locked' : `${stringOf(xp)}/${stringOf(XP_MAX)}`}
+          align="center"
+          valign="middle"
+          shadow
+          font={FragmentFonts.LABEL}
+          color={FragmentColors.LABEL_DISABLED}
+        />
+
+        <SectionHeader y={100} title="Base Effects" />
+        <LevelEffect
+          y={y1}
+          height={h1}
+          label={mobile ? 'Level 1: (1)' : 'Level 1:'}
+          effect={effect1}
+          lit={level >= 1}
+        />
+        <LevelEffect
+          y={y2}
+          height={h2}
+          label={mobile ? 'Level 2: (2000)' : 'Level 2:'}
+          effect={effect2}
+          lit={level >= 2}
+        />
+        <LevelEffect
+          y={y3}
+          height={h3}
+          label={mobile ? 'Level 3: (8000)' : 'Level 3:'}
+          effect={effect3}
+          lit={level >= 3}
+        />
+
+        <SectionHeader y={setsY} title="Set Effects" />
+        {setA !== null && <SetEffectBlock row={setA} y={aY} members={aMembers} />}
+        {setB !== null && <SetEffectBlock row={setB} y={bY} members={bMembers} />}
+      </layer>
+      <layer right={12} y={{ bottom: 12 }} w={16} h={171}>
+        <ScrollbarVertical
+          content={content}
+          track={Bar.TRACK}
+          capTopSprite={Bar.CAP_TOP}
+          thumbSprite={Bar.THUMB}
+          capBottomSprite={Bar.CAP_BOTTOM}
+          arrowUp={Bar.ARROW_UP}
+          arrowDown={Bar.ARROW_DOWN}
+        />
+      </layer>
+    </>
+  );
+}
+
+function LevelEffect({
+  y,
+  height,
+  label,
+  effect,
+  lit,
+}: {
+  y: Int;
+  height: Int;
+  label: String;
+  effect: String;
+  lit: Boolean;
+}): Component {
+  return (
+    <>
+      <text
+        x={Body.MARGIN}
+        y={y}
+        w={{ fill: Body.MARGIN * 2 }}
+        h={height}
+        text={label}
+        align="left"
+        valign="top"
+        lineHeight={Body.LINE}
+        shadow
+        font={FragmentFonts.HEADER}
+        color={lit ? leagueColour(3) : FragmentColors.LABEL_DISABLED}
+      />
+      <text
+        x={Body.MARGIN}
+        y={y + Body.LINE}
+        w={{ fill: Body.MARGIN * 2 }}
+        h={height}
+        text={effect}
+        align="left"
+        valign="top"
+        lineHeight={Body.LINE}
+        shadow
+        font={FragmentFonts.BODY}
+        color={FragmentColors.LABEL_DISABLED}
+      />
     </>
   );
 }

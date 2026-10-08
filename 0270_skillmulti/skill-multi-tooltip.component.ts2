@@ -1,0 +1,134 @@
+import { CS2, createRef, sessionState, useInterval, useServerState, useState } from 'ts2';
+
+import { tooltipBuilt } from '../lib/game/varcs';
+import { Varbits } from '../lib/game/varbits';
+import { textLineCount, textWidth } from '../lib/lib.engine';
+import { pipeHead, pipeTail } from '../lib/lib.format';
+import {
+  TooltipBox,
+  TooltipChrome,
+  tooltipDown,
+  tooltipDwellElapsed,
+  tooltipHide,
+  tooltipMark,
+  tooltipRaise,
+  tooltipStale,
+} from '../lib/tooltip.component';
+import { smCount, smNames, smScroll } from './skillmulti.cells';
+import { Layout, SlotKeyLabels } from './skillmulti.constants';
+import { isGrid, slotLeftFor, slotTopFor } from './skillmulti.layout';
+
+export const skillMultiRootRef = createRef('skillmulti_root');
+
+export const smTip = sessionState(-1);
+
+export function productName(slot: Int): String {
+  const [names] = useState(smNames);
+  let rest: String = names;
+  let i: Int = 0;
+  while (i < slot) {
+    rest = pipeTail(rest);
+    i = i + 1;
+  }
+  return pipeHead(rest);
+}
+
+export function productTipText(slot: Int): String {
+  const key: String = SlotKeyLabels.at(slot) ?? '';
+  const name: String = productName(slot);
+  if (key.length > 0) {
+    return `<col=7f7f7f>(${key})</col> ${name}`;
+  }
+  return name;
+}
+
+export function showSkillTip(slot: Int): void {
+  if (onEnhancedMobile()) {
+    return;
+  }
+  const [tip, setTip] = useState(smTip);
+  if (tip !== -1 && tip !== slot) {
+    hideSkillTip();
+  }
+  tooltipMark();
+  if (!tooltipDwellElapsed(Layout.TIP_DWELL)) {
+    return;
+  }
+  if (!tooltipDown()) {
+    return;
+  }
+  setTip(slot);
+  tooltipRaise();
+}
+
+export function hideSkillTip(): void {
+  const [, setTip] = useState(smTip);
+  tooltipHide();
+  setTip(-1);
+}
+
+function onEnhancedMobile(): Boolean {
+  const type: Int = CS2.clienttype();
+  if (useServerState(Varbits.OSM_SIMULATE) === 1) {
+    if (type === 4 || type === 5 || type === 10) {
+      return true;
+    }
+  }
+  if (type === 7 || type === 8) {
+    return true;
+  }
+  return false;
+}
+
+export function SkillMultiTooltip(): Component {
+  const [built] = useState(tooltipBuilt);
+  const [slot] = useState(smTip);
+  const [count] = useState(smCount);
+  const [scroll] = useState(smScroll);
+
+  useInterval(
+    built === 1
+      ? () => {
+          if (tooltipStale()) {
+            hideSkillTip();
+          }
+        }
+      : undefined,
+  );
+
+  let text: String = '';
+  if (built === 1 && slot !== -1) {
+    text = productTipText(slot);
+  }
+  const measure: Int = Layout.TIP_WRAP - TooltipBox.padX;
+  const boxW: Int = TooltipBox.padX + textWidth(text, measure, TooltipBox.font);
+  const boxH: Int = TooltipBox.padY + TooltipBox.line * textLineCount(text, measure, TooltipBox.font);
+  const rootX: Int = CS2.if_x_get(skillMultiRootRef);
+  const rootY: Int = CS2.if_y_get(skillMultiRootRef);
+  let anchorX: Int = rootX + slotLeftFor(count, slot);
+  let anchorY: Int = rootY + slotTopFor(count, slot);
+  let anchorBottom: Int = anchorY + Layout.SLOT_HEIGHT;
+  if (isGrid(count)) {
+    const top: Int = slotTopFor(count, slot) - scroll;
+    anchorX = rootX + Layout.HOLDER_X + slotLeftFor(count, slot);
+    anchorY = rootY + Layout.HOLDER_Y + Math.clamp(0, Layout.HOLDER_HEIGHT, top);
+    anchorBottom = rootY + Layout.HOLDER_Y + Math.clamp(0, Layout.HOLDER_HEIGHT, top + Layout.SLOT_HEIGHT);
+  }
+
+  let x: Int = anchorX + TooltipBox.nudge;
+  if (x > Layout.ROOT_WIDTH - boxW) {
+    x = Layout.ROOT_WIDTH - boxW;
+  }
+  let y: Int = anchorBottom + TooltipBox.nudge;
+  if (y > Layout.ROOT_HEIGHT - boxH) {
+    y = anchorY - boxH - TooltipBox.nudge;
+  }
+
+  return text.length === 0 ? (
+    <layer x={0} y={0} w={1} h={1} />
+  ) : (
+    <layer x={x} y={y} w={boxW} h={boxH}>
+      <TooltipChrome text={text} font={TooltipBox.font} lineHeight={0} />
+    </layer>
+  );
+}

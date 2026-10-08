@@ -72,7 +72,7 @@ export function SetGrid(): Component {
     index = index + 1;
   }
 
-  const lastRowTop: Int = drawn > 0 ? ((drawn - 1) / Grid.COLUMNS) * Grid.ROW_STEP : 0;
+  const lastRowTop: Int = drawn > 0 ? (drawn - 1) / Grid.COLUMNS * Grid.ROW_STEP : 0;
   const extent: Int = lastRowTop > 0 ? lastRowTop + Grid.TAIL : 0;
 
   const pane = useRef();
@@ -91,8 +91,8 @@ export function SetGrid(): Component {
           (row, i) =>
             slot[i] !== -1 && (
               <SetCell
-                x={(slot[i] % Grid.COLUMNS) * Grid.STRIDE}
-                y={(slot[i] / Grid.COLUMNS) * Grid.ROW_STEP}
+                x={slot[i] % Grid.COLUMNS * Grid.STRIDE}
+                y={slot[i] / Grid.COLUMNS * Grid.ROW_STEP}
                 set={row.set}
                 mode={mode[i]}
               />

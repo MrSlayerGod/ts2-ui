@@ -1,4 +1,4 @@
-import { useInterval, useRef, useServerState, useState, useUniverse, useWatch } from 'ts2';
+import { CS2, useInterval, useRef, useServerState, useState, useUniverse, useWatch } from 'ts2';
 
 import { Varbits } from '../lib/game/varbits';
 import { Varps } from '../lib/game/varps';
@@ -35,6 +35,7 @@ import {
   dropdownContainerRef,
   dropdownPaneRef,
   filtersRef,
+  hotfixStoreRef,
   pactFilterRef,
   skillFilterRef,
   taskChunkRef,
@@ -72,14 +73,16 @@ import {
   rewardText,
   rowHeight,
   taskAccent,
+  taskDescription,
   taskDone,
   taskLeague,
   taskLeagueKnown,
+  taskName,
   tierIcon,
   typeIntoLeagueSearch,
   withoutSpaces,
 } from './league-tasks.helpers';
-import { dropdownOpenTick, listExtent, listPaneHeight, openFilter } from './league-tasks.state';
+import { dropdownOpenTick, leagueTaskHotfixCount, listExtent, listPaneHeight, openFilter } from './league-tasks.state';
 import { ListScrollbar } from './list-scrollbar.component';
 
 export function LeagueTasks(): Component {
@@ -275,6 +278,7 @@ export function LeagueTasks(): Component {
 
       <layer static x="center" y="center" w="fill" h="fill" />
       <layer static x="center" y="center" w={Layout.resizePreview.w} h={Layout.resizePreview.h} hide />
+      <text static ref={hotfixStoreRef} x={0} y={0} w={0} h={0} text="" hide />
     </>
   );
 }
@@ -474,7 +478,9 @@ function TaskRows(): Component {
   const [finished, setFinished] = useState(0);
   const [expanded] = useState(leagueTaskMenuSelectedTask);
   const [search] = useState(leagueTasksSearchString);
-  const [scrollPos] = useState(leagueTasksScrollPos);
+  const [hotfixCount] = useState(leagueTaskHotfixCount);
+  const hotfixes: String = hotfixCount === 0 ? '' : CS2.if_text_get(hotfixStoreRef);
+  const [scrollPos, setScrollPos] = useState(leagueTasksScrollPos);
   const [, setBuilding] = useState(leagueTaskMenuBuildIsActive);
   const [, setDoneCount] = useState(leagueTaskMenuCompletedCount);
   const [, setTotalCount] = useState(leagueTaskMenuTotalCount);
@@ -491,6 +497,7 @@ function TaskRows(): Component {
       : () => {
           if (built >= total) {
             setFinished(1);
+            setScrollPos(scrollPos === -1 ? Math.max(0, tasksListRef.scrollY) : scrollPos);
           } else {
             setBuilt(Math.min(total, built + BUILD_CHUNK));
           }
@@ -511,8 +518,8 @@ function TaskRows(): Component {
     const task: LeagueTask | null = LeagueTaskList.at(i);
     if (task !== null) {
       const done: Int = taskDone(i);
-      if (leagueTaskShown(task, done, active, search, searchLength)) {
-        content = content + rowHeight(task, i, expanded, paneWidth);
+      if (leagueTaskShown(task, done, active, search, searchLength, hotfixes)) {
+        content = content + rowHeight(task, i, expanded, paneWidth, hotfixes);
         shown = shown + 1;
         doneCount = doneCount + done;
       }
@@ -558,6 +565,8 @@ function TaskChunk({ chunk }: { chunk: Int }): Component {
   const paneWidth: Int = box.width;
   const [expanded] = useState(leagueTaskMenuSelectedTask);
   const [search] = useState(leagueTasksSearchString);
+  const [hotfixCount] = useState(leagueTaskHotfixCount);
+  const hotfixes: String = hotfixCount === 0 ? '' : CS2.if_text_get(hotfixStoreRef);
   const accent: Int = taskAccent();
   const league: Int = taskLeague();
   const start: Int = chunk * BUILD_CHUNK;
@@ -572,8 +581,8 @@ function TaskChunk({ chunk }: { chunk: Int }): Component {
   while (i < end) {
     const task: LeagueTask | null = LeagueTaskList.at(i);
     if (task !== null) {
-      if (leagueTaskShown(task, taskDone(i), active, search, searchLength)) {
-        const height: Int = rowHeight(task, i, expanded, paneWidth);
+      if (leagueTaskShown(task, taskDone(i), active, search, searchLength, hotfixes)) {
+        const height: Int = rowHeight(task, i, expanded, paneWidth, hotfixes);
         if (i < start) {
           top = top + height;
           visible = visible + 1;
@@ -588,7 +597,9 @@ function TaskChunk({ chunk }: { chunk: Int }): Component {
     <layer x={0} y={0} w={paneWidth} h={bottom}>
       {LeagueTaskList.filter(
         (task, index) =>
-          index >= start && index < end && leagueTaskShown(task, taskDone(index), active, search, searchLength),
+          index >= start &&
+          index < end &&
+          leagueTaskShown(task, taskDone(index), active, search, searchLength, hotfixes),
       ).scan(
         (task, index, y) => (
           <TaskRow
@@ -601,9 +612,10 @@ function TaskChunk({ chunk }: { chunk: Int }): Component {
             paneWidth={paneWidth}
             accent={accent}
             league={league}
+            hotfixes={hotfixes}
           />
         ),
-        (task) => rowHeight(task, task.bit, expanded, paneWidth),
+        (task) => rowHeight(task, task.bit, expanded, paneWidth, hotfixes),
       )}
     </layer>
   );
@@ -629,6 +641,7 @@ function TaskRow({
   paneWidth,
   accent,
   league,
+  hotfixes,
 }: {
   task: LeagueTask;
   visible: Int;
@@ -639,9 +652,11 @@ function TaskRow({
   paneWidth: Int;
   accent: Int;
   league: Int;
+  hotfixes: String;
 }): Component {
   const open: Boolean = task.bit === expanded;
-  const lines: Int = open ? descriptionLines(task, paneWidth) : 0;
+  const name: String = taskName(task, hotfixes);
+  const lines: Int = open ? descriptionLines(task, paneWidth, hotfixes) : 0;
   const height: Int = open ? Row.H + Row.LINE * lines + Row.EXPAND_PAD : Row.H;
   const stripe: Int = visible % 2 === 1 ? Row.trans.odd : Row.trans.even;
   const icon = useRef();
@@ -671,11 +686,13 @@ function TaskRow({
                 icon.sprite = open ? TaskSprite.COLLAPSE : TaskSprite.EXPAND;
               }
         }
-        optionSubject={`<col=f47113>${task.name}</col>`}
+        optionSubject={`<col=f47113>${name}</col>`}
         options={[open ? 'Collapse' : 'Expand']}
         onOptionSelect={() => leagueTaskSelect(task.bit)}
       />
-      {open ? <ExpandedLines task={task} y={y} lines={lines} accent={accent} /> : null}
+      {open ? (
+        <ExpandedLines task={task} y={y} lines={lines} accent={accent} description={taskDescription(task, hotfixes)} />
+      ) : null}
       <sprite
         ref={icon}
         x={Row.icon.expandX}
@@ -696,7 +713,7 @@ function TaskRow({
         y={y + Row.name.dy}
         w={{ fill: Row.name.insetW }}
         h={Row.name.h}
-        text={task.name}
+        text={name}
         font={TaskFont.BODY}
         shadow
         align="left"
@@ -719,7 +736,19 @@ function TaskRow({
   );
 }
 
-function ExpandedLines({ task, y, lines, accent }: { task: LeagueTask; y: Int; lines: Int; accent: Int }): Component {
+function ExpandedLines({
+  task,
+  y,
+  lines,
+  accent,
+  description,
+}: {
+  task: LeagueTask;
+  y: Int;
+  lines: Int;
+  accent: Int;
+  description: String;
+}): Component {
   return (
     <>
       <text
@@ -751,7 +780,7 @@ function ExpandedLines({ task, y, lines, accent }: { task: LeagueTask; y: Int; l
         y={y + Row.description.dy}
         w={{ fill: Row.description.insetW }}
         h={Row.LINE * lines}
-        text={`Description: <col=ffffff>${task.description}.</col>`}
+        text={`Description: <col=ffffff>${description}.</col>`}
         font={TaskFont.SMALL}
         shadow
         align="left"

@@ -1,4 +1,5 @@
 import { Fonts } from '../lib/game/fonts';
+import { Sounds } from '../lib/game/sounds';
 import { Sprites } from '../lib/game/sprites';
 import { Varbits } from '../lib/game/varbits';
 import { Varps } from '../lib/game/varps';
@@ -112,3 +113,104 @@ export const Copy = {
   ADD_REMOVE: 'Add/Remove House',
   REFRESH: 'Refresh Data',
 };
+
+export const Field = {
+  NAME: 0,
+  LOCATION: 1,
+  LEVEL: 2,
+  ALTAR: 3,
+  NEXUS: 4,
+  GLORY: 5,
+  POOL: 6,
+  SPELLBOOK: 7,
+  ARMOUR: 8,
+};
+
+export const SortMode = {
+  NAME_ASC: 0,
+  NAME_DESC: 1,
+  LEVEL_ASC: 2,
+  LEVEL_DESC: 3,
+  ALTAR_ASC: 4,
+  ALTAR_DESC: 5,
+  ARMOUR_DESC: 15,
+};
+
+export const SLOTS = 201;
+export const LAST_SLOT = 200;
+
+export const SORT_STACK = 256;
+
+export declare const RowFonts: {
+  readonly CELL: typeof Fonts.P12_FULL;
+};
+
+export const RowLayout = {
+  NAME_X: 10,
+  NAME_W: 100,
+  LEVEL_X: 120,
+  CELL_W: 40,
+  BUTTON_W: 32,
+  BUTTON_H: 21,
+  BUTTON_DROP: 2,
+  EMPTY_ROWS: 3,
+};
+
+export const BestTier = {
+  ALTAR: 'Y',
+  NEXUS: '3',
+  GLORY: '3',
+  POOL: '5',
+  SPELLBOOK: '4',
+  ARMOUR: 'Y',
+};
+
+export enum RowColor {
+  CELL = 0xff981f,
+  BEST = 0xffffff,
+  LINE_LIGHT = 0x5a5245,
+  LINE_DARK = 0x383023,
+}
+
+export declare const RowSprites: {
+  readonly ENTER: typeof Sprites.RIGHTARROW_SMALL_STONE_0;
+  readonly ENTER_HOVER: typeof Sprites.RIGHTARROW_SMALL_STONE_1;
+  readonly SORT_ASC: typeof Sprites.SORTARROWS_0;
+  readonly SORT_DESC: typeof Sprites.SORTARROWS_1;
+  readonly LEVEL: typeof Sprites.POH_BOARD_ICONS_6;
+  readonly ALTAR: typeof Sprites.POH_BOARD_ICONS_0;
+  readonly NEXUS: typeof Sprites.POH_BOARD_ICONS_1;
+  readonly GLORY: typeof Sprites.POH_BOARD_ICONS_2;
+  readonly POOL: typeof Sprites.POH_BOARD_ICONS_3;
+  readonly SPELLBOOK: typeof Sprites.POH_BOARD_ICONS_4;
+  readonly ARMOUR: typeof Sprites.POH_BOARD_ICONS_5;
+};
+
+export declare const BoardSounds: {
+  readonly CLICK: typeof Sounds.INTERFACE_SELECT1;
+};
+
+export const Heading = {
+  FIRST_X: 100,
+  STEP: 40,
+  ICON_BACK: 22,
+  ICON: 17,
+  HIT_W: 30,
+  ARROW_W: 7,
+  ARROW_H: 5,
+  NAME_X: 10,
+  NAME_W: 100,
+  LINE_GAP: 10,
+  HOVER_ALPHA: 120,
+  IDLE_ALPHA: 100,
+  TIP_DWELL: 25,
+  TIP_WRAP: 250,
+};
+
+export const SortCopy = {
+  NAME_HEADING: 'Player Name',
+  EMPTY: 'No houses are currently listed.',
+  ENTER: 'Enter House',
+};
+
+export const SEND_DELAY = 30;

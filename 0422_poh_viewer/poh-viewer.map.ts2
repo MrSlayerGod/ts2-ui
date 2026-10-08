@@ -1,6 +1,11 @@
 import { CS2, predictServerState, useServerState, useState } from 'ts2';
 
+import { Furniture, FurnitureRow } from '../0458_poh_furniture_creation/poh-furniture.data';
+import { stringFindAndReplace } from '../0491_barbassault_reward_shop/string-find-and-replace';
+import { Sprites } from '../lib/game/sprites';
 import { clientClock, playSound } from '../lib/lib.engine';
+import { enhancedAny } from '../lib/lib.overlay';
+import { serverTooltipHide, serverTooltipRepeat } from '../lib/server-tooltip';
 import {
   Layout,
   ViewerArt,
@@ -22,7 +27,21 @@ import {
   roomCell,
   roomComponent,
   setRoomCell,
+  tooltipRef,
 } from './poh-viewer.constants';
+import { RoomSprites, roomName, roomRow } from './poh-viewer.data';
+import {
+  PohHotspot,
+  PohHotspotPieceRow,
+  PohHotspotPieces,
+  PohHotspotRow,
+  PohHotspots,
+  PohRoomHotspotRow,
+  PohRoomHotspots,
+  PohRoomRow,
+  PohRooms,
+} from './poh-viewer.rooms.data';
+import { PohRoomId } from './poh-viewer.rooms.ids.data';
 import { buttonSkin } from './poh-viewer.side';
 
 export function pohViewerMap(rooms: Int, from: Coord, to: Coord, floor: Int): void {
@@ -77,7 +96,7 @@ export function pohViewerMap(rooms: Int, from: Coord, to: Coord, floor: Int): vo
       CS2.cc_create(mapRef, 3, index, false);
       index = index + 1;
       CS2.cc_size_set(cell, cell, 0, 0);
-      CS2.cc_position_set((k % Layout.GRID) * cell - offsetX, (k / Layout.GRID) * cell - offsetY, 0, 2);
+      CS2.cc_position_set(k % Layout.GRID * cell - offsetX, k / Layout.GRID * cell - offsetY, 0, 2);
       CS2.cc_fill_set(false);
       CS2.cc_hide_set(true);
       k = k + 1;
@@ -142,11 +161,11 @@ function roomLevel(packed: Int): Int {
 }
 
 function roomX(packed: Int): Int {
-  return (packed % Math.pow(2, 28)) / Math.pow(2, 14);
+  return packed % Math.pow(2, 28) / Math.pow(2, 14);
 }
 
 function roomZ(packed: Int): Int {
-  return (packed % Math.pow(2, 28)) % Math.pow(2, 14);
+  return packed % Math.pow(2, 28) % Math.pow(2, 14);
 }
 
 export function pohViewerPreviewFollow(): void {
@@ -157,7 +176,7 @@ export function pohViewerPreviewFollow(): void {
   const [offsetX] = useState(mapOffsetX);
   const [offsetY] = useState(mapOffsetY);
   const at: Int = (useServerState(ViewerVarbits.DESTINATION) - 1) % Layout.CELLS;
-  CS2.if_position_set((at % Layout.GRID) * cell - offsetX, (at / Layout.GRID) * cell - offsetY, 0, 2, previewRef);
+  CS2.if_position_set(at % Layout.GRID * cell - offsetX, at / Layout.GRID * cell - offsetY, 0, 2, previewRef);
 }
 
 export function pohViewerFloorWatch(): void {
@@ -426,4 +445,192 @@ function recolour(container: ComponentId, index: Int, colour: Int): void {
   if (CS2.cc_find(container, index)) {
     CS2.cc_colour_set(colour);
   }
+}
+
+export function pohViewerRoom(n: Int, room: PohRoomId, unused: Int, a: Int, b: Int, c: Int): void {
+  const cell: ComponentId = roomComponent(n);
+  if (cell === -1) {
+    return;
+  }
+  let low: Int = a;
+  let high: Int = b;
+  if (CS2.testbit(high, 30)) {
+    low = CS2.bit_set(low, 31);
+    high = CS2.bit_clear(high, 30);
+  }
+  CS2.if_hide_set(true, cell);
+  const x: Int = bitsOf(low, 0, 3);
+  const z: Int = bitsOf(low, 3, 3);
+  const level: Int = bitsOf(low, 6, 2);
+  const rotation: Int = bitsOf(low, 8, 2);
+  const type: Int = bitsOf(low, 10, 5);
+  const name: String = roomName(type);
+  const tip: String = roomTooltip(name, room, type, low, high, c);
+  const selected: Int = useServerState(ViewerVarbits.SELECTED_ROOM);
+  CS2.if_op_base_set(`<col=ff9040>${name}</col>`, cell);
+  setRoomCell(n, packRoom(x, level, z));
+  CS2.cc_all_delete(cell);
+  CS2.cc_create(cell, 5, 0, false);
+  CS2.cc_size_set(0, 0, 1, 1);
+  CS2.cc_position_set(0, 0, 1, 1);
+  CS2.cc_sprite_set(RoomSprites.get(type) ?? -1);
+  CS2.cc_set2dangle(16384 * (4 - rotation) % 65536);
+  CS2.cc_create(cell, 5, 1, false);
+  CS2.cc_size_set(0, 0, 1, 1);
+  CS2.cc_position_set(0, 0, 1, 1);
+  CS2.cc_sprite_set(Sprites.TRADEBACKING);
+  CS2.cc_tiling_set(true);
+  CS2.cc_transparency_set(75);
+  CS2.cc_hide_set(true);
+  CS2.cc_create(cell, 5, 2, false);
+  CS2.cc_size_set(17, 17, 0, 0);
+  CS2.cc_position_set(2, 2, 0, 0);
+  CS2.cc_sprite_set(Sprites.TICK);
+  CS2.cc_hide_set(selected !== n);
+  CS2.if_on_mouserepeat_set(() => roomHover(cell, tip), cell);
+  CS2.if_on_mouseleave_set(() => roomLeave(cell), cell);
+}
+
+export function pohViewerRoomIndicators(): void {
+  const selected: Int = useServerState(ViewerVarbits.SELECTED_ROOM);
+  let n: Int = 1;
+  while (n <= 38) {
+    const cell: ComponentId = roomComponent(n);
+    if (cell !== -1 && CS2.cc_find(cell, 2)) {
+      CS2.cc_hide_set(selected !== n);
+    }
+    n = n + 1;
+  }
+}
+
+function roomHover(cell: ComponentId, tip: String): void {
+  if (CS2.cc_find(cell, 2)) {
+    CS2.cc_transparency_set(175);
+  }
+  serverTooltipRepeat(tooltipRef, cell, tip, 512 / 2);
+}
+
+function roomLeave(cell: ComponentId): void {
+  if (CS2.cc_find(cell, 2)) {
+    CS2.cc_transparency_set(0);
+  }
+  serverTooltipHide(tooltipRef);
+}
+
+function bitsOf(value: Int, from: Int, count: Int): Int {
+  let out: Int = 0;
+  let k: Int = 0;
+  while (k < count) {
+    if (CS2.testbit(value, from + k)) {
+      out = CS2.bit_set(out, k);
+    }
+    k = k + 1;
+  }
+  return out;
+}
+
+function hotspotChoice(slot: Int, a: Int, b: Int, c: Int): Int {
+  switch (slot) {
+    case 0:
+      return bitsOf(a, 15, 3) + bitsOf(b, 0, 2) * 8 + bitsOf(c, 0, 3) * 32;
+    case 1:
+      return bitsOf(a, 18, 3) + bitsOf(b, 2, 2) * 8 + bitsOf(c, 3, 3) * 32;
+    case 2:
+      return bitsOf(a, 21, 3) + bitsOf(b, 4, 2) * 8 + bitsOf(c, 6, 3) * 32;
+    case 3:
+      return bitsOf(a, 24, 2) + bitsOf(b, 6, 3) * 4 + bitsOf(c, 9, 2) * 32;
+    case 4:
+      return bitsOf(a, 26, 2) + bitsOf(b, 9, 3) * 4;
+    case 5:
+      return bitsOf(a, 28, 2) + bitsOf(b, 12, 3) * 4;
+    case 6:
+      return bitsOf(a, 30, 2) + bitsOf(b, 15, 3) * 4;
+    case 7:
+      return bitsOf(b, 18, 5);
+    case 8:
+      return bitsOf(b, 23, 5);
+  }
+  return 0;
+}
+
+function roomTooltip(name: String, room: PohRoomId, type: Int, a: Int, b: Int, c: Int): String {
+  let grey: String = '<col=7f7f7f>';
+  if (enhancedAny()) {
+    grey = '<col=adadad>';
+  }
+  let text: String = `${name}:`;
+  let built: Int = 0;
+  const typeRow: PohRoomRow | null = roomRow(type);
+  const sent: PohRoomRow | null = pohRoomOf(room);
+  if (typeRow !== null && sent !== null) {
+    let slot: Int = 0;
+    while (slot < typeRow.hotspotCount) {
+      if (slot < sent.hotspotCount) {
+        const piece: String = hotspotPiece(sent.hotspotFirst + slot, hotspotChoice(slot, a, b, c));
+        if (piece.length > 0) {
+          const shown: String = stringFindAndReplace(piece, ' ', '\u00a0');
+          if (built > 0) {
+            text = `${text}, ${shown}`;
+          } else {
+            text = `${text}<br>${grey}${shown}`;
+          }
+          built = built + 1;
+        }
+      }
+      slot = slot + 1;
+    }
+  }
+  if (built > 0) {
+    return `${text}</col>`;
+  }
+  return `${text} ${grey}(empty)</col>`;
+}
+
+function hotspotPiece(at: Int, choice: Int): String {
+  if (choice === 0) {
+    return '';
+  }
+  const slot: PohRoomHotspotRow | null = PohRoomHotspots.at(at);
+  if (slot === null) {
+    return '';
+  }
+  if (slot.hotspot === PohHotspot.NULL) {
+    return '';
+  }
+  const hotspot: PohHotspotRow | null = PohHotspots.at(slot.hotspot);
+  if (hotspot === null) {
+    return '';
+  }
+  if (choice > hotspot.pieceCount) {
+    return '';
+  }
+  const entry: PohHotspotPieceRow | null = PohHotspotPieces.at(hotspot.pieceFirst + choice - 1);
+  if (entry === null) {
+    return '';
+  }
+  let i: Int = 0;
+  while (i < Furniture.length) {
+    const row: FurnitureRow | null = Furniture.at(i);
+    if (row !== null) {
+      if (row.id === entry.piece) {
+        return row.name;
+      }
+    }
+    i = i + 1;
+  }
+  return '';
+}
+
+function pohRoomOf(room: PohRoomId): PohRoomRow | null {
+  let i: Int = 0;
+  while (i < PohRooms.length) {
+    const row: PohRoomRow | null = PohRooms.at(i);
+    if (row !== null) {
+      if (row.id === room) {
+        return row;
+      }
+    }
+    i = i + 1;
+  }
+  return null;
 }

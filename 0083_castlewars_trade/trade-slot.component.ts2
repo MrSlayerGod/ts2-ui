@@ -16,8 +16,8 @@ export function tradeSlotShown(item: ItemName): Int {
 export function TradeSlot({ item, position }: { item: ItemName; position: Int }): Component {
   return (
     <sprite
-      x={(position % Grid.COLUMNS) * Grid.COLUMN_PITCH}
-      y={(position / Grid.COLUMNS) * Grid.ROW_PITCH}
+      x={position % Grid.COLUMNS * Grid.COLUMN_PITCH}
+      y={position / Grid.COLUMNS * Grid.ROW_PITCH}
       w={Grid.SLOT_W}
       h={Grid.SLOT_H}
       item={item}

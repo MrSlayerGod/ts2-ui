@@ -2,10 +2,30 @@ import { useState } from 'ts2';
 
 import { clientClock } from '../lib/lib.engine';
 import { clanwarsOpponentchangetime, raidsCount } from '../lib/game/varcs';
+import {
+  raidsListBuilt,
+  raidsListData,
+  raidsListDeadHigh,
+  raidsListDeadLow,
+  raidsListPressedSlot,
+  raidsListPressedUntil,
+} from './raids-lobby-partylist.state';
 
 export function resetRaidsPartyList(): void {
   const [, setCount] = useState(raidsCount);
   const [, setFetchedAt] = useState(clanwarsOpponentchangetime);
+  const [, setData] = useState(raidsListData);
+  const [, setBuilt] = useState(raidsListBuilt);
+  const [, setPressed] = useState(raidsListPressedSlot);
+  const [, setPressedUntil] = useState(raidsListPressedUntil);
+  const [, setLow] = useState(raidsListDeadLow);
+  const [, setHigh] = useState(raidsListDeadHigh);
   setCount(0);
   setFetchedAt(clientClock());
+  setData('');
+  setBuilt(0);
+  setPressed(-1);
+  setPressedUntil(0);
+  setLow(0);
+  setHigh(0);
 }

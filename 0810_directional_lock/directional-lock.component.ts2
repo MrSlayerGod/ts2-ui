@@ -5,16 +5,19 @@ import { ConfirmButton } from './confirm-button.component';
 import { DirectionButton } from './direction-button.component';
 import { DirectionalLockCloseButton } from './directional-lock-close-button.component';
 import { ResetButton } from './reset-button.component';
+import { useState } from 'ts2';
+
 import { Direction, LockColors, LockLayout, LockSprites, LockText } from './directional-lock.constants';
+import { lockBodySprite, resetLockBody } from './directional-lock.state';
 
 export function DirectionalLock(): Component {
   return (
-    <layer x="center" y="center" w={LockLayout.WINDOW_W} h={LockLayout.WINDOW_H}>
+    <layer x="center" y="center" w={LockLayout.WINDOW_W} h={LockLayout.WINDOW_H} onLoad={() => resetLockBody()}>
       <SteelFrame backdrop />
 
       <layer x="center" y="center" w={{ fill: LockLayout.WELL_INSET }} h={{ fill: LockLayout.WELL_INSET }}>
         <layer x="center" y={LockLayout.DIAL_Y} w={LockLayout.DIAL_BOX} h={LockLayout.DIAL_BOX}>
-          <sprite x="center" y="center" w={LockLayout.BODY_W} h={LockLayout.BODY_H} sprite={LockSprites.BODY} />
+          <LockBody />
 
           <layer x="center" y={LockLayout.ARROW_INSET} w={LockLayout.ARROW_BOX} h={LockLayout.ARROW_BOX}>
             <DirectionButton label={LockText.UP} icon={LockSprites.ARROW_UP} direction={Direction.UP} />
@@ -69,4 +72,10 @@ export function DirectionalLock(): Component {
       <DirectionalLockCloseButton />
     </layer>
   );
+}
+
+function LockBody(): Component {
+  const [body] = useState(lockBodySprite);
+  const sprite: Sprite = body === -1 ? LockSprites.BODY : body as Sprite;
+  return <sprite x="center" y="center" w={LockLayout.BODY_W} h={LockLayout.BODY_H} sprite={sprite} />;
 }

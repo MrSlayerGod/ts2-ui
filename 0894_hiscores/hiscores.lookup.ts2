@@ -1,0 +1,103 @@
+import { CS2, useState } from 'ts2';
+
+import { hiscoresQueueLookup, hiscoresType } from '../lib/game/varcs';
+import { Sounds } from '../lib/game/sounds';
+import { clientClock } from '../lib/lib.engine';
+import { enhancedAny } from '../0134_settings/settings.helpers';
+
+import { clampType } from './hiscores.helpers';
+import { hiscoresFailed, hiscoresFailedAt, hiscoresLoaded, hiscoresLoading, hiscoresName } from './hiscores.state';
+
+export function hiscoresLookup(raw: String, type: Int): void {
+  const [, setFailed] = useState(hiscoresFailed);
+  const [, setType] = useState(hiscoresType);
+  const [, setName] = useState(hiscoresName);
+  const [, setLoading] = useState(hiscoresLoading);
+  setFailed(0);
+  const status: Int = CS2.native_hiscore_status_get();
+  if (status === 2 || status === 3) {
+    CS2.native_hiscore_clear();
+  } else if (status === 1) {
+    CS2.message("You can't do that right now, already loading a players hiscores.");
+    return;
+  }
+  const name: String = CS2.tags_remove(raw);
+  if (CS2.string_length(name) <= 0) {
+    return;
+  }
+  const board: Int = clampType(type);
+  setType(board);
+  if (board === 7 || board === 8) {
+    CS2.native_hiscore_api_set(2);
+  } else {
+    CS2.native_hiscore_api_set(0);
+  }
+  CS2.native_hiscore_lookup(name, board);
+  setName(name);
+  setLoading(1);
+}
+
+export function hiscoresPoll(name: String): void {
+  if (clientClock() % 10 !== 0) {
+    return;
+  }
+  const status: Int = CS2.native_hiscore_status_get();
+  if (status === 1) {
+    return;
+  }
+  if (status === 2) {
+    hiscoresLoadedResult();
+    return;
+  }
+  if (status === 3) {
+    hiscoresFailedResult();
+    const error: String = CS2.native_hiscore_error_get();
+    if (CS2.string_length(error) > 0) {
+      CS2.message(`Unable to load hiscores for ${name}: ${error}`);
+    } else {
+      CS2.message(`Unable to load hiscores for ${name}.`);
+    }
+    CS2.sound_effect(Sounds.PILLORY_WRONG, 1, 0);
+    const [, setFailed] = useState(hiscoresFailed);
+    const [, setFailedAt] = useState(hiscoresFailedAt);
+    setFailed(1);
+    setFailedAt(clientClock());
+    return;
+  }
+  hiscoresStopLoading();
+}
+
+export function hiscoresStopLoading(): void {
+  const [, setLoading] = useState(hiscoresLoading);
+  setLoading(0);
+}
+
+export function hiscoresLoadedResult(): void {
+  hiscoresStopLoading();
+  const [, setLoaded] = useState(hiscoresLoaded);
+  setLoaded(1);
+}
+
+export function hiscoresFailedResult(): void {
+  CS2.native_hiscore_clear();
+  hiscoresStopLoading();
+  const [, setLoaded] = useState(hiscoresLoaded);
+  setLoaded(0);
+}
+
+export function hiscoresQueued(opened: Int): Boolean {
+  if (clientClock() - opened < 50) {
+    return false;
+  }
+  const [queued] = useState(hiscoresQueueLookup);
+  const [type] = useState(hiscoresType);
+  hiscoresLookup(queued, type);
+  return true;
+}
+
+export function hiscoresLookupFrom(type: Int, name: String): void {
+  if (!enhancedAny()) {
+    return;
+  }
+  hiscoresLookup(name, type);
+}

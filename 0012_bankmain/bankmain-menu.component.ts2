@@ -1,0 +1,409 @@
+import { predictServerState, useInventory, useServerState, useState } from 'ts2';
+import { playSound, textWidth } from '../lib/lib.engine';
+import { onMobile, opsound } from '../lib/lib.helpers';
+import { groupDigits } from '../lib/lib.format';
+import { ButtonBackground } from '../0370_poh_options/button-background.component';
+import { ButtonBackgroundPressed } from '../0551_raids_storage_side/button-background-pressed.component';
+import { ThinBox } from '../lib/thin-box.component';
+import { Bank, BankSounds, BankVars, Grid } from './bankmain.constants';
+import {
+  FillerLabels,
+  FillerModes,
+  MenuColors,
+  MenuFonts,
+  MenuLayout,
+  MenuSprites,
+  MenuToggle,
+  MenuVars,
+  TabDisplayLabels,
+  ToggleKind,
+  ToggleRows,
+} from './bankmain-menu.constants';
+import { isPlaceholder } from './bankmain.helpers';
+import { bankTabDropdown } from './bankmain.state';
+
+export function BankMenu({ hidden }: { hidden: Boolean }): Component {
+  const showIncinerator: Int = useServerState(BankVars.SHOW_INCINERATOR);
+  const hideBankTut: Int = useServerState(MenuVars.HIDE_BANK_TUT);
+  const hideSideOps: Int = useServerState(MenuVars.HIDE_SIDE_OPS);
+  const bankOps: Int = useServerState(BankVars.BANKOPS_TOGGLE);
+  const hideDepositInv: Int = useServerState(BankVars.HIDE_DEPOSIT_INV);
+  const hideDepositWorn: Int = useServerState(BankVars.HIDE_DEPOSIT_WORN);
+  const hideContainers: Int = useServerState(BankVars.HIDE_DEPOSIT_CONTAINERS);
+  const forgetPopup: Int = useServerState(MenuVars.FORGET_POPUP);
+  const depositPotion: Int = useServerState(MenuVars.DEPOSIT_POTION);
+  const chugging: Int = useServerState(MenuVars.CHUGGING_FILL_OPEN);
+
+  return (
+    <layer x="center" y={{ bottom: 5 }} w={{ fill: 10 }} h={{ fill: 40 }} hide={hidden}>
+      <layer x="center" y={2} w={278} h={MenuLayout.DROPDOWN_H}>
+        <text
+          x="center"
+          y="center"
+          w="fill"
+          h="fill"
+          text="Tab display:"
+          font={MenuFonts.BOLD}
+          color={MenuColors.ORANGE}
+          shadow
+          valign="middle"
+        />
+        <TabDisplay />
+      </layer>
+
+      <MenuToggleRow which={MenuToggle.INCINERATOR} value={showIncinerator} />
+      <MenuToggleRow which={MenuToggle.BANK_TUT} value={hideBankTut} />
+      <MenuToggleRow which={MenuToggle.SIDE_OPS} value={hideSideOps} />
+      <MenuToggleRow which={MenuToggle.BANK_OPS} value={bankOps} />
+      <MenuToggleRow which={MenuToggle.DEPOSIT_INV} value={hideDepositInv} />
+      <MenuToggleRow which={MenuToggle.DEPOSIT_WORN} value={hideDepositWorn} />
+      <MenuToggleRow which={MenuToggle.DEPOSIT_CONTAINERS} value={hideContainers} />
+      <MenuToggleRow which={MenuToggle.FORGET_POPUP} value={forgetPopup} />
+      <MenuToggleRow which={MenuToggle.DEPOSIT_POTION} value={depositPotion} />
+      <MenuToggleRow which={MenuToggle.CHUGGING} value={chugging} />
+
+      <ReleasePlaceholders />
+      <DepositLockSettings />
+      <BankFillers />
+    </layer>
+  );
+}
+
+function TabDisplay(): Component {
+  const display: Int = useServerState(BankVars.TAB_DISPLAY);
+  const t1: Int = useServerState(BankVars.TAB_1);
+  const t2: Int = useServerState(BankVars.TAB_2);
+  const t3: Int = useServerState(BankVars.TAB_3);
+  const t4: Int = useServerState(BankVars.TAB_4);
+  const t5: Int = useServerState(BankVars.TAB_5);
+  const t6: Int = useServerState(BankVars.TAB_6);
+  const t7: Int = useServerState(BankVars.TAB_7);
+  const t8: Int = useServerState(BankVars.TAB_8);
+  const t9: Int = useServerState(BankVars.TAB_9);
+  const [, setOpen] = useState(bankTabDropdown);
+  const [lit, setLit] = useState(0);
+
+  const anyTab: Boolean = t1 > 0 || t2 > 0 || t3 > 0 || t4 > 0 || t5 > 0 || t6 > 0 || t7 > 0 || t8 > 0 || t9 > 0;
+  const count: Int = anyTab ? 3 : 4;
+  const label: String =
+    display >= 0 && display < count ? TabDisplayLabels.at(display) ?? 'First item in tab' : 'First item in tab';
+  const inset: Int = (MenuLayout.DROPDOWN_H - 16) / 2;
+  const mobile: Boolean = onMobile();
+
+  return (
+    <layer
+      x={{ right: 0 }}
+      y="center"
+      w={MenuLayout.DROPDOWN_W}
+      h="fill"
+      options={['Expand']}
+      onMouseEnter={mobile ? null : () => setLit(1)}
+      onMouseLeave={mobile ? null : () => setLit(0)}
+      onOptionSelect={() => {
+        playSound(BankSounds.SELECT);
+        setOpen(1);
+      }}
+    >
+      <sprite w="fill" h="fill" sprite={MenuSprites.BACKING} tiling />
+      <ThinBox />
+      <sprite
+        x={{ right: inset }}
+        y={inset}
+        w={16}
+        h={16}
+        sprite={MenuSprites.ARROW_DOWN}
+        tiling
+        transparency={lit === 1 ? 125 : 0}
+      />
+      <text
+        x={2}
+        y={{ bottom: 2 }}
+        w={{ fill: MenuLayout.DROPDOWN_H }}
+        h={{ fill: 4 }}
+        text={label}
+        font={MenuFonts.SMALL}
+        color={MenuColors.ORANGE}
+        shadow
+        align="center"
+        valign="middle"
+      />
+    </layer>
+  );
+}
+
+function MenuToggleRow({ which, value }: { which: Int; value: Int }): Component {
+  const row = ToggleRows.at(which);
+  const [lit, setLit] = useState(0);
+  if (row === null) {
+    return null;
+  }
+  const oneLine: Int = textWidth(row.label, 512, MenuFonts.BODY);
+  const wrapped: Int = textWidth(row.label, MenuLayout.LABEL_WRAP, MenuFonts.BODY);
+  const w: Int = (wrapped < oneLine ? wrapped : oneLine) + MenuLayout.LABEL_INSET;
+  const x: Int = row.left === 1 ? 478 - MenuLayout.COLUMN - w : MenuLayout.COLUMN;
+
+  const on: Boolean = row.kind === ToggleKind.HIDE ? value !== 1 : value === 1;
+  const op: String = row.kind === ToggleKind.ENABLE ? (on ? 'Disable' : 'Enable') : (on ? 'Hide' : 'Show');
+
+  return (
+    <layer
+      x={x}
+      y={row.top === 1 ? row.y : { center: row.y }}
+      w={w}
+      h={MenuLayout.ROW_H}
+      options={[op]}
+      optionSubject={`<col=ff9040>${row.label}</col>`}
+      onMouseEnter={() => setLit(1)}
+      onMouseLeave={() => setLit(0)}
+      onOptionSelect={(event) => {
+        if (event.option !== 1) {
+          return;
+        }
+        playSound(BankSounds.SELECT);
+        writeToggle(which, value === 1 ? 0 : 1);
+      }}
+    >
+      <sprite
+        x={0}
+        y="center"
+        w={MenuLayout.RADIO}
+        h={MenuLayout.RADIO}
+        sprite={on ? MenuSprites.RADIO_ON : MenuSprites.RADIO_OFF}
+      />
+      <text
+        x={{ right: 0 }}
+        y="center"
+        w={{ fill: MenuLayout.LABEL_INSET }}
+        h="fill"
+        text={row.label}
+        font={MenuFonts.BODY}
+        color={lit === 1 ? MenuColors.WHITE : MenuColors.ORANGE}
+        shadow
+        valign="middle"
+      />
+    </layer>
+  );
+}
+
+function writeToggle(which: Int, next: Int): void {
+  switch (which) {
+    case MenuToggle.INCINERATOR:
+      predictServerState(BankVars.SHOW_INCINERATOR, next);
+      return;
+    case MenuToggle.BANK_TUT:
+      predictServerState(MenuVars.HIDE_BANK_TUT, next);
+      return;
+    case MenuToggle.SIDE_OPS:
+      predictServerState(MenuVars.HIDE_SIDE_OPS, next);
+      return;
+    case MenuToggle.BANK_OPS:
+      predictServerState(BankVars.BANKOPS_TOGGLE, next);
+      return;
+    case MenuToggle.DEPOSIT_INV:
+      predictServerState(BankVars.HIDE_DEPOSIT_INV, next);
+      return;
+    case MenuToggle.DEPOSIT_WORN:
+      predictServerState(BankVars.HIDE_DEPOSIT_WORN, next);
+      return;
+    case MenuToggle.DEPOSIT_CONTAINERS:
+      predictServerState(BankVars.HIDE_DEPOSIT_CONTAINERS, next);
+      return;
+    case MenuToggle.FORGET_POPUP:
+      predictServerState(MenuVars.FORGET_POPUP, next);
+      return;
+    case MenuToggle.DEPOSIT_POTION:
+      predictServerState(MenuVars.DEPOSIT_POTION, next);
+      return;
+    case MenuToggle.CHUGGING:
+      predictServerState(MenuVars.CHUGGING_FILL_OPEN, next);
+      return;
+  }
+}
+
+function ReleasePlaceholders(): Component {
+  const bank = useInventory(Bank.INV);
+  const [lit, setLit] = useState(0);
+  let count: Int = 0;
+  let slot: Int = 0;
+  while (slot < Grid.SLOTS) {
+    if (isPlaceholder(bank[slot])) {
+      count = count + 1;
+    }
+    slot = slot + 1;
+  }
+  const any: Boolean = count > 0;
+  const hover: Boolean = any && !onMobile();
+  const label: String = any ? `Release all placeholders (${groupDigits(count, ',')})` : 'Release all placeholders';
+
+  return (
+    <layer
+      x={{ center: -114 }}
+      y={182}
+      w={205}
+      h={36}
+      options={[label]}
+      onMouseEnter={hover ? () => setLit(1) : null}
+      onMouseLeave={hover ? () => setLit(0) : null}
+      onOptionSelect={(event) => {
+        if (any) {
+          if (event.option === 1) {
+            playSound(BankSounds.SELECT);
+          }
+        } else {
+          opsound(event.option, 2);
+        }
+      }}
+    >
+      {any ? <ButtonBackgroundPressed /> : <ButtonBackground />}
+      <sprite x={3} y="center" w={29} h={22} sprite={MenuSprites.PLACEHOLDER} />
+      <text
+        x={20}
+        y="center"
+        w={{ fill: 20 }}
+        h="fill"
+        text={label}
+        font={MenuFonts.BODY}
+        color={any ? (lit === 1 ? MenuColors.WHITE : MenuColors.ORANGE) : MenuColors.GREY}
+        shadow
+        align="center"
+        valign="middle"
+      />
+    </layer>
+  );
+}
+
+function DepositLockSettings(): Component {
+  const ignoreLocks: Int = useServerState(MenuVars.IGNORE_INV_LOCKS);
+  const [lit, setLit] = useState(0);
+  const mobile: Boolean = onMobile();
+  return (
+    <layer
+      x={{ center: -114 }}
+      y={231}
+      w={205}
+      h={36}
+      options={['Deposit Lock Settings', ignoreLocks === 1 ? 'Enable inventory locks' : 'Disable inventory locks']}
+      onMouseEnter={mobile ? null : () => setLit(1)}
+      onMouseLeave={mobile ? null : () => setLit(0)}
+      onOptionSelect={(event) => opsound(event.option, 6)}
+    >
+      <ButtonBackground />
+      <sprite x={-1} y="center" w={29} h={22} sprite={MenuSprites.PLACEHOLDER} />
+      <sprite x={15} y={{ center: 1 }} w={22} h={22} sprite={MenuSprites.LOCK} />
+      <text
+        x={20}
+        y="center"
+        w={{ fill: 20 }}
+        h="fill"
+        text="Deposit Lock Settings"
+        font={MenuFonts.BODY}
+        color={lit === 1 ? MenuColors.WHITE : MenuColors.ORANGE}
+        shadow
+        align="center"
+        valign="middle"
+      />
+    </layer>
+  );
+}
+
+function BankFillers(): Component {
+  const mode: Int = useServerState(MenuVars.FILLER_MODE);
+  return (
+    <layer x={{ center: 115 }} y={174} w={204} h={103}>
+      <FillerButton index={0} mode={mode} />
+      <FillerButton index={1} mode={mode} />
+      <FillerButton index={2} mode={mode} />
+      <FillerButton index={3} mode={mode} />
+      <FillerButton index={4} mode={mode} />
+      <FillConfirm />
+      <text
+        x="center"
+        y={5}
+        w="fill"
+        h={17}
+        text="Bank Fillers"
+        font={MenuFonts.BOLD}
+        color={MenuColors.ORANGE}
+        shadow
+        align="center"
+        valign="middle"
+      />
+      <rect x="center" y="center" w="fill" h="fill" color={MenuColors.RULE_OUTER} />
+      <rect x="center" y="center" w={{ fill: 2 }} h={{ fill: 2 }} color={MenuColors.RULE_INNER} />
+    </layer>
+  );
+}
+
+function FillerButton({ index, mode }: { index: Int; mode: Int }): Component {
+  const value: Int = FillerModes.at(index) ?? 0;
+  const label: String = FillerLabels.at(index) ?? '';
+  const x: Int = 6 + index * 39;
+  const selected: Boolean = value === 0 ? (mode < 1 || mode > 4) : mode === value;
+  return (
+    <>
+      <sprite
+        x={x}
+        y={25}
+        w={36}
+        h={36}
+        sprite={selected ? MenuSprites.FILLER_ON : MenuSprites.FILLER_OFF}
+        options={[label]}
+        onOptionSelect={(event) => {
+          if (event.option !== 1) {
+            return;
+          }
+          predictServerState(MenuVars.FILLER_MODE, value);
+        }}
+      />
+      <text
+        x={x}
+        y={25}
+        w={36}
+        h={36}
+        text={label}
+        font={MenuFonts.BOLD}
+        color={MenuColors.CREAM}
+        hover={{ color: MenuColors.CREAM_HOVER }}
+        shadow
+        align="center"
+        valign="middle"
+      />
+    </>
+  );
+}
+
+function FillConfirm(): Component {
+  const [lit, setLit] = useState(0);
+  return (
+    <layer
+      x={4}
+      y={{ bottom: 4 }}
+      w={{ fill: 8 }}
+      h={36}
+      options={['Fill']}
+      onMouseEnter={() => setLit(1)}
+      onMouseLeave={() => setLit(0)}
+      onOptionSelect={(event) => {
+        if (event.option === 1) {
+          playSound(BankSounds.SELECT);
+        }
+      }}
+    >
+      <sprite x="center" y={0} w={130} h={36} sprite={MenuSprites.RED_MIDDLE} tiling />
+      <sprite x={0} y={0} w={36} h={36} sprite={MenuSprites.RED_LEFT} />
+      <sprite x={{ right: 0 }} y={0} w={36} h={36} sprite={MenuSprites.RED_RIGHT} />
+      <text
+        x={0}
+        y={0}
+        w={196}
+        h={36}
+        text="Fill"
+        font={MenuFonts.BOLD}
+        color={lit === 1 ? MenuColors.RED : MenuColors.CREAM}
+        shadow
+        align="center"
+        valign="middle"
+      />
+    </layer>
+  );
+}

@@ -1,5 +1,6 @@
 import { CloseButton } from '../0877_wgs_rune_door/close-button.component';
 import { graphicSwapper } from '../lib/lib.helpers';
+import { strip1, strip2, strip3, strip4 } from './coa-decoder-panel.strips';
 import {
   ButtonLabel,
   DecoderArt,
@@ -135,6 +136,7 @@ export function CoaDecoderPanel(): Component {
 
       <layer x={0} y={0} w={Layout.stage.W} h={Layout.stage.H}>
         <sprite
+          ref={strip1}
           x={Layout.strip.X}
           y={StripY.ONE}
           w={Layout.strip.W}
@@ -144,6 +146,7 @@ export function CoaDecoderPanel(): Component {
           optionSubject={StripLabel.ONE}
         />
         <sprite
+          ref={strip2}
           x={Layout.strip.X}
           y={StripY.TWO}
           w={Layout.strip.W}
@@ -153,6 +156,7 @@ export function CoaDecoderPanel(): Component {
           optionSubject={StripLabel.TWO}
         />
         <sprite
+          ref={strip3}
           x={Layout.strip.X}
           y={StripY.THREE}
           w={Layout.strip.W}
@@ -162,6 +166,7 @@ export function CoaDecoderPanel(): Component {
           optionSubject={StripLabel.THREE}
         />
         <sprite
+          ref={strip4}
           x={Layout.strip.X}
           y={StripY.FOUR}
           w={Layout.strip.W}

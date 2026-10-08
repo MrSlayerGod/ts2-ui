@@ -1,0 +1,45 @@
+/** @wire */
+export enum ToaSummaryTitle {
+  THE_LEECH = 1,
+  THE_SWIMMER = 2,
+  THE_SPECIALIST = 3,
+  THE_PICKY_EATER = 4,
+  THE_PEASANT = 5,
+  THE_SHOWOFF = 6,
+  THE_TANK = 7,
+  THE_BALLER = 8,
+  THE_ENTOMOPHOBE = 9,
+  THE_MOTH = 10,
+  THE_CARRY = 11,
+  THE_ANCHOR = 12,
+  THE_GLUTTON = 13,
+  THE_SORCERER = 14,
+  THE_ARCHER = 15,
+  THE_BRAWLER = 16,
+  THE_CLUTCH = 17,
+}
+
+export interface ToaSummaryTitleRow {
+  readonly name: String;
+  readonly description: String;
+}
+
+export const ToaSummaryTitles = listOf<ToaSummaryTitleRow>([
+  { name: 'The Leech', description: 'Had the lowest contribution in at least five encounters.' },
+  { name: 'The Swimmer', description: "Spent at least 30 seconds in Zebak's pool." },
+  { name: 'The Specialist', description: 'Used the most special attack energy.' },
+  { name: 'The Picky Eater', description: 'Used the least food.' },
+  { name: 'The Peasant', description: 'Finished the raid with the lowest value loadout.' },
+  { name: 'The Showoff', description: 'Finished the raid with the highest value loadout.' },
+  { name: 'The Tank', description: 'Took the most damage.' },
+  { name: 'The Baller', description: 'Dropped more than 20 orbs while fighting Akkha.' },
+  { name: 'The Entomophobe', description: 'Killed the most scarabs.' },
+  { name: 'The Moth', description: 'Died to a light beam in the Path of Het.' },
+  { name: 'The Carry', description: 'Had the highest overall damage.' },
+  { name: 'The Anchor', description: 'Died the most.' },
+  { name: 'The Glutton', description: 'Ate the most food.' },
+  { name: 'The Sorcerer', description: 'Dealt the most magic damage.' },
+  { name: 'The Archer', description: 'Dealt the most ranged damage.' },
+  { name: 'The Brawler', description: 'Dealt the most melee damage.' },
+  { name: 'The Clutch', description: 'Finished off the Wardens on their own.' },
+]);

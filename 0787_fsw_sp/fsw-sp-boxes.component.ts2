@@ -1,0 +1,130 @@
+import { sessionState, useInterval, useRef, useServerStateOnce, useState, useUniverse } from 'ts2';
+
+import { Varbits } from '../lib/game/varbits';
+import { clientClock } from '../lib/lib.engine';
+import { FswBoxFrame } from '../0784_fsw_sp_points/fsw-box-frame.component';
+import { FswBoxStyle, FswBoxes } from '../0784_fsw_sp_points/fsw-box.data';
+import { FswButton } from '../0784_fsw_sp_points/fsw-button.component';
+import { FswButtonAction, FswButtonLayout, FswColor, FswFonts } from '../0784_fsw_sp_points/fsw.constants';
+import { fswClick } from '../0784_fsw_sp_points/fsw.helpers';
+
+export const fswSpBuilt = sessionState(0);
+
+export function fswSpInit(): void {
+  const [, setBuilt] = useState(fswSpBuilt);
+  setBuilt(1);
+}
+
+export function resetFswSp(): void {
+  const [, setBuilt] = useState(fswSpBuilt);
+  setBuilt(0);
+}
+
+export function FswSpBox(): Component {
+  const [built] = useState(fswSpBuilt);
+  const box = useUniverse();
+  if (built !== 1) {
+    return null;
+  }
+  return (
+    <>
+      <rect x={1} y={1} w={box.width - 2} h={box.height - 2} fill color={FswColor.FRAME} />
+      <FswBoxFrame x={0} y={0} w={box.width} h={box.height} style={FswBoxes.at(FswBoxStyle.UNLOCKED)} />
+    </>
+  );
+}
+
+export function FswSpButton({ label, option }: { label: String; option: String }): Component {
+  const [built] = useState(fswSpBuilt);
+  if (built !== 1) {
+    return null;
+  }
+  return (
+    <layer x={0} y={0} w="fill" h="fill">
+      <FswButton
+        label={label}
+        option={option}
+        font={FswFonts.P11}
+        hoverColor={FswColor.YELLOW}
+        action={FswButtonAction.FLASH}
+      />
+    </layer>
+  );
+}
+
+export function FswSpBadge(): Component {
+  const [built] = useState(fswSpBuilt);
+  const calculated: Int = useServerStateOnce(Varbits.FSW_OPTING_OUT_FINAL_POINTS_CALCULATED);
+  if (built !== 1) {
+    return null;
+  }
+  return calculated === 1 ? (
+    <layer x={0} y={0} w="fill" h="fill">
+      <LockedBadge />
+    </layer>
+  ) : (
+    <layer x={0} y={0} w="fill" h="fill">
+      <LiveBadge />
+    </layer>
+  );
+}
+
+function LockedBadge(): Component {
+  const me = useUniverse();
+  return (
+    <>
+      <rect x={0} y={0} w="fill" h="fill" fill color={FswColor.WHITE} transparency={FswButtonLayout.HIT_TRANSPARENCY} />
+      <rect x={1} y={1} w={me.width - 2} h={me.height - 2} fill color={FswColor.GREY} />
+      <FswBoxFrame x={0} y={0} w={me.width} h={me.height} style={FswBoxes.at(FswBoxStyle.UNLOCKED)} />
+    </>
+  );
+}
+
+function LiveBadge(): Component {
+  const me = useUniverse();
+  const hit = useRef();
+  const [tone, setTone] = useState(FswColor.AMBER);
+  const [flash, setFlash] = useState(0);
+  const deadline: Int = clientClock() + FswButtonLayout.FLASH_CYCLES;
+  useInterval(
+    flash !== 0
+      ? () => {
+          if (clientClock() >= deadline) {
+            setFlash(0);
+            setTone(FswColor.AMBER);
+          }
+        }
+      : undefined,
+    hit,
+  );
+  const bedColor: Int = flash !== 0 ? FswColor.CREAM : tone;
+  let hoverable: Boolean = false;
+  if (flash === 0) {
+    hoverable = true;
+  }
+  return (
+    <>
+      <rect
+        ref={hit}
+        x={0}
+        y={0}
+        w="fill"
+        h="fill"
+        fill
+        color={FswColor.WHITE}
+        transparency={FswButtonLayout.HIT_TRANSPARENCY}
+        options={['Refresh <col=ff981f>Points</col>']}
+        onMouseRepeat={hoverable ? () => setTone(FswColor.YELLOW) : undefined}
+        onMouseLeave={hoverable ? () => setTone(FswColor.GREY) : undefined}
+        onOptionSelect={() => {
+          fswClick();
+          setFlash(1);
+        }}
+      />
+      <rect x={1} y={1} w={me.width - 2} h={me.height - 2} fill color={bedColor} />
+      <layer x={0} y={0} w="fill" h="fill">
+        <FswBoxFrame x={0} y={0} w={me.width} h={me.height} style={FswBoxes.at(FswBoxStyle.UNLOCKED)} />
+      </layer>
+    </>
+  );
+}

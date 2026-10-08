@@ -1,4 +1,4 @@
-import { CS2, useDerived, useRef, useServerState, useState } from 'ts2';
+import { useDerived, useServerStateOnce, useState } from 'ts2';
 import { onMobile, opsound } from '../lib/lib.helpers';
 import {
   CellSkin,
@@ -20,12 +20,14 @@ import {
   truncateToWidth,
   valueTextWidth,
 } from './clans-events-create.helpers';
-import { openField } from './dropdown.state';
+import { openField, openSet } from './dropdown.state';
 
 export function SelectionCell({ field, cellWidth = 110 }: { field: EventField; cellWidth?: Int }): Component {
   const [open, setOpen] = useState(openField);
-  const type: Int = useServerState(EventVarbits.TYPE);
+  const [, setOpenSet] = useState(openSet);
+  const type: Int = useServerStateOnce(EventVarbits.TYPE);
   const value: Int = useDerived(() => eventValue(field));
+  const [lit, setLit] = useState(0);
 
   const set: OptionSet = fieldOptionSet(field, type);
   const text: String = truncateToWidth(selectedOptionLabel(set, value), valueTextWidth(cellWidth), EventFonts.VALUE);
@@ -34,31 +36,49 @@ export function SelectionCell({ field, cellWidth = 110 }: { field: EventField; c
   if (open === field) {
     isOpen = 1;
   }
-  const backing = useRef();
-  const arrow = useRef();
+  let backingSkin: Int = CellSkin.REST_TRANSPARENCY;
+  let arrowSkin: Int = CellSkin.REST_TRANSPARENCY;
+  let openArrow: Int = 0;
+  if (isOpen === 1) {
+    if (lit === 3) {
+      backingSkin = CellSkin.HOVER_TRANSPARENCY;
+      arrowSkin = CellSkin.HOVER_ARROW_TRANSPARENCY;
+    } else {
+      backingSkin = CellSkin.OPEN_TRANSPARENCY;
+      openArrow = 1;
+    }
+  } else if (lit === 1) {
+    backingSkin = CellSkin.HOVER_TRANSPARENCY;
+    arrowSkin = CellSkin.HOVER_ARROW_TRANSPARENCY;
+  }
 
   return (
     <>
       <sprite
-        ref={backing}
         x="center"
         y="bottom"
         w="fill"
         h={Layout.VALUE_H}
         sprite={EventArt.CELL_BACKING}
         tiling
-        transparency={isOpen === 1 ? CellSkin.OPEN_TRANSPARENCY : CellSkin.REST_TRANSPARENCY}
-        onClick={() => setOpen(field)}
+        transparency={backingSkin}
+        onClick={() => {
+          setLit(2);
+          setOpenSet(set);
+          setOpen(field);
+        }}
         onMouseEnter={() => {
           if (isOpen === 0 && !onMobile()) {
-            backing.transparency = CellSkin.HOVER_TRANSPARENCY;
-            arrow.transparency = CellSkin.HOVER_ARROW_TRANSPARENCY;
+            if (lit === 2) {
+              setLit(3);
+            } else {
+              setLit(1);
+            }
           }
         }}
         onMouseLeave={() => {
-          if (isOpen === 0) {
-            backing.transparency = CellSkin.REST_TRANSPARENCY;
-            arrow.transparency = CellSkin.REST_TRANSPARENCY;
+          if (isOpen === 0 || lit === 2) {
+            setLit(0);
           }
         }}
       />
@@ -71,12 +91,12 @@ export function SelectionCell({ field, cellWidth = 110 }: { field: EventField; c
         color={EventColor.OUTLINE_INNER}
       />
       <sprite
-        ref={arrow}
         x={{ right: 2 }}
         y={{ bottom: 2 }}
         w={Layout.ARROW}
         h={Layout.ARROW}
-        sprite={isOpen === 1 ? EventArt.ARROW_OPEN : EventArt.ARROW_CLOSED}
+        sprite={openArrow === 1 ? EventArt.ARROW_OPEN : EventArt.ARROW_CLOSED}
+        transparency={arrowSkin}
       />
       <text
         x={{ left: 2 }}
@@ -108,30 +128,24 @@ export function SelectionCell({ field, cellWidth = 110 }: { field: EventField; c
 
 export function RankCell(): Component {
   const text: String = truncateToWidth(joinRankTitle(), valueTextWidth(Layout.CELL_W), EventFonts.VALUE);
-  const backing = useRef();
-  const arrow = useRef();
+  const [lit, setLit] = useState(0);
 
   return (
     <>
       <sprite
-        ref={backing}
         x="center"
         y="bottom"
         w="fill"
         h={Layout.VALUE_H}
         sprite={EventArt.CELL_BACKING}
         tiling
-        transparency={CellSkin.REST_TRANSPARENCY}
+        transparency={lit === 1 ? CellSkin.HOVER_TRANSPARENCY : CellSkin.REST_TRANSPARENCY}
         onMouseEnter={() => {
           if (!onMobile()) {
-            backing.transparency = CellSkin.HOVER_TRANSPARENCY;
-            arrow.transparency = CellSkin.HOVER_ARROW_TRANSPARENCY;
+            setLit(1);
           }
         }}
-        onMouseLeave={() => {
-          backing.transparency = CellSkin.REST_TRANSPARENCY;
-          arrow.transparency = CellSkin.REST_TRANSPARENCY;
-        }}
+        onMouseLeave={() => setLit(0)}
       />
       <rect x="center" y="bottom" w="fill" h={Layout.VALUE_H} color={EventColor.OUTLINE_OUTER} />
       <rect
@@ -142,12 +156,12 @@ export function RankCell(): Component {
         color={EventColor.OUTLINE_INNER}
       />
       <sprite
-        ref={arrow}
         x={{ right: 2 }}
         y={{ bottom: 2 }}
         w={Layout.ARROW}
         h={Layout.ARROW}
         sprite={EventArt.ARROW_CLOSED}
+        transparency={lit === 1 ? CellSkin.HOVER_ARROW_TRANSPARENCY : CellSkin.REST_TRANSPARENCY}
       />
       <text
         x={{ left: 2 }}
@@ -179,19 +193,18 @@ export function RankCell(): Component {
 
 export function IntCell({ field }: { field: EventField }): Component {
   const value: Int = useDerived(() => eventValue(field));
-  const backing = useRef();
+  const [lit, setLit] = useState(0);
 
   return (
     <>
       <sprite
-        ref={backing}
         x="center"
         y="bottom"
         w="fill"
         h={Layout.VALUE_H}
         sprite={EventArt.CELL_BACKING}
         tiling
-        transparency={CellSkin.REST_TRANSPARENCY}
+        transparency={lit === 1 ? CellSkin.HOVER_TRANSPARENCY : CellSkin.REST_TRANSPARENCY}
       />
       <rect x="center" y="bottom" w="fill" h={Layout.VALUE_H} color={EventColor.OUTLINE_OUTER} />
       <rect
@@ -206,12 +219,10 @@ export function IntCell({ field }: { field: EventField }): Component {
         h="fill"
         onMouseEnter={() => {
           if (!onMobile()) {
-            backing.transparency = CellSkin.HOVER_TRANSPARENCY;
+            setLit(1);
           }
         }}
-        onMouseLeave={() => {
-          backing.transparency = CellSkin.REST_TRANSPARENCY;
-        }}
+        onMouseLeave={() => setLit(0)}
       >
         <text
           x={2}

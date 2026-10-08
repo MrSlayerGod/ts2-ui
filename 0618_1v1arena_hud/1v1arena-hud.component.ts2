@@ -1,24 +1,42 @@
+import { onMounted, onUpdated, useInterval, useState } from 'ts2';
+
 import { SteelFrameEntrypoint } from '../lib/steel-frame-entrypoint.component';
 import { ButtonBackground } from './button-background.component';
-import { ArenaColor, ArenaFonts, ArenaSprites, ArenaTransparency, Layout, ReviewRows } from './1v1arena-hud.constants';
 import {
+  ArenaButton,
+  ArenaColor,
+  ArenaFonts,
+  ArenaSprites,
+  ArenaTransparency,
+  Layout,
+  ReviewRows,
+} from './1v1arena-hud.constants';
+import {
+  arenaFlashTick,
+  arenaHudOpen,
   collapseArenaHud,
   displaySlot,
   expandArenaHud,
-  hideLabel,
   hideSlot,
+  paintButtonLabel,
+  paintToggleLabel,
   pressArenaButton,
-  showLabel,
   showSlot,
-  spectatorLabel,
-  startAllLabel,
-  swapLabelColor,
 } from './1v1arena-hud.helpers';
+import {
+  arenaCollapsed,
+  arenaToggleColour,
+  spectatorColour,
+  spectatorFlashUntil,
+  startAllColour,
+  startAllFlashUntil,
+} from './1v1arena-hud.state';
 
 export function Arena1v1Hud(): Component {
   return (
-    <layer x="center" y="center" w="fill" h="fill">
+    <layer x="center" y="center" w="fill" h="fill" onLoad={() => arenaHudOpen()}>
       <layer
+        static
         ref={showSlot}
         x={Layout.SHOW_X}
         y="center"
@@ -27,27 +45,15 @@ export function Arena1v1Hud(): Component {
         hide
         noClickThrough
         options={['Show']}
-        onMouseEnter={() => swapLabelColor(showLabel, ArenaColor.HOVER)}
-        onMouseLeave={() => swapLabelColor(showLabel, ArenaColor.LABEL)}
+        onMouseEnter={() => paintToggleLabel(ArenaColor.HOVER)}
+        onMouseLeave={() => paintToggleLabel(ArenaColor.LABEL)}
         onOptionSelect={() => expandArenaHud()}
       >
         <ButtonBackground />
-        <text
-          ref={showLabel}
-          x="center"
-          y="center"
-          w="fill"
-          h="fill"
-          text="Show"
-          font={ArenaFonts.LABEL}
-          color={ArenaColor.LABEL}
-          align="center"
-          valign="middle"
-          shadow
-        />
+        <ShowLabel />
       </layer>
 
-      <layer ref={displaySlot} x={Layout.DISPLAY_X} y="center" w={Layout.DISPLAY_W} h={Layout.DISPLAY_H}>
+      <layer static ref={displaySlot} x={Layout.DISPLAY_X} y="center" w={Layout.DISPLAY_W} h={Layout.DISPLAY_H}>
         <sprite
           x="center"
           y="center"
@@ -60,6 +66,7 @@ export function Arena1v1Hud(): Component {
 
         <layer x="center" y="center" w={{ fill: Layout.CONTENTS_INSET }} h={{ fill: Layout.CONTENTS_INSET }} dragTarget>
           <layer
+            static
             ref={hideSlot}
             x={{ right: Layout.HIDE_INSET_X }}
             y={Layout.HIDE_Y}
@@ -67,24 +74,12 @@ export function Arena1v1Hud(): Component {
             h={Layout.HIDE_H}
             noClickThrough
             options={['Hide']}
-            onMouseEnter={() => swapLabelColor(hideLabel, ArenaColor.HOVER)}
-            onMouseLeave={() => swapLabelColor(hideLabel, ArenaColor.LABEL)}
+            onMouseEnter={() => paintToggleLabel(ArenaColor.HOVER)}
+            onMouseLeave={() => paintToggleLabel(ArenaColor.LABEL)}
             onOptionSelect={() => collapseArenaHud()}
           >
             <ButtonBackground />
-            <text
-              ref={hideLabel}
-              x="center"
-              y="center"
-              w="fill"
-              h="fill"
-              text="Hide"
-              font={ArenaFonts.LABEL}
-              color={ArenaColor.LABEL}
-              align="center"
-              valign="middle"
-              shadow
-            />
+            <HideLabel />
           </layer>
 
           <layer
@@ -94,24 +89,12 @@ export function Arena1v1Hud(): Component {
             h={Layout.SPECTATOR_H}
             noClickThrough
             options={['Spectator']}
-            onMouseRepeat={() => swapLabelColor(spectatorLabel, ArenaColor.HOVER)}
-            onMouseLeave={() => swapLabelColor(spectatorLabel, ArenaColor.LABEL)}
-            onOptionSelect={(event) => pressArenaButton(event.component, spectatorLabel)}
+            onMouseRepeat={() => paintButtonLabel(ArenaButton.SPECTATOR, ArenaColor.HOVER)}
+            onMouseLeave={() => paintButtonLabel(ArenaButton.SPECTATOR, ArenaColor.LABEL)}
+            onOptionSelect={() => pressArenaButton(ArenaButton.SPECTATOR)}
           >
             <ButtonBackground />
-            <text
-              ref={spectatorLabel}
-              x="center"
-              y="center"
-              w="fill"
-              h="fill"
-              text="Spectator"
-              font={ArenaFonts.LABEL}
-              color={ArenaColor.LABEL}
-              align="center"
-              valign="middle"
-              shadow
-            />
+            <SpectatorLabel />
           </layer>
 
           <layer
@@ -121,24 +104,12 @@ export function Arena1v1Hud(): Component {
             h={Layout.STARTALL_H}
             noClickThrough
             options={['Start All']}
-            onMouseRepeat={() => swapLabelColor(startAllLabel, ArenaColor.HOVER)}
-            onMouseLeave={() => swapLabelColor(startAllLabel, ArenaColor.LABEL)}
-            onOptionSelect={(event) => pressArenaButton(event.component, startAllLabel)}
+            onMouseRepeat={() => paintButtonLabel(ArenaButton.START_ALL, ArenaColor.HOVER)}
+            onMouseLeave={() => paintButtonLabel(ArenaButton.START_ALL, ArenaColor.LABEL)}
+            onOptionSelect={() => pressArenaButton(ArenaButton.START_ALL)}
           >
             <ButtonBackground />
-            <text
-              ref={startAllLabel}
-              x="center"
-              y="center"
-              w="fill"
-              h="fill"
-              text="Start All"
-              font={ArenaFonts.LABEL}
-              color={ArenaColor.LABEL}
-              align="center"
-              valign="middle"
-              shadow
-            />
+            <StartAllLabel />
           </layer>
 
           <layer
@@ -200,10 +171,116 @@ export function Arena1v1Hud(): Component {
               dragDeadTime={5}
             />
           ))}
+
+          <ArenaFlashHost />
         </layer>
 
         <SteelFrameEntrypoint />
       </layer>
+
+      <ArenaToggle />
     </layer>
   );
+}
+
+function ArenaToggle(): Component {
+  const [collapsed] = useState(arenaCollapsed);
+  const folded: Boolean = collapsed === 1;
+  onMounted(() => placeArenaToggle(folded));
+  onUpdated(() => placeArenaToggle(folded));
+  return <layer x={0} y={0} w={0} h={0} />;
+}
+
+function placeArenaToggle(folded: Boolean): void {
+  displaySlot.props = { hide: folded };
+  hideSlot.props = { hide: folded };
+  showSlot.props = { hide: !folded };
+}
+
+function ShowLabel(): Component {
+  const [colour] = useState(arenaToggleColour);
+  return (
+    <text
+      x="center"
+      y="center"
+      w="fill"
+      h="fill"
+      text="Show"
+      font={ArenaFonts.LABEL}
+      color={colour}
+      align="center"
+      valign="middle"
+      shadow
+    />
+  );
+}
+
+function HideLabel(): Component {
+  const [colour] = useState(arenaToggleColour);
+  return (
+    <text
+      x="center"
+      y="center"
+      w="fill"
+      h="fill"
+      text="Hide"
+      font={ArenaFonts.LABEL}
+      color={colour}
+      align="center"
+      valign="middle"
+      shadow
+    />
+  );
+}
+
+function SpectatorLabel(): Component {
+  const [colour] = useState(spectatorColour);
+  return (
+    <text
+      x="center"
+      y="center"
+      w="fill"
+      h="fill"
+      text="Spectator"
+      font={ArenaFonts.LABEL}
+      color={colour}
+      align="center"
+      valign="middle"
+      shadow
+    />
+  );
+}
+
+function StartAllLabel(): Component {
+  const [colour] = useState(startAllColour);
+  return (
+    <text
+      x="center"
+      y="center"
+      w="fill"
+      h="fill"
+      text="Start All"
+      font={ArenaFonts.LABEL}
+      color={colour}
+      align="center"
+      valign="middle"
+      shadow
+    />
+  );
+}
+
+function ArenaFlashHost(): Component {
+  const [spectatorUntil] = useState(spectatorFlashUntil);
+  const [startAllUntil] = useState(startAllFlashUntil);
+  const idle: Boolean = spectatorUntil === -1 && startAllUntil === -1;
+  return (
+    <layer x={0} y={0} w={1} h={1} hide={idle}>
+      <ArenaFlashTimer />
+    </layer>
+  );
+}
+
+function ArenaFlashTimer(): Component {
+  useInterval(() => arenaFlashTick());
+  return <layer x={0} y={0} w={1} h={1} />;
 }

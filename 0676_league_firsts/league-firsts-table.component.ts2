@@ -1,0 +1,345 @@
+import { CS2, onMounted, useRef, useState } from 'ts2';
+
+import { ARROW, CAP, STEP, WHEEL } from '../lib/lib.constants';
+import { trackScroll } from '../lib/lib.helpers';
+import { onMobile } from '../lib/lib.helpers';
+import { thumbHeightOf } from '../lib/scrollbar-vertical.component';
+import { SteelBorder } from '../lib/steel-border.component';
+import { closeOnEscape } from '../0877_wgs_rune_door/close-on-escape';
+import { inLeagueTutorial } from '../0654_league_info/league-info.helpers';
+import { SteelborderColor } from '../lib/lib.constants';
+import { LeagueFirstRows } from './league-firsts.data';
+import {
+  blankSprite,
+  FirstsFonts,
+  FirstsTable,
+  FirstsTableSprites,
+  Layout,
+  medalSprite,
+} from './league-firsts.constants';
+import {
+  firstsCalls,
+  firstsDataRef,
+  firstsExtent,
+  firstsLeague,
+  firstsOwnDate,
+  firstsOwnRow,
+  firstsOwnText,
+  firstsOwnTitled,
+  leagueFirstHolders,
+  ROW_PITCH,
+  ROW_TOP,
+} from './league-firsts.state';
+
+export function FirstsFrame(): Component {
+  const [calls, setCalls] = useState(firstsCalls);
+  const [, setOwnRow] = useState(firstsOwnRow);
+  onMounted(() => {
+    setCalls(0);
+    setOwnRow(-1);
+  });
+  const mobile: Boolean = onMobile();
+  return (
+    <layer w="fill" h="fill" rebuildOn={calls}>
+      {calls > 0 ? <SteelBorder title="League Firsts" flags={1} titleColor={SteelborderColor.TITLE} /> : null}
+      {calls > 0 ? (
+        <sprite
+          x={{ right: mobile ? 1 : 3 }}
+          y={mobile ? 1 : 6}
+          w={mobile ? 33 : 26}
+          h={mobile ? 33 : 23}
+          sprite={mobile ? FirstsTableSprites.CLOSE_MOBILE : FirstsTableSprites.CLOSE}
+          hover={{ sprite: mobile ? FirstsTableSprites.CLOSE_MOBILE : FirstsTableSprites.CLOSE_HOVER }}
+          tiling
+          onKey={(event) => closeKey(event.keyCode)}
+        />
+      ) : null}
+    </layer>
+  );
+}
+
+function closeKey(keyCode: Int): void {
+  if (inLeagueTutorial()) {
+    return;
+  }
+  closeOnEscape(keyCode);
+}
+
+export function FirstsNames(): Component {
+  const [calls] = useState(firstsCalls);
+  const [league] = useState(firstsLeague);
+  const [ownRow] = useState(firstsOwnRow);
+  const [ownText] = useState(firstsOwnText);
+  const [ownTitled] = useState(firstsOwnTitled);
+  return (
+    <layer w="fill" h="fill">
+      {LeagueFirstRows.filter((row) => row.league === league).map(
+        (row, i) =>
+          calls > 0 && (
+            <text
+              x={0}
+              y={nameY(row.holders, i, ownRow, ownTitled)}
+              w="fill"
+              h={FirstsTable.NAME_H}
+              text={nameText(row.player, row.holders, i, ownRow, ownText)}
+              font={nameSmall(row.holders, i, ownRow, ownTitled) ? FirstsFonts.SMALL : FirstsFonts.HEADING}
+              color={FirstsTable.TEXT}
+              shadow
+              align="center"
+              valign="middle"
+            />
+          ),
+      )}
+    </layer>
+  );
+}
+
+export function FirstsMedals(): Component {
+  const [calls] = useState(firstsCalls);
+  const [league] = useState(firstsLeague);
+  const [ownRow] = useState(firstsOwnRow);
+  const [ownTitled] = useState(firstsOwnTitled);
+  return (
+    <layer w="fill" h="fill">
+      {LeagueFirstRows.filter((row) => row.league === league).map(
+        (row, i) =>
+          calls > 0 && (
+            <sprite
+              x="center"
+              y={medalY(row.holders, i, ownRow, ownTitled)}
+              w={FirstsTable.MEDAL}
+              h={FirstsTable.MEDAL}
+              sprite={medalOf(league, row.player, row.holders, i, ownRow)}
+            />
+          ),
+      )}
+    </layer>
+  );
+}
+
+export function FirstsTitles(): Component {
+  const [calls] = useState(firstsCalls);
+  const [league] = useState(firstsLeague);
+  return (
+    <layer w="fill" h="fill">
+      {LeagueFirstRows.filter((row) => row.league === league).map(
+        (row, i) =>
+          calls > 0 && (
+            <text
+              x={0}
+              y={ROW_TOP + i * ROW_PITCH}
+              w={{ fill: FirstsTable.TEXT_INSET }}
+              h={FirstsTable.ROW_H}
+              text={row.achievement}
+              font={FirstsFonts.HEADING}
+              color={FirstsTable.TEXT}
+              shadow
+              align="center"
+              valign="middle"
+            />
+          ),
+      )}
+    </layer>
+  );
+}
+
+export function FirstsDates(): Component {
+  const [calls] = useState(firstsCalls);
+  const [league] = useState(firstsLeague);
+  const [ownRow] = useState(firstsOwnRow);
+  const [ownDate] = useState(firstsOwnDate);
+  return (
+    <layer w="fill" h="fill">
+      {LeagueFirstRows.filter((row) => row.league === league).map(
+        (row, i) =>
+          calls > 0 && (
+            <text
+              x={0}
+              y={ROW_TOP + i * ROW_PITCH}
+              w={{ fill: FirstsTable.TEXT_INSET }}
+              h={FirstsTable.ROW_H}
+              text={i === ownRow ? ownDate : row.date}
+              font={FirstsFonts.HEADING}
+              color={FirstsTable.TEXT}
+              shadow
+              align="center"
+              valign="middle"
+            />
+          ),
+      )}
+    </layer>
+  );
+}
+
+export function FirstsStripes(): Component {
+  const [calls] = useState(firstsCalls);
+  const [league] = useState(firstsLeague);
+  return (
+    <layer w="fill" h="fill">
+      {LeagueFirstRows.filter((row) => row.league === league).map(
+        (row, i) =>
+          calls > 0 && (
+            <rect
+              x={0}
+              y={ROW_TOP + i * ROW_PITCH}
+              w="fill"
+              h={FirstsTable.ROW_H}
+              color={i % 2 === 0 ? FirstsTable.STRIPE_EVEN : FirstsTable.STRIPE_ODD}
+              fill
+              transparency={FirstsTable.STRIPE_FADE}
+            />
+          ),
+      )}
+    </layer>
+  );
+}
+
+function nameY(holders: Int, i: Int, ownRow: Int, ownTitled: Int): Int {
+  let y: Int = ROW_TOP + i * ROW_PITCH + FirstsTable.NAME_DY;
+  if (holders !== -1) {
+    y = ROW_TOP + i * ROW_PITCH + FirstsTable.NAME_DY_SET;
+  }
+  if (i === ownRow && ownTitled === 1) {
+    y = y - FirstsTable.OWN_TITLE_UP;
+  }
+  return y;
+}
+
+function nameText(player: String, holders: Int, i: Int, ownRow: Int, ownText: String): String {
+  if (i === ownRow) {
+    return ownText;
+  }
+  if (holders !== -1) {
+    return leagueFirstHolders(holders);
+  }
+  return player;
+}
+
+function nameSmall(holders: Int, i: Int, ownRow: Int, ownTitled: Int): Boolean {
+  if (i === ownRow && ownTitled === 1) {
+    return true;
+  }
+  return holders !== -1;
+}
+
+function medalY(holders: Int, i: Int, ownRow: Int, ownTitled: Int): Int {
+  let y: Int = ROW_TOP + i * ROW_PITCH + FirstsTable.MEDAL_DY;
+  if (holders !== -1) {
+    y = ROW_TOP + i * ROW_PITCH + FirstsTable.MEDAL_DY_SET;
+  }
+  if (i === ownRow && ownTitled === 1) {
+    y = y - FirstsTable.OWN_MEDAL_UP;
+  }
+  return y;
+}
+
+function medalOf(league: Int, player: String, holders: Int, i: Int, ownRow: Int): Sprite {
+  if (i === ownRow) {
+    return medalSprite(FirstsTable.OWN_MEDAL_LEAGUE);
+  }
+  if (CS2.compare(player, '-') === 0 && holders === -1) {
+    return blankSprite(league);
+  }
+  return medalSprite(league);
+}
+
+export function FirstsScrollbar(): Component {
+  const [calls] = useState(firstsCalls);
+  const [extent] = useState(firstsExtent);
+  return (
+    <layer w="fill" h="fill" rebuildOn={calls}>
+      {calls > 0 ? <V2Bar extent={extent} paneHeight={Layout.DATA_H} /> : null}
+    </layer>
+  );
+}
+
+function V2Bar({ extent, paneHeight }: { extent: Int; paneHeight: Int }): Component {
+  const bar = useRef();
+  const gutter = useRef();
+  const thumb = useRef();
+  const capTop = useRef();
+  const capBottom = useRef();
+
+  const measured: Int = extent > 0 ? extent : paneHeight;
+
+  firstsDataRef.onScrollWheel = (event) => wheel(event.mouseY, gutter, thumb, capTop, capBottom);
+
+  return (
+    <layer ref={bar} w="fill" h="fill">
+      <sprite
+        ref={gutter}
+        y="center"
+        w="fill"
+        h={{ fill: ARROW * 2 }}
+        sprite={FirstsTableSprites.BAR_GUTTER}
+        noClickThrough
+        onScrollWheel={(event) => wheel(event.mouseY, gutter, thumb, capTop, capBottom)}
+        onClick={(event) => {
+          const travel: Int = Math.max(1, gutter.height - thumb.height);
+          const offset: Int = Math.clamp(0, travel, event.mouseY - thumb.height / 2);
+          const range: Int = firstsDataRef.scrollHeight - firstsDataRef.height;
+          firstsDataRef.scrollY = offset * range / travel;
+          trackScroll(gutter, thumb, capTop, capBottom, firstsDataRef);
+        }}
+      />
+      <sprite
+        ref={thumb}
+        y={
+          ARROW +
+          (gutter.height - thumbHeightOf(bar.height, paneHeight, measured, false)) * firstsDataRef.scrollY /
+            Math.max(1, extent - paneHeight)
+        }
+        w="fill"
+        h={thumbHeightOf(bar.height, paneHeight, measured, false)}
+        sprite={FirstsTableSprites.BAR_THUMB}
+        noClickThrough
+        draggable={gutter}
+        dragMoves
+        onDrag={(event) => {
+          const offset: Int = event.mouseY;
+          thumb.y = offset + ARROW;
+          capTop.y = offset + ARROW;
+          capBottom.y = offset + ARROW + thumb.height - CAP;
+          const travel: Int = Math.max(1, gutter.height - thumb.height);
+          const range: Int = firstsDataRef.scrollHeight - firstsDataRef.height;
+          firstsDataRef.scrollY = offset * range / travel;
+        }}
+      />
+      <sprite ref={capTop} y={thumb.y} w="fill" h={CAP} sprite={FirstsTableSprites.BAR_CAP_TOP} />
+      <sprite
+        ref={capBottom}
+        y={thumb.y + thumb.height - CAP}
+        w="fill"
+        h={CAP}
+        sprite={FirstsTableSprites.BAR_CAP_BOTTOM}
+      />
+      <sprite
+        y="top"
+        w="fill"
+        h={ARROW}
+        sprite={FirstsTableSprites.BAR_UP}
+        noClickThrough
+        onHold={() => {
+          firstsDataRef.scrollY = firstsDataRef.scrollY - STEP;
+          trackScroll(gutter, thumb, capTop, capBottom, firstsDataRef);
+        }}
+      />
+      <sprite
+        y="bottom"
+        w="fill"
+        h={ARROW}
+        sprite={FirstsTableSprites.BAR_DOWN}
+        noClickThrough
+        onHold={() => {
+          firstsDataRef.scrollY = firstsDataRef.scrollY + STEP;
+          trackScroll(gutter, thumb, capTop, capBottom, firstsDataRef);
+        }}
+      />
+    </layer>
+  );
+}
+
+function wheel(delta: Int, gutter: Ref, thumb: Ref, capTop: Ref, capBottom: Ref): void {
+  firstsDataRef.scrollY = firstsDataRef.scrollY + delta * WHEEL;
+  trackScroll(gutter, thumb, capTop, capBottom, firstsDataRef);
+}

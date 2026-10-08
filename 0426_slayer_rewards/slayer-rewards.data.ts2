@@ -667,3 +667,61 @@ export const SlayerUnlocks = listOf<SlayerUnlockRow>([
       'Learn how to combine the Slayer skillcape hood (with level 99 Slayer) with your Slayer helmet to show your mastery while slaying.',
   },
 ]);
+
+export interface BuyItem {
+  item: Item;
+  quantity: Int;
+  price: Int;
+  single: Boolean;
+  description: String;
+}
+
+export const BuyItems = listOf<BuyItem>([
+  {
+    item: 11866,
+    quantity: 1,
+    price: 75,
+    single: false,
+    description:
+      'A wieldable ring that can check your task progress. It has 8 charges for teleporting to useful Slayer sites.',
+  },
+  {
+    item: 11875,
+    quantity: 250,
+    price: 35,
+    single: false,
+    description:
+      'Crossbow bolts that can pierce the hides of creatures such as Turoth and Kurasks. Levels 55 Slayer and 61 Ranged required, and a runite crossbow or better.',
+  },
+  {
+    item: 4160,
+    quantity: 250,
+    price: 35,
+    single: false,
+    description:
+      'Arrows that can pierce the hides of creatures such as Turoth and Kurasks. Levels 55 Slayer and 50 Ranged required, and a magic bow or better.',
+  },
+  {
+    item: 13226,
+    quantity: 1,
+    price: 750,
+    single: true,
+    description:
+      'The herb sack has the ability to store up to 30 of each major grimy herb. Requires 58 Herblore to use.',
+  },
+  {
+    item: 12791,
+    quantity: 1,
+    price: 750,
+    single: true,
+    description: 'The rune pouch has the ability to store up to 16,000 runes of 3 types.',
+  },
+  {
+    item: 11941,
+    quantity: 1,
+    price: 10,
+    single: true,
+    description:
+      'Within the Wilderness and certain other PvP areas, tradeable items can be stored in the looting bag, enabling you to carry more loot.',
+  },
+]);

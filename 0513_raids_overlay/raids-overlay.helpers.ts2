@@ -91,11 +91,9 @@ export function raidsValueColumn(): String {
 }
 
 function raidsRowWidth(label: String, value: String): Int {
-  return (
-    textWidth(label, Layout.MEASURE_WIDTH, RaidsFonts.ROW) +
+  return textWidth(label, Layout.MEASURE_WIDTH, RaidsFonts.ROW) +
     Layout.COLUMN_GUTTER +
-    textWidth(value, Layout.MEASURE_WIDTH, RaidsFonts.ROW)
-  );
+    textWidth(value, Layout.MEASURE_WIDTH, RaidsFonts.ROW);
 }
 
 export function raidsPlateWidth(): Int {

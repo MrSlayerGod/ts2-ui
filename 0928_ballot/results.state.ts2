@@ -272,10 +272,8 @@ export function resultsRowLabelWidth(blob: String, q: Int, a: Int, paneWidth: In
 }
 
 export function resultsRowHeight(blob: String, q: Int, a: Int, paneWidth: Int): Int {
-  return (
-    CS2.paraheight(resultsRowLabel(blob, q, a), resultsRowLabelWidth(blob, q, a, paneWidth), ResultsFont.ROW) *
-    ResultsRowLayout.LINE_H
-  );
+  return CS2.paraheight(resultsRowLabel(blob, q, a), resultsRowLabelWidth(blob, q, a, paneWidth), ResultsFont.ROW) *
+    ResultsRowLayout.LINE_H;
 }
 
 export function resultsBarWidth(paneWidth: Int): Int {
@@ -423,9 +421,7 @@ export function resultsGridLabelWidth(blob: String, q: Int, paneWidth: Int): Int
 }
 
 export function resultsGridCellX(blob: String, q: Int, c: Int, paneWidth: Int): Int {
-  return (
-    resultsGridLabelWidth(blob, q, paneWidth) + ResultsGridLayout.GUTTER + c * resultsGridPitch(blob, q, paneWidth)
-  );
+  return resultsGridLabelWidth(blob, q, paneWidth) + ResultsGridLayout.GUTTER + c * resultsGridPitch(blob, q, paneWidth);
 }
 
 export function resultsGridHeaderHeight(blob: String, q: Int, paneWidth: Int): Int {
@@ -588,11 +584,9 @@ export function resultsAnswersHeight(blob: String, q: Int, paneWidth: Int): Int 
 }
 
 export function resultsQuestionTextHeight(blob: String, q: Int, paneWidth: Int): Int {
-  return (
-    CS2.paraheight(resultsQuestionText(blob, q), paneWidth - ballotQuestionLabelWidth(q), BallotFont.BODY) *
+  return CS2.paraheight(resultsQuestionText(blob, q), paneWidth - ballotQuestionLabelWidth(q), BallotFont.BODY) *
       ResultsRowLayout.QUESTION_LINE_H +
-    ResultsRowLayout.QUESTION_PAD
-  );
+    ResultsRowLayout.QUESTION_PAD;
 }
 
 export function resultsQuestionHeight(blob: String, q: Int, paneWidth: Int): Int {
@@ -639,15 +633,13 @@ function resultsHead(
   const want: Int = resultsSeek(blob, q * RESULTS_RECORD_FIELDS);
   const have: Int = CS2.string_length(blob);
   const head: String = blob.substring(0, want > have ? have : want);
-  return (
-    `${head}${resultsIntField(kind)}${resultsIntField(wide)}` +
+  return `${head}${resultsIntField(kind)}${resultsIntField(wide)}` +
     `${resultsField(text)}${resultsIntField(showNumbers)}` +
     `${resultsIntField(skipCount)}${resultsIntField(pick)}` +
     `${resultsIntField(uniform)}${resultsIntField(band)}` +
     `${resultsIntField(answers)}${resultsIntField(gridRows)}` +
     `${resultsIntField(gridCols)}${resultsIntField(skipped)}` +
-    `${resultsIntField(gridMax)}`
-  );
+    `${resultsIntField(gridMax)}`;
 }
 
 function resultsPadGrid(): String {

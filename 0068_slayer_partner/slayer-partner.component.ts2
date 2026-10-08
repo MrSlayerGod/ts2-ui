@@ -1,11 +1,14 @@
+import { CS2, useState } from 'ts2';
+
 import { opsound } from '../lib/lib.helpers';
 import { PanelBorder } from './panel-border.component';
 import { PartnerButtonFrame } from './partner-button-frame.component';
 import { Colors, Fonts, Models } from './slayer-partner.constants';
+import { resetSlayerPartnerLabel, slayerPartnerLabel } from './slayer-partner.state';
 
 export function SlayerPartner(): Component {
   return (
-    <layer w="fill" h="fill">
+    <layer w="fill" h="fill" onLoad={() => resetSlayerPartnerLabel()}>
       <PanelBorder title="Slayer Partner" />
 
       <layer x={10} y={40} w={280} h={{ fill: 50 }}>
@@ -16,21 +19,27 @@ export function SlayerPartner(): Component {
 
         <PartnerButtonFrame x={70} y="bottom" w={140} h={30} />
 
-        <text
-          x="center"
-          y="bottom"
-          w={140}
-          h={30}
-          font={Fonts.BUTTON}
-          color={Colors.TEXT}
-          hover={{ color: Colors.TEXT_HOVER }}
-          shadow
-          align="center"
-          valign="middle"
-          options={['*']}
-          onOptionSelect={(event) => opsound(event.option, 2)}
-        />
+        <PartnerLabel x="center" y="bottom" w={140} h={30} />
       </layer>
     </layer>
+  );
+}
+
+function PartnerLabel(): Component {
+  const [label] = useState(slayerPartnerLabel);
+  return (
+    <text
+      w="fill"
+      h="fill"
+      font={Fonts.BUTTON}
+      text={label}
+      color={Colors.TEXT}
+      hover={{ color: Colors.TEXT_HOVER }}
+      shadow
+      align="center"
+      valign="middle"
+      options={[CS2.string_length(label) === 0 ? '*' : CS2.tags_remove(label)]}
+      onOptionSelect={(event) => opsound(event.option, 2)}
+    />
   );
 }

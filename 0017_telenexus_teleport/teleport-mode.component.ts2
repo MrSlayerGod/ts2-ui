@@ -26,12 +26,12 @@ function ModeRow({ lit, label, bottom, mode }: { lit: Boolean; label: String; bo
   const [hovered, setHovered] = useState(0);
   const radio: Sprite =
     hovered === 1
-      ? lit
+      ? (lit
         ? TeleportSprites.RADIO_ON_HOVER
-        : TeleportSprites.RADIO_OFF_HOVER
-      : lit
+        : TeleportSprites.RADIO_OFF_HOVER)
+      : (lit
         ? TeleportSprites.RADIO_ON
-        : TeleportSprites.RADIO_OFF;
+        : TeleportSprites.RADIO_OFF);
   return (
     <>
       {bottom === 1 ? (

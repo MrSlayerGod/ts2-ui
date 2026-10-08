@@ -1,0 +1,23 @@
+import { sessionState, useState } from 'ts2';
+import { onMobile } from '../lib/lib.helpers';
+
+export const inspectFaceBuilt = sessionState(0);
+
+export const inspectFacePressed = sessionState(0);
+
+export function prepotDeviceDebugInspect(): void {
+  const [, setBuilt] = useState(inspectFaceBuilt);
+  setBuilt(1);
+}
+
+export function prepotDeviceDebugPress(down: Int): void {
+  const [built] = useState(inspectFaceBuilt);
+  const [, setPressed] = useState(inspectFacePressed);
+  if (built !== 1) {
+    return;
+  }
+  if (down === 1 && onMobile()) {
+    return;
+  }
+  setPressed(down);
+}

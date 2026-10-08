@@ -2,6 +2,7 @@ import { useState, useUniverse } from 'ts2';
 import { SteelBorder } from '../lib/steel-border.component';
 import { BankHeader } from './bankmain-header.component';
 import { BankItemsColumn } from './bankmain-items-column.component';
+import { BankMenu } from './bankmain-menu.component';
 import { BankViewButtons } from './bankmain-view-buttons.component';
 import { BankColors, Frame } from './bankmain.constants';
 import { BankView, bankView } from './bankmain.state';
@@ -27,13 +28,7 @@ export function BankMain(): Component {
 
       <BankItemsColumn />
 
-      <layer
-        x="center"
-        y={{ bottom: 5 }}
-        w={{ fill: 10 }}
-        h={{ fill: 40 }}
-        hide={view === BankView.MENU ? false : true}
-      />
+      <BankMenu hidden={view === BankView.MENU ? false : true} />
 
       <layer
         x="center"

@@ -88,5 +88,5 @@ export function pathAvailable(path: Int): Boolean {
 }
 
 export function rgb(red: Int, green: Int, blue: Int): Int {
-  return (Math.clamp(0, 255, red) * 65536) | (Math.clamp(0, 255, green) * 256) | Math.clamp(0, 255, blue);
+  return Math.clamp(0, 255, red) * 65536 | Math.clamp(0, 255, green) * 256 | Math.clamp(0, 255, blue);
 }

@@ -3,6 +3,7 @@ import { onMounted, onUpdated, useDerived, useServerState } from 'ts2';
 import { Varbits } from '../lib/game/varbits';
 import { Difficulty, Layout, Path, ToaHudColor, ToaHudFonts, ToaHudSprites } from './toa-hud.constants';
 import { content } from './toa-hud.refs';
+import { RaidTimer } from './toa-hud-raid-timer.component';
 import { activeSlots, nameRows, namesHeight } from './toa-hud.state';
 import {
   ToaStatusCell0,
@@ -16,12 +17,10 @@ import {
 } from './toa-hud-status.component';
 
 function sizeContent(namesW: Int, namesH: Int, detailsH: Int): void {
-  setBox(content, Math.max(namesW, Layout.DETAILS_W) + Layout.CONTENT_PAD_W, namesH + detailsH + Layout.CONTENT_PAD_H);
-}
-
-function setBox(component: ComponentId, width: Int, height: Int): void {
-  component.width = width;
-  component.height = height;
+  content.props = {
+    w: Math.max(namesW, Layout.DETAILS_W) + Layout.CONTENT_PAD_W,
+    h: namesH + detailsH + Layout.CONTENT_PAD_H,
+  };
 }
 
 export function ToaHudDraw(): Component {
@@ -153,17 +152,7 @@ export function ToaHudDraw(): Component {
                 />
               </layer>
             )}
-            <text
-              x={Layout.LEVEL_X}
-              y={Layout.TIMER_Y}
-              w={{ fill: Layout.LEVEL_INSET_W }}
-              h={Layout.LEVEL_H}
-              font={ToaHudFonts.LABEL}
-              text="00:00"
-              valign="middle"
-              shadow
-              color={ToaHudColor.TEXT}
-            />
+            <RaidTimer />
             {nexus === 1 && (
               <layer x={0} y={Layout.NEXUS_Y} w={Layout.NEXUS_W} h={Layout.NEXUS_H}>
                 <sprite

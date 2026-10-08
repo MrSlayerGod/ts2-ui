@@ -30,7 +30,7 @@ function thumbTop(recorded: Boolean, thumbAt: Int, travel: Int, offset: Int, ran
   if (recorded) {
     return thumbAt;
   }
-  return ARROW + (travel * offset) / Math.max(1, range);
+  return ARROW + travel * offset / Math.max(1, range);
 }
 
 export function ScrollPane({
@@ -86,7 +86,7 @@ export function ScrollPane({
           setDrawn(next);
           setDrawnAt(from);
           setDrawnKey(pendingKey);
-          setThumbAt(ARROW + (travel * next) / Math.max(1, range));
+          setThumbAt(ARROW + travel * next / Math.max(1, range));
           setThumbKey(key);
         }}
       >
@@ -107,18 +107,18 @@ export function ScrollPane({
             setDrawn(next);
             setDrawnAt(from);
             setDrawnKey(pendingKey);
-            setThumbAt(ARROW + (travel * next) / Math.max(1, range));
+            setThumbAt(ARROW + travel * next / Math.max(1, range));
             setThumbKey(key);
           }}
           onClick={(event) => {
             const from: Int = pane.scrollY;
             const span: Int = Math.max(1, travel);
             const offset: Int = Math.clamp(0, span, event.mouseY - thumbH / 2);
-            const next: Int = scrolls ? Math.clamp(0, range, (offset * range) / span) : 0;
+            const next: Int = scrolls ? Math.clamp(0, range, offset * range / span) : 0;
             setDrawn(next);
             setDrawnAt(from);
             setDrawnKey(pendingKey);
-            setThumbAt(ARROW + (travel * next) / Math.max(1, range));
+            setThumbAt(ARROW + travel * next / Math.max(1, range));
             setThumbKey(key);
           }}
         />
@@ -133,7 +133,7 @@ export function ScrollPane({
           onDrag={(event) => {
             const from: Int = pane.scrollY;
             const offset: Int = event.mouseY;
-            const next: Int = scrolls ? Math.clamp(0, range, (offset * range) / Math.max(1, travel)) : 0;
+            const next: Int = scrolls ? Math.clamp(0, range, offset * range / Math.max(1, travel)) : 0;
             setDrawn(next);
             setDrawnAt(from);
             setDrawnKey(pendingKey);
@@ -143,11 +143,11 @@ export function ScrollPane({
           onDragComplete={(event) => {
             const from: Int = pane.scrollY;
             const offset: Int = event.mouseY;
-            const next: Int = scrolls ? Math.clamp(0, range, (offset * range) / Math.max(1, travel)) : 0;
+            const next: Int = scrolls ? Math.clamp(0, range, offset * range / Math.max(1, travel)) : 0;
             setDrawn(next);
             setDrawnAt(from);
             setDrawnKey(pendingKey);
-            setThumbAt(ARROW + (travel * next) / Math.max(1, range));
+            setThumbAt(ARROW + travel * next / Math.max(1, range));
             setThumbKey(key);
           }}
         />
@@ -175,7 +175,7 @@ export function ScrollPane({
             setDrawn(next);
             setDrawnAt(from);
             setDrawnKey(pendingKey);
-            setThumbAt(ARROW + (travel * next) / Math.max(1, range));
+            setThumbAt(ARROW + travel * next / Math.max(1, range));
             setThumbKey(key);
           }}
         />
@@ -191,7 +191,7 @@ export function ScrollPane({
             setDrawn(next);
             setDrawnAt(from);
             setDrawnKey(pendingKey);
-            setThumbAt(ARROW + (travel * next) / Math.max(1, range));
+            setThumbAt(ARROW + travel * next / Math.max(1, range));
             setThumbKey(key);
           }}
         />

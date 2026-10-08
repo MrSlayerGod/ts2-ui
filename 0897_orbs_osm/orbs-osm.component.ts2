@@ -20,7 +20,7 @@ export function OrbsOsm(): Component {
         <sprite x={0} y={0} w={0} h={0} hide />
       </layer>
       <XpDropsButton left={14} top={0} fromRight={false} />
-      <HealthOrb left={3} top={35} fromRight={false} wide clickY={5} clickW={58} clickH={25} />
+      <HealthOrb left={3} top={35} fromRight={false} panel={OrbsPanel.OSM} wide clickY={5} clickW={58} clickH={25} />
       <PrayerOrb left={0} top={71} fromRight={false} wide clickY={6} clickW={58} clickH={25} />
       <RunOrb left={10} top={107} fromRight={false} wide clickY={6} clickW={58} clickH={25} />
       <SpecOrb

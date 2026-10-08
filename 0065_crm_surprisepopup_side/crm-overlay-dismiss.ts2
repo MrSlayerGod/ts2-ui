@@ -1,0 +1,35 @@
+import { CS2 } from 'ts2';
+import { Sounds } from '../lib/game/sounds';
+import { playSound } from '../lib/lib.engine';
+import { crmContentRef } from '../0162_chatbox/chatbox.constants';
+import { membershipCrmCanvasRef } from '../0284_membership_benefits_prompt/membership-benefits-prompt.component';
+import { bannerCrmCanvas } from '../0378_welcome_screen/welcome-screen.component';
+import { releaseCrmOverlaySlot } from './crm-overlay-reset';
+
+export function crmOverlayDismiss(): Boolean {
+  let dismissed: Boolean = false;
+  let releaseChat: Boolean = false;
+
+  if (CS2.cc_find(crmContentRef, 0)) {
+    playSound(Sounds.INTERFACE_SELECT1);
+    dismissed = true;
+    CS2.cc_crmview_dismiss();
+    releaseChat = true;
+  }
+  if (CS2.cc_find(membershipCrmCanvasRef, 0)) {
+    playSound(Sounds.INTERFACE_SELECT1);
+    dismissed = true;
+  }
+  if (CS2.cc_find(bannerCrmCanvas, 0)) {
+    playSound(Sounds.INTERFACE_SELECT1);
+    dismissed = true;
+  }
+
+  if (releaseChat) {
+    releaseCrmOverlaySlot(CRM_SLOT_CHATBOX);
+    CS2.cc_all_delete(crmContentRef);
+  }
+  return dismissed;
+}
+
+const CRM_SLOT_CHATBOX = 0;

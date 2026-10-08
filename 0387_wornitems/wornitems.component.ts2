@@ -1,23 +1,102 @@
+import { CS2, createRef, useInventory, useRef } from 'ts2';
 import { EquipSlotButton } from './equip-slot-button.component';
-import { ActionIcons, EquipSlot, SlotBackgroundSprites } from './wornitems.constants';
+import { ActionIcons, EquipSlot, Inventories, SlotBackgroundSprites, SlotColors } from './wornitems.constants';
 import { StoneHoverButton } from './stone-hover-button.component';
-import { membersWorld } from '../lib/lib.engine';
+import { QuiverSlot } from '../0084_equipment/quiver-slot.component';
+import { DeadmanSigilsButton, EquipmentIcon, ExtraAmmoLink, ExtraAmmoSlot } from './wornitems-extras.component';
+import { itemName, membersWorld } from '../lib/lib.engine';
+import { flashFor } from '../lib/lib.components';
 
-export function Equipment(): Component {
+const equipmentButton = createRef('wornitems_equipment');
+const pricecheckerButton = createRef('wornitems_pricechecker');
+const deathkeepButton = createRef('wornitems_deathkeep');
+const callFollowerButton = createRef('wornitems_call_follower');
+const slot0 = createRef('wornitems_slot0');
+const slot1 = createRef('wornitems_slot1');
+const slot2 = createRef('wornitems_slot2');
+const slot3 = createRef('wornitems_slot3');
+const slot4 = createRef('wornitems_slot4');
+const slot5 = createRef('wornitems_slot5');
+const slot7 = createRef('wornitems_slot7');
+const slot9 = createRef('wornitems_slot9');
+const slot10 = createRef('wornitems_slot10');
+const slot12 = createRef('wornitems_slot12');
+const slot13 = createRef('wornitems_slot13');
+
+function wearOp(held: Item, n: Int): String {
+  if (held === -1) {
+    return '';
+  }
+  let offerable: Boolean = false;
+  if (membersWorld()) {
+    offerable = true;
+  }
+  if (CS2.item_members(held) === 0) {
+    offerable = true;
+  }
+  if (!offerable) {
+    return '';
+  }
+  if (n === 1) {
+    return held.wearOp1!;
+  }
+  if (n === 2) {
+    return held.wearOp2!;
+  }
+  if (n === 3) {
+    return held.wearOp3!;
+  }
+  if (n === 4) {
+    return held.wearOp4!;
+  }
+  if (n === 5) {
+    return held.wearOp5!;
+  }
+  if (n === 6) {
+    return held.wearOp6!;
+  }
+  if (n === 7) {
+    return held.wearOp7!;
+  }
+  return held.wearOp8!;
+}
+
+const OP_REMOVE = 'Remove';
+const OP_EXAMINE = 'Examine';
+
+enum ItemFlash {
+  PRESSED = 100,
+  REST = 0,
+}
+
+export function Equipment({ host }: { host: ComponentId }): Component {
+  const worn = useInventory(Inventories.WORN);
+  const item0 = useRef();
+  const item1 = useRef();
+  const item2 = useRef();
+  const item3 = useRef();
+  const item4 = useRef();
+  const item5 = useRef();
+  const item7 = useRef();
+  const item9 = useRef();
+  const item10 = useRef();
+  const item12 = useRef();
+  const item13 = useRef();
+
   return (
     <>
+      <layer ref={equipmentButton} x={7} y={208} w={40} h={40} options={['View equipment stats']}>
+        <StoneHoverButton />
+      </layer>
       <layer w="fill" h="fill">
-        <layer x={7} y={208} w={40} h={40}>
-          <StoneHoverButton op="View equipment stats" />
+        <layer ref={pricecheckerButton} x={52} y={208} w={40} h={40} options={['View guide prices']}>
+          <StoneHoverButton />
         </layer>
-        <layer x={52} y={208} w={40} h={40}>
-          <StoneHoverButton op="View guide prices" />
+        <layer ref={deathkeepButton} x={97} y={208} w={40} h={40} options={['View items kept on death']}>
+          <StoneHoverButton />
         </layer>
-        <layer x={97} y={208} w={40} h={40}>
-          <StoneHoverButton op="View items kept on death" />
-        </layer>
-        <layer x={142} y={208} w={40} h={40}>
-          <StoneHoverButton op="Call follower" />
+        <layer ref={callFollowerButton} x={142} y={208} w={40} h={40} options={['Call follower']}>
+          <StoneHoverButton />
         </layer>
 
         <sprite x={77} y={39} w={36} h={124} sprite={SlotBackgroundSprites.NARROW} tiling />
@@ -25,33 +104,492 @@ export function Equipment(): Component {
         <sprite x={133} y={118} w={36} h={45} sprite={SlotBackgroundSprites.NARROW} tiling />
         <sprite x={56} y={81} w={78} h={36} sprite={SlotBackgroundSprites.WIDE} tiling />
         <sprite x={71} y={42} w={48} h={36} sprite={SlotBackgroundSprites.WIDE} tiling />
+        <ExtraAmmoLink />
 
-        <EquipSlotButton x={77} y={4} slot={EquipSlot.HEAD} />
-        <EquipSlotButton x={36} y={43} slot={EquipSlot.CAPE} />
-        <EquipSlotButton x={77} y={43} slot={EquipSlot.AMULET} />
-        <EquipSlotButton x={21} y={82} slot={EquipSlot.WEAPON} />
-        <EquipSlotButton x={77} y={82} slot={EquipSlot.BODY} />
-        <EquipSlotButton x={133} y={82} slot={EquipSlot.SHIELD} />
-        <EquipSlotButton x={77} y={122} slot={EquipSlot.LEGS} />
-        <EquipSlotButton x={21} y={162} slot={EquipSlot.HANDS} />
-        <EquipSlotButton x={77} y={162} slot={EquipSlot.FEET} />
-        <EquipSlotButton x={133} y={162} slot={EquipSlot.RING} />
-        <EquipSlotButton x={118} y={43} slot={EquipSlot.AMMO} />
+        <layer
+          ref={slot0}
+          x={77}
+          y={4}
+          w={36}
+          h={36}
+          optionSubject={worn[EquipSlot.HEAD] !== -1 ? itemName(worn[EquipSlot.HEAD]) : ''}
+          options={
+            worn[EquipSlot.HEAD] !== -1
+              ? [
+                  OP_REMOVE,
+                  wearOp(worn[EquipSlot.HEAD], 1),
+                  wearOp(worn[EquipSlot.HEAD], 2),
+                  wearOp(worn[EquipSlot.HEAD], 3),
+                  wearOp(worn[EquipSlot.HEAD], 4),
+                  wearOp(worn[EquipSlot.HEAD], 5),
+                  wearOp(worn[EquipSlot.HEAD], 6),
+                  wearOp(worn[EquipSlot.HEAD], 7),
+                  wearOp(worn[EquipSlot.HEAD], 8),
+                  OP_EXAMINE,
+                ]
+              : []
+          }
+          spellTarget
+          onOptionSelect={() => {
+            flashFor(item0, ItemFlash.PRESSED, ItemFlash.REST);
+          }}
+        >
+          <EquipSlotButton slot={EquipSlot.HEAD} />
+          {worn[EquipSlot.HEAD] !== -1 && (
+            <sprite
+              ref={item0}
+              x={2}
+              y={2}
+              w={36}
+              h={32}
+              item={worn[EquipSlot.HEAD]}
+              itemCount={worn.count(EquipSlot.HEAD)}
+              outline={1}
+              shadowColor={SlotColors.ITEM_SHADOW}
+            />
+          )}
+        </layer>
+        <layer
+          ref={slot1}
+          x={36}
+          y={43}
+          w={36}
+          h={36}
+          optionSubject={worn[EquipSlot.CAPE] !== -1 ? itemName(worn[EquipSlot.CAPE]) : ''}
+          options={
+            worn[EquipSlot.CAPE] !== -1
+              ? [
+                  OP_REMOVE,
+                  wearOp(worn[EquipSlot.CAPE], 1),
+                  wearOp(worn[EquipSlot.CAPE], 2),
+                  wearOp(worn[EquipSlot.CAPE], 3),
+                  wearOp(worn[EquipSlot.CAPE], 4),
+                  wearOp(worn[EquipSlot.CAPE], 5),
+                  wearOp(worn[EquipSlot.CAPE], 6),
+                  wearOp(worn[EquipSlot.CAPE], 7),
+                  wearOp(worn[EquipSlot.CAPE], 8),
+                  OP_EXAMINE,
+                ]
+              : []
+          }
+          spellTarget
+          onOptionSelect={() => {
+            flashFor(item1, ItemFlash.PRESSED, ItemFlash.REST);
+          }}
+        >
+          <EquipSlotButton slot={EquipSlot.CAPE} />
+          {worn[EquipSlot.CAPE] !== -1 && (
+            <sprite
+              ref={item1}
+              x={2}
+              y={2}
+              w={36}
+              h={32}
+              item={worn[EquipSlot.CAPE]}
+              itemCount={worn.count(EquipSlot.CAPE)}
+              outline={1}
+              shadowColor={SlotColors.ITEM_SHADOW}
+            />
+          )}
+        </layer>
+        <layer
+          ref={slot2}
+          x={77}
+          y={43}
+          w={36}
+          h={36}
+          optionSubject={worn[EquipSlot.AMULET] !== -1 ? itemName(worn[EquipSlot.AMULET]) : ''}
+          options={
+            worn[EquipSlot.AMULET] !== -1
+              ? [
+                  OP_REMOVE,
+                  wearOp(worn[EquipSlot.AMULET], 1),
+                  wearOp(worn[EquipSlot.AMULET], 2),
+                  wearOp(worn[EquipSlot.AMULET], 3),
+                  wearOp(worn[EquipSlot.AMULET], 4),
+                  wearOp(worn[EquipSlot.AMULET], 5),
+                  wearOp(worn[EquipSlot.AMULET], 6),
+                  wearOp(worn[EquipSlot.AMULET], 7),
+                  wearOp(worn[EquipSlot.AMULET], 8),
+                  OP_EXAMINE,
+                ]
+              : []
+          }
+          spellTarget
+          onOptionSelect={() => {
+            flashFor(item2, ItemFlash.PRESSED, ItemFlash.REST);
+          }}
+        >
+          <EquipSlotButton slot={EquipSlot.AMULET} />
+          {worn[EquipSlot.AMULET] !== -1 && (
+            <sprite
+              ref={item2}
+              x={2}
+              y={2}
+              w={36}
+              h={32}
+              item={worn[EquipSlot.AMULET]}
+              itemCount={worn.count(EquipSlot.AMULET)}
+              outline={1}
+              shadowColor={SlotColors.ITEM_SHADOW}
+            />
+          )}
+        </layer>
+        <layer
+          ref={slot3}
+          x={21}
+          y={82}
+          w={36}
+          h={36}
+          optionSubject={worn[EquipSlot.WEAPON] !== -1 ? itemName(worn[EquipSlot.WEAPON]) : ''}
+          options={
+            worn[EquipSlot.WEAPON] !== -1
+              ? [
+                  OP_REMOVE,
+                  wearOp(worn[EquipSlot.WEAPON], 1),
+                  wearOp(worn[EquipSlot.WEAPON], 2),
+                  wearOp(worn[EquipSlot.WEAPON], 3),
+                  wearOp(worn[EquipSlot.WEAPON], 4),
+                  wearOp(worn[EquipSlot.WEAPON], 5),
+                  wearOp(worn[EquipSlot.WEAPON], 6),
+                  wearOp(worn[EquipSlot.WEAPON], 7),
+                  wearOp(worn[EquipSlot.WEAPON], 8),
+                  OP_EXAMINE,
+                ]
+              : []
+          }
+          spellTarget
+          onOptionSelect={() => {
+            flashFor(item3, ItemFlash.PRESSED, ItemFlash.REST);
+          }}
+        >
+          <EquipSlotButton slot={EquipSlot.WEAPON} />
+          {worn[EquipSlot.WEAPON] !== -1 && (
+            <sprite
+              ref={item3}
+              x={2}
+              y={2}
+              w={36}
+              h={32}
+              item={worn[EquipSlot.WEAPON]}
+              itemCount={worn.count(EquipSlot.WEAPON)}
+              outline={1}
+              shadowColor={SlotColors.ITEM_SHADOW}
+            />
+          )}
+        </layer>
+        <layer
+          ref={slot4}
+          x={77}
+          y={82}
+          w={36}
+          h={36}
+          optionSubject={worn[EquipSlot.BODY] !== -1 ? itemName(worn[EquipSlot.BODY]) : ''}
+          options={
+            worn[EquipSlot.BODY] !== -1
+              ? [
+                  OP_REMOVE,
+                  wearOp(worn[EquipSlot.BODY], 1),
+                  wearOp(worn[EquipSlot.BODY], 2),
+                  wearOp(worn[EquipSlot.BODY], 3),
+                  wearOp(worn[EquipSlot.BODY], 4),
+                  wearOp(worn[EquipSlot.BODY], 5),
+                  wearOp(worn[EquipSlot.BODY], 6),
+                  wearOp(worn[EquipSlot.BODY], 7),
+                  wearOp(worn[EquipSlot.BODY], 8),
+                  OP_EXAMINE,
+                ]
+              : []
+          }
+          spellTarget
+          onOptionSelect={() => {
+            flashFor(item4, ItemFlash.PRESSED, ItemFlash.REST);
+          }}
+        >
+          <EquipSlotButton slot={EquipSlot.BODY} />
+          {worn[EquipSlot.BODY] !== -1 && (
+            <sprite
+              ref={item4}
+              x={2}
+              y={2}
+              w={36}
+              h={32}
+              item={worn[EquipSlot.BODY]}
+              itemCount={worn.count(EquipSlot.BODY)}
+              outline={1}
+              shadowColor={SlotColors.ITEM_SHADOW}
+            />
+          )}
+        </layer>
+        <layer
+          ref={slot5}
+          x={133}
+          y={82}
+          w={36}
+          h={36}
+          optionSubject={worn[EquipSlot.SHIELD] !== -1 ? itemName(worn[EquipSlot.SHIELD]) : ''}
+          options={
+            worn[EquipSlot.SHIELD] !== -1
+              ? [
+                  OP_REMOVE,
+                  wearOp(worn[EquipSlot.SHIELD], 1),
+                  wearOp(worn[EquipSlot.SHIELD], 2),
+                  wearOp(worn[EquipSlot.SHIELD], 3),
+                  wearOp(worn[EquipSlot.SHIELD], 4),
+                  wearOp(worn[EquipSlot.SHIELD], 5),
+                  wearOp(worn[EquipSlot.SHIELD], 6),
+                  wearOp(worn[EquipSlot.SHIELD], 7),
+                  wearOp(worn[EquipSlot.SHIELD], 8),
+                  OP_EXAMINE,
+                ]
+              : []
+          }
+          spellTarget
+          onOptionSelect={() => {
+            flashFor(item5, ItemFlash.PRESSED, ItemFlash.REST);
+          }}
+        >
+          <EquipSlotButton slot={EquipSlot.SHIELD} />
+          {worn[EquipSlot.SHIELD] !== -1 && (
+            <sprite
+              ref={item5}
+              x={2}
+              y={2}
+              w={36}
+              h={32}
+              item={worn[EquipSlot.SHIELD]}
+              itemCount={worn.count(EquipSlot.SHIELD)}
+              outline={1}
+              shadowColor={SlotColors.ITEM_SHADOW}
+            />
+          )}
+        </layer>
+        <layer
+          ref={slot7}
+          x={77}
+          y={122}
+          w={36}
+          h={36}
+          optionSubject={worn[EquipSlot.LEGS] !== -1 ? itemName(worn[EquipSlot.LEGS]) : ''}
+          options={
+            worn[EquipSlot.LEGS] !== -1
+              ? [
+                  OP_REMOVE,
+                  wearOp(worn[EquipSlot.LEGS], 1),
+                  wearOp(worn[EquipSlot.LEGS], 2),
+                  wearOp(worn[EquipSlot.LEGS], 3),
+                  wearOp(worn[EquipSlot.LEGS], 4),
+                  wearOp(worn[EquipSlot.LEGS], 5),
+                  wearOp(worn[EquipSlot.LEGS], 6),
+                  wearOp(worn[EquipSlot.LEGS], 7),
+                  wearOp(worn[EquipSlot.LEGS], 8),
+                  OP_EXAMINE,
+                ]
+              : []
+          }
+          spellTarget
+          onOptionSelect={() => {
+            flashFor(item7, ItemFlash.PRESSED, ItemFlash.REST);
+          }}
+        >
+          <EquipSlotButton slot={EquipSlot.LEGS} />
+          {worn[EquipSlot.LEGS] !== -1 && (
+            <sprite
+              ref={item7}
+              x={2}
+              y={2}
+              w={36}
+              h={32}
+              item={worn[EquipSlot.LEGS]}
+              itemCount={worn.count(EquipSlot.LEGS)}
+              outline={1}
+              shadowColor={SlotColors.ITEM_SHADOW}
+            />
+          )}
+        </layer>
+        <layer
+          ref={slot9}
+          x={21}
+          y={162}
+          w={36}
+          h={36}
+          optionSubject={worn[EquipSlot.HANDS] !== -1 ? itemName(worn[EquipSlot.HANDS]) : ''}
+          options={
+            worn[EquipSlot.HANDS] !== -1
+              ? [
+                  OP_REMOVE,
+                  wearOp(worn[EquipSlot.HANDS], 1),
+                  wearOp(worn[EquipSlot.HANDS], 2),
+                  wearOp(worn[EquipSlot.HANDS], 3),
+                  wearOp(worn[EquipSlot.HANDS], 4),
+                  wearOp(worn[EquipSlot.HANDS], 5),
+                  wearOp(worn[EquipSlot.HANDS], 6),
+                  wearOp(worn[EquipSlot.HANDS], 7),
+                  wearOp(worn[EquipSlot.HANDS], 8),
+                  OP_EXAMINE,
+                ]
+              : []
+          }
+          spellTarget
+          onOptionSelect={() => {
+            flashFor(item9, ItemFlash.PRESSED, ItemFlash.REST);
+          }}
+        >
+          <EquipSlotButton slot={EquipSlot.HANDS} />
+          {worn[EquipSlot.HANDS] !== -1 && (
+            <sprite
+              ref={item9}
+              x={2}
+              y={2}
+              w={36}
+              h={32}
+              item={worn[EquipSlot.HANDS]}
+              itemCount={worn.count(EquipSlot.HANDS)}
+              outline={1}
+              shadowColor={SlotColors.ITEM_SHADOW}
+            />
+          )}
+        </layer>
+        <layer
+          ref={slot10}
+          x={77}
+          y={162}
+          w={36}
+          h={36}
+          optionSubject={worn[EquipSlot.FEET] !== -1 ? itemName(worn[EquipSlot.FEET]) : ''}
+          options={
+            worn[EquipSlot.FEET] !== -1
+              ? [
+                  OP_REMOVE,
+                  wearOp(worn[EquipSlot.FEET], 1),
+                  wearOp(worn[EquipSlot.FEET], 2),
+                  wearOp(worn[EquipSlot.FEET], 3),
+                  wearOp(worn[EquipSlot.FEET], 4),
+                  wearOp(worn[EquipSlot.FEET], 5),
+                  wearOp(worn[EquipSlot.FEET], 6),
+                  wearOp(worn[EquipSlot.FEET], 7),
+                  wearOp(worn[EquipSlot.FEET], 8),
+                  OP_EXAMINE,
+                ]
+              : []
+          }
+          spellTarget
+          onOptionSelect={() => {
+            flashFor(item10, ItemFlash.PRESSED, ItemFlash.REST);
+          }}
+        >
+          <EquipSlotButton slot={EquipSlot.FEET} />
+          {worn[EquipSlot.FEET] !== -1 && (
+            <sprite
+              ref={item10}
+              x={2}
+              y={2}
+              w={36}
+              h={32}
+              item={worn[EquipSlot.FEET]}
+              itemCount={worn.count(EquipSlot.FEET)}
+              outline={1}
+              shadowColor={SlotColors.ITEM_SHADOW}
+            />
+          )}
+        </layer>
+        <layer
+          ref={slot12}
+          x={133}
+          y={162}
+          w={36}
+          h={36}
+          optionSubject={worn[EquipSlot.RING] !== -1 ? itemName(worn[EquipSlot.RING]) : ''}
+          options={
+            worn[EquipSlot.RING] !== -1
+              ? [
+                  OP_REMOVE,
+                  wearOp(worn[EquipSlot.RING], 1),
+                  wearOp(worn[EquipSlot.RING], 2),
+                  wearOp(worn[EquipSlot.RING], 3),
+                  wearOp(worn[EquipSlot.RING], 4),
+                  wearOp(worn[EquipSlot.RING], 5),
+                  wearOp(worn[EquipSlot.RING], 6),
+                  wearOp(worn[EquipSlot.RING], 7),
+                  wearOp(worn[EquipSlot.RING], 8),
+                  OP_EXAMINE,
+                ]
+              : []
+          }
+          spellTarget
+          onOptionSelect={() => {
+            flashFor(item12, ItemFlash.PRESSED, ItemFlash.REST);
+          }}
+        >
+          <EquipSlotButton slot={EquipSlot.RING} />
+          {worn[EquipSlot.RING] !== -1 && (
+            <sprite
+              ref={item12}
+              x={2}
+              y={2}
+              w={36}
+              h={32}
+              item={worn[EquipSlot.RING]}
+              itemCount={worn.count(EquipSlot.RING)}
+              outline={1}
+              shadowColor={SlotColors.ITEM_SHADOW}
+            />
+          )}
+        </layer>
+        <layer
+          ref={slot13}
+          x={118}
+          y={43}
+          w={36}
+          h={36}
+          optionSubject={worn[EquipSlot.AMMO] !== -1 ? itemName(worn[EquipSlot.AMMO]) : ''}
+          options={
+            worn[EquipSlot.AMMO] !== -1
+              ? [
+                  OP_REMOVE,
+                  wearOp(worn[EquipSlot.AMMO], 1),
+                  wearOp(worn[EquipSlot.AMMO], 2),
+                  wearOp(worn[EquipSlot.AMMO], 3),
+                  wearOp(worn[EquipSlot.AMMO], 4),
+                  wearOp(worn[EquipSlot.AMMO], 5),
+                  wearOp(worn[EquipSlot.AMMO], 6),
+                  wearOp(worn[EquipSlot.AMMO], 7),
+                  wearOp(worn[EquipSlot.AMMO], 8),
+                  OP_EXAMINE,
+                ]
+              : []
+          }
+          spellTarget
+          onOptionSelect={() => {
+            flashFor(item13, ItemFlash.PRESSED, ItemFlash.REST);
+          }}
+        >
+          <EquipSlotButton slot={EquipSlot.AMMO} />
+          {worn[EquipSlot.AMMO] !== -1 && (
+            <sprite
+              ref={item13}
+              x={2}
+              y={2}
+              w={36}
+              h={32}
+              item={worn[EquipSlot.AMMO]}
+              itemCount={worn.count(EquipSlot.AMMO)}
+              outline={1}
+              shadowColor={SlotColors.ITEM_SHADOW}
+            />
+          )}
+        </layer>
 
-        {membersWorld() && (
-          <layer x={118} y={4} w={36} h={36}>
-            <layer w="fill" h="fill" />
-            <layer w="fill" h="fill" />
-          </layer>
-        )}
+        <layer x={118} y={4} w={36} h={36}>
+          <QuiverSlot />
+        </layer>
 
-        <layer x={18} y={4} w={36} h={36} />
+        <DeadmanSigilsButton />
 
-        <layer x={118} y={4} w={36} h={36} />
-        <sprite x={118} y={19} w={36} h={45} sprite={SlotBackgroundSprites.NARROW} tiling hide />
+        <ExtraAmmoSlot />
       </layer>
 
-      <sprite x={10} y={210} w={32} h={32} sprite={ActionIcons.EQUIPMENT_STATS} />
+      <EquipmentIcon host={host} target={equipmentButton} />
       <sprite x={56} y={212} w={32} h={32} sprite={ActionIcons.GUIDE_PRICES} />
       <sprite x={99} y={211} w={34} h={34} sprite={ActionIcons.ITEMS_KEPT_ON_DEATH} />
       <sprite x={145} y={211} w={32} h={32} sprite={ActionIcons.CALL_FOLLOWER} />

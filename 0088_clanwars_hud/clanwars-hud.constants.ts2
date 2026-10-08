@@ -9,6 +9,8 @@ export enum ClanwarsColor {
   LABEL = 0xff981f,
   MINE = 0xcf0000,
   THEIRS = 0x7f7fff,
+  OUTLINE_OUTER = 0x0e0e0c,
+  OUTLINE_INNER = 0x474745,
 }
 
 export enum ClanwarsSprites {

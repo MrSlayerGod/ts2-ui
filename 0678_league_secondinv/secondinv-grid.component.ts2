@@ -1,0 +1,113 @@
+import { sessionState, useInventory, useState } from 'ts2';
+
+import { Inventories } from '../lib/game/inventories';
+import { Fonts } from '../lib/game/fonts';
+import { flashFor } from '../lib/lib.components';
+import { itemName } from '../lib/lib.engine';
+import { SecondInvColors } from './league-secondinv.constants';
+
+export function SecondinvGrid(): Component {
+  return (
+    <>
+      <CarriedGrid />
+      <StoredGrid />
+    </>
+  );
+}
+
+function CarriedGrid(): Component {
+  const [arm] = useState(secondinvArm);
+  const inv = useInventory(Inventories.INV);
+  return (
+    <layer w="fill" h="fill" hide={arm !== 1}>
+      {inv.map(
+        (item, index) =>
+          item !== -1 && (
+            <sprite
+              x={index % COLUMNS * STRIDE_X}
+              y={index / COLUMNS * CELL_H}
+              w={CELL_W}
+              h={CELL_H}
+              item={item}
+              itemCount={inv.count(index)}
+              outline={1}
+              shadowColor={ITEM_SHADOW}
+              transparency={item === SECOND_INVENTORY || item === SECOND_INVENTORY_OPEN ? DIMMED : 0}
+              options={['Store-1', 'Store-5', 'Store-All', 'Store-X', '', '', '', '', 'Examine']}
+              optionSubject={`<col=ff9040>${itemName(item)}`}
+              onOptionSelect={(event) => {
+                if (item === SECOND_INVENTORY || item === SECOND_INVENTORY_OPEN) {
+                  return;
+                }
+                flashFor(event.self, DIMMED, 0);
+              }}
+            />
+          ),
+      )}
+    </layer>
+  );
+}
+
+function StoredGrid(): Component {
+  const [arm] = useState(secondinvArm);
+  const bag = useInventory(Inventories.LEAGUE_SECONDINV);
+  const slots: Int = bag.size;
+  let occupied: Int = 0;
+  let slot: Int = 0;
+  while (slot < slots) {
+    if (bag[slot] !== -1) {
+      occupied = occupied + 1;
+    }
+    slot = slot + 1;
+  }
+  return (
+    <layer w="fill" h="fill" hide={arm !== 0}>
+      {bag.map(
+        (item, index) =>
+          item !== -1 && (
+            <sprite
+              x={index % COLUMNS * STRIDE_X}
+              y={index / COLUMNS * CELL_H}
+              w={CELL_W}
+              h={CELL_H}
+              item={item}
+              itemCount={bag.count(index)}
+              outline={1}
+              shadowColor={ITEM_SHADOW}
+              transparency={0}
+              options={['', '', '', '', 'Withdraw-1', 'Withdraw-5', 'Withdraw-All', 'Withdraw-X', '', 'Examine']}
+              optionSubject={`<col=ff9040>${itemName(item)}`}
+              onOptionSelect={(event) => {
+                flashFor(event.self, DIMMED, 0);
+              }}
+            />
+          ),
+      )}
+      {occupied === 0 && (
+        <text
+          x={0}
+          y={0}
+          w="fill"
+          h="fill"
+          text="The bag is empty."
+          font={Fonts.P12_FULL}
+          color={SecondInvColors.HEADING}
+          shadow
+          align="center"
+          valign="middle"
+        />
+      )}
+    </layer>
+  );
+}
+
+export const secondinvArm = sessionState(-1);
+
+const COLUMNS = 4;
+const CELL_W = 36;
+const CELL_H = 32;
+const STRIDE_X = 44;
+const ITEM_SHADOW = 0x333333;
+const DIMMED = 150;
+const SECOND_INVENTORY = 25106;
+const SECOND_INVENTORY_OPEN = 25108;

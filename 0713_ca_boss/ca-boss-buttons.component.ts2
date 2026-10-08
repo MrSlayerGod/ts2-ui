@@ -40,7 +40,7 @@ export function CaBossIconButton({ kind }: { kind: Int }): Component {
         w="fill"
         h="fill"
         options={[
-          kind === CaBossButtonKind.WIKI ? 'Lookup-boss' : kind === CaBossButtonKind.MAP ? 'Locate' : 'Collection-log',
+          kind === CaBossButtonKind.WIKI ? 'Lookup-boss' : (kind === CaBossButtonKind.MAP ? 'Locate' : 'Collection-log'),
         ]}
         optionSubject={`<col=ff9040>${name}</col>`}
         onOptionSelect={(event) => caBossButtonOp(kind, event.option)}
@@ -385,9 +385,9 @@ function CaBossStoneButton({
           valign="middle"
           color={
             live
-              ? lit === 1
+              ? (lit === 1
                 ? CaBossColour.BUTTON_LABEL_LIT
-                : CaBossColour.BUTTON_LABEL
+                : CaBossColour.BUTTON_LABEL)
               : CaBossColour.BUTTON_LABEL_DISABLED
           }
         />

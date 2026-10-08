@@ -14,7 +14,7 @@ function cellX(index: Int, half: Int): Int {
 }
 
 function cellY(index: Int, rowTop: Int): Int {
-  return rowTop + (index / 2) * RewardLayout.ROW_PITCH;
+  return rowTop + index / 2 * RewardLayout.ROW_PITCH;
 }
 
 function cellColour(row: LeagueRewardRow, index: Int, selected: Int, points: Int, infoOnly: Int): Int {

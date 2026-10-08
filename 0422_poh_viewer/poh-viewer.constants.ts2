@@ -103,6 +103,7 @@ export const anticlockwiseRef = createRef('poh_viewer_anticlockwise');
 export const deleteRef = createRef('poh_viewer_delete');
 export const cancelRef = createRef('poh_viewer_cancel');
 export const doneRef = createRef('poh_viewer_done');
+export const tooltipRef = createRef('poh_viewer_tooltip');
 
 export declare const ViewerVarbits: {
   readonly SELECTED_ROOM: typeof Varbits.POH_VIEWER_SELECTEDROOM;
@@ -475,8 +476,7 @@ export function setRoomCell(n: Int, value: Int): void {
 }
 
 export function anyRoomCellIs(packed: Int): Boolean {
-  return (
-    roomCell(1) === packed ||
+  return roomCell(1) === packed ||
     roomCell(2) === packed ||
     roomCell(3) === packed ||
     roomCell(4) === packed ||
@@ -513,8 +513,7 @@ export function anyRoomCellIs(packed: Int): Boolean {
     roomCell(35) === packed ||
     roomCell(36) === packed ||
     roomCell(37) === packed ||
-    roomCell(38) === packed
-  );
+    roomCell(38) === packed;
 }
 
 export function roomComponent(n: Int): ComponentId {

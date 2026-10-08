@@ -1,4 +1,4 @@
-import { useOnResize, useUniverse } from 'ts2';
+import { useOnResize, useState, useUniverse } from 'ts2';
 
 import { ScrollbarVertical } from '../lib/scrollbar-vertical.component';
 import { ThinBoxEntrypoint } from '../lib/thin-box-entrypoint.component';
@@ -7,8 +7,12 @@ import {
   Color,
   Copy,
   Layout,
+  SortKey,
   ToaPartydetailsFonts,
   ToaPartydetailsScrollbar,
+  actionRef,
+  refreshRef,
+  unblockRef,
   ToaPartydetailsSprites,
   applicantsListRef,
   contentsRef,
@@ -16,7 +20,16 @@ import {
   membersListRef,
   summaryContentRef,
 } from './toa-partydetails.constants';
-import { resetToaPartyDetails } from './toa-partydetails.helpers';
+import {
+  ToaBackButton,
+  ToaCompletionsPlate,
+  ToaFooterButton,
+  ToaPartydetailsTitle,
+  ToaRaidLevelLabels,
+  ToaTab,
+} from './toa-partydetails-chrome.component';
+import { ToaApplicantsList, ToaMemberColumn, ToaMembersList, ToaSortColumn } from './toa-partydetails-lists.component';
+import { resetToaPartyDetails, toaDetailsBuilt, toaDetailsTab } from './toa-partydetails.state';
 
 export function ToaPartydetails(): Component {
   return (
@@ -28,15 +41,17 @@ export function ToaPartydetails(): Component {
       h={Layout.PANEL_H}
       onLoad={() => resetToaPartyDetails()}
     >
-      <layer x="center" y="center" w="fill" h="fill" />
+      <layer x="center" y="center" w="fill" h="fill">
+        <ToaPartydetailsTitle />
+      </layer>
 
-      <layer x={Layout.BACK_X} y={Layout.BACK_Y} w={Layout.BACK} h={Layout.BACK} hide />
+      <ToaBackButton />
 
       <layer x={Layout.TABS_X} y={Layout.TABS_Y} w={Layout.TABS_W} h={Layout.TABS_H}>
-        <layer x={0} y={0} w={Layout.TAB_W} h="fill" hide />
-        <layer x={Layout.TAB_1_X} y={0} w={Layout.TAB_W} h="fill" hide />
-        <layer x={Layout.TAB_2_X} y={0} w={Layout.TAB_W} h="fill" hide />
-        <layer x={Layout.TAB_3_X} y={0} w={Layout.TAB_W} h="fill" hide />
+        <ToaTab tab={0} />
+        <ToaTab tab={1} />
+        <ToaTab tab={2} />
+        <ToaTab tab={3} />
       </layer>
 
       <line
@@ -89,18 +104,7 @@ export function ToaPartydetails(): Component {
         <ToaInvocationsPage />
         <ToaSummaryPage />
 
-        <text
-          x="center"
-          y="center"
-          w="fill"
-          h="fill"
-          text={Copy.LOADING}
-          font={ToaPartydetailsFonts.BODY}
-          color={Color.LOADING}
-          align="center"
-          valign="middle"
-          shadow
-        />
+        <ToaLoadingText />
       </layer>
 
       <ToaInvocationsSidepanel />
@@ -112,11 +116,13 @@ export function ToaPartydetails(): Component {
 }
 
 function ToaMembersPage(): Component {
+  const [built] = useState(toaDetailsBuilt);
+  const [tab] = useState(toaDetailsTab);
   return (
-    <layer x="center" y="center" w="fill" h={{ fill: Layout.PAGE_INSET }} hide>
+    <layer x="center" y="center" w="fill" h={{ fill: Layout.PAGE_INSET }} hide={built === 0 || tab !== 0}>
       <rect x="center" y="center" w="fill" h="fill" color={Color.WASH} fill transparency={Layout.WASH_OPACITY} />
 
-      <layer x="center" y={0} w="fill" h={Layout.HEADER_H} hide>
+      <layer x="center" y={0} w="fill" h={Layout.HEADER_H} hide={built === 0}>
         <rect
           x="center"
           y="center"
@@ -126,21 +132,73 @@ function ToaMembersPage(): Component {
           fill
           transparency={Layout.HEADER_WASH_OPACITY}
         />
-        <HeaderColumn x={Layout.M_NAME_X} w={Layout.M_NAME_W} />
-        <HeaderColumn x={Layout.M_LEVEL_X} w={Layout.M_LEVEL_W} />
-        <HeaderColumn x={Layout.M_ATTACK_X} w={Layout.M_STAT_W} />
-        <HeaderColumn x={Layout.M_STRENGTH_X} w={Layout.M_STAT_W} />
-        <HeaderColumn x={Layout.M_RANGED_X} w={Layout.M_STAT_W} />
-        <HeaderColumn x={Layout.M_MAGIC_X} w={Layout.M_STAT_W} />
-        <HeaderColumn x={Layout.M_DEFENCE_X} w={Layout.M_STAT_W} />
-        <HeaderColumn x={Layout.M_HITPOINTS_X} w={Layout.M_STAT_W} />
-        <HeaderColumn x={Layout.M_PRAYER_X} w={Layout.M_STAT_W} />
-        <HeaderColumn x={Layout.M_COMPLETIONS_X} w={Layout.M_COMPLETIONS_W} />
+        <ToaMemberColumn
+          x={Layout.M_NAME_X}
+          w={Layout.M_NAME_W}
+          icon={ToaPartydetailsSprites.ICON_NAME}
+          tip={Copy.TIP_NAME}
+        />
+        <ToaMemberColumn
+          x={Layout.M_LEVEL_X}
+          w={Layout.M_LEVEL_W}
+          icon={ToaPartydetailsSprites.ICON_COMBAT}
+          tip={Copy.TIP_COMBAT}
+        />
+        <ToaMemberColumn
+          x={Layout.M_ATTACK_X}
+          w={Layout.M_STAT_W}
+          icon={ToaPartydetailsSprites.ICON_ATTACK}
+          tip={Copy.TIP_ATTACK}
+        />
+        <ToaMemberColumn
+          x={Layout.M_STRENGTH_X}
+          w={Layout.M_STAT_W}
+          icon={ToaPartydetailsSprites.ICON_STRENGTH}
+          tip={Copy.TIP_STRENGTH}
+        />
+        <ToaMemberColumn
+          x={Layout.M_RANGED_X}
+          w={Layout.M_STAT_W}
+          icon={ToaPartydetailsSprites.ICON_RANGED}
+          tip={Copy.TIP_RANGED}
+        />
+        <ToaMemberColumn
+          x={Layout.M_MAGIC_X}
+          w={Layout.M_STAT_W}
+          icon={ToaPartydetailsSprites.ICON_MAGIC}
+          tip={Copy.TIP_MAGIC}
+        />
+        <ToaMemberColumn
+          x={Layout.M_DEFENCE_X}
+          w={Layout.M_STAT_W}
+          icon={ToaPartydetailsSprites.ICON_DEFENCE}
+          tip={Copy.TIP_DEFENCE}
+        />
+        <ToaMemberColumn
+          x={Layout.M_HITPOINTS_X}
+          w={Layout.M_STAT_W}
+          icon={ToaPartydetailsSprites.ICON_HITPOINTS}
+          tip={Copy.TIP_HITPOINTS}
+        />
+        <ToaMemberColumn
+          x={Layout.M_PRAYER_X}
+          w={Layout.M_STAT_W}
+          icon={ToaPartydetailsSprites.ICON_PRAYER}
+          tip={Copy.TIP_PRAYER}
+        />
+        <ToaMemberColumn
+          x={Layout.M_COMPLETIONS_X}
+          w={Layout.M_COMPLETIONS_W}
+          icon={ToaPartydetailsSprites.ICON_COMPLETIONS}
+          tip={Copy.TIP_COMPLETIONS}
+        />
         <ThinBoxEntrypoint />
       </layer>
 
       <layer x="center" y="bottom" w="fill" h={{ fill: Layout.LIST_BOX_H_INSET }}>
-        <layer ref={membersListRef} x="center" y="center" w={Layout.MEMBERS_LIST_W} h={{ fill: Layout.LIST_INSET }} />
+        <layer ref={membersListRef} x="center" y="center" w={Layout.MEMBERS_LIST_W} h={{ fill: Layout.LIST_INSET }}>
+          <ToaMembersList />
+        </layer>
         <ThinBoxEntrypoint />
       </layer>
     </layer>
@@ -148,11 +206,13 @@ function ToaMembersPage(): Component {
 }
 
 function ToaApplicantsPage(): Component {
+  const [built] = useState(toaDetailsBuilt);
+  const [tab] = useState(toaDetailsTab);
   return (
-    <layer x="center" y="center" w="fill" h={{ fill: Layout.PAGE_INSET }} hide>
+    <layer x="center" y="center" w="fill" h={{ fill: Layout.PAGE_INSET }} hide={built === 0 || tab !== 1}>
       <rect x="center" y="center" w="fill" h="fill" color={Color.WASH} fill transparency={Layout.WASH_OPACITY} />
 
-      <layer x="center" y={0} w="fill" h={Layout.HEADER_H} hide>
+      <layer x="center" y={0} w="fill" h={Layout.HEADER_H} hide={built === 0}>
         <rect
           x="center"
           y="center"
@@ -162,20 +222,85 @@ function ToaApplicantsPage(): Component {
           fill
           transparency={Layout.HEADER_WASH_OPACITY}
         />
-        <HeaderColumn x={Layout.A_NAME_X} w={Layout.A_NAME_W} />
-        <HeaderColumn x={Layout.A_LEVEL_X} w={Layout.A_LEVEL_W} />
-        <HeaderColumn x={Layout.A_ATTACK_X} w={Layout.A_STAT_W} />
-        <HeaderColumn x={Layout.A_STRENGTH_X} w={Layout.A_STAT_W} />
-        <HeaderColumn x={Layout.A_RANGED_X} w={Layout.A_STAT_W} />
-        <HeaderColumn x={Layout.A_MAGIC_X} w={Layout.A_STAT_W} />
-        <HeaderColumn x={Layout.A_DEFENCE_X} w={Layout.A_STAT_W} />
-        <HeaderColumn x={Layout.A_HITPOINTS_X} w={Layout.A_STAT_W} />
-        <HeaderColumn x={Layout.A_PRAYER_X} w={Layout.A_STAT_W} />
-        <layer
-          x={{ right: Layout.A_COMPLETIONS_RIGHT }}
-          y="center"
-          w={{ fill: Layout.A_COMPLETIONS_W_INSET }}
-          h={{ fill: Layout.COLUMN_H_INSET }}
+        <ToaSortColumn
+          x={Layout.A_NAME_X}
+          w={Layout.A_NAME_W}
+          asc={SortKey.NAME_ASC}
+          desc={SortKey.NAME_DESC}
+          icon={ToaPartydetailsSprites.ICON_NAME}
+          tip={Copy.SORT_NAME}
+        />
+        <ToaSortColumn
+          x={Layout.A_LEVEL_X}
+          w={Layout.A_LEVEL_W}
+          asc={SortKey.COMBAT_ASC}
+          desc={SortKey.COMBAT_DESC}
+          icon={ToaPartydetailsSprites.ICON_COMBAT}
+          tip={Copy.SORT_COMBAT}
+        />
+        <ToaSortColumn
+          x={Layout.A_ATTACK_X}
+          w={Layout.A_STAT_W}
+          asc={SortKey.ATTACK_ASC}
+          desc={SortKey.ATTACK_DESC}
+          icon={ToaPartydetailsSprites.ICON_ATTACK}
+          tip={Copy.SORT_ATTACK}
+        />
+        <ToaSortColumn
+          x={Layout.A_STRENGTH_X}
+          w={Layout.A_STAT_W}
+          asc={SortKey.STRENGTH_ASC}
+          desc={SortKey.STRENGTH_DESC}
+          icon={ToaPartydetailsSprites.ICON_STRENGTH}
+          tip={Copy.SORT_STRENGTH}
+        />
+        <ToaSortColumn
+          x={Layout.A_RANGED_X}
+          w={Layout.A_STAT_W}
+          asc={SortKey.RANGED_ASC}
+          desc={SortKey.RANGED_DESC}
+          icon={ToaPartydetailsSprites.ICON_RANGED}
+          tip={Copy.SORT_RANGED}
+        />
+        <ToaSortColumn
+          x={Layout.A_MAGIC_X}
+          w={Layout.A_STAT_W}
+          asc={SortKey.MAGIC_ASC}
+          desc={SortKey.MAGIC_DESC}
+          icon={ToaPartydetailsSprites.ICON_MAGIC}
+          tip={Copy.SORT_MAGIC}
+        />
+        <ToaSortColumn
+          x={Layout.A_DEFENCE_X}
+          w={Layout.A_STAT_W}
+          asc={SortKey.DEFENCE_ASC}
+          desc={SortKey.DEFENCE_DESC}
+          icon={ToaPartydetailsSprites.ICON_DEFENCE}
+          tip={Copy.SORT_DEFENCE}
+        />
+        <ToaSortColumn
+          x={Layout.A_HITPOINTS_X}
+          w={Layout.A_STAT_W}
+          asc={SortKey.HITPOINTS_ASC}
+          desc={SortKey.HITPOINTS_DESC}
+          icon={ToaPartydetailsSprites.ICON_HITPOINTS}
+          tip={Copy.SORT_HITPOINTS}
+        />
+        <ToaSortColumn
+          x={Layout.A_PRAYER_X}
+          w={Layout.A_STAT_W}
+          asc={SortKey.PRAYER_ASC}
+          desc={SortKey.PRAYER_DESC}
+          icon={ToaPartydetailsSprites.ICON_PRAYER}
+          tip={Copy.SORT_PRAYER}
+        />
+        <ToaSortColumn
+          x={Layout.A_COMPLETIONS_X}
+          w={Layout.A_COMPLETIONS_CELL_W}
+          asc={SortKey.COMPLETIONS_ASC}
+          desc={SortKey.COMPLETIONS_DESC}
+          icon={ToaPartydetailsSprites.ICON_COMPLETIONS}
+          tip={Copy.SORT_COMPLETIONS}
         />
         <ThinBoxEntrypoint />
       </layer>
@@ -187,20 +312,20 @@ function ToaApplicantsPage(): Component {
           y="center"
           w={{ fill: Layout.LIST_INSET }}
           h={{ fill: Layout.LIST_INSET }}
-        />
+        >
+          <ToaApplicantsList />
+        </layer>
         <ThinBoxEntrypoint />
       </layer>
     </layer>
   );
 }
 
-function HeaderColumn({ x, w }: { x: Int; w: Int }): Component {
-  return <layer x={x} y="center" w={w} h={{ fill: Layout.COLUMN_H_INSET }} />;
-}
-
 function ToaInvocationsPage(): Component {
+  const [built] = useState(toaDetailsBuilt);
+  const [tab] = useState(toaDetailsTab);
   return (
-    <layer x={0} y="center" w={Layout.INVOCATIONS_W} h={Layout.INVOCATIONS_H} hide>
+    <layer x={0} y="center" w={Layout.INVOCATIONS_W} h={Layout.INVOCATIONS_H} hide={built === 0 || tab !== 2}>
       <rect x="center" y="center" w="fill" h="fill" color={Color.WASH} fill transparency={Layout.WASH_OPACITY} />
       <layer
         ref={invocationsContentRef}
@@ -227,8 +352,10 @@ function ToaInvocationsPage(): Component {
 }
 
 function ToaSummaryPage(): Component {
+  const [built] = useState(toaDetailsBuilt);
+  const [tab] = useState(toaDetailsTab);
   return (
-    <layer x="center" y="center" w="fill" h={{ fill: Layout.PAGE_INSET }} hide>
+    <layer x="center" y="center" w="fill" h={{ fill: Layout.PAGE_INSET }} hide={built === 0 || tab !== 3}>
       <rect x="center" y="center" w="fill" h="fill" color={Color.WASH} fill transparency={Layout.WASH_OPACITY} />
       <layer
         ref={summaryContentRef}
@@ -255,12 +382,15 @@ function ToaSummaryPage(): Component {
 }
 
 function ToaInvocationsSidepanel(): Component {
+  const [built] = useState(toaDetailsBuilt);
+  const [tab] = useState(toaDetailsTab);
   return (
     <layer
       x={{ right: Layout.SIDEPANEL_RIGHT }}
       y={Layout.SIDEPANEL_Y}
       w={Layout.SIDEPANEL_W}
       h={{ fill: Layout.SIDEPANEL_H_INSET }}
+      hide={built === 1 && tab !== 2}
     >
       <layer x="center" y={0} w={{ fill: Layout.SIDE_INSET }} h={Layout.SIDE_HEADER_H}>
         <rect x="center" y="center" w="fill" h="fill" color={Color.WASH} fill transparency={Layout.WASH_OPACITY} />
@@ -412,68 +542,21 @@ function ToaInvocationsSidepanel(): Component {
 function ToaFooterBar(): Component {
   return (
     <layer x="center" y={{ bottom: Layout.BOTTOM_Y }} w={{ fill: Layout.BOTTOM_W_INSET }} h={Layout.BOTTOM_H}>
-      <FooterButtonSlot />
-      <FooterButtonSlot />
-      <FooterButtonSlot />
-      <FooterButtonSlot />
-      <FooterButtonSlot />
-      <FooterButtonSlot />
-
-      <layer
-        x={{ right: Layout.COMPLETIONS_RIGHT }}
-        y={Layout.BUTTON_Y}
-        w={Layout.COMPLETIONS_W}
-        h={Layout.COMPLETIONS_H}
-        hide
-      >
-        <sprite
-          x="center"
-          y="center"
-          w={{ fill: Layout.PLATE_FILL_INSET }}
-          h={Layout.COMPLETIONS_H}
-          sprite={ToaPartydetailsSprites.PLATE_FILL}
-          tiling
-        />
-        <sprite
-          x={0}
-          y="center"
-          w={Layout.PLATE_CAP_W}
-          h={Layout.COMPLETIONS_H}
-          sprite={ToaPartydetailsSprites.PLATE_LEFT}
-        />
-        <sprite
-          x="right"
-          y="center"
-          w={Layout.PLATE_CAP_W}
-          h={Layout.COMPLETIONS_H}
-          sprite={ToaPartydetailsSprites.PLATE_RIGHT}
-        />
+      <layer ref={refreshRef} x={0} y={0} w="fill" h="fill">
+        <ToaFooterButton which={0} />
       </layer>
+      <layer ref={actionRef} x={0} y={0} w="fill" h="fill">
+        <ToaFooterButton which={1} />
+      </layer>
+      <layer ref={unblockRef} x={0} y={0} w="fill" h="fill">
+        <ToaFooterButton which={2} />
+      </layer>
+      <ToaCompletionsPlate />
+      <FooterButtonSlot />
+      <FooterButtonSlot />
+      <FooterButtonSlot />
 
-      <text
-        x={{ right: Layout.FOOTER_LABEL_RIGHT }}
-        y="bottom"
-        w={Layout.FOOTER_LABEL_W}
-        h={Layout.FOOTER_LABEL_H}
-        text={Copy.RAID_LEVEL}
-        font={ToaPartydetailsFonts.BODY}
-        color={Color.LABEL}
-        align="center"
-        valign="middle"
-        shadow
-      />
-      <text
-        x={{ right: Layout.FOOTER_LABEL_RIGHT }}
-        y={0}
-        w={Layout.FOOTER_LABEL_W}
-        h={Layout.FOOTER_LABEL_H}
-        text={Copy.RAID_MODE}
-        font={ToaPartydetailsFonts.BODY}
-        color={Color.LABEL}
-        align="center"
-        valign="middle"
-        shadow
-      />
+      <ToaRaidLevelLabels />
     </layer>
   );
 }
@@ -489,4 +572,23 @@ export function ToaPanelResizer(): Component {
   contentsRef.height = toaPanelHeight(slot.height);
 
   return <layer w={Layout.PIN} h={Layout.PIN} />;
+}
+
+function ToaLoadingText(): Component {
+  const [built] = useState(toaDetailsBuilt);
+  return (
+    <text
+      x="center"
+      y="center"
+      w="fill"
+      h="fill"
+      text={Copy.LOADING}
+      font={ToaPartydetailsFonts.BODY}
+      color={Color.LOADING}
+      align="center"
+      valign="middle"
+      shadow
+      hide={built === 1}
+    />
+  );
 }

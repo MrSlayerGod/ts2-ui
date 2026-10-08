@@ -96,7 +96,15 @@ export const Layout = {
 export const universeRef = createRef('pvp_arena_board:universe');
 export const filtersRef = createRef('pvp_arena_board:filters');
 export const listRef = createRef('pvp_arena_board:list');
-export const bottomRef = createRef('pvp_arena_board:bottom');
 export const mygroupRef = createRef('pvp_arena_board:mygroup');
 export const refreshRef = createRef('pvp_arena_board:refresh');
 export const optionsRef = createRef('pvp_arena_board:options');
+
+export const boardAnchorsRef = createRef('pvp_arena_board_board_anchors');
+
+export const BoardPausebutton = {
+  MY_GROUP: 0,
+  REFRESH: 1,
+  RESET: 2,
+  OPTIONS: 3,
+} as const;

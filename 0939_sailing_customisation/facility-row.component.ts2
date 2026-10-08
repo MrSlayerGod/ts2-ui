@@ -46,7 +46,13 @@ import {
   statsText,
   trimReplaces,
 } from './sailing-customisation.helpers';
-import { checkMaterials, refuseBuild, startBuild } from './sailing-customisation.state';
+import {
+  checkMaterials,
+  hideCustomisationTip,
+  refuseBuild,
+  showCustomisationTip,
+  startBuild,
+} from './sailing-customisation.state';
 
 function measureLine(font: Font): Int {
   return font === 495 ? 15 : 12;
@@ -155,6 +161,10 @@ export function FacilityRow({
   breakpoint,
   brief,
   boat,
+  listRef,
+  pane,
+  originX,
+  originY,
 }: {
   shown: Boolean;
   option: Int;
@@ -164,6 +174,10 @@ export function FacilityRow({
   breakpoint: Int;
   brief: Int;
   boat: Int;
+  listRef: Ref;
+  pane: Ref;
+  originX: Int;
+  originY: Int;
 }): Component {
   const known: Boolean = schematicKnown(option);
   const beforeMaterials: Int = heightBeforeMaterials(option, breakpoint, brief, boat);
@@ -179,15 +193,37 @@ export function FacilityRow({
   const highlight: Boolean = built === option || trimReplaces(option, built);
   return (
     <layer x={0} y={0} w="fill" h="fill" hide={!shown}>
-      <SkillBox shown={requirementsShown(option)} option={option} top={top} known={known} />
+      <SkillBox
+        shown={requirementsShown(option)}
+        option={option}
+        top={top}
+        known={known}
+        paneW={paneW}
+        listRef={listRef}
+        pane={pane}
+        originX={originX}
+        originY={originY}
+      />
       <RowTexts option={option} top={top} known={known} breakpoint={breakpoint} brief={brief} boat={boat} />
       <MaterialsBox
         shown={known && materialCount(option) > 0}
         option={option}
         top={materialsTop}
         breakpoint={breakpoint}
+        listRef={listRef}
+        pane={pane}
+        originX={originX}
+        originY={originY}
       />
-      <BottledCost shown={known && facility} x={materialsRight(option, breakpoint) + 5} top={materialsTop} />
+      <BottledCost
+        shown={known && facility}
+        x={materialsRight(option, breakpoint) + 5}
+        top={materialsTop}
+        listRef={listRef}
+        pane={pane}
+        originX={originX}
+        originY={originY}
+      />
       <ModelBox option={option} top={top} known={known} breakpoint={breakpoint} boat={boat} />
       {known && highlight && (
         <text
@@ -209,7 +245,27 @@ export function FacilityRow({
   );
 }
 
-function SkillBox({ shown, option, top, known }: { shown: Boolean; option: Int; top: Int; known: Boolean }): Component {
+function SkillBox({
+  shown,
+  option,
+  top,
+  known,
+  paneW,
+  listRef,
+  pane,
+  originX,
+  originY,
+}: {
+  shown: Boolean;
+  option: Int;
+  top: Int;
+  known: Boolean;
+  paneW: Int;
+  listRef: Ref;
+  pane: Ref;
+  originX: Int;
+  originY: Int;
+}): Component {
   let construction: String = CS2.tostring(constructionLevelOf(option));
   let sailing: String = CS2.tostring(sailingLevelOf(option));
   let constructionColour: Int = meetsConstruction(option) ? CustomisationColors.ORANGE : CustomisationColors.GREY;
@@ -220,6 +276,11 @@ function SkillBox({ shown, option, top, known }: { shown: Boolean; option: Int; 
     constructionColour = CustomisationColors.GREY;
     sailingColour = CustomisationColors.GREY;
   }
+  let tip: String = 'Level ?? Construction<br>Level ?? Sailing';
+  if (known) {
+    tip = `Level ${construction} Construction<br>Level ${sailing} Sailing`;
+  }
+  const left: Int = paneW - 5 - Layout.REQ_W;
   return shown ? (
     <>
       <sprite
@@ -228,6 +289,10 @@ function SkillBox({ shown, option, top, known }: { shown: Boolean; option: Int; 
         w={Layout.REQ_W}
         h={Layout.REQ_H}
         sprite={CustomisationSprites.BACKING_DARK}
+        onMouseRepeat={() =>
+          showCustomisationTip(tip, left, top + 5, Layout.REQ_W, Layout.REQ_H, listRef, pane, originX, originY)
+        }
+        onMouseLeave={() => hideCustomisationTip()}
       />
       <rect x={{ right: 5 }} y={top + 5} w={Layout.REQ_W} h={Layout.REQ_H + 2} color={CustomisationColors.BOX_OUTER} />
       <rect x={{ right: 6 }} y={top + 6} w={Layout.REQ_W - 2} h={Layout.REQ_H} color={CustomisationColors.BOX_INNER} />
@@ -346,11 +411,19 @@ function MaterialsBox({
   option,
   top,
   breakpoint,
+  listRef,
+  pane,
+  originX,
+  originY,
 }: {
   shown: Boolean;
   option: Int;
   top: Int;
   breakpoint: Int;
+  listRef: Ref;
+  pane: Ref;
+  originX: Int;
+  originY: Int;
 }): Component {
   const [hovered, setHovered] = useState(0);
   const mobile: Boolean = onMobile();
@@ -392,6 +465,10 @@ function MaterialsBox({
           index={slot}
           x={11 + Layout.CELL_STEP_X * (slot % per)}
           y={top + Layout.CELL_STEP_Y * (slot / per)}
+          listRef={listRef}
+          pane={pane}
+          originX={originX}
+          originY={originY}
         />
       ))}
       <rect
@@ -435,16 +512,28 @@ function MaterialCell({
   index,
   x,
   y,
+  listRef,
+  pane,
+  originX,
+  originY,
 }: {
   shown: Boolean;
   option: Int;
   index: Int;
   x: Int;
   y: Int;
+  listRef: Ref;
+  pane: Ref;
+  originX: Int;
+  originY: Int;
 }): Component {
   const item: ItemName = materialItem(option, index);
   const need: Int = materialNeed(option, index);
   const lit: Boolean = materialLit(item, need);
+  let tip: String = `${itemName(item as Item)} x ${commas(need)}`;
+  if (notConsumed(item)) {
+    tip = `${tip} (Not consumed)`;
+  }
   return shown ? (
     <>
       <sprite
@@ -459,6 +548,10 @@ function MaterialCell({
         transparency={lit ? 0 : 150}
         options={['Check']}
         optionSubject={`<col=ff9040>${itemName(item as Item)}`}
+        onMouseRepeat={() =>
+          showCustomisationTip(tip, x, y, Layout.CELL_W, Layout.CELL_H, listRef, pane, originX, originY)
+        }
+        onMouseLeave={() => hideCustomisationTip()}
       />
       {!notConsumed(item) && (
         <text
@@ -478,10 +571,27 @@ function MaterialCell({
   ) : null;
 }
 
-function BottledCost({ shown, x, top }: { shown: Boolean; x: Int; top: Int }): Component {
+function BottledCost({
+  shown,
+  x,
+  top,
+  listRef,
+  pane,
+  originX,
+  originY,
+}: {
+  shown: Boolean;
+  x: Int;
+  top: Int;
+  listRef: Ref;
+  pane: Ref;
+  originX: Int;
+  originY: Int;
+}): Component {
   const inv = useInventory(CustomisationInventories.INV);
   const lit: Boolean = inv.total(CustomisationItems.BOTTLED_FACILITY) >= 1;
   const cellX: Int = x + 6;
+  const tip: String = `Alternative cost: ${itemName(CustomisationItems.BOTTLED_FACILITY)} x ${commas(1)} (Containing this facility)`;
   return shown ? (
     <>
       <sprite x={x} y={top - 3} w={Layout.CELL_W + 5} h={36} sprite={CustomisationSprites.BACKING_DARK} />
@@ -497,6 +607,10 @@ function BottledCost({ shown, x, top }: { shown: Boolean; x: Int; top: Int }): C
         transparency={lit ? 0 : 150}
         options={['Check']}
         optionSubject={`<col=ff9040>${itemName(CustomisationItems.BOTTLED_FACILITY)}`}
+        onMouseRepeat={() =>
+          showCustomisationTip(tip, cellX, top, Layout.CELL_W, Layout.CELL_H, listRef, pane, originX, originY)
+        }
+        onMouseLeave={() => hideCustomisationTip()}
       />
       <text
         x={cellX}

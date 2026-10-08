@@ -5,6 +5,8 @@ import { Varps } from '../lib/game/varps';
 import {
   keyboardTimeout,
   tooltipBuilt,
+  worldmapClue,
+  worldmapGravestone,
   worldmapIntermaplink,
   worldmapSearch,
   worldmapSearching,
@@ -108,6 +110,15 @@ export function coordInMap(map: Int, from: Coord): Coord {
     }
   }
   return -1 as Coord;
+}
+
+export function worldmapTransmitData(player: Coord, clue: Coord, grave: Coord): void {
+  const [, setPlayer] = useState(worldmapYouarehere);
+  const [, setClue] = useState(worldmapClue);
+  const [, setGrave] = useState(worldmapGravestone);
+  setPlayer(player as Int);
+  setClue(clue as Int);
+  setGrave(grave as Int);
 }
 
 export function initialMap(): Int {

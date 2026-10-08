@@ -39,6 +39,7 @@ import {
   mainmodalRef,
   sidemodalRef,
 } from './toplevel-osm.constants';
+import { osmHidechatCheck } from './toplevel-osm.chat';
 import { DESELECTS_OPEN_TAB } from './toplevel-osm.data';
 
 export function toplevelOsmInit(): void {
@@ -149,6 +150,7 @@ export function gameframeSubChanged(): void {
     setMobileFullscreen(0);
   }
   setMobileSideModalOpen(CS2.if_sub_has(sidemodalRef) ? 1 : 0);
+  osmHidechatCheck();
 }
 
 export function cutsceneHidesSide(): Boolean {

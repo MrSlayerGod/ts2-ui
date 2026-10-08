@@ -32,17 +32,17 @@ export function GracefulPieceButton({
 
   const held: Int =
     owned !== -1
-      ? backpack.total(owned) > 0
+      ? (backpack.total(owned) > 0
         ? 1
-        : 0
-      : backpack.total(RewardItems.GRACEFUL_HOOD) > 0 &&
+        : 0)
+      : (backpack.total(RewardItems.GRACEFUL_HOOD) > 0 &&
           backpack.total(RewardItems.GRACEFUL_TOP) > 0 &&
           backpack.total(RewardItems.GRACEFUL_LEGS) > 0 &&
           backpack.total(RewardItems.GRACEFUL_CAPE) > 0 &&
           backpack.total(RewardItems.GRACEFUL_GLOVES) > 0 &&
           backpack.total(RewardItems.GRACEFUL_BOOTS) > 0
         ? 1
-        : 0;
+        : 0);
 
   const blocked: Int = tickets < price || held === 0 ? 1 : 0;
 

@@ -48,29 +48,29 @@ export function RewardRow({
 
   const title: String =
     row > RewardRows.LAST_ROLE
-      ? (RewardBonuses.get(row) ?? '')
+      ? RewardBonuses.get(row) ?? ''
       : row === RewardRows.ATTACKER
-        ? (RoleTitlesAtt.at(level) ?? '')
+        ? RoleTitlesAtt.at(level) ?? ''
         : row === RewardRows.COLLECTOR
-          ? (RoleTitlesCol.at(level) ?? '')
+          ? RoleTitlesCol.at(level) ?? ''
           : row === RewardRows.DEFENDER
-            ? (RoleTitlesDef.at(level) ?? '')
-            : (RoleTitlesHeal.at(level) ?? '');
+            ? RoleTitlesDef.at(level) ?? ''
+            : RoleTitlesHeal.at(level) ?? '';
 
   const model: Model =
     row > RewardRows.LAST_ROLE
       ? baseModel
       : row === RewardRows.ATTACKER
-        ? (RoleModelsAtt.at(level) ?? -1)
+        ? RoleModelsAtt.at(level) ?? -1
         : row === RewardRows.COLLECTOR
-          ? (RoleModelsCol.at(level) ?? -1)
+          ? RoleModelsCol.at(level) ?? -1
           : row === RewardRows.DEFENDER
-            ? (RoleModelsDef.at(level) ?? -1)
-            : (RoleModelsHeal.at(level) ?? -1);
+            ? RoleModelsDef.at(level) ?? -1
+            : RoleModelsHeal.at(level) ?? -1;
 
   const plainCost: String =
     row > RewardRows.LAST_ROLE
-      ? (RewardCosts.get(row) ?? '')
+      ? RewardCosts.get(row) ?? ''
       : level < RoleLevel.MASTERED
         ? `${stringOf(RolePointsNeeded.at(level) ?? -1)} ${roleWordOf(row)} points`
         : ' - Mastered - ';

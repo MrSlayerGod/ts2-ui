@@ -51,7 +51,7 @@ export function GeOfferSlot({
   const empty: Boolean = CS2.stockmarket_offer_empty_is(slot);
 
   const held: Item = held0 !== -1 ? held0 : held1;
-  const heldTotal: Int = held0 === -1 ? count1 : held1 === held0 ? count0 + count1 : count0;
+  const heldTotal: Int = held0 === -1 ? count1 : (held1 === held0 ? count0 + count1 : count0);
 
   let bare: Boolean = false;
   if (empty) {

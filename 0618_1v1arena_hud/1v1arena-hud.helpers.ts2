@@ -1,54 +1,105 @@
-import { CS2, createRef, stopTimer } from 'ts2';
+import { createRef, useState } from 'ts2';
 
 import { clientClock, playSound } from '../lib/lib.engine';
-import { ArenaColor, ArenaFlash, ArenaSounds } from './1v1arena-hud.constants';
+import { ArenaButton, ArenaColor, ArenaFlash, ArenaSounds } from './1v1arena-hud.constants';
+import {
+  arenaCollapsed,
+  arenaToggleColour,
+  spectatorColour,
+  spectatorFlashUntil,
+  startAllColour,
+  startAllFlashUntil,
+} from './1v1arena-hud.state';
 
 export const showSlot = createRef('1v1arena_hud_show');
 export const displaySlot = createRef('1v1arena_hud_display');
 export const hideSlot = createRef('1v1arena_hud_hide');
 
-export const showLabel = createRef('1v1arena_hud_show_label');
-export const hideLabel = createRef('1v1arena_hud_hide_label');
-export const spectatorLabel = createRef('1v1arena_hud_spectator_label');
-export const startAllLabel = createRef('1v1arena_hud_startall_label');
+export function arenaHudOpen(): void {
+  const [, setCollapsed] = useState(arenaCollapsed);
+  const [, setToggleColour] = useState(arenaToggleColour);
+  const [, setSpectatorColour] = useState(spectatorColour);
+  const [, setStartAllColour] = useState(startAllColour);
+  const [, setSpectatorUntil] = useState(spectatorFlashUntil);
+  const [, setStartAllUntil] = useState(startAllFlashUntil);
+  setCollapsed(0);
+  setToggleColour(ArenaColor.LABEL);
+  setSpectatorColour(ArenaColor.LABEL);
+  setStartAllColour(ArenaColor.LABEL);
+  setSpectatorUntil(-1);
+  setStartAllUntil(-1);
+}
 
-export function swapLabelColor(label: ComponentId, colour: Int): void {
-  label.color = colour;
+export function paintToggleLabel(colour: Int): void {
+  const [, setColour] = useState(arenaToggleColour);
+  setColour(colour);
+}
+
+export function paintButtonLabel(button: Int, colour: Int): void {
+  const [spectatorUntil] = useState(spectatorFlashUntil);
+  const [, setSpectator] = useState(spectatorColour);
+  const [startAllUntil] = useState(startAllFlashUntil);
+  const [, setStartAll] = useState(startAllColour);
+  if (button === ArenaButton.SPECTATOR) {
+    if (spectatorUntil === -1) {
+      setSpectator(colour);
+    }
+  } else if (startAllUntil === -1) {
+    setStartAll(colour);
+  }
 }
 
 export function collapseArenaHud(): void {
+  const [, setCollapsed] = useState(arenaCollapsed);
+  const [, setToggleColour] = useState(arenaToggleColour);
   playSound(ArenaSounds.CLICK);
-  displaySlot.hide = true;
-  hideSlot.hide = true;
-  showSlot.hide = false;
+  setCollapsed(1);
+  setToggleColour(ArenaColor.LABEL);
 }
 
 export function expandArenaHud(): void {
+  const [, setCollapsed] = useState(arenaCollapsed);
+  const [, setToggleColour] = useState(arenaToggleColour);
   playSound(ArenaSounds.CLICK);
-  displaySlot.hide = false;
-  showSlot.hide = true;
-  hideSlot.hide = false;
+  setCollapsed(0);
+  setToggleColour(ArenaColor.LABEL);
 }
 
-export function pressArenaButton(button: ComponentId, label: ComponentId): void {
-  playSound(ArenaSounds.CLICK);
-  const restoreAt: Int = clientClock() + ArenaFlash.CYCLES;
-  label.color = ArenaColor.PRESSED;
-  CS2.if_on_mouserepeat_set(null, button);
-  CS2.if_on_mouseleave_set(null, button);
-  CS2.if_onop_set(null, button);
-  button.onTimer = () => {
-    if (clientClock() < restoreAt) {
+export function pressArenaButton(button: Int): void {
+  const [spectatorUntil, setSpectatorUntil] = useState(spectatorFlashUntil);
+  const [, setSpectator] = useState(spectatorColour);
+  const [startAllUntil, setStartAllUntil] = useState(startAllFlashUntil);
+  const [, setStartAll] = useState(startAllColour);
+  const deadline: Int = clientClock() + ArenaFlash.CYCLES;
+  if (button === ArenaButton.SPECTATOR) {
+    if (spectatorUntil !== -1) {
       return;
     }
-    resetArenaButton(button, label);
-  };
+    playSound(ArenaSounds.CLICK);
+    setSpectator(ArenaColor.PRESSED);
+    setSpectatorUntil(deadline);
+  } else {
+    if (startAllUntil !== -1) {
+      return;
+    }
+    playSound(ArenaSounds.CLICK);
+    setStartAll(ArenaColor.PRESSED);
+    setStartAllUntil(deadline);
+  }
 }
 
-export function resetArenaButton(button: ComponentId, label: ComponentId): void {
-  label.color = ArenaColor.LABEL;
-  CS2.if_on_mouserepeat_set(() => swapLabelColor(label, ArenaColor.HOVER), button);
-  CS2.if_on_mouseleave_set(() => swapLabelColor(label, ArenaColor.LABEL), button);
-  CS2.if_onop_set(() => pressArenaButton(button, label), button);
-  CS2.if_on_timer_set(null, button);
+export function arenaFlashTick(): void {
+  const [spectatorUntil, setSpectatorUntil] = useState(spectatorFlashUntil);
+  const [, setSpectator] = useState(spectatorColour);
+  const [startAllUntil, setStartAllUntil] = useState(startAllFlashUntil);
+  const [, setStartAll] = useState(startAllColour);
+  const now: Int = clientClock();
+  if (spectatorUntil !== -1 && now >= spectatorUntil) {
+    setSpectator(ArenaColor.LABEL);
+    setSpectatorUntil(-1);
+  }
+  if (startAllUntil !== -1 && now >= startAllUntil) {
+    setStartAll(ArenaColor.LABEL);
+    setStartAllUntil(-1);
+  }
 }

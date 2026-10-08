@@ -18,8 +18,8 @@ import {
 function StoredSlot({ item, count, slot, pane }: { item: Item; count: Int; slot: Int; pane: Ref }): Component {
   return (
     <sprite
-      x={(slot % Grid.COLUMNS) * Grid.STRIDE_X}
-      y={(slot / Grid.COLUMNS) * Grid.STRIDE_Y}
+      x={slot % Grid.COLUMNS * Grid.STRIDE_X}
+      y={slot / Grid.COLUMNS * Grid.STRIDE_Y}
       w={Grid.W}
       h={Grid.H}
       item={item}
@@ -48,8 +48,8 @@ function StoredSlot({ item, count, slot, pane }: { item: Item; count: Int; slot:
 function BlankSlot({ slot }: { slot: Int }): Component {
   return (
     <sprite
-      x={(slot % Grid.COLUMNS) * Grid.STRIDE_X}
-      y={(slot / Grid.COLUMNS) * Grid.STRIDE_Y}
+      x={slot % Grid.COLUMNS * Grid.STRIDE_X}
+      y={slot / Grid.COLUMNS * Grid.STRIDE_Y}
       w={Grid.W}
       h={Grid.H}
       item={StorageItems.BLANK}
@@ -77,7 +77,7 @@ export function PrivateItems(): Component {
     slot = slot + 1;
   }
 
-  const extent: Int = ((bag.size - 1) / Grid.COLUMNS) * Grid.STRIDE_Y + Grid.H;
+  const extent: Int = (bag.size - 1) / Grid.COLUMNS * Grid.STRIDE_Y + Grid.H;
   const paneHeight: Int = universe.height - Layout.PANE_H_INSET;
 
   return (
@@ -104,11 +104,11 @@ export function PrivateItems(): Component {
         scrollHeight={extent > paneHeight ? extent : 0}
       >
         {bag.map((item, index) =>
-          item === -1 ? (
+          (item === -1 ? (
             <BlankSlot slot={index} />
           ) : (
             <StoredSlot item={item} count={bag.count(index)} slot={index} pane={pane} />
-          ),
+          )),
         )}
       </layer>
 

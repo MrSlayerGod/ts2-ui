@@ -188,8 +188,8 @@ function LootGrid(): Component {
         (item, slot, n) =>
           item !== -1 && (
             <sprite
-              x={(n % 5) * 36 + ((n % 5) + 1) * ((grid.width - 180) / 6)}
-              y={(n / 5) * 32 + (n / 5 + 1) * ((grid.width - 180) / 6)}
+              x={n % 5 * 36 + (n % 5 + 1) * ((grid.width - 180) / 6)}
+              y={n / 5 * 32 + (n / 5 + 1) * ((grid.width - 180) / 6)}
               w={36}
               h={32}
               item={item}

@@ -1,7 +1,8 @@
-import { useServerState } from 'ts2';
+import { useServerState, useState } from 'ts2';
 
 import { Varbits } from '../lib/game/varbits';
 import { Clock } from './clanwars-hud.constants';
+import { clanwarsBoardDraws, clanwarsClockAt, clanwarsClockRunning, clanwarsCountdownAt } from './clanwars-hud.state';
 
 export function rgbToHex(red: Int, green: Int, blue: Int): Int {
   let r: Int = red;
@@ -48,9 +49,50 @@ export function timeRemainingText(cycles: Int): String {
 }
 
 export function timeRemainingLine(): String {
+  return timeRemainingText(resynchedClock());
+}
+
+function resynchedClock(): Int {
   const remaining: Int = useServerState(Varbits.CLANWARS_TIMEREMAINING) * Clock.PER_GAME_TICK;
   if (useServerState(Varbits.CLANWARS_COUNTDOWN) > 0) {
-    return timeRemainingText(remaining);
+    return remaining;
   }
-  return timeRemainingText(remaining - Clock.REMAINING_LEAD);
+  return remaining - Clock.REMAINING_LEAD;
+}
+
+export function clanwarsTransmit(): void {
+  const [draws, setDraws] = useState(clanwarsBoardDraws);
+  setDraws(draws + 1);
+
+  const [, setClock] = useState(clanwarsClockAt);
+  const [, setRunning] = useState(clanwarsClockRunning);
+  setClock(resynchedClock());
+  if (useServerState(Varbits.CLANWARS_COUNTDOWN) > 0) {
+    setRunning(0);
+  } else {
+    setRunning(1);
+  }
+
+  const countdown: Int = useServerState(Varbits.CLANWARS_COUNTDOWN);
+  const [, setCountdown] = useState(clanwarsCountdownAt);
+  if (countdown <= 0) {
+    setCountdown(-1);
+  } else {
+    setCountdown(countdown * Clock.PER_GAME_TICK - Clock.COUNTDOWN_LEAD);
+  }
+}
+
+export function countdownTick(): void {
+  const [at, setAt] = useState(clanwarsCountdownAt);
+  if (at > 0) {
+    setAt(at - 1);
+  }
+}
+
+export function clockTick(): void {
+  const [running] = useState(clanwarsClockRunning);
+  const [at, setAt] = useState(clanwarsClockAt);
+  if (running === 1 && at > 0) {
+    setAt(at - 1);
+  }
 }

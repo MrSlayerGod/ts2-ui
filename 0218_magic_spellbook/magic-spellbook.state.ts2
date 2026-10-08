@@ -105,7 +105,7 @@ export function stepSpellFlash(): void {
   const next: Int = fires + 1;
   setFires(next);
   let lit: Int = 0;
-  if (((next - 1) / 15) % 2 === 0) {
+  if ((next - 1) / 15 % 2 === 0) {
     lit = 1;
   }
   if (lit !== phase) {

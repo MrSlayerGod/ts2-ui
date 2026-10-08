@@ -100,11 +100,6 @@ export enum Flash {
   CHANNEL_MAX = 255,
 }
 
-export enum ZoomSlider {
-  TRACK = 7602233,
-  KNOB = 7602234,
-}
-
 export const VIEWPORT_REFERENCE = 334;
 
 export enum OculusGate {

@@ -96,7 +96,7 @@ export function pohViewerSideUpdate(): void {
   const picture: Sprite = RoomSprites.get(type) ?? -1;
   CS2.if_sprite_set(picture, gfxRef);
   const rotation: Int = useServerState(ViewerVarbits.ROTATION);
-  const angle: Int = (16384 * (4 - rotation)) % 65536;
+  const angle: Int = 16384 * (4 - rotation) % 65536;
   CS2.if_set2dangle(angle, gfxRef);
   if (CS2.cc_find(previewRef, 0)) {
     if (destination !== 0) {

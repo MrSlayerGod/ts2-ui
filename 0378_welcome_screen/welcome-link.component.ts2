@@ -1,0 +1,83 @@
+import { onMounted, useState } from 'ts2';
+
+import { onMobile } from '../lib/lib.helpers';
+import { Band, WelcomeColors } from './welcome-screen.constants';
+import {
+  openWelcomeLink,
+  resetWelcomeLink,
+  welcomeLinkLabel,
+  welcomeLinkMode,
+  WelcomeLinkMode,
+} from './welcome-link.state';
+
+const LINK_HOVER = 220;
+
+export function WelcomeLink(): Component {
+  const [mode] = useState(welcomeLinkMode);
+  const [label] = useState(welcomeLinkLabel);
+  const [hovered, setHovered] = useState(0);
+  onMounted(() => {
+    resetWelcomeLink();
+  });
+  const hovers: Boolean = mode === WelcomeLinkMode.LINK && !onMobile();
+
+  if (mode === WelcomeLinkMode.CACHE) {
+    return (
+      <rect
+        x={{ center: Band.MESSAGE_DX }}
+        y={Band.LINK_Y}
+        w={Band.MESSAGE_W}
+        h={Band.LINK_H}
+        fill
+        color={WelcomeColors.WHITE}
+        transparency={Band.INVISIBLE}
+        hide
+        options={['Open Link']}
+      />
+    );
+  }
+  if (hovers) {
+    return (
+      <rect
+        x={{ center: Band.MESSAGE_DX }}
+        y={Band.LINK_Y}
+        w={Band.MESSAGE_W}
+        h={Band.LINK_H}
+        fill
+        color={WelcomeColors.WHITE}
+        transparency={hovered === 1 ? LINK_HOVER : Band.INVISIBLE}
+        options={[label]}
+        onOptionSelect={() => openWelcomeLink()}
+        onMouseRepeat={() => setHovered(1)}
+        onMouseLeave={() => setHovered(0)}
+      />
+    );
+  }
+  if (mode === WelcomeLinkMode.LINK) {
+    return (
+      <rect
+        x={{ center: Band.MESSAGE_DX }}
+        y={Band.LINK_Y}
+        w={Band.MESSAGE_W}
+        h={Band.LINK_H}
+        fill
+        color={WelcomeColors.WHITE}
+        transparency={Band.INVISIBLE}
+        options={[label]}
+        onOptionSelect={() => openWelcomeLink()}
+      />
+    );
+  }
+  return (
+    <rect
+      x={{ center: Band.MESSAGE_DX }}
+      y={Band.LINK_Y}
+      w={Band.MESSAGE_W}
+      h={Band.LINK_H}
+      fill
+      color={WelcomeColors.WHITE}
+      transparency={Band.INVISIBLE}
+      hide
+    />
+  );
+}

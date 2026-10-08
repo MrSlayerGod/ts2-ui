@@ -1,0 +1,25 @@
+import { sessionState, useState } from 'ts2';
+
+import { clientClock } from '../lib/lib.engine';
+import { TrickOrTreatWindow, TrickOrTreatClock } from './hw22-trickortreat.constants';
+
+export const trickOrTreatWindow = sessionState(TrickOrTreatWindow.NONE);
+export const trickOrTreatName = sessionState('');
+export const trickOrTreatStart = sessionState(0);
+
+export function hw22TrickOrTreatOpen(initiator: Int, name: String): void {
+  const [, setWindow] = useState(trickOrTreatWindow);
+  const [, setName] = useState(trickOrTreatName);
+  const [, setStart] = useState(trickOrTreatStart);
+  setWindow(initiator === 1 ? TrickOrTreatWindow.INITIATOR : TrickOrTreatWindow.TARGET);
+  setName(name);
+  setStart(clientClock());
+}
+
+export function trickOrTreatSecondsLeft(start: Int): Int {
+  const left: Int = TrickOrTreatClock.CYCLES - (clientClock() - start);
+  if (left <= 0) {
+    return 0;
+  }
+  return left / TrickOrTreatClock.CYCLES_PER_SECOND + 1;
+}

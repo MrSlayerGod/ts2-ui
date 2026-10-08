@@ -21,7 +21,16 @@ export function OrbsNomap(): Component {
       </layer>
       <layer x="right" y={0} w={155} h={140}>
         <XpDropsButton left={106} top={38} fromRight />
-        <HealthOrb left={38} top={0} fromRight wide={false} clickY={5} clickW={50} clickH={26} />
+        <HealthOrb
+          left={38}
+          top={0}
+          fromRight
+          panel={OrbsPanel.NOMAP}
+          wide={false}
+          clickY={5}
+          clickW={50}
+          clickH={26}
+        />
         <PrayerOrb left={0} top={31} fromRight wide={false} clickY={5} clickW={49} clickH={26} />
         <RunOrb left={98} top={0} fromRight wide={false} clickY={5} clickW={50} clickH={26} />
         <SpecOrb

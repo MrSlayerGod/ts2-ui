@@ -32,8 +32,8 @@ export function KitCell({
   armed: Int;
   mobile: Int;
 }): Component {
-  const left: Int = (visible % columns) * (cellWidth + Cell.GAP) + Cell.GAP;
-  const top: Int = (visible / columns) * (Cell.HEIGHT + Cell.GAP) + Cell.GAP;
+  const left: Int = visible % columns * (cellWidth + Cell.GAP) + Cell.GAP;
+  const top: Int = visible / columns * (Cell.HEIGHT + Cell.GAP) + Cell.GAP;
 
   const rest: Int = selected === 1 ? KitColor.TEXT : KitColor.CELL_REST;
   const hovered: Int = mobile === 1 || selected === 1 ? rest : KitColor.CELL_HOVER;

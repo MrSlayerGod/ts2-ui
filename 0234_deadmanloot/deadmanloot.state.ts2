@@ -1,0 +1,29 @@
+import { sessionState, useState } from 'ts2';
+import { pipeHead, pipeTail } from '../lib/lib.format';
+
+export const tabValues = sessionState('||||');
+
+export function tabValueOf(values: String, page: Int): String {
+  let rest: String = values;
+  let skipped: Int = 0;
+  while (skipped < page) {
+    rest = pipeTail(rest);
+    skipped = skipped + 1;
+  }
+  return pipeHead(rest);
+}
+
+export function deadmanlootValueUpdate(text: String, tab: Int): void {
+  if (tab < 0 || tab > 4) {
+    return;
+  }
+  const [values, setValues] = useState(tabValues);
+  let rebuilt: String = '';
+  let page: Int = 0;
+  while (page < 5) {
+    const caption: String = page === tab ? text : tabValueOf(values, page);
+    rebuilt = page === 0 ? caption : rebuilt.concat('|').concat(caption);
+    page = page + 1;
+  }
+  setValues(rebuilt);
+}

@@ -42,13 +42,13 @@ export function GravestoneRetrieval(): Component {
   const fee: Int = declaredFee === -1 ? transmitFee : declaredFee;
   const locked: Int = feeItem !== -1 ? (fee > 0 ? 1 : 0) : 0;
 
-  const banking: Int = locked === 1 ? 0 : bankAll === 1 ? 1 : 0;
+  const banking: Int = locked === 1 ? 0 : (bankAll === 1 ? 1 : 0);
 
   let extent: Int = 0;
   let slot: Int = 0;
   while (slot < Slot.COUNT) {
     if (held[slot] !== -1) {
-      extent = Slot.INSET_Y + (slot / Slot.COLUMNS) * Slot.STRIDE_Y + Slot.H;
+      extent = Slot.INSET_Y + slot / Slot.COLUMNS * Slot.STRIDE_Y + Slot.H;
     }
     slot = slot + 1;
   }
@@ -80,8 +80,8 @@ export function GravestoneRetrieval(): Component {
             (item, index) =>
               item !== -1 && (
                 <sprite
-                  x={Slot.INSET_X + (index % Slot.COLUMNS) * Slot.STRIDE_X}
-                  y={Slot.INSET_Y + (index / Slot.COLUMNS) * Slot.STRIDE_Y}
+                  x={Slot.INSET_X + index % Slot.COLUMNS * Slot.STRIDE_X}
+                  y={Slot.INSET_Y + index / Slot.COLUMNS * Slot.STRIDE_Y}
                   w={Slot.W}
                   h={Slot.H}
                   item={item}

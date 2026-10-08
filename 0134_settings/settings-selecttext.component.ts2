@@ -50,9 +50,7 @@ function thinBoxTitleHeight(row: SettingsRow, mobile: Boolean, width: Int): Int 
 }
 
 export function selectTextRowHeight(row: SettingsRow, mobile: Boolean, compact: Boolean, width: Int): Int {
-  return (
-    thinBoxTitleHeight(row, mobile, width) + thinBoxDescriptionHeight(row, mobile, compact, width) + ThinBox.boxPad
-  );
+  return thinBoxTitleHeight(row, mobile, width) + thinBoxDescriptionHeight(row, mobile, compact, width) + ThinBox.boxPad;
 }
 
 function settingsOpGate(row: SettingsRow, enabled: Boolean, flag: Int): Boolean {

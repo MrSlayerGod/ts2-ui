@@ -31,7 +31,7 @@ export function LogScrollbar({ extent, paneHeight }: { extent: Int; paneHeight: 
           const travel: Int = Math.max(1, gutter.height - thumb.height);
           const offset: Int = Math.clamp(0, travel, event.mouseY - thumb.height / 2);
           const range: Int = paneRef.scrollHeight - paneRef.height;
-          paneRef.scrollY = (offset * range) / travel;
+          paneRef.scrollY = offset * range / travel;
           trackScroll(gutter, thumb, capTop, capBottom, paneRef);
         }}
       />
@@ -39,7 +39,7 @@ export function LogScrollbar({ extent, paneHeight }: { extent: Int; paneHeight: 
         ref={thumb}
         y={
           ARROW +
-          ((gutter.height - thumbHeightOf(bar.height, paneHeight, measured, false)) * paneRef.scrollY) /
+          (gutter.height - thumbHeightOf(bar.height, paneHeight, measured, false)) * paneRef.scrollY /
             Math.max(1, extent - paneHeight)
         }
         w="fill"
@@ -55,7 +55,7 @@ export function LogScrollbar({ extent, paneHeight }: { extent: Int; paneHeight: 
           capBottom.y = offset + ARROW + thumb.height - CAP;
           const travel: Int = Math.max(1, gutter.height - thumb.height);
           const range: Int = paneRef.scrollHeight - paneRef.height;
-          paneRef.scrollY = (offset * range) / travel;
+          paneRef.scrollY = offset * range / travel;
         }}
       />
       <sprite ref={capTop} y={thumb.y} w="fill" h={CAP} sprite={Sprites.SCROLLBAR_DRAGGER_V2_0} />

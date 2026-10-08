@@ -47,8 +47,8 @@ function InventorySlot({
   interactive: Int;
   subject: String;
 }): Component {
-  const x: Int = InventoryLayout.ORIGIN_X + (slot % InventoryLayout.COLUMNS) * InventoryLayout.COLUMN_PITCH;
-  const y: Int = InventoryLayout.ORIGIN_Y + (slot / InventoryLayout.COLUMNS) * InventoryLayout.ROW_PITCH;
+  const x: Int = InventoryLayout.ORIGIN_X + slot % InventoryLayout.COLUMNS * InventoryLayout.COLUMN_PITCH;
+  const y: Int = InventoryLayout.ORIGIN_Y + slot / InventoryLayout.COLUMNS * InventoryLayout.ROW_PITCH;
 
   if (item === -1) {
     return (

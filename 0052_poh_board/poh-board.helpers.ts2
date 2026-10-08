@@ -1,0 +1,135 @@
+import { CS2 } from 'ts2';
+
+import { pipeHead, pipeTail } from '../lib/lib.format';
+import { Field, SortMode } from './poh-board.constants';
+
+export function lineField(line: String, n: Int): String {
+  let rest: String = line;
+  let skipped: Int = 0;
+  while (skipped < n) {
+    rest = pipeTail(rest);
+    skipped = skipped + 1;
+  }
+  return pipeHead(rest);
+}
+
+function recordTag(slot: Int): String {
+  return `^${slot}~`;
+}
+
+export function withRecord(board: String, slot: Int, line: String, portal: Int): String {
+  let rest: String = board;
+  const tag: String = recordTag(slot);
+  const at: Int = board.indexOf(tag, 0);
+  if (at !== -1) {
+    const end: Int = board.indexOf('^', at + tag.length);
+    rest = end === -1 ? board.substring(0, at) : board.substring(0, at).concat(board.substring(end, board.length));
+  }
+  if (line.length === 0) {
+    return rest;
+  }
+  return `${rest}${tag}${portal}~${line}`;
+}
+
+export function boardLoc(code: String): String {
+  if (CS2.compare(code, '1') === 0) {
+    return 'RIM';
+  }
+  if (CS2.compare(code, '2') === 0) {
+    return 'TAV';
+  }
+  if (CS2.compare(code, '3') === 0) {
+    return 'POL';
+  }
+  if (CS2.compare(code, '4') === 0) {
+    return 'REL';
+  }
+  if (CS2.compare(code, '5') === 0) {
+    return 'BRI';
+  }
+  if (CS2.compare(code, '6') === 0) {
+    return 'YAN';
+  }
+  if (CS2.compare(code, '8') === 0) {
+    return 'HOS';
+  }
+  if (CS2.compare(code, '9') === 0) {
+    return 'PRI';
+  }
+  if (CS2.compare(code, '13') === 0) {
+    return 'ALD';
+  }
+  return 'Nowhere';
+}
+
+export function explainLocation(code: String): void {
+  if (CS2.compare(code, '1') === 0) {
+    CS2.message('This house is located in Rimmington.');
+  } else if (CS2.compare(code, '2') === 0) {
+    CS2.message('This house is located in Taverley.');
+  } else if (CS2.compare(code, '3') === 0) {
+    CS2.message('This house is located in Pollnivneach.');
+  } else if (CS2.compare(code, '4') === 0) {
+    CS2.message('This house is located in Rellekka.');
+  } else if (CS2.compare(code, '5') === 0) {
+    CS2.message('This house is located in Brimhaven.');
+  } else if (CS2.compare(code, '6') === 0) {
+    CS2.message('This house is located in Yanille.');
+  } else if (CS2.compare(code, '8') === 0) {
+    CS2.message('This house is located in Hosidius.');
+  } else if (CS2.compare(code, '9') === 0) {
+    CS2.message('This house is located in Prifddinas.');
+  } else if (CS2.compare(code, '13') === 0) {
+    CS2.message('This house is located on Aldarin.');
+  }
+}
+
+export function normalisedSort(sort: Int): Int {
+  if (sort >= SortMode.NAME_ASC && sort <= SortMode.ARMOUR_DESC) {
+    return sort;
+  }
+  return SortMode.ALTAR_DESC;
+}
+
+export function sortKey(line: String, sort: Int): String {
+  if (sort <= SortMode.NAME_DESC) {
+    return lineField(line, Field.NAME).toLowerCase();
+  }
+  if (sort <= SortMode.LEVEL_DESC) {
+    return lineField(line, Field.LEVEL).toLowerCase();
+  }
+  const tier: Int = Field.ALTAR + (sort - SortMode.ALTAR_ASC) / 2;
+  return `${lineField(line, tier)}${lineField(line, Field.NAME)}`.toLowerCase();
+}
+
+export function sortDescending(sort: Int): Boolean {
+  return sort % 2 === 1;
+}
+
+export function recordCount(board: String): Int {
+  let n: Int = 0;
+  let at: Int = board.indexOf('^', 0);
+  while (at !== -1) {
+    n = n + 1;
+    at = board.indexOf('^', at + 1);
+  }
+  return n;
+}
+
+export function visibleRows(board: String, filtered: Int, here: String): Int {
+  let rows: Int = 0;
+  let at: Int = board.indexOf('^', 0);
+  while (at !== -1) {
+    const portalEnd: Int = board.indexOf('~', board.indexOf('~', at) + 1);
+    const next: Int = board.indexOf('^', portalEnd);
+    const line: String =
+      next === -1 ? board.substring(portalEnd + 1, board.length) : board.substring(portalEnd + 1, next);
+    if (lineField(line, Field.NAME).length > 0) {
+      if (filtered !== 1 || CS2.compare(boardLoc(lineField(line, Field.LOCATION)), here) === 0) {
+        rows = rows + 1;
+      }
+    }
+    at = next;
+  }
+  return rows;
+}

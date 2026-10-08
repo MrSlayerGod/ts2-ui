@@ -1,0 +1,42 @@
+import { useServerState, useState } from 'ts2';
+import { playSound } from '../lib/lib.engine';
+import { BankSounds } from './bankmain.constants';
+import { MenuSprites, MenuVars } from './bankmain-menu.constants';
+
+export function BankTutorialButton(): Component {
+  const hidden: Int = useServerState(MenuVars.HIDE_BANK_TUT);
+  const tutorial: Int = useServerState(MenuVars.TUTORIAL);
+  const tutorial2: Int = useServerState(MenuVars.TUTORIAL_2);
+  const [used, setUsed] = useState(0);
+  const offered: Boolean = hidden === 0 && (tutorial >= 1000 || tutorial2 >= 1000);
+  const live: Boolean = offered && used === 0;
+
+  return (
+    <layer
+      x={58}
+      y={7}
+      w={21}
+      h={21}
+      options={[live ? 'Show tutorial' : '']}
+      onOptionSelect={
+        live
+          ? () => {
+              playSound(BankSounds.SELECT);
+              setUsed(1);
+            }
+          : undefined
+      }
+    >
+      {offered && (
+        <sprite
+          x={0}
+          y={0}
+          w={21}
+          h={21}
+          sprite={MenuSprites.TUTORIAL}
+          hover={{ sprite: MenuSprites.TUTORIAL_HOVER }}
+        />
+      )}
+    </layer>
+  );
+}

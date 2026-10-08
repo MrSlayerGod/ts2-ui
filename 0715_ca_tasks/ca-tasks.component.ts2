@@ -277,7 +277,7 @@ export function CaTasks(): Component {
             <layer x={0} y={0} w={paneW} h={Math.max(content, paneH)} hide={built === 0}>
               {CaTaskList.scan(
                 (task, at, top, seen) =>
-                  shown[at] === 1 ? (
+                  (shown[at] === 1 ? (
                     <TaskRow
                       task={task}
                       index={seen}
@@ -287,7 +287,7 @@ export function CaTasks(): Component {
                       mobile={mobile}
                       paneWidth={paneW}
                     />
-                  ) : null,
+                  ) : null),
                 [(task, at) => advance[at], (task, at) => shown[at]],
                 [0, 0],
               )}
@@ -505,7 +505,7 @@ function TaskRow({
   const iconRest: Sprite = isSelected ? CaSprite.COLLAPSE : CaSprite.EXPAND;
   const iconHover: Sprite = isSelected ? CaSprite.COLLAPSE_HOVER : CaSprite.EXPAND_HOVER;
   const shownFace: Int = faceKey === selected ? face : 0;
-  const transparency: Int = shownFace === 1 ? Row.trans.selected : shownFace === 2 ? stripe : built;
+  const transparency: Int = shownFace === 1 ? Row.trans.selected : (shownFace === 2 ? stripe : built);
 
   return (
     <>
@@ -645,7 +645,7 @@ function FilterRow({
         h={Filter.box.h}
         sprite={CaSprite.TRADEBACKING}
         tiling
-        transparency={isOpen ? Filter.trans.open : hovered ? Filter.trans.hover : Filter.trans.rest}
+        transparency={isOpen ? Filter.trans.open : (hovered ? Filter.trans.hover : Filter.trans.rest)}
         onMouseEnter={
           isOpen || mobile
             ? undefined
@@ -766,7 +766,7 @@ function DropdownEntries({
         hide={stripAt === -1}
       />
       {DropdownSlots.map((slot) =>
-        entryOrderAt(filter, slot) !== -1 ? (
+        (entryOrderAt(filter, slot) !== -1 ? (
           <text
             x="center"
             y={entryOrderAt(filter, slot) * entryH}
@@ -795,7 +795,7 @@ function DropdownEntries({
             }
             onOptionSelect={(event) => caTaskFilterClose(event.option, entryKeyAt(filter, slot), filter)}
           />
-        ) : null,
+        ) : null),
       )}
     </layer>
   );

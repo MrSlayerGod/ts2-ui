@@ -1,12 +1,33 @@
-import { useServerState } from 'ts2';
+import { useServerState, useState } from 'ts2';
 
 import { groupDigits } from '../lib/lib.format';
 import { Varbits } from '../lib/game/varbits';
 import { NOT_STARTED, THOUSANDS } from './clan-cup-hud.constants';
+import { clanCupScoreMe, clanCupScoreThem, clanCupTimeRemaining } from './clan-cup-hud.state';
 
-export function clancupHudUpdate(header: ComponentId, results: ComponentId): void {
-  const me: Int = useServerState(Varbits.CLANCUP_SCORE_ME);
-  const them: Int = useServerState(Varbits.CLANCUP_SCORE_THEM);
+export function clancupHudUpdate(): void {
+  const [, setMe] = useState(clanCupScoreMe);
+  const [, setThem] = useState(clanCupScoreThem);
+  const [, setRemaining] = useState(clanCupTimeRemaining);
+  setMe(useServerState(Varbits.CLANCUP_SCORE_ME));
+  setThem(useServerState(Varbits.CLANCUP_SCORE_THEM));
+  setRemaining(useServerState(Varbits.CLANCUP_TIME_REMAINING));
+}
+
+export function clanCupLabels(me: Int, them: Int, remaining: Int): String {
+  if (remaining >= NOT_STARTED) {
+    return 'Your team:<br>Opponents:<br>Starting soon...';
+  }
+  if (remaining > 0) {
+    return 'Your team:<br>Opponents:<br>Time:';
+  }
+  if (me === them) {
+    return 'Your team:<br>Opponents:<br>';
+  }
+  return 'Your team:<br>Opponents:<br>Ending...';
+}
+
+export function clanCupValues(me: Int, them: Int, remaining: Int): String {
   const mine: String = groupDigits(me, THOUSANDS);
   const theirs: String = groupDigits(them, THOUSANDS);
 
@@ -17,23 +38,17 @@ export function clancupHudUpdate(header: ComponentId, results: ComponentId): voi
     scores = `${mine}<br><col=ffffff>${theirs}</col>`;
   }
 
-  const remaining: Int = useServerState(Varbits.CLANCUP_TIME_REMAINING);
   if (remaining >= NOT_STARTED) {
-    header.text = 'Your team:<br>Opponents:<br>Starting soon...';
-    scores = `${scores}<br>`;
-  } else if (remaining > 1) {
-    header.text = 'Your team:<br>Opponents:<br>Time:';
-    scores = `${scores}<br>${stringOf(remaining)} mins`;
-  } else if (remaining === 1) {
-    header.text = 'Your team:<br>Opponents:<br>Time:';
-    scores = `${scores}<br>1 min`;
-  } else if (me === them) {
-    header.text = 'Your team:<br>Opponents:<br>';
-    scores = `${scores}<br>Next kill wins!`;
-  } else {
-    header.text = 'Your team:<br>Opponents:<br>Ending...';
-    scores = `${scores}<br>`;
+    return `${scores}<br>`;
   }
-
-  results.text = scores;
+  if (remaining > 1) {
+    return `${scores}<br>${stringOf(remaining)} mins`;
+  }
+  if (remaining === 1) {
+    return `${scores}<br>1 min`;
+  }
+  if (me === them) {
+    return `${scores}<br>Next kill wins!`;
+  }
+  return `${scores}<br>`;
 }

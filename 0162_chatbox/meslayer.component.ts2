@@ -55,13 +55,27 @@ export function MeslayerPromptRow(): Component {
     promptY = mesTextRef.y!;
   }
 
+  const phone: Boolean = onMobile();
   let closeHidden: Boolean = true;
-  if (onMobile() && mode > 0 && !mesbox) {
+  if (phone && mode > 0 && !mesbox) {
     closeHidden = false;
   }
 
-  onMounted(() => meslayerPromptApply(mesbox, promptText, leading, closeHidden, arm, promptY));
-  onUpdated(() => meslayerPromptApply(mesbox, promptText, leading, closeHidden, arm, promptY));
+  let promptHidden: Boolean = false;
+  if (mode === MESLAYER_MODE_ITEM_SEARCH || mode === MESLAYER_MODE_COSTUME_SEARCH) {
+    promptHidden = true;
+  }
+  let amountPhone: Boolean = false;
+  if (phone && mode === MESLAYER_MODE_AMOUNT) {
+    amountPhone = true;
+  }
+
+  onMounted(() =>
+    meslayerPromptApply(mesbox, promptText, leading, closeHidden, arm, promptY, promptHidden, amountPhone),
+  );
+  onUpdated(() =>
+    meslayerPromptApply(mesbox, promptText, leading, closeHidden, arm, promptY, promptHidden, amountPhone),
+  );
 
   return <layer ref={host} x={0} y={0} w={1} h={1} />;
 }
@@ -73,8 +87,25 @@ function meslayerPromptApply(
   closeHidden: Boolean,
   arm: Int,
   promptY: Int,
+  promptHidden: Boolean,
+  amountPhone: Boolean,
 ): void {
-  if (mesbox) {
+  if (promptHidden) {
+    mesTextRef.props = { text: prompt, hide: true };
+  } else if (amountPhone) {
+    mesTextRef.props = {
+      text: prompt,
+      hide: false,
+      x: 'center',
+      y: { center: AMOUNT_PHONE_TEXT_Y },
+      w: 'fill',
+      h: AMOUNT_PHONE_TEXT_H,
+      font: ChatboxFonts.PROMPT,
+      align: 'center',
+      valign: 'middle',
+      lineHeight: 0,
+    };
+  } else if (mesbox) {
     mesTextRef.props = {
       text: prompt,
       hide: false,
@@ -152,14 +183,28 @@ export function MeslayerEchoRow(): Component {
   if (!mesbox && overflow === 1) {
     rightAligned = true;
   }
+  let topLeft: Boolean = false;
+  if (mode === MESLAYER_MODE_ITEM_SEARCH) {
+    topLeft = true;
+  }
+  let amountPhone: Boolean = false;
+  if (onMobile() && mode === MESLAYER_MODE_AMOUNT) {
+    amountPhone = true;
+  }
 
-  onMounted(() => meslayerEchoApply(mesbox, text, rightAligned));
-  onUpdated(() => meslayerEchoApply(mesbox, text, rightAligned));
+  onMounted(() => meslayerEchoApply(mesbox, text, rightAligned, topLeft, amountPhone));
+  onUpdated(() => meslayerEchoApply(mesbox, text, rightAligned, topLeft, amountPhone));
 
   return <layer ref={host} x={0} y={0} w={1} h={1} />;
 }
 
-function meslayerEchoApply(mesbox: Boolean, echo: String, rightAligned: Boolean): void {
+function meslayerEchoApply(
+  mesbox: Boolean,
+  echo: String,
+  rightAligned: Boolean,
+  topLeft: Boolean,
+  amountPhone: Boolean,
+): void {
   if (mesbox) {
     mesText2Ref.props = {
       text: echo,
@@ -203,7 +248,19 @@ function meslayerEchoApply(mesbox: Boolean, echo: String, rightAligned: Boolean)
       lineHeight: 0,
     };
   }
+  if (topLeft) {
+    mesText2Ref.props = { x: 0, y: 0 };
+  } else if (amountPhone) {
+    mesText2Ref.props = { x: 'center', y: { center: AMOUNT_PHONE_ECHO_Y } };
+  }
 }
+
+export const MESLAYER_MODE_AMOUNT = 7;
+export const MESLAYER_MODE_ITEM_SEARCH = 14;
+export const MESLAYER_MODE_COSTUME_SEARCH = 17;
+const AMOUNT_PHONE_TEXT_Y = -18;
+const AMOUNT_PHONE_TEXT_H = 36;
+const AMOUNT_PHONE_ECHO_Y = 10;
 
 export const MESLAYER_MODE_MESBOX = 1;
 

@@ -356,6 +356,16 @@ export function otherRequirement(check: Int): Int {
 }
 
 export function unlockText(unlock: GuideUnlock, skill: Int, pageMembers: Boolean): String {
+  return unlockTextTagged(unlock, skill, pageMembers, REQUIREMENT_MET, REQUIREMENT_UNMET);
+}
+
+export function unlockTextTagged(
+  unlock: GuideUnlock,
+  skill: Int,
+  pageMembers: Boolean,
+  metTag: String,
+  unmetTag: String,
+): String {
   let text: String = unlock.text;
   if (!pageMembers && unlock.membersOnly) {
     text = `Members: ${text}`;
@@ -367,7 +377,7 @@ export function unlockText(unlock: GuideUnlock, skill: Int, pageMembers: Boolean
     const tuple = GuideTuples.at(unlock.tupleStart + t);
     if (tuple !== null) {
       if (tuple.skill !== 0 && tuple.skill !== skill && tuple.level > 1) {
-        const tag: String = baseLevel(tuple.skill) >= tuple.level ? REQUIREMENT_MET : REQUIREMENT_UNMET;
+        const tag: String = baseLevel(tuple.skill) >= tuple.level ? metTag : unmetTag;
         const name: String = GuideSkillNames.get(tuple.skill) ?? 'this skill';
         if (requires.length > 0) {
           requires = `${requires}, ${tag}level ${stringOf(tuple.level)} ${name}</col>`;
@@ -378,7 +388,7 @@ export function unlockText(unlock: GuideUnlock, skill: Int, pageMembers: Boolean
     }
   }
   if (unlock.quest !== -1) {
-    const tag: String = questComplete(unlock.quest as Quest) ? REQUIREMENT_MET : REQUIREMENT_UNMET;
+    const tag: String = questComplete(unlock.quest as Quest) ? metTag : unmetTag;
     if (requires.length > 0) {
       requires = `${requires}, ${tag}${unlock.questName}</col>`;
     } else {
@@ -389,9 +399,9 @@ export function unlockText(unlock: GuideUnlock, skill: Int, pageMembers: Boolean
     const met: Int = otherRequirement(unlock.otherCheck);
     let tag: String = '';
     if (met === 1) {
-      tag = REQUIREMENT_MET;
+      tag = metTag;
     } else if (met === 0) {
-      tag = REQUIREMENT_UNMET;
+      tag = unmetTag;
     }
     if (requires.length > 0) {
       requires = `${requires}<br>Requires: ${tag}${unlock.otherReq}</col>`;

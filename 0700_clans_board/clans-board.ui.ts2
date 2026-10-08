@@ -1,10 +1,14 @@
+import { BoardAnchors } from '../lib/board-button.component';
 import { ClanBoardSizer } from './clan-board-sizer.component';
 import { ClansBoard } from './clans-board.component';
-import { clansBoardRef } from './clans-board.constants';
+import { boardAnchorsRef, clansBoardRef } from './clans-board.constants';
 
 export const clansBoardUi = (): UI => (
   <ui ref={clansBoardRef} x="center" y="center">
     <ClansBoard />
     <ClanBoardSizer />
+    <layer ref={boardAnchorsRef} x={0} y={0} w={0} h={0}>
+      <BoardAnchors universe={boardAnchorsRef} count={4} />
+    </layer>
   </ui>
 );

@@ -1,0 +1,32 @@
+import { createRef, sessionState, useState } from 'ts2';
+
+export const textLayerRef = createRef();
+
+export const journalScrollCalls = sessionState(0);
+
+export const journalScrollExtent = sessionState(0);
+
+const ROW_STRIDE = 20;
+
+export function journalScrollSetLines(reset: Boolean, lines: Int): void {
+  const [calls, setCalls] = useState(journalScrollCalls);
+  const [, setExtent] = useState(journalScrollExtent);
+  const paneHeight: Int = textLayerRef.height;
+  let extent: Int = lines * ROW_STRIDE;
+  if (extent <= paneHeight) {
+    textLayerRef.scrollY = 0;
+    textLayerRef.scrollHeight = 0;
+    setExtent(0);
+    setCalls(calls + 1);
+    return;
+  }
+  extent = extent + paneHeight / 3;
+  textLayerRef.scrollHeight = extent;
+  if (reset) {
+    textLayerRef.scrollY = 0;
+  } else {
+    textLayerRef.scrollY = Math.max(0, extent - paneHeight);
+  }
+  setExtent(extent);
+  setCalls(calls + 1);
+}

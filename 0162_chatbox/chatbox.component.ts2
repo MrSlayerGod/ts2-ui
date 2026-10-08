@@ -69,7 +69,10 @@ import {
 } from './chatbox.constants';
 import { ChatBackdrop, ChatHairlines, ChatStripPlate } from './chatbox-backdrop.component';
 import { MeslayerEchoRow, MeslayerPromptRow } from './meslayer.component';
+import { MES_GRID_HOST_H, MeslayerMode14Grid } from './meslayer-mode14.component';
 import { MessageLines } from './message-lines.component';
+import { ChatMessages } from './chat-messages.component';
+import { LINE_HEIGHT, MAX_ROWS } from './chat-messages.helpers';
 import { chatboxOpenInput, meslayerCloseEntrypoint } from './meslayer';
 import { graphicSwapperUnlessMobile } from '../lib/lib.helpers';
 
@@ -628,7 +631,11 @@ export function Chatbox(): Component {
               y="center"
               w={{ fill: Layout.MES_PANE_INSET_W }}
               h={{ fill: Layout.MES_PANE_INSET_H }}
-            />
+            >
+              <layer x={0} y={0} w="fill" h={MES_GRID_HOST_H}>
+                <MeslayerMode14Grid />
+              </layer>
+            </layer>
             <layer
               static
               ref={mesScrollBarRef}
@@ -682,6 +689,7 @@ export function Chatbox(): Component {
               scrollHeight={Layout.PANE_SCROLL_H}
             >
               <MessageLines />
+              <ChatMessages h={MAX_ROWS * LINE_HEIGHT} />
             </layer>
             <layer static ref={chatcrmRef} x={{ right: 0 }} y={0} w={Layout.BAR_W} h={{ fill: Layout.BAR_INSET_H }}>
               <ChatScrollbar />

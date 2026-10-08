@@ -4,12 +4,14 @@ import { Sprites } from '../lib/game/sprites';
 export declare const SummaryFonts: {
   readonly HEADING: typeof Fonts.B12_FULL;
   readonly ROW: typeof Fonts.P12_FULL;
+  readonly CELL: typeof Fonts.P11_FULL;
 };
 
 export declare const SummarySprites: {
   readonly COLUMN_A: typeof Sprites.TOA_GROUPING_ICONS_7;
   readonly COLUMN_B: typeof Sprites.TOA_GROUPING_ICONS_11;
   readonly COLUMN_C: typeof Sprites.TOA_GROUPING_ICONS_14;
+  readonly MVP: typeof Sprites.CLAN_RANK_ICONS_42;
 };
 
 export enum SummaryColor {
@@ -59,6 +61,19 @@ export const Layout = {
   TABLE_INSET_H: 27,
   HEADER_W: 376,
   HEADER_H: 24,
+  ROWS_H: 176,
+  ROW_STRIPE_EVEN: 245,
+  ROW_STRIPE_ODD: 230,
+  MVP: 13,
+  MVP_X: 3,
+  MVP_DY: 5,
+  NAME_CELL_X: 2,
+  NONE_INK: 0xededed,
+  DAMAGE_CAP: 65535,
+  DEATHS_CAP: 12,
+  SELECTED_INK: 0xbebebe,
+  TIP_WRAP: 190,
+  MOBILE_TIP_WRAP: 512,
   BADGE_W: 19,
   BADGE_H: 18,
   BADGE_DX_C: 39,

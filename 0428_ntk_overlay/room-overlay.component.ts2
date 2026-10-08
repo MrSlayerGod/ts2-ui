@@ -1,18 +1,32 @@
 import { onMobile, toplevelComponents } from '../lib/lib.helpers';
 import { ToplevelComponents } from '../lib/lib.constants';
+import { useWatch } from 'ts2';
+import { Anchor, overlayInit } from '../lib/lib.overlay';
 import { RoomContent } from './room-content.component';
+import { contentRef, dodgerRef, NtkDodge, NtkLayoutVarps } from './ntk-overlay.constants';
 
 export function RoomOverlay(): Component {
-  const layout: Int = toplevelComponents();
+  useWatch([NtkLayoutVarps.CHAT_FILTER_ASSIST, NtkLayoutVarps.XPDROPS_OPTIONS], () => ntkLayout());
 
   return (
-    <layer
-      x={layout === ToplevelComponents.FIXED ? 'right' : onMobile() ? { left: 2 } : 'center'}
-      y="bottom"
-      w={215}
-      h={69}
-    >
-      <RoomContent />
+    <layer ref={dodgerRef} w="fill" h="fill" onLoad={() => ntkLayout()}>
+      <layer static ref={contentRef} x="center" y="bottom" w={215} h={69}>
+        <RoomContent />
+      </layer>
     </layer>
   );
+}
+
+function ntkLayout(): void {
+  const layout: Int = toplevelComponents();
+  const mobile: Boolean = onMobile();
+  contentRef.props = {
+    x: layout === ToplevelComponents.FIXED ? 'right' : mobile ? 'left' : 'center',
+    y: 'bottom',
+  };
+  if (layout === ToplevelComponents.FIXED) {
+    overlayInit(dodgerRef, contentRef, NtkDodge.FIXED, Anchor.RIGHT, Anchor.TOP, 1);
+    return;
+  }
+  overlayInit(dodgerRef, contentRef, NtkDodge.OTHER, mobile ? Anchor.LEFT : Anchor.CENTRE, Anchor.TOP, 1);
 }

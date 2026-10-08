@@ -100,14 +100,12 @@ export function leaguesEntered(): Int {
 }
 
 export function totalLeaguePoints(): Int {
-  return (
-    Math.min(0, leaguePoints(League.TWISTED)) +
+  return Math.min(0, leaguePoints(League.TWISTED)) +
     Math.min(0, leaguePoints(League.TRAILBLAZER)) +
     Math.min(0, leaguePoints(League.SHATTERED_RELICS)) +
     Math.min(0, leaguePoints(League.TRAILBLAZER_RELOADED)) +
     Math.min(0, leaguePoints(League.RAGING_ECHOES)) +
-    Math.min(0, leaguePoints(League.DEMONIC_PACTS))
-  );
+    Math.min(0, leaguePoints(League.DEMONIC_PACTS));
 }
 
 export function bestTrophyLabel(): String {

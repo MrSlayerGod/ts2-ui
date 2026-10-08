@@ -1,4 +1,4 @@
-import { CS2, useInventory, useServerState, useState, useWatch } from 'ts2';
+import { CS2, onMounted, useInventory, useServerState, useState, useWatch } from 'ts2';
 
 import {
   LootColors,
@@ -12,11 +12,29 @@ import {
   Tabs,
 } from './wildy-loot-chest.constants';
 import { LootKeyItems } from './loot-key-items.data';
-import { selectTab } from './wildy-loot-chest.state';
+import {
+  captionLength,
+  captionStart,
+  clearTabCaptions,
+  selectTab,
+  tabCaptionLen0,
+  tabCaptionLen1,
+  tabCaptionLen2,
+  tabCaptionLen3,
+  tabCaptionLen4,
+  tabCaptions,
+} from './wildy-loot-chest.state';
 
 export function TabBar(): Component {
   const tab: Int = useServerState(LootVarbits.TAB);
   const carried = useInventory(LootInventories.CARRIED);
+  const [captions] = useState(tabCaptions);
+  const [l0] = useState(tabCaptionLen0);
+  const [l1] = useState(tabCaptionLen1);
+  const [l2] = useState(tabCaptionLen2);
+  const [l3] = useState(tabCaptionLen3);
+  const [l4] = useState(tabCaptionLen4);
+  onMounted(() => clearTabCaptions());
 
   return (
     <layer w="fill" h="fill">
@@ -30,7 +48,7 @@ export function TabBar(): Component {
       ))}
 
       {Tabs.map((index) =>
-        carried.total(LootKeyItems.at(index) ?? -1) > 0 ? (
+        (carried.total(LootKeyItems.at(index) ?? -1) > 0 ? (
           <sprite
             x={index * LootLayout.TAB_PITCH + LootLayout.TAB_ICON_X}
             y={LootLayout.TAB_ICON_Y}
@@ -42,11 +60,16 @@ export function TabBar(): Component {
             outline={LootLayout.CELL_OUTLINE}
             shadowColor={LootLayout.CELL_SHADOW}
           />
-        ) : null,
+        ) : null),
       )}
 
       {Tabs.map((index) => (
         <text
+          text={CS2.substring(
+            captions,
+            captionStart(index, l0, l1, l2, l3),
+            captionStart(index, l0, l1, l2, l3) + captionLength(index, l0, l1, l2, l3, l4),
+          )}
           x={index * LootLayout.TAB_PITCH}
           y={0}
           w={LootLayout.TAB_LABEL_W}

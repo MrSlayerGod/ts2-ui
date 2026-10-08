@@ -39,7 +39,7 @@ export function DeathOffice(): Component {
     slot = slot + 1;
   }
 
-  const lastRowY: Int = filled > 0 ? ((filled - 1) / Slot.COLUMNS) * Slot.STRIDE_Y : 0;
+  const lastRowY: Int = filled > 0 ? (filled - 1) / Slot.COLUMNS * Slot.STRIDE_Y : 0;
   const extent: Int = lastRowY + Slot.H;
 
   const clampedSlot: Int = Math.clamp(0, Slot.COUNT - 1, selectedSlot);
@@ -64,8 +64,8 @@ export function DeathOffice(): Component {
             (item, index, seen) =>
               item !== -1 && (
                 <sprite
-                  x={Slot.INSET_X + (seen % Slot.COLUMNS) * Slot.STRIDE_X}
-                  y={(seen / Slot.COLUMNS) * Slot.STRIDE_Y}
+                  x={Slot.INSET_X + seen % Slot.COLUMNS * Slot.STRIDE_X}
+                  y={seen / Slot.COLUMNS * Slot.STRIDE_Y}
                   w={Slot.W}
                   h={Slot.H}
                   item={item}

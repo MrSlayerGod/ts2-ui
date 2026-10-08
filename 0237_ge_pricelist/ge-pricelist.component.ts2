@@ -95,7 +95,7 @@ export function PriceRows(): Component {
   let slot: Int = 0;
   while (slot < shop.size) {
     if (shop[slot] !== -1) {
-      lastRowY = mode === 1 ? (slot / Columns.PER_ROW) * Columns.ROW_H + Columns.TOP : (slot / 2) * Rows.ROW_H;
+      lastRowY = mode === 1 ? slot / Columns.PER_ROW * Columns.ROW_H + Columns.TOP : slot / 2 * Rows.ROW_H;
     }
     slot = slot + 1;
   }
@@ -120,8 +120,8 @@ export function PriceRows(): Component {
                 {mode === 1 ? (
                   <>
                     <sprite
-                      x={Columns.INSET + (index % Columns.PER_ROW) * Columns.STRIDE + Columns.ICON_DX}
-                      y={(index / Columns.PER_ROW) * Columns.ROW_H + Columns.TOP + Columns.ICON_DY}
+                      x={Columns.INSET + index % Columns.PER_ROW * Columns.STRIDE + Columns.ICON_DX}
+                      y={index / Columns.PER_ROW * Columns.ROW_H + Columns.TOP + Columns.ICON_DY}
                       w={Icon.W}
                       h={Icon.H}
                       item={item}
@@ -132,16 +132,16 @@ export function PriceRows(): Component {
                     />
 
                     <rect
-                      x={Columns.INSET + (index % Columns.PER_ROW) * Columns.STRIDE + 1}
-                      y={(index / Columns.PER_ROW) * Columns.ROW_H + Columns.TOP + 1}
+                      x={Columns.INSET + index % Columns.PER_ROW * Columns.STRIDE + 1}
+                      y={index / Columns.PER_ROW * Columns.ROW_H + Columns.TOP + 1}
                       w={Columns.CELL_W}
                       h={Columns.CELL_H}
                       color={CellFrame.INNER}
                       fill={false}
                     />
                     <rect
-                      x={Columns.INSET + (index % Columns.PER_ROW) * Columns.STRIDE}
-                      y={(index / Columns.PER_ROW) * Columns.ROW_H + Columns.TOP}
+                      x={Columns.INSET + index % Columns.PER_ROW * Columns.STRIDE}
+                      y={index / Columns.PER_ROW * Columns.ROW_H + Columns.TOP}
                       w={Columns.CELL_W}
                       h={Columns.CELL_H}
                       color={CellFrame.OUTER}
@@ -149,8 +149,8 @@ export function PriceRows(): Component {
                     />
 
                     <sprite
-                      x={Columns.INSET + (index % Columns.PER_ROW) * Columns.STRIDE + Columns.ICON_DX}
-                      y={(index / Columns.PER_ROW) * Columns.ROW_H + Columns.TOP + Columns.ICON_DY}
+                      x={Columns.INSET + index % Columns.PER_ROW * Columns.STRIDE + Columns.ICON_DX}
+                      y={index / Columns.PER_ROW * Columns.ROW_H + Columns.TOP + Columns.ICON_DY}
                       w={Icon.W}
                       h={Icon.H}
                       item={item}
@@ -161,8 +161,8 @@ export function PriceRows(): Component {
                     />
 
                     <text
-                      x={Columns.INSET + (index % Columns.PER_ROW) * Columns.STRIDE + Columns.PRICE_DX}
-                      y={(index / Columns.PER_ROW) * Columns.ROW_H + Columns.TOP + Columns.PRICE_DY}
+                      x={Columns.INSET + index % Columns.PER_ROW * Columns.STRIDE + Columns.PRICE_DX}
+                      y={index / Columns.PER_ROW * Columns.ROW_H + Columns.TOP + Columns.PRICE_DY}
                       w={Columns.PRICE_W}
                       h={Columns.PRICE_H}
                       text={coinsLabel(shop.count(index))}
@@ -178,7 +178,7 @@ export function PriceRows(): Component {
                     {index % 2 === 0 && (
                       <sprite
                         x={0}
-                        y={(index / 2) * Rows.ROW_H}
+                        y={index / 2 * Rows.ROW_H}
                         w={Rows.BACKING_W}
                         h={Rows.ROW_H}
                         sprite={PriceSprites.ROW_BACKING}
@@ -189,7 +189,7 @@ export function PriceRows(): Component {
 
                     <sprite
                       x={index % 2 === 0 ? 0 : Rows.HALF}
-                      y={(index / 2) * Rows.ROW_H + Rows.ICON_DY}
+                      y={index / 2 * Rows.ROW_H + Rows.ICON_DY}
                       w={Icon.W}
                       h={Icon.H}
                       item={item}
@@ -201,7 +201,7 @@ export function PriceRows(): Component {
 
                     <sprite
                       x={index % 2 === 0 ? 0 : Rows.HALF}
-                      y={(index / 2) * Rows.ROW_H + Rows.ICON_DY}
+                      y={index / 2 * Rows.ROW_H + Rows.ICON_DY}
                       w={Icon.W}
                       h={Icon.H}
                       item={item}
@@ -213,7 +213,7 @@ export function PriceRows(): Component {
 
                     <text
                       x={(index % 2 === 0 ? 0 : Rows.HALF) + Rows.LABEL_DX}
-                      y={(index / 2) * Rows.ROW_H + Rows.ICON_DY + Rows.LABEL_DY}
+                      y={index / 2 * Rows.ROW_H + Rows.ICON_DY + Rows.LABEL_DY}
                       w={Rows.LABEL_W}
                       h={Rows.LABEL_H}
                       text={itemName(item)}
@@ -225,7 +225,7 @@ export function PriceRows(): Component {
                     />
                     <text
                       x={(index % 2 === 0 ? 0 : Rows.HALF) + Rows.LABEL_DX}
-                      y={(index / 2) * Rows.ROW_H + Rows.ICON_DY + Rows.LABEL_DY}
+                      y={index / 2 * Rows.ROW_H + Rows.ICON_DY + Rows.LABEL_DY}
                       w={Rows.LABEL_W}
                       h={Rows.LABEL_H}
                       text={coinsLabelWhite(shop.count(index))}

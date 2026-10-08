@@ -84,7 +84,7 @@ export function SkillQuantityStrip({ dx, dy, declared }: { dx: Int; dy: Int; dec
   const posAll: Int = posCustom + custom;
   const posSome: Int = posAll + 1;
   const drawn: Int = posSome + some;
-  const half: Int = (dx * (drawn - 1)) / 2;
+  const half: Int = dx * (drawn - 1) / 2;
 
   return (
     <layer w="fill" h="fill">

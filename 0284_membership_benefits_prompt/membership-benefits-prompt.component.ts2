@@ -1,7 +1,9 @@
-import { useRef } from 'ts2';
+import { createRef, useRef } from 'ts2';
 import { graphicSwapperUnlessMobile, onMobile, opsound } from '../lib/lib.helpers';
 import { CrmLoadingIcon } from './crm-loading-icon.component';
 import { CloseSprites, CrmColors, Dimmer, Layout, Ops, UpgradeSprites } from './membership-benefits-prompt.constants';
+
+export const membershipCrmCanvasRef = createRef('membership_benefits_prompt_crmcanvas');
 
 export function MembershipBenefitsPrompt(): Component {
   const closeIcon = useRef();
@@ -30,7 +32,7 @@ export function MembershipBenefitsPrompt(): Component {
           }}
         />
 
-        <layer w="fill" h="fill" />
+        <layer ref={membershipCrmCanvasRef} w="fill" h="fill" />
 
         <rect w="fill" h="fill" hide fill color={CrmColors.DIM} transparency={Dimmer.IDLE} />
 

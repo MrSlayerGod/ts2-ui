@@ -1,0 +1,39 @@
+import { CS2, sessionState, useState } from 'ts2';
+
+import { fadeAlpha, fadeHiddenBefore } from '../lib/fade-overlay.component';
+
+export const sanityFadeShown = sessionState(0);
+export const sanityFadeCalled = sessionState(0);
+export const sanityFadeFrom = sessionState(0);
+export const sanityFadeFromAlpha = sessionState(0);
+export const sanityFadeTo = sessionState(0);
+export const sanityFadeToAlpha = sessionState(0);
+export const sanityFadeCycles = sessionState(0);
+export const sanityFadeEnd = sessionState(0);
+export const sanityFadeKeepHidden = sessionState(0);
+
+export function sanityFade(from: Int, fromAlpha: Int, to: Int, toAlpha: Int, cycles: Int): void {
+  const [called, setCalled] = useState(sanityFadeCalled);
+  const [lastToAlpha, setToAlpha] = useState(sanityFadeToAlpha);
+  const [lastCycles, setCycles] = useState(sanityFadeCycles);
+  const [lastEnd, setEnd] = useState(sanityFadeEnd);
+  const [lastKeep, setKeep] = useState(sanityFadeKeepHidden);
+  const [, setShown] = useState(sanityFadeShown);
+  const [, setFrom] = useState(sanityFadeFrom);
+  const [, setFromAlpha] = useState(sanityFadeFromAlpha);
+  const [, setTo] = useState(sanityFadeTo);
+  setKeep(fadeHiddenBefore(called, lastToAlpha, lastCycles, lastEnd, lastKeep));
+  setShown(1);
+  setCalled(1);
+  setFrom(from);
+  setFromAlpha(fadeAlpha(fromAlpha));
+  setTo(to);
+  setToAlpha(fadeAlpha(toAlpha));
+  setCycles(cycles);
+  setEnd(CS2.clientclock() + cycles);
+}
+
+export function sanityFadeClear(): void {
+  const [, setShown] = useState(sanityFadeShown);
+  setShown(0);
+}

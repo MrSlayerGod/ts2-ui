@@ -1,0 +1,605 @@
+import { CS2, useRef, useState } from 'ts2';
+
+import { Sprites } from '../lib/game/sprites';
+import {
+  osmSidepanelOnLeft,
+  skillGuideV2CurrentSkill,
+  skillGuideV2CurrentTab,
+  skillGuideV2OverviewCurrentTab,
+} from '../lib/game/varcs';
+import { playSound, textWidth } from '../lib/lib.engine';
+import { onMobile, openUrlRaw } from '../lib/lib.helpers';
+import { Quest, questComplete } from '../lib/lib.quests';
+import { ScrollbarVertical } from '../lib/scrollbar-vertical.component';
+import { Sounds } from '../lib/game/sounds';
+import { colourTag } from '../0889_nps/colour-tag';
+import { settingColourOrDefault } from '../0399_questlist/settings-colour';
+import { switchSidePanel } from '../0601_toplevel_osm/toplevel-osm.helpers';
+import { ThinBoxEntrypoint } from '../lib/thin-box-entrypoint.component';
+
+import { GuideBar, GuideFont } from './skill-guide-v2.constants';
+import { GuideSkillNames } from './skill-guide-v2.data';
+import { SkillByIndex } from '../lib/skills.data';
+import { QuestXpList } from './skill-guide-v2.questxp.component';
+import { questXpExtent } from './skill-guide-v2.questxp.helpers';
+import { skillGuideV2SelectTab } from './skill-guide-v2.helpers';
+import {
+  GuideOverviewCount,
+  GuideOverviewStart,
+  GuideOverviewToken,
+  GuideOverviewTokens,
+  OverviewKind,
+  OverviewLink,
+} from './skill-guide-v2.overview.data';
+
+const OverviewServerScript = {
+  QUEST_JOURNAL: 1707091816,
+  SKILL_GUIDE: 2047200564,
+} as const;
+
+export function GuideOverview(): Component {
+  const [skill] = useState(skillGuideV2CurrentSkill);
+  const [tab] = useState(skillGuideV2CurrentTab);
+  if (tab !== 0 || skill < 1) {
+    return null;
+  }
+  return (
+    <>
+      <layer x={0} y={0} w="fill" h="fill">
+        <ThinBoxEntrypoint />
+      </layer>
+      <layer x={1} y={2} w={{ fill: 2 }} h={OverviewLayout.TABS_H}>
+        <OverviewTabs />
+      </layer>
+      <layer x={0} y={{ bottom: 0 }} w="fill" h={{ fill: OverviewLayout.BODY_INSET }}>
+        <OverviewBody skill={skill} />
+      </layer>
+    </>
+  );
+}
+
+export enum OverviewLayout {
+  TABS_H = 23,
+  BODY_INSET = 25,
+  TAB_W = 120,
+  TAB_H = 21,
+  TAB_CAP = 20,
+  TAB_X = 3,
+  CONTENT_INSET_W = 20,
+  CONTENT_INSET_H = 2,
+  CONTENT_W = 306,
+  START = 4,
+  WRAP_INSET = 8,
+  LINE_H = 16,
+  GAP = 3,
+  HEADER_ADVANCE = 19,
+  BLOCK_AFTER_TEXT = 32,
+  BLOCK_AFTER_BREAK = 16,
+  PARAGRAPH = 24,
+  WIKI_ICON_GAP = 4,
+  WIKI_PAD = 9,
+  WIKI_ADVANCE = 42,
+  BAR_W = 16,
+}
+
+enum OverviewColour {
+  TEXT = 0xff981f,
+  HIGHLIGHT = 0xffffff,
+  HEADER_RULE = 0x726451,
+  TAB_RULE = 0x5d5848,
+  TAB_SELECTED = 0xffa82f,
+  LINK = 0xffff00,
+  RULE_DARK = 0x0e0e0c,
+  RULE_LIGHT = 0x474745,
+}
+
+const QUEST_DONE_SETTING = 226;
+
+function OverviewTabs(): Component {
+  const [page] = useState(skillGuideV2OverviewCurrentTab);
+  const open: Int = page === 1 ? 1 : 0;
+  return (
+    <>
+      <OverviewTab label="Overview" page={0} open={open === 0} />
+      <OverviewTab label="Quest XP" page={1} open={open === 1} />
+      <line x={0} y={{ bottom: 1 }} w="fill" h={0} color={OverviewColour.TAB_RULE} lineWidth={1} />
+    </>
+  );
+}
+
+function OverviewTab({ label, page, open }: { label: String; page: Int; open: Boolean }): Component {
+  const [hovered, setHovered] = useState(0);
+  const [, setPage] = useState(skillGuideV2OverviewCurrentTab);
+  const mobile: Boolean = onMobile();
+  let cap: Sprite = Sprites.TABS_MODAL_SHORT_2;
+  let middle: Sprite = Sprites.TABS_MODAL_SHORT_3;
+  if (open) {
+    cap = Sprites.TABS_MODAL_SHORT_0;
+    middle = Sprites.TABS_MODAL_SHORT_1;
+  } else if (hovered === 1) {
+    cap = Sprites.TABS_MODAL_SHORT_4;
+    middle = Sprites.TABS_MODAL_SHORT_5;
+  }
+  return (
+    <layer
+      x={OverviewLayout.TAB_X + page * OverviewLayout.TAB_W}
+      y={{ bottom: 0 }}
+      w={OverviewLayout.TAB_W}
+      h={OverviewLayout.TAB_H}
+    >
+      <sprite x={0} y={{ bottom: 0 }} w={OverviewLayout.TAB_CAP} h="fill" sprite={cap} />
+      <sprite x="center" y={{ bottom: 0 }} w={{ fill: OverviewLayout.TAB_CAP * 2 }} h="fill" sprite={middle} tiling />
+      <sprite x={{ right: 0 }} y={{ bottom: 0 }} w={OverviewLayout.TAB_CAP} h="fill" sprite={cap} hflip />
+      <text
+        x="center"
+        y={{ bottom: 0 }}
+        w="fill"
+        h={{ fill: 2 }}
+        text={label}
+        font={GuideFont.BODY}
+        color={open ? OverviewColour.TAB_SELECTED : OverviewColour.TEXT}
+        shadow
+        align="center"
+        valign="middle"
+      />
+      <rect
+        x={0}
+        y={0}
+        w="fill"
+        h="fill"
+        transparency={255}
+        options={[open ? '' : 'View']}
+        optionSubject={`<col=ff981f>${label}</col>`}
+        onMouseRepeat={!open && !mobile ? () => setHovered(1) : null}
+        onMouseLeave={!open && !mobile ? () => setHovered(0) : null}
+        onOptionSelect={
+          open
+            ? null
+            : () => {
+                playSound(Sounds.INTERFACE_SELECT1);
+                setHovered(0);
+                setPage(page);
+              }
+        }
+      />
+    </layer>
+  );
+}
+
+function OverviewBody({ skill }: { skill: Int }): Component {
+  const [page] = useState(skillGuideV2OverviewCurrentTab);
+  const content = useRef();
+  const quest = useRef();
+  const mobile: Boolean = onMobile();
+  const questPage: Boolean = page === 1;
+  const extent: Int = questPage ? 0 : overviewExtent(skill, mobile);
+  const stat: Int = (SkillByIndex.get(skill) ?? -1) as Int;
+  const questExtent: Int = questPage ? questXpExtent(stat) : 0;
+  return (
+    <>
+      <rect x={{ right: 17 }} y={0} w={1} h="fill" color={OverviewColour.RULE_DARK} />
+      <rect x={{ right: 18 }} y={0} w={1} h={{ fill: 1 }} color={OverviewColour.RULE_LIGHT} />
+      <layer
+        ref={content}
+        x={2}
+        y={{ bottom: OverviewLayout.CONTENT_INSET_H }}
+        w={{ fill: OverviewLayout.CONTENT_INSET_W }}
+        h={{ fill: OverviewLayout.CONTENT_INSET_H }}
+        scrollHeight={extent}
+        hide={questPage}
+      >
+        {!questPage && <OverviewText skill={skill} mobile={mobile} />}
+      </layer>
+      <layer
+        ref={quest}
+        x={2}
+        y={{ bottom: OverviewLayout.CONTENT_INSET_H }}
+        w={{ fill: OverviewLayout.CONTENT_INSET_W }}
+        h={{ fill: OverviewLayout.CONTENT_INSET_H }}
+        scrollHeight={questExtent}
+        hide={!questPage}
+      >
+        {questPage && <QuestXpList stat={stat} extent={questExtent} />}
+      </layer>
+      <layer x={{ right: 0 }} y={0} w={OverviewLayout.BAR_W} h="fill">
+        {!questPage && (
+          <ScrollbarVertical
+            content={content}
+            track={GuideBar.TRACK}
+            capTopSprite={GuideBar.CAP_TOP}
+            thumbSprite={GuideBar.THUMB}
+            capBottomSprite={GuideBar.CAP_BOTTOM}
+            arrowUp={GuideBar.ARROW_UP}
+            arrowDown={GuideBar.ARROW_DOWN}
+            rebuilt
+          />
+        )}
+        {questPage && (
+          <ScrollbarVertical
+            content={quest}
+            track={GuideBar.TRACK}
+            capTopSprite={GuideBar.CAP_TOP}
+            thumbSprite={GuideBar.THUMB}
+            capBottomSprite={GuideBar.CAP_BOTTOM}
+            arrowUp={GuideBar.ARROW_UP}
+            arrowDown={GuideBar.ARROW_DOWN}
+            rebuilt
+          />
+        )}
+      </layer>
+      <layer x={0} y={0} w="fill" h="fill" />
+      <layer x={0} y={0} w="fill" h="fill" />
+    </>
+  );
+}
+
+function OverviewText({ skill, mobile }: { skill: Int; mobile: Boolean }): Component {
+  const start: Int = GuideOverviewStart.get(skill) ?? 0;
+  const end: Int = start + (GuideOverviewCount.get(skill) ?? 0);
+  return (
+    <>
+      {GuideOverviewTokens.filter((token, index) => index >= start && index < end).scan(
+        (token, index, x, y, hl) => (
+          <OverviewTokenView token={token} x={x} y={y} hl={hl} skill={skill} mobile={mobile} />
+        ),
+        [
+          (token, index, x, y, hl) => tokenNextX(token, x, y, mobile) - x,
+          (token, index, x, y, hl) => tokenNextY(token, x, y, mobile) - y,
+          (token, index, x, y, hl) => tokenNextHl(token, hl) - hl,
+        ],
+        [OverviewLayout.START, OverviewLayout.START, 0],
+      )}
+    </>
+  );
+}
+
+function tokenText(token: GuideOverviewToken, mobile: Boolean): String {
+  return mobile && token.mobileText.length > 0 ? token.mobileText : token.text;
+}
+
+function tokenWidth(token: GuideOverviewToken, mobile: Boolean): Int {
+  if (token.kind === OverviewKind.WORD) {
+    return textWidth(tokenText(token, mobile), OverviewLayout.CONTENT_W, GuideFont.BODY);
+  }
+  if (token.kind === OverviewKind.LINK) {
+    const w: Int = textWidth(`${token.text}${token.suffix}`, OverviewLayout.CONTENT_W, GuideFont.BODY);
+    return token.icon !== -1 ? w + token.iconW + token.marginL + token.marginR : w;
+  }
+  return 0;
+}
+
+function tokenWraps(token: GuideOverviewToken, x: Int, mobile: Boolean): Boolean {
+  if (token.kind !== OverviewKind.WORD && token.kind !== OverviewKind.LINK) {
+    return false;
+  }
+  return x + tokenWidth(token, mobile) > OverviewLayout.CONTENT_W - OverviewLayout.WRAP_INSET;
+}
+
+function tokenX(token: GuideOverviewToken, x: Int, mobile: Boolean): Int {
+  return tokenWraps(token, x, mobile) ? OverviewLayout.START : x;
+}
+
+function tokenY(token: GuideOverviewToken, x: Int, y: Int, mobile: Boolean): Int {
+  return tokenWraps(token, x, mobile) ? y + OverviewLayout.LINE_H : y;
+}
+
+function blockY(x: Int, y: Int): Int {
+  if (x > OverviewLayout.START) {
+    return y + OverviewLayout.BLOCK_AFTER_TEXT;
+  }
+  if (y > OverviewLayout.START) {
+    return y + OverviewLayout.BLOCK_AFTER_BREAK;
+  }
+  return y;
+}
+
+function tokenNextX(token: GuideOverviewToken, x: Int, y: Int, mobile: Boolean): Int {
+  switch (token.kind) {
+    case OverviewKind.WORD: {
+      const w: Int = textWidth(tokenText(token, mobile), OverviewLayout.CONTENT_W, GuideFont.BODY);
+      return tokenX(token, x, mobile) + w + (token.spaced === 1 ? OverviewLayout.GAP : 0);
+    }
+    case OverviewKind.SPACE:
+      return x + OverviewLayout.GAP;
+    case OverviewKind.HL:
+      return x;
+    case OverviewKind.UNHL:
+      return x;
+    case OverviewKind.LINK: {
+      const w: Int = textWidth(`${token.text}${token.suffix}`, OverviewLayout.CONTENT_W, GuideFont.BODY);
+      return linkTextX(token, tokenX(token, x, mobile)) + w;
+    }
+    case OverviewKind.BLOCK: {
+      if (x > OverviewLayout.START || y > OverviewLayout.START) {
+        return OverviewLayout.START;
+      }
+      return x;
+    }
+  }
+  return OverviewLayout.START;
+}
+
+function tokenNextY(token: GuideOverviewToken, x: Int, y: Int, mobile: Boolean): Int {
+  switch (token.kind) {
+    case OverviewKind.WORD:
+      return tokenY(token, x, y, mobile);
+    case OverviewKind.LINK:
+      return tokenY(token, x, y, mobile);
+    case OverviewKind.SPACE:
+      return y;
+    case OverviewKind.HL:
+      return y;
+    case OverviewKind.UNHL:
+      return y;
+    case OverviewKind.BLOCK:
+      return blockY(x, y);
+    case OverviewKind.HEADER:
+      return y + OverviewLayout.HEADER_ADVANCE;
+    case OverviewKind.BR:
+      return y + OverviewLayout.LINE_H;
+    case OverviewKind.P:
+      return y + OverviewLayout.PARAGRAPH;
+    case OverviewKind.LINE:
+      return y + OverviewLayout.LINE_H + token.arg;
+    case OverviewKind.WIKI:
+      return y + OverviewLayout.WIKI_ADVANCE;
+  }
+  return y;
+}
+
+function tokenNextHl(token: GuideOverviewToken, hl: Int): Int {
+  if (token.kind === OverviewKind.HL) {
+    return 1;
+  }
+  if (token.kind === OverviewKind.UNHL) {
+    return 0;
+  }
+  return hl;
+}
+
+function linkTextX(token: GuideOverviewToken, x: Int): Int {
+  if (token.icon === -1) {
+    return x;
+  }
+  return x + token.iconDx + token.marginL + token.iconW + 1 + token.marginR;
+}
+
+export function overviewExtent(skill: Int, mobile: Boolean): Int {
+  const start: Int = GuideOverviewStart.get(skill) ?? 0;
+  const end: Int = start + (GuideOverviewCount.get(skill) ?? 0);
+  let x: Int = OverviewLayout.START;
+  let y: Int = OverviewLayout.START;
+  let i: Int = start;
+  while (i < end) {
+    const token = GuideOverviewTokens.at(i);
+    if (token !== null) {
+      const nextX: Int = tokenNextX(token, x, y, mobile);
+      y = tokenNextY(token, x, y, mobile);
+      x = nextX;
+    }
+    i = i + 1;
+  }
+  return y;
+}
+
+function OverviewTokenView({
+  token,
+  x,
+  y,
+  hl,
+  skill,
+  mobile,
+}: {
+  token: GuideOverviewToken;
+  x: Int;
+  y: Int;
+  hl: Int;
+  skill: Int;
+  mobile: Boolean;
+}): Component {
+  if (token.kind === OverviewKind.HEADER) {
+    const w: Int = textWidth(token.text, OverviewLayout.CONTENT_W, GuideFont.TITLE);
+    return (
+      <>
+        <line
+          x={x - 1}
+          y={y + OverviewLayout.LINE_H - 2}
+          w={OverviewLayout.CONTENT_W - 4 - x + 1}
+          h={0}
+          color={OverviewColour.HEADER_RULE}
+          lineWidth={1}
+        />
+        <text
+          x={x}
+          y={y}
+          w={w}
+          h={OverviewLayout.LINE_H}
+          text={token.text}
+          font={GuideFont.TITLE}
+          color={OverviewColour.HIGHLIGHT}
+          shadow
+        />
+      </>
+    );
+  }
+  if (token.kind === OverviewKind.WORD) {
+    const text: String = tokenText(token, mobile);
+    return (
+      <text
+        x={tokenX(token, x, mobile)}
+        y={tokenY(token, x, y, mobile)}
+        w={textWidth(text, OverviewLayout.CONTENT_W, GuideFont.BODY)}
+        h={OverviewLayout.LINE_H}
+        text={text}
+        font={GuideFont.BODY}
+        shadow
+        color={hl === 1 ? OverviewColour.HIGHLIGHT : OverviewColour.TEXT}
+      />
+    );
+  }
+  if (token.kind === OverviewKind.LINK) {
+    return <OverviewLinkView token={token} x={tokenX(token, x, mobile)} y={tokenY(token, x, y, mobile)} hl={hl} />;
+  }
+  if (token.kind === OverviewKind.WIKI) {
+    return <WikiButton token={token} x={x} y={y} skill={skill} mobile={mobile} />;
+  }
+  return null;
+}
+
+function OverviewLinkView({ token, x, y, hl }: { token: GuideOverviewToken; x: Int; y: Int; hl: Int }): Component {
+  const textW: Int = textWidth(`${token.text}${token.suffix}`, OverviewLayout.CONTENT_W, GuideFont.BODY);
+  const runW: Int = token.icon !== -1 ? textW + token.iconW + token.marginL + token.marginR : textW;
+  const linked: Boolean = token.link !== OverviewLink.NONE;
+  let colour: Int = hl === 1 ? OverviewColour.HIGHLIGHT : OverviewColour.TEXT;
+  let text: String = `${token.text}${token.suffix}`;
+  if (linked) {
+    if (token.link === OverviewLink.QUEST && questComplete(token.quest as Quest)) {
+      colour = settingColourOrDefault(QUEST_DONE_SETTING);
+      text = `${colourTag(colour, 'u')}${token.text}</u>${token.suffix}`;
+    } else {
+      colour = OverviewColour.LINK;
+      text = `<u=ffff00>${token.text}</u>${token.suffix}`;
+    }
+  }
+  return (
+    <>
+      {token.icon !== -1 && (
+        <sprite
+          x={x + token.iconDx + token.marginL}
+          y={y + (OverviewLayout.LINE_H - token.iconH) / 2 + token.iconDy}
+          w={token.iconW}
+          h={token.iconH}
+          sprite={token.icon}
+        />
+      )}
+      <text
+        x={linkTextX(token, x)}
+        y={y}
+        w={textW}
+        h={OverviewLayout.LINE_H}
+        text={text}
+        font={GuideFont.BODY}
+        color={colour}
+        shadow
+      />
+      {linked && (
+        <rect
+          x={x}
+          y={y}
+          w={runW}
+          h={OverviewLayout.LINE_H}
+          transparency={255}
+          options={[linkOption(token)]}
+          optionSubject={token.link === OverviewLink.SKILL ? '' : `<col=ff9040>${token.text}</col>`}
+          onOptionSelect={(event) => linkOp(token.link, token.arg, event.component, event.subId)}
+        />
+      )}
+    </>
+  );
+}
+
+function linkOption(token: GuideOverviewToken): String {
+  if (token.link === OverviewLink.SKILL) {
+    return `View <col=ff9040>${GuideSkillNames.get(token.arg) ?? ''}</col> guide`;
+  }
+  if (token.link === OverviewLink.QUEST) {
+    return 'View-journal';
+  }
+  return 'View';
+}
+
+function linkOp(link: Int, arg: Int, source: ComponentId, sourceSub: Int): void {
+  if (link === OverviewLink.SKILL) {
+    playSound(Sounds.INTERFACE_SELECT1);
+    CS2.if_runscript(OverviewServerScript.SKILL_GUIDE, source, sourceSub, arg, 'i');
+    return;
+  }
+  if (link === OverviewLink.QUEST) {
+    playSound(Sounds.INTERFACE_SELECT1);
+    CS2.if_runscript(OverviewServerScript.QUEST_JOURNAL, source, sourceSub, arg, 'i');
+    return;
+  }
+  if (link === OverviewLink.TAB) {
+    skillGuideV2SelectTab(arg);
+    return;
+  }
+  if (link === OverviewLink.SIDE_PANEL) {
+    sideButtonSwitch(arg);
+  }
+}
+
+function sideButtonSwitch(panel: Int): void {
+  const [onLeft] = useState(osmSidepanelOnLeft);
+  switchSidePanel(panel, onLeft === 1 ? 1 : 0);
+}
+
+function WikiButton({
+  token,
+  x,
+  y,
+  skill,
+  mobile,
+}: {
+  token: GuideOverviewToken;
+  x: Int;
+  y: Int;
+  skill: Int;
+  mobile: Boolean;
+}): Component {
+  const [look, setLook] = useState(0);
+  const name: String = GuideSkillNames.get(skill) ?? '';
+  const label: String = `View ${name} on the Wiki`;
+  const textW: Int = textWidth(label, 2147483647, GuideFont.BODY);
+  const inner: Int = textW + OverviewLayout.WIKI_ICON_GAP + token.iconW + token.marginL + token.marginR;
+  const pad: Int = OverviewLayout.WIKI_PAD;
+  const iconX: Int = pad + token.iconDx + token.marginL;
+  const textX: Int = iconX + token.iconW + OverviewLayout.WIKI_ICON_GAP + token.marginR;
+  const url: String = `https://oldschool.runescape.wiki/w/${name}`;
+  let back: Sprite = Sprites.TRADEBACKING;
+  let edge: Int = 0;
+  if (look === 1) {
+    back = Sprites.TRADEBACKING_LIGHT;
+    edge = Sprites.V2_STONE_BUTTON_OUT_0 - Sprites.V2_STONE_BUTTON_0;
+  } else if (look === 2) {
+    back = Sprites.TRADEBACKING_DARK;
+    edge = Sprites.V2_STONE_BUTTON_IN_0 - Sprites.V2_STONE_BUTTON_0;
+  }
+  const stone: Int = Sprites.V2_STONE_BUTTON_0 + edge;
+  return (
+    <layer x={x} y={y} w={inner + pad * 2} h={OverviewLayout.LINE_H + pad * 2}>
+      <sprite x={0} y={0} w="fill" h="fill" sprite={back} tiling />
+      <sprite x={0} y={0} w={pad} h={pad} sprite={(stone + 0) as Sprite} tiling />
+      <sprite x={{ right: 0 }} y={0} w={pad} h={pad} sprite={(stone + 1) as Sprite} tiling />
+      <sprite x={0} y={{ bottom: 0 }} w={pad} h={pad} sprite={(stone + 2) as Sprite} tiling />
+      <sprite x={{ right: 0 }} y={{ bottom: 0 }} w={pad} h={pad} sprite={(stone + 3) as Sprite} tiling />
+      <sprite x={0} y={pad} w={pad} h={{ fill: pad * 2 }} sprite={(stone + 4) as Sprite} tiling />
+      <sprite x={pad} y={0} w={{ fill: pad * 2 }} h={pad} sprite={(stone + 5) as Sprite} tiling />
+      <sprite x={{ right: 0 }} y={pad} w={pad} h={{ fill: pad * 2 }} sprite={(stone + 6) as Sprite} tiling />
+      <sprite x={pad} y={{ bottom: 0 }} w={{ fill: pad * 2 }} h={pad} sprite={(stone + 7) as Sprite} tiling />
+      <sprite x={iconX} y={{ center: token.iconDy }} w={token.iconW} h={token.iconH} sprite={token.icon} />
+      <text
+        x={textX}
+        y="center"
+        w={textW}
+        h={OverviewLayout.LINE_H}
+        text={label}
+        font={GuideFont.BODY}
+        color={OverviewColour.TEXT}
+        shadow
+      />
+      <rect
+        x={0}
+        y={0}
+        w="fill"
+        h="fill"
+        transparency={255}
+        options={[label]}
+        onMouseRepeat={!mobile && look === 0 ? () => setLook(1) : null}
+        onMouseLeave={() => setLook(0)}
+        onHold={() => setLook(2)}
+        onRelease={() => setLook(1)}
+        onOptionSelect={() => openUrlRaw(url, true, true)}
+      />
+    </layer>
+  );
+}

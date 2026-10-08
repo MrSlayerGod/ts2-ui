@@ -1,8 +1,8 @@
-import { useDerived, useOnResize, useServerState, useUniverse } from 'ts2';
+import { onMounted, onUpdated, useDerived, useOnResize, useServerState, useUniverse } from 'ts2';
 
 import { opsound } from '../lib/lib.helpers';
 import { Varbits } from '../lib/game/varbits';
-import { Health, Layout, PartyStatus, TobHudColor, TobHudFonts, TobHudSprites } from './tob-hud.constants';
+import { Health, Layout, PartyStatus, TobHudColor, TobHudFonts, TobHudSprites, statusRef } from './tob-hud.constants';
 import {
   Slot,
   inTobRaid,
@@ -20,6 +20,13 @@ import { hideSlotTip, showSlotTip } from './tob-hud-tooltip.component';
 
 const EXIT_OP_MASK = 2;
 
+function placeColumn(drawn: Boolean, height: Int): void {
+  if (!drawn) {
+    return;
+  }
+  statusRef.props = { w: Layout.COLUMN_W, h: height };
+}
+
 export function TobHudStatus(): Component {
   const universe = useUniverse();
   useOnResize(universe);
@@ -28,12 +35,16 @@ export function TobHudStatus(): Component {
   const status: Int = useServerState(Varbits.TOB_CLIENT_PARTYSTATUS);
   const mySlot: Int = useServerState(Varbits.TOB_CLIENT_PARTYSLOT);
 
-  if (inRaid === 0 || status !== PartyStatus.READY) {
+  const drawn: Boolean = inRaid === 1 && status === PartyStatus.READY;
+  const columnH: Int = mySlot === 0 ? Layout.COLUMN_H_FULL : Layout.COLUMN_H_SHORT;
+  onMounted(() => placeColumn(drawn, columnH));
+  onUpdated(() => placeColumn(drawn, columnH));
+
+  if (!drawn) {
     return null;
   }
 
   const spectating: Int = mySlot === 0 ? 1 : 0;
-  const columnH: Int = spectating === 1 ? Layout.COLUMN_H_FULL : Layout.COLUMN_H_SHORT;
 
   return (
     <layer w="fill" h="fill">

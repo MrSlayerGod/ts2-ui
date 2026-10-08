@@ -1,0 +1,209 @@
+import { sessionState, useServerState, useState } from 'ts2';
+
+import { clientClock, chatMessage, playSound } from '../lib/lib.engine';
+import { groupDigits } from '../lib/lib.format';
+import { refusalColourTag } from '../0655_league_relics/league-relics.helpers';
+import { SlayerSounds, SlayerVars, Toggle } from './slayer-rewards.constants';
+import { SlayerUnlockRow, SlayerUnlocks } from './slayer-rewards.data';
+import {
+  unlockDescription,
+  unlockOption,
+  unlockRow,
+  unlockUnavailable,
+  unlockUnavailableText,
+  unlocksAreFree,
+} from './slayer-rewards.helpers';
+
+export const confirmShown = sessionState(0);
+export const confirmInfo = sessionState('');
+export const confirmCode = sessionState(-1);
+export const confirmBackAt = sessionState(0);
+
+export enum Confirm {
+  SHOWN_NONE = 0,
+  SHOWN_DIALOG = 1,
+  SHOWN_REQUESTING = 2,
+  NONE = -1,
+  TASK_BASE = 63,
+  CANCEL = 1,
+  BLOCK = 2,
+  STORE = 10,
+  UNSTORE = 11,
+  EXTEND_ALL = 72,
+  CODES = 75,
+  HIT_X = 260,
+  HIT_Y = 242,
+  HIT_W = 85,
+  HIT_H = 22,
+  BACK_X = 33,
+  BACK_X_ALONE = 92,
+  REQUEST_CYCLES = 45,
+  CANCEL_COST = 30,
+}
+
+export function resetConfirm(): void {
+  const [, setShown] = useState(confirmShown);
+  const [, setCode] = useState(confirmCode);
+  setShown(Confirm.SHOWN_NONE);
+  setCode(Confirm.NONE);
+}
+
+function show(info: String, code: Int): void {
+  const [, setShown] = useState(confirmShown);
+  const [, setInfo] = useState(confirmInfo);
+  const [, setCode] = useState(confirmCode);
+  setInfo(info);
+  setCode(code);
+  setShown(Confirm.SHOWN_DIALOG);
+}
+
+export function openBuyInfo(item: Item, name: String, description: String, price: Int, quantity: Int): void {
+  playSound(SlayerSounds.SELECT);
+  let text: String = `<u=ff981f>${name}</u><br><br>${description}<br><br>`;
+  if (price !== 1) {
+    if (quantity > 1) {
+      text = `${text}Cost: ${price} points for ${quantity}`;
+    } else {
+      text = `${text}Cost: ${price} points each`;
+    }
+  } else if (quantity > 1) {
+    text = `${text}Cost: 1 point for ${quantity}`;
+  } else {
+    text = `${text}Cost: 1 point each`;
+  }
+  show(text, Confirm.NONE);
+}
+
+export function openTaskConfirm(task: String, action: Int, free: Boolean, blockCost: Int): void {
+  playSound(SlayerSounds.SELECT);
+  let text: String = '';
+  if (action === Confirm.BLOCK) {
+    text = free
+      ? `<u=ff981f>${task}</u><br><br>Your current task will be cancelled, and the Slayer Masters will be blocked from assigning this category to you again.<br><br><col=06600c>Cost: Free</col><br><br>If you unblock this creature in future, you will not get your points back.`
+      : `<u=ff981f>${task}</u><br><br>Your current task will be cancelled, and the Slayer Masters will be blocked from assigning this category to you again.<br><br><col=ff0000>Cost: ${blockCost} points</col><br><br>If you unblock this creature in future, you will not get your points back.`;
+  } else if (action === Confirm.CANCEL) {
+    text = free
+      ? `<u=ff981f>${task}</u><br><br>Your current task will be cancelled. The Slayer Masters may assign this category to you again in future.<br><br><col=06600c>Cost: Free</col>`
+      : `<u=ff981f>${task}</u><br><br>Your current task will be cancelled. The Slayer Masters may assign this category to you again in future.<br><br><col=ff0000>Cost: ${Confirm.CANCEL_COST} points</col>`;
+  } else if (action === Confirm.STORE) {
+    text = `<u=ff981f>${task}</u><br><br>Your current task will be stored. You may unstore it if you do not have an active task, or swap it with any other active task you have currently. The Slayer Masters may assign this category to you again in future.`;
+  } else if (action === Confirm.UNSTORE) {
+    text = `<u=ff981f>${task}</u><br><br>Your stored task will become your active task. <br><br><col=ff0000>Cost: 0 points</col>`;
+  }
+  show(text, Confirm.TASK_BASE + action);
+}
+
+export function openUnblockConfirm(task: String, code: Int): void {
+  playSound(SlayerSounds.SELECT);
+  show(
+    `<u=ff981f>${task}</u><br><br>Slayer Masters will once again be able to assign you this creature.<br><br>You will not get your points back.`,
+    code,
+  );
+}
+
+function toggleSentence(on: Int, name: String, description: String): String {
+  if (on === 1) {
+    return `<u=ff981f>${name}</u><br><br>${description}<br><br><col=00ff00>Really enable it? It will </col><col=ffffff>not cost you any points</col><col=00ff00> as you have unlocked this previously.</col>`;
+  }
+  return `<u=ff981f>${name}</u><br><br>${description}<br><br><col=00ff00>Really disable it? This feature can be toggled freely for </col><col=ffffff>no future cost</col><col=00ff00>.</col>`;
+}
+
+export function openUnlockConfirm(index: Int, unlock: Int): void {
+  const row: SlayerUnlockRow | null = unlockRow(index);
+  const bit: Int = row === null ? -1 : row.bit;
+  const name: String = row === null ? '' : row.name;
+  const cost: Int = row === null ? 0 : row.cost;
+  if (unlockUnavailable(index)) {
+    playSound(SlayerSounds.WRONG);
+    chatMessage(`${refusalColourTag()}${unlockUnavailableText(index)}`);
+    return;
+  }
+  playSound(SlayerSounds.SELECT);
+  const description: String = unlockDescription(index);
+  let text: String = '';
+  if (bit === Toggle.SUPERIOR_MOBS && unlock === 0) {
+    text = toggleSentence(useServerState(SlayerVars.TOGGLEOFF_SUPERIOR_MOBS), name, description);
+  } else if (bit === Toggle.FOSSIL_WYVERN_BLOCK && unlock === 0) {
+    text = toggleSentence(useServerState(SlayerVars.TOGGLEOFF_FOSSIL_WYVERN), name, description);
+  } else if (bit === Toggle.LONGER_REVENANTS && unlock === 0) {
+    text = toggleSentence(useServerState(SlayerVars.TOGGLEOFF_LONGER_REVENANTS), name, description);
+  } else if (unlock === 1) {
+    text = `<u=ff981f>${name}</u><br><br>${description}`;
+    if (cost > 0) {
+      text = unlocksAreFree()
+        ? `${text}<br><br><col=06600c>Unlock for free?</col>`
+        : `${text}<br><br><col=ff0000>Pay ${groupDigits(cost, ',')} points?</col>`;
+    }
+  } else {
+    text = `<u=ff981f>${name}</u><br><br>Really disable it?`;
+    if (cost > 0) {
+      text = `${text}<br><br><col=ff0000>You will not get your points back.</col>`;
+    }
+  }
+  show(text, bit);
+}
+
+function unlockIndexOfBit(bit: Int): Int {
+  let index: Int = 0;
+  while (index < SlayerUnlocks.length) {
+    const row: SlayerUnlockRow | null = SlayerUnlocks.at(index);
+    if (row !== null) {
+      if (row.bit === bit) {
+        return index;
+      }
+    }
+    index = index + 1;
+  }
+  return -1;
+}
+
+export function confirmLabel(code: Int): String {
+  if (code >= Confirm.TASK_BASE) {
+    const action: Int = code - Confirm.TASK_BASE;
+    if (
+      action === Confirm.CANCEL ||
+      action === Confirm.BLOCK ||
+      action === Confirm.STORE ||
+      action === Confirm.UNSTORE
+    ) {
+      return 'Confirm';
+    }
+    return 'Unblock';
+  }
+  return unlockOption(unlockIndexOfBit(code));
+}
+
+export function confirmSubject(code: Int): String {
+  if (code >= Confirm.TASK_BASE) {
+    return '';
+  }
+  const row: SlayerUnlockRow | null = unlockRow(unlockIndexOfBit(code));
+  return `<col=ff9040>${row === null ? '' : row.name}`;
+}
+
+export function confirmBack(request: Boolean, option: Int): void {
+  if (option !== 1) {
+    return;
+  }
+  playSound(SlayerSounds.SELECT);
+  const [, setShown] = useState(confirmShown);
+  const [, setInfo] = useState(confirmInfo);
+  if (request) {
+    const [, setBackAt] = useState(confirmBackAt);
+    setInfo('Requesting...');
+    setBackAt(clientClock() + Confirm.REQUEST_CYCLES);
+    setShown(Confirm.SHOWN_REQUESTING);
+    return;
+  }
+  setInfo('');
+  setShown(Confirm.SHOWN_NONE);
+}
+
+export function confirmBackLater(): void {
+  const [backAt] = useState(confirmBackAt);
+  if (clientClock() < backAt) {
+    return;
+  }
+  const [, setShown] = useState(confirmShown);
+  setShown(Confirm.SHOWN_NONE);
+}

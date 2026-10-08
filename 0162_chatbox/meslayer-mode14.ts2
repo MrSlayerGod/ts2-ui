@@ -1,0 +1,251 @@
+import { CS2, predictServerState, useServerState, useState } from 'ts2';
+
+import { Fonts } from '../lib/game/fonts';
+import { Sounds } from '../lib/game/sounds';
+import { Sprites } from '../lib/game/sprites';
+import { Varbits } from '../lib/game/varbits';
+import { meslayerinput, meslayermode, objdialogUpdatedelay } from '../lib/game/varcs';
+import { onMobile } from '../lib/lib.helpers';
+import { deadmanWorld } from '../0226_deadmanprotect/deadman-world.helpers';
+import { meslayerOnDialogAbort } from '../0288_colour_pallet/colour-pallet.state';
+import { scrollbarVertical, scrollTo, BarSprite } from '../0458_poh_furniture_creation/scrollbar-vertical.skins';
+import {
+  mesLayerRef,
+  mesListRef,
+  mesScrollAreaRef,
+  mesScrollBarRef,
+  mesText2Ref,
+  mesToggleRef,
+} from './chatbox.constants';
+import { KEYBOARD_STRING, keyboardShow, meslayerClose, meslayerEcho, meslayerOnKey, meslayerOpen } from './meslayer';
+import { mode14Call, mode14Filter, mode14OfferLast, mode14Searched, mode14Tradeable } from './meslayer-mode14.state';
+
+const TEXT = 4;
+const SPRITE = 5;
+const SIZE_ABS = 0;
+const SIZE_MINUS = 1;
+const POS_START = 0;
+const POS_CENTRE = 1;
+const POS_END = 2;
+const ALIGN_CENTRE = 1;
+const WHITE = 0xffffff;
+const BLACK = 0x000000;
+const KEY_ENTER = 84;
+const SEARCH_LIMIT = 25;
+export const MESLAYER_MODE_ITEM_SEARCH = 14;
+const TOGGLE_Y = 5;
+const TOGGLE_W = 130;
+const TOGGLE_H = 16;
+
+export const MODE14_IDLE = 0;
+export const MODE14_START = 1;
+export const MODE14_TOO_MANY = 2;
+export const MODE14_NONE = 3;
+export const MODE14_GRID = 4;
+export const MODE14_LAST = 5;
+
+export function meslayerMode14(prefix: String, tradeable: Boolean, filter: Enum, offerLast: Boolean): void {
+  meslayerOpen(MESLAYER_MODE_ITEM_SEARCH);
+  mesListRef.hide = false;
+  scrollbarVertical(
+    mesScrollBarRef,
+    mesScrollAreaRef,
+    BarSprite.STEEL_TRACK,
+    BarSprite.STEEL_CAP_TOP,
+    BarSprite.STEEL_THUMB,
+    BarSprite.STEEL_CAP_BOTTOM,
+    BarSprite.STEEL_UP,
+    BarSprite.STEEL_DOWN,
+    0,
+  );
+  meslayerEcho(prefix);
+  mesText2Ref.onKey = (event) => meslayerOnKey(event.keyCode, event.keyChar, prefix);
+  meslayerMode14Update(tradeable, filter, offerLast);
+  mesLayerRef.onTimer = () => meslayerMode14UpdateEntrypoint(tradeable, filter, offerLast);
+  CS2.if_on_dialog_abort_set(() => meslayerOnDialogAbort(), mesText2Ref);
+  if (onMobile()) {
+    keyboardShow(KEYBOARD_STRING, SEARCH_LIMIT);
+  }
+}
+
+export function meslayerMode14UpdateEntrypoint(tradeable: Boolean, filter: Enum, offerLast: Boolean): void {
+  const [delay, setDelay] = useState(objdialogUpdatedelay);
+  if (delay <= 0) {
+    return;
+  }
+  const left: Int = delay - 1;
+  setDelay(left);
+  if (left <= 0) {
+    meslayerMode14Update(tradeable, filter, offerLast);
+  }
+}
+
+export function meslayerMode14Update(tradeable: Boolean, filter: Enum, offerLast: Boolean): void {
+  const [, setDelay] = useState(objdialogUpdatedelay);
+  setDelay(0);
+  const [typed] = useState(meslayerinput);
+  const [, setSearched] = useState(mode14Searched);
+  setSearched(typed);
+  const [, setTradeable] = useState(mode14Tradeable);
+  setTradeable(tradeable ? 1 : 0);
+  const [, setFilter] = useState(mode14Filter);
+  setFilter(filter as Int);
+  const [, setOfferLast] = useState(mode14OfferLast);
+  setOfferLast(offerLast ? 1 : 0);
+  const [call, setCall] = useState(mode14Call);
+  setCall(call + 1);
+}
+
+export function meslayerMode14Apply(active: Boolean, status: Int, extent: Int, offerLast: Boolean): void {
+  if (!active) {
+    return;
+  }
+  let toggle: Boolean = false;
+  if (status === MODE14_LAST) {
+    toggle = true;
+  } else if (status !== MODE14_GRID && offerLast) {
+    toggle = true;
+  }
+  if (toggle) {
+    meslayerMode14LastSearchToggle(TOGGLE_Y);
+  } else {
+    mesToggleRef.props = { hide: true };
+  }
+  if (status === MODE14_GRID && extent > mesScrollAreaRef.height!) {
+    mesScrollAreaRef.props = { scrollHeight: extent };
+    const kept: Int = mesScrollAreaRef.scrollY!;
+    scrollbarResize(kept);
+    return;
+  }
+  mesScrollAreaRef.props = { scrollY: 0, scrollHeight: 0 };
+  scrollbarResize(0);
+}
+
+export function offered(item: Item, tradeable: Boolean, filter: Enum): Boolean {
+  if (filter !== -1) {
+    const listed: Map<Item, Boolean> = filter as Map<Item, Boolean>;
+    if (!(listed.get(item) ?? false)) {
+      return false;
+    }
+  }
+  if (tradeable && deadmanRestrictedItem(item)) {
+    return false;
+  }
+  return true;
+}
+
+export function meslayerMode14Select(item: Item, keycode: Int): void {
+  if (keycode !== KEY_ENTER) {
+    return;
+  }
+  CS2.itemdialog_resume(item as Int);
+  CS2.sound_effect(Sounds.INTERFACE_SELECT1, 1, 0);
+  meslayerClose(true, true, true);
+}
+
+export function deadmanRestrictedItem(item: Item): Boolean {
+  const allowed: Int = item.deadmanRestriction!;
+  if (allowed === 0) {
+    return false;
+  }
+  const world: Int = deadmanWorld();
+  if (world === 0) {
+    return allowed !== 0;
+  }
+  if (world === 1) {
+    return allowed !== 1 && allowed !== 5;
+  }
+  if (world === 2) {
+    return allowed !== 1 && allowed !== 2 && allowed !== 4;
+  }
+  if (world === 3) {
+    return allowed !== 1 && allowed !== 3 && allowed !== 4;
+  }
+  return false;
+}
+
+function lastSearchCheckbox(): Sprite {
+  if (useServerState(Varbits.DISABLE_LAST_SEARCHED) === 0) {
+    return Sprites.CHECKBOX_2;
+  }
+  return Sprites.CHECKBOX_1;
+}
+
+export function meslayerMode14LastSearchToggle(fromBottom: Int): void {
+  CS2.cc_all_delete(mesToggleRef);
+  mesToggleRef.props = { hide: false, x: 'center', y: { bottom: fromBottom }, w: TOGGLE_W, h: TOGGLE_H };
+  const box: Sprite = lastSearchCheckbox();
+
+  CS2.cc_create(mesToggleRef, TEXT, 0, false);
+  CS2.cc_size_set(112, 0, SIZE_ABS, SIZE_MINUS);
+  CS2.cc_position_set(0, 0, POS_START, POS_CENTRE);
+  CS2.cc_colour_set(BLACK);
+  CS2.cc_text_font_set(Fonts.P12_FULL);
+  CS2.cc_text_align_set(ALIGN_CENTRE, ALIGN_CENTRE, 0);
+  CS2.cc_text_set('Show last searched:');
+
+  CS2.cc_create(mesToggleRef, SPRITE, 1, false);
+  CS2.cc_size_set(16, 16, SIZE_ABS, SIZE_ABS);
+  CS2.cc_position_set(0, 0, POS_END, POS_CENTRE);
+  CS2.cc_sprite_set(box);
+
+  bindLastSearchToggle();
+  CS2.if_onop_set(() => meslayerMode14LastSearchFlip(), mesToggleRef);
+}
+
+function bindLastSearchToggle(): void {
+  mesToggleRef.onMouseRepeat = () => lastSearchToggleColour(WHITE);
+  mesToggleRef.onMouseLeave = () => lastSearchToggleColour(BLACK);
+}
+
+function lastSearchToggleColour(colour: Int): void {
+  if (CS2.cc_find(mesToggleRef, 0)) {
+    CS2.cc_colour_set(colour);
+  }
+}
+
+function lastSearchCheckboxRedraw(): void {
+  const box: Sprite = lastSearchCheckbox();
+  if (CS2.cc_find(mesToggleRef, 1)) {
+    CS2.cc_sprite_set(box);
+  }
+  bindLastSearchToggle();
+}
+
+export function meslayerMode14LastSearchFlip(): void {
+  const disabled: Int = useServerState(Varbits.DISABLE_LAST_SEARCHED);
+  predictServerState(Varbits.DISABLE_LAST_SEARCHED, 1 - disabled);
+  const [mode] = useState(meslayermode);
+  if (mode === MESLAYER_MODE_ITEM_SEARCH || mode === 17) {
+    const [, setDelay] = useState(objdialogUpdatedelay);
+    setDelay(1);
+  }
+  lastSearchCheckboxRedraw();
+}
+
+export function meslayerMode14LastSearchSync(was: Int): void {
+  if (was === useServerState(Varbits.DISABLE_LAST_SEARCHED)) {
+    return;
+  }
+  lastSearchCheckboxRedraw();
+}
+
+function scrollbarResize(to: Int): void {
+  let extent: Int = CS2.if_scroll_height_get(mesScrollAreaRef);
+  if (extent <= 0) {
+    extent = CS2.if_height_get(mesScrollAreaRef);
+  }
+  let span: Int = 0;
+  if (extent > 0) {
+    span = (CS2.if_height_get(mesScrollBarRef) - 32) * CS2.if_height_get(mesScrollAreaRef) / extent;
+  } else {
+    span = CS2.if_height_get(mesScrollBarRef) - 32;
+  }
+  if (span < 10) {
+    span = 10;
+  }
+  if (CS2.cc_find(mesScrollBarRef, 1)) {
+    CS2.cc_size_set(0, span, SIZE_MINUS, SIZE_ABS);
+    scrollTo(mesScrollBarRef, mesScrollAreaRef, to, 1, 0);
+  }
+}

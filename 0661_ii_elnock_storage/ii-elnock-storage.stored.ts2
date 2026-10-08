@@ -31,7 +31,7 @@ export function elnockGetStored(item: Item): [Int, Item] {
   return [0, -1];
 }
 
-export function storageGetStored(table: Enum, item: Item): [Int, Item] {
+export function storageGetStored(table: QuantityTable, item: Item): [Int, Item] {
   if (table === QuantityTable.ELNOCK_STORAGE) {
     return elnockGetStored(item);
   }

@@ -1,14 +1,29 @@
-import { useServerState } from 'ts2';
+import { useServerState, useState } from 'ts2';
 
 import { BoardButton } from '../lib/board-button.component';
 import { Varps } from '../lib/game/varps';
-import { Copy } from './clans-board.constants';
+import { BoardPausebutton, boardAnchorsRef, Copy } from './clans-board.constants';
+import { clanBoardLoaded } from './clans-board.state';
 
 export function MyClanButton(): Component {
   const listed: Int = useServerState(Varps.IF1);
+  const [loaded] = useState(clanBoardLoaded);
   return (
-    <layer w="fill" h="fill">
-      <BoardButton label={listed === 1 ? Copy.DELIST_CLAN : Copy.LIST_CLAN} />
+    <layer w="fill" h="fill" hide={loaded === 0}>
+      <BoardButton
+        label={listed === 1 ? Copy.DELIST_CLAN : Copy.LIST_CLAN}
+        resumeIn={boardAnchorsRef}
+        resumeAt={BoardPausebutton.MY_CLAN}
+      />
+    </layer>
+  );
+}
+
+export function ClanBoardLoadedButton({ label, resumeAt }: { label: String; resumeAt: Int }): Component {
+  const [loaded] = useState(clanBoardLoaded);
+  return (
+    <layer w="fill" h="fill" hide={loaded === 0}>
+      <BoardButton label={label} resumeIn={boardAnchorsRef} resumeAt={resumeAt} />
     </layer>
   );
 }

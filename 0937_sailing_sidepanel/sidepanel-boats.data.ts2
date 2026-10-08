@@ -1,3 +1,4 @@
+/** @wire */
 export enum SidepanelBoat {
   RAFT = 0,
   SKIFF = 1,

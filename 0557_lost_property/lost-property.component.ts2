@@ -1,4 +1,5 @@
 import { closeInterface, graphicSwapper } from '../lib/lib.helpers';
+import { LostPropertyList, resetLostProperty } from './lost-property-list.component';
 import {
   Layout,
   LostPropertyArt,
@@ -21,6 +22,7 @@ export function LostProperty(): Component {
         pitch={Layout.MODEL_PITCH}
         offsetX={Layout.MODEL_OFFSET_X}
         offsetY={Layout.MODEL_OFFSET_Y}
+        onLoad={() => resetLostProperty()}
       />
 
       <text
@@ -34,9 +36,7 @@ export function LostProperty(): Component {
         align="center"
       />
 
-      <layer x="center" y={Layout.LIST_Y} w={Layout.LIST_W} h={Layout.LIST_H} />
-
-      <layer x={{ right: Layout.SCROLLBAR_RIGHT }} y={Layout.LIST_Y} w={16} h={Layout.LIST_H} />
+      <LostPropertyList />
 
       <sprite
         x={{ right: Layout.CLOSE_RIGHT }}

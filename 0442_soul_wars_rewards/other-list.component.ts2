@@ -23,7 +23,7 @@ export function OtherList({ pick, sub, tokens, scroll }: { pick: Int; sub: Int; 
   const pane = useRef();
   const mobile: Boolean = onMobile();
   const rows: Int = OtherRewards.length;
-  const extent: Int = OtherLayout.TOP + ((rows - 1) / OtherLayout.COLUMNS) * Layout.ROW_STEP + Layout.ROW_STEP;
+  const extent: Int = OtherLayout.TOP + (rows - 1) / OtherLayout.COLUMNS * Layout.ROW_STEP + Layout.ROW_STEP;
 
   return (
     <>
@@ -38,8 +38,8 @@ export function OtherList({ pick, sub, tokens, scroll }: { pick: Int; sub: Int; 
           <OtherEntry
             reward={reward}
             index={index}
-            x={OtherLayout.LEFT + (index % OtherLayout.COLUMNS) * OtherLayout.COLUMN_W}
-            y={OtherLayout.TOP + (index / OtherLayout.COLUMNS) * Layout.ROW_STEP}
+            x={OtherLayout.LEFT + index % OtherLayout.COLUMNS * OtherLayout.COLUMN_W}
+            y={OtherLayout.TOP + index / OtherLayout.COLUMNS * Layout.ROW_STEP}
             pick={pick}
             sub={sub}
             tokens={tokens}
@@ -147,7 +147,7 @@ function OtherEntry({
         shadow
         align="left"
         valign="top"
-        color={refused ? RewardsColour.GREY : chosen ? RewardsColour.WHITE : RewardsColour.GREEN}
+        color={refused ? RewardsColour.GREY : (chosen ? RewardsColour.WHITE : RewardsColour.GREEN)}
         text={name}
       />
       <text

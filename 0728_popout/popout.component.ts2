@@ -6,14 +6,15 @@ import { Varbits } from '../lib/game/varbits';
 import { popoutState } from '../0601_toplevel_osm/toplevel-osm.helpers';
 import { Skills } from '../0320_stats/stats.constants';
 import { xptrackerSkillTransmit, xptrackerTick } from '../0729_xptracker/xptracker.state';
+import { TooltipBox, TooltipChrome } from '../lib/tooltip.component';
 import { PopoutTab, PopoutTabs } from './popout.data';
+import { popoutTipH, popoutTipSplit, popoutTipText, popoutTipW, popoutTipX, popoutTipY } from './popout-tooltip.state';
 import { popoutBodyRef, popoutContentRef, popoutSlotsRef, popoutTipRef, popoutTrackerSlotRef } from './popout.refs';
 import {
   PopoutArm,
   popoutArm,
   popoutDesktopTabsBuilt,
   popoutMobileTabsBuilt,
-  popoutReset,
   popoutTabAvailable,
   popoutToggleState,
 } from './popout.state';
@@ -50,7 +51,7 @@ const enum Frame {
 export function Popout(): Component {
   return (
     <>
-      <layer x={0} y={0} w={0} h={0} onLoad={() => popoutReset()} />
+      <layer x={0} y={0} w={0} h={0} />
       <layer static ref={popoutBodyRef} x={{ right: 0 }} y={0} w="fill" h="fill">
         <layer static ref={popoutSlotsRef} x={0} y={0} w="fill" h="fill">
           <layer static ref={popoutTrackerSlotRef} x={0} y={0} w={Frame.SLOT_W} h={Frame.SLOT_H} />
@@ -176,7 +177,37 @@ export function PopoutChrome(): Component {
           <StoneFrame divider={0} />
         </layer>
       </layer>
+      <PopoutTipBox />
     </>
+  );
+}
+
+function PopoutTipBox(): Component {
+  const [text] = useState(popoutTipText);
+  const [split] = useState(popoutTipSplit);
+  const [x] = useState(popoutTipX);
+  const [y] = useState(popoutTipY);
+  const [w] = useState(popoutTipW);
+  const [h] = useState(popoutTipH);
+  const shown: Boolean = text.length > 0;
+  const left: String = shown ? text.substring(0, split) : '';
+  const right: String = shown ? text.substring(split, text.length) : '';
+  return (
+    <layer x={x} y={y} w={w} h={h} hide={!shown}>
+      <TooltipChrome text={left} font={TooltipBox.font} lineHeight={0} />
+      <text
+        x="center"
+        y={{ bottom: 0 }}
+        w={{ fill: TooltipBox.padX }}
+        h={{ fill: 1 }}
+        text={right}
+        align="right"
+        valign="top"
+        lineHeight={0}
+        font={TooltipBox.font}
+        color={TooltipBox.ink}
+      />
+    </layer>
   );
 }
 

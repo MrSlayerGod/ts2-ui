@@ -120,26 +120,26 @@ function TabPlates({
   const hovered: Boolean = eq(state, TabState.HOVERED);
 
   const plateEnd: Sprite = transparent
-    ? selected
+    ? (selected
       ? TabArt.T_SELECTED_END
       : hovered
         ? TabArt.T_HOVER_END
-        : TabArt.T_REST_END
-    : selected
+        : TabArt.T_REST_END)
+    : (selected
       ? TabArt.SELECTED_END
-      : TabArt.REST_END;
+      : TabArt.REST_END);
   const plateMid: Sprite = transparent
-    ? selected
+    ? (selected
       ? TabArt.T_SELECTED_MID
       : hovered
         ? TabArt.T_HOVER_MID
-        : TabArt.T_REST_MID
-    : selected
+        : TabArt.T_REST_MID)
+    : (selected
       ? TabArt.SELECTED_MID
-      : TabArt.REST_MID;
+      : TabArt.REST_MID);
 
-  const sheenEnd: Sprite = transparent ? TabArt.SHEEN_END : hovered ? TabArt.HOVER_END : TabArt.SHEEN_END;
-  const sheenMid: Sprite = transparent ? restSheenMid : hovered ? TabArt.HOVER_MID : TabArt.SHEEN_MID;
+  const sheenEnd: Sprite = transparent ? TabArt.SHEEN_END : (hovered ? TabArt.HOVER_END : TabArt.SHEEN_END);
+  const sheenMid: Sprite = transparent ? restSheenMid : (hovered ? TabArt.HOVER_MID : TabArt.SHEEN_MID);
   const sheenAlpha: Int = transparent ? 0 : TabArt.SHEEN_TRANSPARENCY;
   const sheen: Boolean = sheenShows(transparent, selected);
 

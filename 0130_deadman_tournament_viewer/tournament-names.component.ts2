@@ -1,0 +1,111 @@
+import { CS2, sessionState, useInterval, useRef, useState } from 'ts2';
+
+import { Fonts } from '../lib/game/fonts';
+import { Sprites } from '../lib/game/sprites';
+import { pipeHead, pipeTail } from '../lib/lib.format';
+import { clientClock, playSound } from '../lib/lib.engine';
+import { ViewerSounds } from './deadman-tournament-viewer.constants';
+
+export function TournamentNames(): Component {
+  const [sent] = useState(namesSent);
+  const [names] = useState(namesText);
+  const [pressedRow, setPressedRow] = useState(namesPressedRow);
+  const [pressedAt, setPressedAt] = useState(namesPressedAt);
+  const timerHost = useRef();
+
+  useInterval(() => {
+    if (pressedRow === -1 || clientClock() < pressedAt) {
+      return;
+    }
+    CS2.namedialog_resume(rowName(names, pressedRow));
+    setPressedRow(-1);
+    setPressedAt(0);
+  }, timerHost);
+
+  return (
+    <>
+      <layer ref={timerHost} x={0} y={0} w={1} h={1} />
+      {NameRows.map(
+        (row) =>
+          sent === 1 && (
+            <sprite
+              x="center"
+              y={row * ROW_H}
+              w="fill"
+              h={ROW_H}
+              sprite={row % 2 === 0 ? Sprites.TRADEBACKING_DARK : Sprites.TRADEBACKING}
+              tiling
+              hover={{ sprite: Sprites.TRADEBACKING_LIGHT }}
+              options={rowName(names, row).length > 0 ? ['Find'] : []}
+              optionSubject={rowName(names, row).length > 0 ? `<col=ff9040>${rowName(names, row)}</col>` : ''}
+              onOptionSelect={() => {
+                playSound(ViewerSounds.CLICK);
+                setPressedRow(row);
+                setPressedAt(clientClock() + SUBMIT_DELAY);
+              }}
+            />
+          ),
+      )}
+      {NameRows.map(
+        (row) =>
+          sent === 1 &&
+          rowName(names, row).length > 0 && (
+            <text
+              x="center"
+              y={row * ROW_H}
+              w="fill"
+              h={ROW_H}
+              text={`${rowName(names, row)} ${rowExtra(names, row)}`}
+              font={Fonts.P11_FULL}
+              color={pressedRow === row ? PRESSED_INK : INK}
+              shadow
+              align="center"
+              valign="middle"
+            />
+          ),
+      )}
+    </>
+  );
+}
+
+const namesText = sessionState('');
+const namesSent = sessionState(0);
+const namesPressedRow = sessionState(-1);
+const namesPressedAt = sessionState(0);
+
+const NameRows = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10] as const;
+const ROW_H = 15;
+const SUBMIT_DELAY = 30;
+const INK = 0xffffff;
+const PRESSED_INK = 0x8f8f8f;
+
+function rowCursor(text: String, row: Int): String {
+  let rest: String = text;
+  let i: Int = 0;
+  while (i < row) {
+    const name: String = pipeHead(rest);
+    rest = pipeTail(rest);
+    if (name.length > 0) {
+      rest = pipeTail(rest);
+    }
+    i = i + 1;
+  }
+  return rest;
+}
+
+function rowName(text: String, row: Int): String {
+  return pipeHead(rowCursor(text, row));
+}
+
+function rowExtra(text: String, row: Int): String {
+  return pipeHead(pipeTail(rowCursor(text, row)));
+}
+
+export function deadmanTournamentSendnames(names: String): void {
+  const [, setNames] = useState(namesText);
+  const [, setSent] = useState(namesSent);
+  const [, setPressedRow] = useState(namesPressedRow);
+  setNames(names);
+  setSent(1);
+  setPressedRow(-1);
+}

@@ -41,7 +41,7 @@ export function BarTooltip({ windowX, windowY, barWidth }: { windowX: Int; windo
 }
 
 function markerAt(threshold: Int, top: Int, span: Int, width: Int): Int {
-  const at: Int = top > 0 ? (threshold * span) / top : 0;
+  const at: Int = top > 0 ? threshold * span / top : 0;
   if (at <= 2) {
     return 0;
   }

@@ -1,5 +1,16 @@
+import { useState } from 'ts2';
 import { SteelBorderEntrypoint } from '../lib/steel-border-entrypoint.component';
-import { INSPECT_SUBJECT, INSPECT_VERB, PREPOT_TITLE, PrepotLayout } from './prepot-device-debug.constants';
+import { StoneButtonFilled } from '../lib/stone-button-filled.component';
+import { StoneButtonPressedFilled } from '../lib/stone-button-pressed-filled.component';
+import {
+  INSPECT_SUBJECT,
+  INSPECT_VERB,
+  InspectIcon,
+  PREPOT_TITLE,
+  PrepotLayout,
+  PrepotSprites,
+} from './prepot-device-debug.constants';
+import { inspectFaceBuilt, inspectFacePressed, prepotDeviceDebugPress } from './prepot-device-debug.state';
 
 export function PrepotDeviceDebug(): Component {
   return (
@@ -15,8 +26,34 @@ export function PrepotDeviceDebug(): Component {
           spellTargets={['component']}
           optionSubject={INSPECT_SUBJECT}
           targetVerb={INSPECT_VERB}
-        />
+          onMouseRepeat={() => prepotDeviceDebugPress(1)}
+          onMouseLeave={() => prepotDeviceDebugPress(0)}
+        >
+          <InspectFace />
+        </layer>
       </layer>
     </>
+  );
+}
+
+function InspectFace(): Component {
+  const [built] = useState(inspectFaceBuilt);
+  const [pressed] = useState(inspectFacePressed);
+  return (
+    <layer w="fill" h="fill">
+      {built === 1 && (
+        <>
+          {pressed === 1 ? <StoneButtonPressedFilled /> : <StoneButtonFilled />}
+          <sprite
+            x="center"
+            y="center"
+            w={InspectIcon.W}
+            h={InspectIcon.H}
+            sprite={PrepotSprites.INSPECT_ICON}
+            tiling
+          />
+        </>
+      )}
+    </layer>
   );
 }

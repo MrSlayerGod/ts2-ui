@@ -1,0 +1,255 @@
+import { CS2, useState } from 'ts2';
+
+import { onMobile } from '../lib/lib.helpers';
+import { pipeHead, pipeTail } from '../lib/lib.format';
+import { serverTooltipBuild, serverTooltipHide, serverTooltipRepeatAfter } from '../lib/server-tooltip';
+import { toaRaidSummaryTooltip } from '../lib/game/varcs';
+import { Layout, SummaryColor, SummaryFonts, SummarySprites } from './toa-raid-summary.constants';
+import { tooltip } from './toa-raid-summary.refs';
+import { summaryRows } from './toa-raid-summary.state';
+import { ToaSummaryTitles } from './toa-raid-summary.titles.data';
+import type { ToaSummaryTitleRow } from './toa-raid-summary.titles.data';
+
+const RowSlots = [0, 1, 2, 3, 4, 5, 6, 7] as const;
+
+function recordAt(rows: String, n: Int): String {
+  let start: Int = 0;
+  let skipped: Int = 0;
+  while (skipped < n) {
+    const end: Int = rows.indexOf('^', start);
+    if (end === -1) {
+      return '';
+    }
+    start = end + 1;
+    skipped = skipped + 1;
+  }
+  const end: Int = rows.indexOf('^', start);
+  if (end === -1) {
+    return '';
+  }
+  return rows.substring(start, end);
+}
+
+function field(record: String, n: Int): String {
+  let rest: String = record;
+  let skipped: Int = 0;
+  while (skipped < n) {
+    rest = pipeTail(rest);
+    skipped = skipped + 1;
+  }
+  return pipeHead(rest);
+}
+
+function numberAt(record: String, n: Int): Int {
+  return parseInt(field(record, n));
+}
+
+const enum F {
+  Y = 0,
+  H = 1,
+  INDEX = 2,
+  MVP = 3,
+  TITLE = 4,
+  DEALT = 5,
+  TAKEN = 6,
+  DEATHS = 7,
+  NAME = 8,
+}
+
+function numberText(value: Int, cap: Int): String {
+  if (value === -1) {
+    return '-';
+  }
+  if (value < cap) {
+    return `${value}`;
+  }
+  return 'Lots!';
+}
+
+export function SummaryStripes(): Component {
+  const [rows] = useState(summaryRows);
+  return (
+    <>
+      {RowSlots.map((slot) => (
+        <SummaryStripe record={recordAt(rows, slot)} />
+      ))}
+    </>
+  );
+}
+
+function SummaryStripe({ record }: { record: String }): Component {
+  if (record.length === 0) {
+    return null;
+  }
+  return (
+    <rect
+      x={0}
+      y={numberAt(record, F.Y)}
+      w="fill"
+      h={numberAt(record, F.H)}
+      fill
+      color={SummaryColor.STRIPE}
+      transparency={numberAt(record, F.INDEX) % 2 === 0 ? Layout.ROW_STRIPE_EVEN : Layout.ROW_STRIPE_ODD}
+    />
+  );
+}
+
+export function SummaryMvps(): Component {
+  const [rows] = useState(summaryRows);
+  return (
+    <>
+      {RowSlots.map((slot) => (
+        <SummaryMvp record={recordAt(rows, slot)} />
+      ))}
+    </>
+  );
+}
+
+function SummaryMvp({ record }: { record: String }): Component {
+  if (record.length === 0 || numberAt(record, F.MVP) !== 1) {
+    return null;
+  }
+  return (
+    <sprite
+      x={Layout.MVP_X}
+      y={numberAt(record, F.Y) + Layout.MVP_DY + numberAt(record, F.H) / 2 - Layout.MVP}
+      w={Layout.MVP}
+      h={Layout.MVP}
+      sprite={SummarySprites.MVP}
+    />
+  );
+}
+
+export function SummaryNames(): Component {
+  const [rows] = useState(summaryRows);
+  return (
+    <>
+      {RowSlots.map((slot) => (
+        <SummaryCell
+          record={recordAt(rows, slot)}
+          x={Layout.NAME_CELL_X}
+          text={field(recordAt(rows, slot), F.NAME)}
+          ink={SummaryColor.VALUE}
+        />
+      ))}
+    </>
+  );
+}
+
+export function SummaryNumbers({ at, cap }: { at: Int; cap: Int }): Component {
+  const [rows] = useState(summaryRows);
+  return (
+    <>
+      {RowSlots.map((slot) => (
+        <SummaryCell
+          record={recordAt(rows, slot)}
+          x={0}
+          text={numberText(numberAt(recordAt(rows, slot), at), cap)}
+          ink={numberAt(recordAt(rows, slot), at) === -1 ? Layout.NONE_INK : SummaryColor.VALUE}
+        />
+      ))}
+    </>
+  );
+}
+
+function SummaryCell({ record, x, text, ink }: { record: String; x: Int; text: String; ink: Int }): Component {
+  if (record.length === 0) {
+    return null;
+  }
+  return (
+    <text
+      x={x}
+      y={numberAt(record, F.Y)}
+      w="fill"
+      h={numberAt(record, F.H)}
+      text={text}
+      font={SummaryFonts.CELL}
+      color={ink}
+      align="center"
+      valign="middle"
+      shadow
+    />
+  );
+}
+
+export function SummaryTitles(): Component {
+  const [rows] = useState(summaryRows);
+  return (
+    <>
+      {RowSlots.map((slot) => (
+        <SummaryTitle record={recordAt(rows, slot)} />
+      ))}
+    </>
+  );
+}
+
+function SummaryTitle({ record }: { record: String }): Component {
+  const [hovered, setHovered] = useState(0);
+  if (record.length === 0) {
+    return null;
+  }
+  const title: Int = numberAt(record, F.TITLE);
+  const row: ToaSummaryTitleRow | null = title >= 1 ? ToaSummaryTitles.at(title - 1) : null;
+  const titled: Boolean = row !== null;
+  const description: String = row !== null ? row.description : '';
+  const mobile: Boolean = onMobile();
+  return (
+    <text
+      x={0}
+      y={numberAt(record, F.Y)}
+      w="fill"
+      h={numberAt(record, F.H)}
+      text={row !== null ? `'${row.name}'` : '-'}
+      font={SummaryFonts.CELL}
+      color={hovered === 1 ? Layout.SELECTED_INK : SummaryColor.VALUE}
+      align="center"
+      valign="middle"
+      shadow
+      options={titled && mobile ? ['Show Description'] : []}
+      onOptionSelect={titled && mobile ? (event) => mobileTip(event.component, description) : undefined}
+      onMouseRepeat={
+        titled && !mobile
+          ? (event) => {
+              setHovered(1);
+              serverTooltipRepeatAfter(tooltip, event.component, description, Layout.TIP_WRAP, 0);
+            }
+          : undefined
+      }
+      onMouseLeave={
+        titled && !mobile
+          ? () => {
+              setHovered(0);
+              serverTooltipHide(tooltip);
+            }
+          : undefined
+      }
+    />
+  );
+}
+
+export function summaryIconTip(anchor: ComponentId, text: String): void {
+  const [rows] = useState(summaryRows);
+  if (rows.length === 0 || onMobile()) {
+    return;
+  }
+  serverTooltipRepeatAfter(tooltip, anchor, text, Layout.TIP_WRAP, 0);
+}
+
+export function summaryIconTipOff(): void {
+  const [rows] = useState(summaryRows);
+  if (rows.length === 0 || onMobile()) {
+    return;
+  }
+  serverTooltipHide(tooltip);
+}
+
+function mobileTip(anchor: ComponentId, text: String): void {
+  const [shown, setShown] = useState(toaRaidSummaryTooltip);
+  if (shown === 1) {
+    serverTooltipHide(tooltip);
+    setShown(0);
+    return;
+  }
+  serverTooltipBuild(tooltip, anchor, text, Layout.MOBILE_TIP_WRAP);
+  setShown(1);
+}

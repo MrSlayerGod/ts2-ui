@@ -154,8 +154,8 @@ function LastWaveItems(): Component {
           (item, slot, n) =>
             item !== -1 && (
               <sprite
-                x={(n % 2) * 36 + ((n % 2) + 1) * ((grid.width - 72) / 3)}
-                y={(n / 2) * 32 + (n / 2 + 1) * ((grid.width - 72) / 3)}
+                x={n % 2 * 36 + (n % 2 + 1) * ((grid.width - 72) / 3)}
+                y={n / 2 * 32 + (n / 2 + 1) * ((grid.width - 72) / 3)}
                 w={36}
                 h={32}
                 item={item}
@@ -184,8 +184,8 @@ function NextWaveItems(): Component {
           (item, slot, n) =>
             item !== -1 && (
               <sprite
-                x={(n % 2) * 36 + ((n % 2) + 1) * ((grid.width - 72) / 3)}
-                y={(n / 2) * 32 + (n / 2 + 1) * ((grid.width - 72) / 3)}
+                x={n % 2 * 36 + (n % 2 + 1) * ((grid.width - 72) / 3)}
+                y={n / 2 * 32 + (n / 2 + 1) * ((grid.width - 72) / 3)}
                 w={36}
                 h={32}
                 item={item}
@@ -319,12 +319,12 @@ function OfferedModifier({ position, choice }: { position: Int; choice: Int }): 
   const [, setPreview] = useState(intermissionPreview);
   const selected: Int = useServerState(ColosseumVarbits.SELECTED_MODIFIER);
   const row = ColosseumModifiers.at(choice);
-  const tier: Int = row === null ? 0 : row.tiered ? modifierTier(row) : 0;
+  const tier: Int = row === null ? 0 : (row.tiered ? modifierTier(row) : 0);
   const title: String = row === null ? '' : modifierTitle(row, false, true);
   const icon: Sprite = row === null ? -1 : modifierIcon(row, tier + 1);
   const badge: Sprite = ModifierBadges.get(tier + 1) ?? ModifierBadgeDefault;
   const colour: Int =
-    selected === position ? ColosseumColor.ORANGE : hovered === 1 ? ColosseumColor.BED_HOVER : ColosseumColor.BED;
+    selected === position ? ColosseumColor.ORANGE : (hovered === 1 ? ColosseumColor.BED_HOVER : ColosseumColor.BED);
 
   return (
     <layer
@@ -534,8 +534,8 @@ function LootSoFar(): Component {
         (item, slot, n) =>
           item !== -1 && (
             <sprite
-              x={(n % 5) * 36 + ((n % 5) + 1) * ((grid.width - 180) / 6)}
-              y={(n / 5) * 32 + (n / 5 + 1) * ((grid.width - 180) / 6)}
+              x={n % 5 * 36 + (n % 5 + 1) * ((grid.width - 180) / 6)}
+              y={n / 5 * 32 + (n / 5 + 1) * ((grid.width - 180) / 6)}
               w={36}
               h={32}
               item={item}

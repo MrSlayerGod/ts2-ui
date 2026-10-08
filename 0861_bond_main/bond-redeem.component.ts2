@@ -1,0 +1,202 @@
+import { CS2, useServerState, useState } from 'ts2';
+
+import { Fonts } from '../lib/game/fonts';
+import { Sprites } from '../lib/game/sprites';
+import { raidsCount } from '../lib/game/varcs';
+import { opsound } from '../lib/lib.helpers';
+import { StoneButtonFilled } from '../lib/stone-button-filled.component';
+import { StoneButtonPressedFilled } from '../lib/stone-button-pressed-filled.component';
+import { BondColors, BondItems, BondVarps, Layout, PARA_LINE_HEIGHT } from './bond-main.constants';
+import {
+  RedeemLineStyle,
+  RedeemOption,
+  affordable,
+  optionLabel,
+  priceText,
+  redeemIcon,
+  redeemIconSize,
+  redeemLabelAt,
+  redeemLabelLen,
+  redeemLineAt,
+  redeemLineH,
+  redeemLineLen,
+  redeemLineY,
+  redeemPiece,
+  redeemPrice,
+  redeemRefused,
+  redeemShown,
+  redeemText,
+  redeemWarned,
+  redeemWarningAt,
+  redeemWarningLen,
+  redeemY,
+} from './bond-main.redeem';
+
+export function RedeemSlot({ slot }: { slot: Int }): Component {
+  const [shown] = useState(redeemShown[slot]);
+  const [top] = useState(redeemY[slot]);
+  const [warned] = useState(redeemWarned[slot]);
+  const [all] = useState(redeemText);
+  const [labelAt] = useState(redeemLabelAt[slot]);
+  const [labelLen] = useState(redeemLabelLen[slot]);
+  const label: String = redeemPiece(all, labelAt, labelLen);
+  const [pressed, setPressed] = useState(0);
+  const skin: Int = pressed;
+  if (shown === 0) {
+    return <layer x="center" y={0} w="fill" h={Layout.OPTION_H} hide options={['*']} />;
+  }
+  if (warned === 1) {
+    return (
+      <layer
+        x="center"
+        y={top}
+        w="fill"
+        h={Layout.OPTION_H}
+        options={['', optionLabel(label)]}
+        onOptionSelect={() => redeemRefused(slot)}
+      >
+        <StoneButtonPressedFilled />
+        <RedeemPrice slot={slot} />
+        <RedeemLabel slot={slot} />
+        <sprite
+          x="center"
+          y="center"
+          w={{ fill: 2 }}
+          h={{ fill: 2 }}
+          sprite={Sprites.TRADEBACKING_DARK}
+          tiling
+          transparency={RedeemOption.WASH}
+        />
+        <RedeemWarningText slot={slot} />
+      </layer>
+    );
+  }
+  return (
+    <layer
+      x="center"
+      y={top}
+      w="fill"
+      h={Layout.OPTION_H}
+      options={[optionLabel(label)]}
+      onMouseRepeat={() => setPressed(1)}
+      onMouseLeave={() => setPressed(0)}
+      onOptionSelect={(event) => opsound(event.option, 2)}
+    >
+      {skin === 1 ? <StoneButtonPressedFilled /> : <StoneButtonFilled />}
+      <RedeemPrice slot={slot} />
+      <RedeemLabel slot={slot} />
+    </layer>
+  );
+}
+
+function RedeemPrice({ slot }: { slot: Int }): Component {
+  const [price] = useState(redeemPrice[slot]);
+  const tradeable: Int = useServerState(BondVarps.TRADEABLE);
+  const untradeable: Int = useServerState(BondVarps.UNTRADEABLE);
+  const colour: Int = affordable(tradeable, untradeable, price) ? RedeemOption.PRICE_COLOUR : 0xff0000;
+  return (
+    <>
+      <text
+        x={{ right: RedeemOption.PRICE_RIGHT }}
+        y="center"
+        w={RedeemOption.PRICE_W}
+        h="fill"
+        text={priceText(price)}
+        font={Fonts.P12_FULL}
+        color={colour}
+        shadow
+        align="center"
+        valign="middle"
+      />
+      <sprite
+        x={{ right: RedeemOption.BOND_RIGHT }}
+        y="center"
+        w={RedeemOption.BOND_W}
+        h={RedeemOption.BOND_H}
+        item={BondItems.TRADEABLE}
+        itemCount={price}
+        itemCountMode="always"
+        shadowColor={BondColors.ITEM_SHADOW}
+        outline={1}
+      />
+    </>
+  );
+}
+
+function RedeemLabel({ slot }: { slot: Int }): Component {
+  const [icon] = useState(redeemIcon[slot]);
+  const [size] = useState(redeemIconSize[slot]);
+  const [all] = useState(redeemText);
+  const [labelAt] = useState(redeemLabelAt[slot]);
+  const [labelLen] = useState(redeemLabelLen[slot]);
+  const label: String = redeemPiece(all, labelAt, labelLen);
+  const iconW: Int = CS2.coordx(size as Coord);
+  const iconH: Int = CS2.coordy(size as Coord);
+  const labelX: Int = RedeemOption.ICON_LEFT + iconW + RedeemOption.LABEL_GAP;
+  return (
+    <>
+      <sprite x={RedeemOption.ICON_LEFT} y="center" w={iconW} h={iconH} sprite={icon as Sprite} />
+      <text
+        x={labelX}
+        y="center"
+        w={{ fill: labelX + RedeemOption.LABEL_GAP + RedeemOption.BOND_W + RedeemOption.BOND_RIGHT }}
+        h="fill"
+        text={label}
+        font={Fonts.P12_FULL}
+        color={BondColors.LABEL}
+        shadow
+        align="center"
+        valign="middle"
+        lineHeight={PARA_LINE_HEIGHT}
+      />
+    </>
+  );
+}
+
+function RedeemWarningText({ slot }: { slot: Int }): Component {
+  const [all] = useState(redeemText);
+  const [at] = useState(redeemWarningAt[slot]);
+  const [length] = useState(redeemWarningLen[slot]);
+  const warning: String = redeemPiece(all, at, length);
+  return (
+    <text
+      x="center"
+      y="center"
+      w="fill"
+      h="fill"
+      text={warning}
+      font={Fonts.P12_FULL}
+      color={RedeemOption.WARNING_COLOUR}
+      shadow
+      align="center"
+      valign="middle"
+    />
+  );
+}
+
+export function RedeemLine({ line }: { line: Int }): Component {
+  const [count] = useState(raidsCount);
+  const [all] = useState(redeemText);
+  const [at] = useState(redeemLineAt[line]);
+  const [length] = useState(redeemLineLen[line]);
+  const text: String = redeemPiece(all, at, length);
+  const [top] = useState(redeemLineY[line]);
+  const [height] = useState(redeemLineH[line]);
+  if (line >= count) {
+    return null;
+  }
+  return (
+    <text
+      x="center"
+      y={top}
+      w="fill"
+      h={height}
+      text={text}
+      font={Fonts.B12_FULL}
+      color={RedeemLineStyle.COLOUR}
+      shadow
+      align="center"
+      valign="middle"
+    />
+  );
+}

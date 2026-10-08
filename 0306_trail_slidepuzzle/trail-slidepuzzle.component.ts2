@@ -151,8 +151,8 @@ export function PuzzleBoard(): Component {
       {SLOTS.map((slot) => (
         <PuzzleTile
           slot={slot}
-          left={(slot % PuzzleLayout.COLUMNS) * pitchX}
-          top={(slot / PuzzleLayout.COLUMNS) * pitchY}
+          left={slot % PuzzleLayout.COLUMNS * pitchX}
+          top={slot / PuzzleLayout.COLUMNS * pitchY}
           piece={pieceOf(indexes, items, variant, slot)}
           mesh={pieceModel(variant, slot, basProgress)}
           movable={tilesMovable(indexes, items, variant, basProgress)}

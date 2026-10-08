@@ -16152,7 +16152,7 @@ function BuffGrid(): Component {
   return (
     <layer ref={host} x={0} y={0} w="fill" h="fill">
       {slots.map((slot, index) =>
-        index < shownCount ? (
+        (index < shownCount ? (
           <BuffCell
             slot={slot}
             index={index}
@@ -16165,7 +16165,7 @@ function BuffGrid(): Component {
             badge={badges[index]}
             itemId={items[index]}
           />
-        ) : null,
+        ) : null),
       )}
     </layer>
   );

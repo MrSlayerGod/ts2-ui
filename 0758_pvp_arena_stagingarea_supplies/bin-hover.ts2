@@ -1,15 +1,70 @@
-import { Build, SuppliesColor } from './pvp-arena-stagingarea-supplies.constants';
-import { binLabelA, binLabelB, binLabelC } from './pvp-arena-stagingarea-supplies.refs';
+import { sessionState, useState } from 'ts2';
+import { BIN_LABEL } from '../lib/pvp-arena/loadout-chrome.component';
+import { Build, Layout, SuppliesColor, SuppliesFonts } from './pvp-arena-stagingarea-supplies.constants';
+
+export const binHot = sessionState(-1);
 
 export function binHover(build: Int, hot: Boolean): void {
-  const colour: Int = hot ? SuppliesColor.WHITE : SuppliesColor.LABEL;
-  if (build === Build.ZERKER) {
-    binLabelB.color = colour;
+  const [current, setHot] = useState(binHot);
+  if (hot) {
+    setHot(build);
     return;
   }
-  if (build === Build.PURE) {
-    binLabelC.color = colour;
-    return;
+  if (current === build) {
+    setHot(-1);
   }
-  binLabelA.color = colour;
+}
+
+export function BinLabelA(): Component {
+  const [hot] = useState(binHot);
+  return (
+    <text
+      x="right"
+      y="center"
+      w={{ fill: Layout.bin.textInset }}
+      h="fill"
+      color={hot === Build.MAX_MED ? SuppliesColor.WHITE : SuppliesColor.LABEL}
+      font={SuppliesFonts.BODY}
+      shadow
+      align="center"
+      valign="middle"
+      text={BIN_LABEL}
+    />
+  );
+}
+
+export function BinLabelB(): Component {
+  const [hot] = useState(binHot);
+  return (
+    <text
+      x="right"
+      y="center"
+      w={{ fill: Layout.bin.textInset }}
+      h="fill"
+      color={hot === Build.ZERKER ? SuppliesColor.WHITE : SuppliesColor.LABEL}
+      font={SuppliesFonts.BODY}
+      shadow
+      align="center"
+      valign="middle"
+      text={BIN_LABEL}
+    />
+  );
+}
+
+export function BinLabelC(): Component {
+  const [hot] = useState(binHot);
+  return (
+    <text
+      x="right"
+      y="center"
+      w={{ fill: Layout.bin.textInset }}
+      h="fill"
+      color={hot === Build.PURE ? SuppliesColor.WHITE : SuppliesColor.LABEL}
+      font={SuppliesFonts.BODY}
+      shadow
+      align="center"
+      valign="middle"
+      text={BIN_LABEL}
+    />
+  );
 }

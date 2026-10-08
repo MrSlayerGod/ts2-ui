@@ -36,7 +36,7 @@ export function CaSetupProgressBar({
 }): Component {
   const segment: Int = w / CaProgress.SEGMENTS;
   const filled: Int = 1 + scaled(done, Math.max(1, total), w - 1);
-  const colour: Int = total === done ? color : done > 0 ? CaColour.PROGRESS_PARTIAL : CaColour.PROGRESS_NONE;
+  const colour: Int = total === done ? color : (done > 0 ? CaColour.PROGRESS_PARTIAL : CaColour.PROGRESS_NONE);
   const trackY: Int = y + CaProgress.TRACK_DY;
   const fillY: Int = y + CaProgress.FILL_DY;
 
@@ -214,7 +214,7 @@ export function CaTasksProgressBar({ mode }: { mode: Int }): Component {
         tiling
       />
       {mode === CaTierBarMode.LADDER
-        ? LadderPins.map((i) => (
+        ? (LadderPins.map((i) => (
             <sprite
               x={pinX(scaled(thresholds[1 + i], top, fullFill), fullFill) + CaTierBar.PIN_DX}
               y={0}
@@ -226,7 +226,7 @@ export function CaTasksProgressBar({ mode }: { mode: Int }): Component {
               onMouseRepeat={mobile ? undefined : () => caThresholdTipShow(i)}
               onMouseLeave={mobile ? undefined : () => caThresholdTipHide()}
             />
-          ))
+          )))
         : null}
       {captionHovers && !mobile ? (
         <text

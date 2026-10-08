@@ -1,7 +1,26 @@
+import { sessionState, useRef, useState } from 'ts2';
+
+import { itemName } from '../lib/lib.engine';
+import { pipeHead, pipeTail } from '../lib/lib.format';
+import { ScrollbarVertical } from '../lib/scrollbar-vertical.component';
 import { SteelBorderEntrypoint } from '../lib/steel-border-entrypoint.component';
-import { PETLIST_TITLE, PetlistArt, PetlistLayout } from './poh-petlist.constants';
+import { Fonts } from '../lib/game/fonts';
+import { Sprites } from '../lib/game/sprites';
+import { PETLIST_TITLE, PetRow, PetlistArt, PetlistLayout, Pets } from './poh-petlist.constants';
+
+const petlistShown = sessionState(0);
+const petlistStatus = sessionState('');
+
+export function pohMenageriePetlist(status: String): void {
+  const [, setStatus] = useState(petlistStatus);
+  const [, setShown] = useState(petlistShown);
+  setStatus(status);
+  setShown(1);
+}
 
 export function PohPetlist(): Component {
+  const [shown] = useState(petlistShown);
+  const list = useRef();
   return (
     <>
       <SteelBorderEntrypoint title={PETLIST_TITLE} />
@@ -15,9 +34,89 @@ export function PohPetlist(): Component {
         tiling
       />
 
-      <layer x={PetlistLayout.LIST_X} y={PetlistLayout.LIST_Y} w={PetlistLayout.LIST_W} h={PetlistLayout.LIST_H} />
+      <layer
+        ref={list}
+        x={PetlistLayout.LIST_X}
+        y={PetlistLayout.LIST_Y}
+        w={PetlistLayout.LIST_W}
+        h={PetlistLayout.LIST_H}
+        scrollHeight={shown === 1 ? PetRow.EXTENT : 0}
+        scrollY={0}
+      >
+        {shown === 1 ? <PetRows /> : null}
+      </layer>
 
-      <layer x={PetlistLayout.BAR_X} y={PetlistLayout.BAR_Y} w={PetlistLayout.BAR_W} h={PetlistLayout.BAR_H} />
+      <layer x={PetlistLayout.BAR_X} y={PetlistLayout.BAR_Y} w={PetlistLayout.BAR_W} h={PetlistLayout.BAR_H}>
+        {shown === 1 ? (
+          <ScrollbarVertical
+            content={list}
+            track={Sprites.SCROLLBAR_DRAGGER_V2_3}
+            capTopSprite={Sprites.SCROLLBAR_DRAGGER_V2_0}
+            thumbSprite={Sprites.SCROLLBAR_DRAGGER_V2_1}
+            capBottomSprite={Sprites.SCROLLBAR_DRAGGER_V2_2}
+            arrowUp={Sprites.SCROLLBAR_V2_0}
+            arrowDown={Sprites.SCROLLBAR_V2_1}
+          />
+        ) : null}
+      </layer>
     </>
   );
+}
+
+function PetRows(): Component {
+  const [status] = useState(petlistStatus);
+  return (
+    <>
+      {Pets.map((pet) => (
+        <sprite
+          x={PetRow.ICON_X}
+          y={pet.index * PetRow.H + PetRow.ICON_DY}
+          w={PetRow.ICON_W}
+          h={PetRow.ICON_H}
+          item={pet.item}
+          itemCount={1}
+          outline={1}
+          shadowColor={PetRow.ICON_SHADOW}
+          options={['', '', '', '', '', '', '', '', '', 'Examine']}
+          optionSubject={`<col=ff9040>${itemName(pet.item)}</col>`}
+        />
+      ))}
+      {Pets.map((pet) => (
+        <>
+          <text
+            x={PetRow.TEXT_X}
+            y={pet.index * PetRow.H}
+            w={PetlistLayout.LIST_W - PetRow.TEXT_INSET_W}
+            h={PetRow.H}
+            text={pipeField(status, pet.index)}
+            font={Fonts.P12_FULL}
+            color={PetRow.TEXT_INK}
+            shadow
+            align="center"
+            valign="middle"
+          />
+          {pet.index < Pets.length - 1 ? (
+            <sprite
+              x={0}
+              y={pet.index * PetRow.H + PetRow.DIVIDER_DY}
+              w={PetlistLayout.LIST_W}
+              h={1}
+              sprite={Sprites.TRADEBACKING}
+              tiling
+            />
+          ) : null}
+        </>
+      ))}
+    </>
+  );
+}
+
+function pipeField(text: String, index: Int): String {
+  let rest: String = text;
+  let i: Int = 0;
+  while (i < index) {
+    rest = pipeTail(rest);
+    i = i + 1;
+  }
+  return pipeHead(rest);
 }

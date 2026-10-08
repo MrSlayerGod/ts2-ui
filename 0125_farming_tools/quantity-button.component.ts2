@@ -2,11 +2,19 @@ import { useState } from 'ts2';
 
 import { ButtonBackground } from '../0370_poh_options/button-background.component';
 import { ButtonBackgroundPressed } from '../0551_raids_storage_side/button-background-pressed.component';
-import { selectedQuantity } from '../0126_farming_tools_side/carried-tools.shared';
+import { QuantityTable, selectedQuantity } from '../0126_farming_tools_side/carried-tools.shared';
 import { opsound } from '../lib/lib.helpers';
 import { QUANTITY_BUTTONS, QuantityColors, QuantityFonts, QuantityStrip, selectQuantity } from './storage-main.shared';
 
-export function QuantityButton({ table, label, value }: { table: Enum; label: String; value: Int }): Component {
+export function QuantityButton({
+  table,
+  label,
+  value,
+}: {
+  table: QuantityTable;
+  label: String;
+  value: Int;
+}): Component {
   const [hovered, setHovered] = useState(0);
 
   const chosen: Int = selectedQuantity(table);
@@ -59,7 +67,7 @@ export function QuantityButton({ table, label, value }: { table: Enum; label: St
   );
 }
 
-export function QuantityButtons({ table }: { table: Enum }): Component {
+export function QuantityButtons({ table }: { table: QuantityTable }): Component {
   return (
     <>
       {QUANTITY_BUTTONS.map((button, index) => (

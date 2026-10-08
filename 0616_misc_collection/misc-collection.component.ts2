@@ -22,7 +22,7 @@ export function MiscCollection(): Component {
   let slot: Int = 0;
   while (slot < Grid.SLOTS) {
     if (stash[slot] !== -1) {
-      lastRowY = (slot / Grid.COLUMNS) * (Grid.ICON_HEIGHT + Grid.GAP);
+      lastRowY = slot / Grid.COLUMNS * (Grid.ICON_HEIGHT + Grid.GAP);
     }
     slot = slot + 1;
   }
@@ -55,8 +55,8 @@ export function MiscCollection(): Component {
           (item, index) =>
             item !== -1 && (
               <sprite
-                x={Grid.INSET + (index % Grid.COLUMNS) * (Grid.ICON_WIDTH + Grid.GAP)}
-                y={(index / Grid.COLUMNS) * (Grid.ICON_HEIGHT + Grid.GAP)}
+                x={Grid.INSET + index % Grid.COLUMNS * (Grid.ICON_WIDTH + Grid.GAP)}
+                y={index / Grid.COLUMNS * (Grid.ICON_HEIGHT + Grid.GAP)}
                 w={Grid.ICON_WIDTH}
                 h={Grid.ICON_HEIGHT}
                 item={item}

@@ -37,9 +37,9 @@ export function ConfirmBar({ tab, pick, sub }: { tab: Int; pick: Int; sub: Int }
   const lower: String =
     tab === RewardTab.EXPERIENCE
       ? expConfirmCaption(pick)
-      : tab === RewardTab.IMBUES
+      : (tab === RewardTab.IMBUES
         ? CS2.item_name((ImbueRewards.at(pick) ?? -1) as Item)
-        : otherConfirmName(pick, sub);
+        : otherConfirmName(pick, sub));
   const upper: String = tab === RewardTab.OTHER ? otherConfirmTop(pick) : Copy.CONFIRM;
   const wide: Boolean = textWidth(lower, Layout.CONFIRM_MEASURE_W, RewardsFonts.SMALL) > Layout.CONFIRM_WIDE;
 

@@ -36,6 +36,7 @@ export enum ClanBoardColor {
   NAME = 0xffb83f,
   DETAIL = 0x7f7f7f,
   WHITE = 0xffffff,
+  LOADING = 0x808080,
 }
 
 export enum RowTransparency {
@@ -60,8 +61,11 @@ export enum ArrowTransparency {
 
 export const FLASH_CYCLES = 80;
 
+export const SLOT_COUNT = 45;
+
 export const Copy = {
   TITLE: 'Clan Recruitment Board',
+  LOADING: 'Loading...',
   LIST_CLAN: 'List your clan',
   DELIST_CLAN: '<col=ff0000>De-list</col>',
   APPLICANTS: 'Applicants',
@@ -170,3 +174,12 @@ export const bottomRef = createRef('clans_board:bottom');
 export const myclanRef = createRef('clans_board:myclan');
 export const applicantsRef = createRef('clans_board:applicants');
 export const refreshRef = createRef('clans_board:refresh');
+
+export const boardAnchorsRef = createRef('clans_board_board_anchors');
+
+export const BoardPausebutton = {
+  MY_CLAN: 0,
+  APPLICANTS: 1,
+  REFRESH: 2,
+  RESET: 3,
+} as const;

@@ -102,8 +102,8 @@ export function modifierIcon(row: ColosseumModifiersRow, key: Int): Sprite {
 }
 
 export function ticksToSeconds(ticks: Int): Int {
-  const seconds: Int = (ticks * 60) / 100;
-  if (((ticks % 10) * 6) % 10 >= 5) {
+  const seconds: Int = ticks * 60 / 100;
+  if (ticks % 10 * 6 % 10 >= 5) {
     return seconds + 1;
   }
   return seconds;

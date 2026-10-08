@@ -1,0 +1,416 @@
+import { useRef, useServerState, useState } from 'ts2';
+
+import { Fonts } from '../lib/game/fonts';
+import { Sprites } from '../lib/game/sprites';
+import { Varbits } from '../lib/game/varbits';
+import { textLineCount, textWidth } from '../lib/lib.engine';
+import { ScrollbarVertical } from '../lib/scrollbar-vertical.component';
+import {
+  GuideCategories,
+  GuideEntries,
+  GuideEntry,
+  GuideEntryCount,
+  GuideEntryStart,
+  GuideSkillNames,
+  GuideUnlock,
+  GuideUnlocks,
+  LevelUpMembersOnly,
+} from '../0860_skill_guide_v2/skill-guide-v2.data';
+import {
+  categoryCount,
+  categoryIndex,
+  entryRow,
+  iconOp,
+  iconOpItem,
+  iconOpLabel,
+  pageMembersOnly,
+  unlockTextTagged,
+} from '../0860_skill_guide_v2/skill-guide-v2.helpers';
+
+import { GuideFonts, GuideInk, GuideModels, GuideRows, Layout } from './skill-guide.constants';
+import { LEVEL_UP_TAB, skillGuideCategory, textColourSwapper } from './skill-guide.helpers';
+import { guideFrom, guideSkill, guideTab, guideTo } from './skill-guide.state';
+
+export enum PageLayout {
+  TEXT_W = 228,
+  TEXT_WIDEN = 61,
+  START = 3,
+  ROW_GAP = 3,
+  LEVEL_W = 26,
+  LEVEL_H = 32,
+  TEXT_DY = 2,
+  ICON_X = 28,
+  ICON_W = 36,
+  ICON_H = 32,
+  LINE_H = 12,
+  TEXT_PAD = 5,
+  ROW_PITCH = 17,
+  COLUMN_PAD = 28,
+  COLUMN_TOP = 54,
+  WINDOW_H = 334,
+}
+
+enum PageInk {
+  TEXT = 0x46320a,
+  MET = 0x3f3f3f,
+  ITEM_SHADOW = 0x604e32,
+}
+
+const BLANK_ICON = 7620;
+
+export function GuideTitleText(): Component {
+  const [skill] = useState(guideSkill);
+  return (
+    <text
+      x={Layout.TITLE_X}
+      y={Layout.TITLE_Y}
+      w={Layout.TITLE_W}
+      h={Layout.TITLE_H}
+      font={GuideFonts.TITLE}
+      color={GuideInk.REST}
+      align="center"
+      text={skill === -1 ? '' : GuideSkillNames.get(skill) ?? 'this skill'}
+    />
+  );
+}
+
+export function GuideDescriptionText(): Component {
+  const [skill] = useState(guideSkill);
+  const [tab] = useState(guideTab);
+  const [from] = useState(guideFrom);
+  const [to] = useState(guideTo);
+  return (
+    <text
+      x={Layout.SUBTITLE_X}
+      y={Layout.SUBTITLE_Y}
+      w={Layout.SUBTITLE_W}
+      h={Layout.SUBTITLE_H}
+      font={GuideFonts.SUBTITLE}
+      color={GuideInk.REST}
+      align="center"
+      text={skill === -1 ? '' : pageName(skill, tab, from, to)}
+    />
+  );
+}
+
+function categoryName(skill: Int, index: Int): String {
+  if (index === 0) {
+    return 'Introduction';
+  }
+  const category = GuideCategories.at(categoryIndex(skill, index));
+  return category === null ? '' : category.header;
+}
+
+function pageName(skill: Int, tab: Int, from: Int, to: Int): String {
+  if (tab === LEVEL_UP_TAB) {
+    if (from > 0 && from <= to) {
+      return (LevelUpMembersOnly.get(skill) ?? false) ? 'Level-up Unlocks - Members Only' : 'Level-up Unlocks';
+    }
+    return '';
+  }
+  if (tab >= categoryCount(skill)) {
+    return '';
+  }
+  const name: String = categoryName(skill, tab);
+  return pageMembersOnly(skill, tab) ? `${name} - Members Only` : name;
+}
+
+export function GuideColumn(): Component {
+  const [skill] = useState(guideSkill);
+  const [tab] = useState(guideTab);
+  const count: Int = skill === -1 ? -1 : categoryCount(skill);
+  const height: Int = count >= 2 ? count * PageLayout.ROW_PITCH + PageLayout.COLUMN_PAD : Layout.COLUMN_H;
+  const top: Int = count >= 2 ? Math.min(PageLayout.COLUMN_TOP, PageLayout.WINDOW_H - height) : Layout.COLUMN_Y;
+  return (
+    <layer x={Layout.COLUMN_X} y={top} w={Layout.COLUMN_W} h={height} hide={count >= 0 && count < 2}>
+      <layer
+        x="center"
+        y="center"
+        w={{ fill: Layout.COLUMN_INNER_W_INSET }}
+        h={{ fill: Layout.COLUMN_INNER_H_INSET }}
+      />
+
+      <layer x="center" y="center" w="fill" h={{ fill: Layout.COLUMN_INNER_H_INSET }}>
+        <model
+          x="center"
+          y={0}
+          w={Layout.MODEL}
+          h={Layout.MODEL}
+          model={GuideModels.COLUMN_BACK}
+          zoom={Layout.COLUMN_BACK_ZOOM}
+          pitch={Layout.COLUMN_BACK_PITCH}
+          yaw={Layout.COLUMN_BACK_YAW}
+          offsetX={Layout.COLUMN_BACK_OFFSET_X}
+          offsetY={Layout.COLUMN_BACK_OFFSET_Y}
+        />
+      </layer>
+
+      <model
+        x="center"
+        y={Layout.COLUMN_TOP_Y}
+        w={Layout.MODEL}
+        h={Layout.MODEL}
+        model={GuideModels.COLUMN_TOP}
+        zoom={Layout.COLUMN_CAP_ZOOM}
+        pitch={Layout.COLUMN_CAP_PITCH}
+        yaw={Layout.COLUMN_CAP_YAW}
+        offsetX={Layout.COLUMN_TOP_OFFSET_X}
+      />
+
+      <model
+        x="center"
+        y={{ bottom: Layout.COLUMN_BOTTOM_Y }}
+        w={Layout.MODEL}
+        h={Layout.MODEL}
+        model={GuideModels.COLUMN_BOTTOM}
+        zoom={Layout.COLUMN_CAP_ZOOM}
+        pitch={Layout.COLUMN_CAP_PITCH}
+        yaw={Layout.COLUMN_CAP_YAW}
+      />
+
+      {GuideRows.map((row, index) => (
+        <text
+          x="center"
+          y={row.y}
+          w={Layout.ROW_W}
+          h={Layout.ROW_H}
+          font={GuideFonts.ROW}
+          color={GuideInk.REST}
+          align="center"
+          text={index < count ? categoryName(skill, index) : ''}
+          hide={count >= 2 && index >= count}
+          options={[index < count && index !== tab ? 'View' : '']}
+          optionSubject={index < count ? `<col=ff9040>${categoryName(skill, index)}</col>` : ''}
+          onOptionSelect={index < count && index !== tab ? () => skillGuideCategory(index) : null}
+          onMouseEnter={(event) => textColourSwapper(event.component, GuideInk.HOVER)}
+          onMouseLeave={(event) => textColourSwapper(event.component, GuideInk.REST)}
+        />
+      ))}
+    </layer>
+  );
+}
+
+export function GuidePage(): Component {
+  const [skill] = useState(guideSkill);
+  const [tab] = useState(guideTab);
+  const [from] = useState(guideFrom);
+  const [to] = useState(guideTo);
+  const league: Int = useServerState(Varbits.LEAGUE_TYPE);
+  const pane = useRef();
+  if (skill === -1) {
+    return (
+      <>
+        <layer x={Layout.GUTTER_X} y={Layout.GUTTER_Y} w={Layout.GUTTER_W} h={Layout.GUTTER_H} />
+        <layer x={Layout.PAGE_X} y={Layout.PAGE_Y} w={Layout.PAGE_W} h={Layout.PAGE_H}>
+          <layer x={0} y={0} w={Layout.PAGE_W} h={Layout.PAGE_H} />
+        </layer>
+      </>
+    );
+  }
+  const members: Boolean = pageMembersOnly(skill, tab);
+  const start: Int = GuideEntryStart.get(skill) ?? 0;
+  const end: Int = start + (GuideEntryCount.get(skill) ?? 0);
+  const extent: Int = pageExtent(skill, tab, from, to, league, members);
+  const scrolls: Boolean = extent > Layout.PAGE_H;
+  return (
+    <>
+      <layer
+        ref={pane}
+        x={Layout.PAGE_X}
+        y={Layout.PAGE_Y}
+        w={Layout.PAGE_W}
+        h={Layout.PAGE_H}
+        scrollHeight={scrolls ? extent : 0}
+      >
+        <layer x={0} y={0} w={Layout.PAGE_W} h={extent} />
+        {GuideEntries.filter(
+          (entry, index) => index >= start && index < end && entryRow(entry, skill, tab, from, to, league) !== -1,
+        ).scan(
+          (entry, index, y) => (
+            <GuidePageRow
+              y={y}
+              row={entryRow(entry, skill, tab, from, to, league)}
+              level={entry.level}
+              skill={skill}
+              text={pageRowText(entry, skill, tab, from, to, league, members)}
+              width={pageRowWidth(entry, skill, tab, from, to, league)}
+              height={pageRowHeight(entry, skill, tab, from, to, league, members)}
+            />
+          ),
+          (entry) => pageRowHeight(entry, skill, tab, from, to, league, members) + PageLayout.ROW_GAP,
+          PageLayout.START,
+        )}
+      </layer>
+      <layer x={Layout.GUTTER_X} y={Layout.GUTTER_Y} w={Layout.GUTTER_W} h={Layout.GUTTER_H}>
+        {scrolls && (
+          <ScrollbarVertical
+            content={pane}
+            track={Sprites.SCROLLBAR_PARCHMENT_DRAGGER_V2_3}
+            capTopSprite={Sprites.SCROLLBAR_PARCHMENT_DRAGGER_V2_0}
+            thumbSprite={Sprites.SCROLLBAR_PARCHMENT_DRAGGER_V2_1}
+            capBottomSprite={Sprites.SCROLLBAR_PARCHMENT_DRAGGER_V2_2}
+            arrowUp={Sprites.SCROLLBAR_PARCHMENT_V2_0}
+            arrowDown={Sprites.SCROLLBAR_PARCHMENT_V2_1}
+          />
+        )}
+      </layer>
+    </>
+  );
+}
+
+function pageRowText(
+  entry: GuideEntry,
+  skill: Int,
+  tab: Int,
+  from: Int,
+  to: Int,
+  league: Int,
+  members: Boolean,
+): String {
+  const unlock = GuideUnlocks.at(entryRow(entry, skill, tab, from, to, league));
+  if (unlock === null) {
+    return '';
+  }
+  return unlockTextTagged(unlock, skill, members, '<col=3f3f3f>', '<col=7f0000>');
+}
+
+function pageRowWidth(entry: GuideEntry, skill: Int, tab: Int, from: Int, to: Int, league: Int): Int {
+  const unlock = GuideUnlocks.at(entryRow(entry, skill, tab, from, to, league));
+  if (unlock === null) {
+    return PageLayout.TEXT_W;
+  }
+  if ((entry.level < 1 || entry.level > 99) && unlock.icon === BLANK_ICON && unlock.sprite === -1) {
+    return PageLayout.TEXT_W + PageLayout.TEXT_WIDEN;
+  }
+  return PageLayout.TEXT_W;
+}
+
+function pageRowHeight(
+  entry: GuideEntry,
+  skill: Int,
+  tab: Int,
+  from: Int,
+  to: Int,
+  league: Int,
+  members: Boolean,
+): Int {
+  const unlock = GuideUnlocks.at(entryRow(entry, skill, tab, from, to, league));
+  if (unlock === null) {
+    return 0;
+  }
+  const iconH: Int = unlock.sprite !== -1 ? unlock.spriteH : PageLayout.ICON_H;
+  const lines: Int = textLineCount(
+    pageRowText(entry, skill, tab, from, to, league, members),
+    pageRowWidth(entry, skill, tab, from, to, league),
+    Fonts.P12_FULL,
+  );
+  return Math.max(Math.max(lines * PageLayout.LINE_H + PageLayout.TEXT_PAD, iconH), PageLayout.ICON_H);
+}
+
+function pageExtent(skill: Int, tab: Int, from: Int, to: Int, league: Int, members: Boolean): Int {
+  const start: Int = GuideEntryStart.get(skill) ?? 0;
+  const end: Int = start + (GuideEntryCount.get(skill) ?? 0);
+  let y: Int = PageLayout.START;
+  let i: Int = start;
+  while (i < end) {
+    const entry = GuideEntries.at(i);
+    if (entry !== null) {
+      if (entryRow(entry, skill, tab, from, to, league) !== -1) {
+        y = y + pageRowHeight(entry, skill, tab, from, to, league, members) + PageLayout.ROW_GAP;
+      }
+    }
+    i = i + 1;
+  }
+  return y;
+}
+
+function GuidePageRow({
+  y,
+  row,
+  level,
+  skill,
+  text,
+  width,
+  height,
+}: {
+  y: Int;
+  row: Int;
+  level: Int;
+  skill: Int;
+  text: String;
+  width: Int;
+  height: Int;
+}): Component {
+  const unlock = GuideUnlocks.at(row);
+  if (unlock === null) {
+    return null;
+  }
+  return (
+    <>
+      <text
+        x={0}
+        y={y + PageLayout.TEXT_DY}
+        w={PageLayout.LEVEL_W}
+        h={PageLayout.LEVEL_H}
+        align="right"
+        valign="top"
+        font={Fonts.Q8_FULL}
+        color={PageInk.TEXT}
+        text={level >= 1 && level <= 99 ? stringOf(level) : ''}
+      />
+      <layer x={0} y={y} w="fill" h={height + PageLayout.ROW_GAP}>
+        <GuidePageIcon unlock={unlock} skill={skill} />
+      </layer>
+      <text
+        x={Layout.PAGE_W - width}
+        y={y + PageLayout.TEXT_DY}
+        w={width}
+        h={height}
+        align="left"
+        valign="top"
+        font={Fonts.P12_FULL}
+        color={PageInk.TEXT}
+        text={text}
+      />
+    </>
+  );
+}
+
+function GuidePageIcon({ unlock, skill }: { unlock: GuideUnlock; skill: Int }): Component {
+  const [hovered, setHovered] = useState(0);
+  const opItem: Item = iconOpItem(unlock, skill);
+  const hasOp: Boolean = opItem !== -1;
+  if (unlock.sprite !== -1) {
+    return (
+      <sprite
+        x={PageLayout.ICON_X + (PageLayout.ICON_W - unlock.spriteW) / 2 + unlock.spriteDx}
+        y={unlock.spriteDy}
+        w={unlock.spriteW}
+        h={unlock.spriteH}
+        sprite={unlock.sprite}
+        transparency={hovered === 1 ? 100 : 0}
+        options={[hasOp ? iconOpLabel(skill) : '']}
+        onMouseRepeat={hasOp ? () => setHovered(1) : undefined}
+        onMouseLeave={hasOp ? () => setHovered(0) : undefined}
+        onOptionSelect={hasOp ? (event) => iconOp(skill, opItem, event.component, event.subId) : undefined}
+      />
+    );
+  }
+  return (
+    <sprite
+      x={PageLayout.ICON_X}
+      y={0}
+      w={PageLayout.ICON_W}
+      h={PageLayout.ICON_H}
+      item={unlock.icon}
+      itemCount={-1}
+      outline={1}
+      shadowColor={PageInk.ITEM_SHADOW}
+      transparency={hovered === 1 ? 100 : 0}
+      options={[hasOp ? iconOpLabel(skill) : '']}
+      onMouseRepeat={hasOp ? () => setHovered(1) : undefined}
+      onMouseLeave={hasOp ? () => setHovered(0) : undefined}
+      onOptionSelect={hasOp ? (event) => iconOp(skill, opItem, event.component, event.subId) : undefined}
+    />
+  );
+}

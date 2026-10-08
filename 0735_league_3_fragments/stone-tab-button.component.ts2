@@ -1,8 +1,8 @@
 import { useRef } from 'ts2';
 import { StoneButtonEntrypoint } from '../lib/stone-button-entrypoint.component';
 import { StoneButtonPressedEntrypoint } from '../lib/stone-button-pressed-entrypoint.component';
-import { FragmentColors, FragmentFonts, Sounds } from './league-3-fragments.constants';
-import { playSound } from '../lib/lib.engine';
+import { FragmentColors, FragmentFonts } from './league-3-fragments.constants';
+import { tabPick } from './league-3-fragments.state';
 
 export function StoneTabButton({
   x,
@@ -12,6 +12,7 @@ export function StoneTabButton({
   op,
   optionSubject = '',
   label,
+  action,
   selected = false,
 }: {
   x: Int;
@@ -21,6 +22,7 @@ export function StoneTabButton({
   op: String;
   optionSubject?: String;
   label: String;
+  action: Int;
   selected?: Boolean;
 }): Component {
   const normal = useRef();
@@ -34,9 +36,7 @@ export function StoneTabButton({
       h={h}
       options={[op]}
       optionSubject={optionSubject}
-      onOptionSelect={() => {
-        playSound(Sounds.SELECT);
-      }}
+      onOptionSelect={(event) => tabPick(action, event.option)}
     >
       <text
         w="fill"
@@ -58,9 +58,7 @@ export function StoneTabButton({
       h={h}
       options={[op]}
       optionSubject={optionSubject}
-      onOptionSelect={() => {
-        playSound(Sounds.SELECT);
-      }}
+      onOptionSelect={(event) => tabPick(action, event.option)}
       onMouseEnter={() => {
         normal.hide = true;
         pressed.hide = false;

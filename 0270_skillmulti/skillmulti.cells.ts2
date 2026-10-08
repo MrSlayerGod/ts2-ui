@@ -1,0 +1,102 @@
+import { sessionState, useState } from 'ts2';
+
+import { countDialogValue } from '../0162_chatbox/meslayer-input';
+import { Sounds } from '../lib/game/sounds';
+import { playSound } from '../lib/lib.engine';
+import { clampGridScroll } from './skillmulti.layout';
+
+export const smKind = sessionState(0);
+export const smMax = sessionState(0);
+export const smCount = sessionState(0);
+export const smTitle = sessionState('');
+export const smNames = sessionState('');
+
+export const smItem0 = sessionState(-1);
+export const smItem1 = sessionState(-1);
+export const smItem2 = sessionState(-1);
+export const smItem3 = sessionState(-1);
+export const smItem4 = sessionState(-1);
+export const smItem5 = sessionState(-1);
+export const smItem6 = sessionState(-1);
+export const smItem7 = sessionState(-1);
+export const smItem8 = sessionState(-1);
+export const smItem9 = sessionState(-1);
+export const smItem10 = sessionState(-1);
+export const smItem11 = sessionState(-1);
+export const smItem12 = sessionState(-1);
+export const smItem13 = sessionState(-1);
+export const smItem14 = sessionState(-1);
+export const smItem15 = sessionState(-1);
+export const smItem16 = sessionState(-1);
+export const smItem17 = sessionState(-1);
+
+export const smItemBank = [
+  smItem0,
+  smItem1,
+  smItem2,
+  smItem3,
+  smItem4,
+  smItem5,
+  smItem6,
+  smItem7,
+  smItem8,
+  smItem9,
+  smItem10,
+  smItem11,
+  smItem12,
+  smItem13,
+  smItem14,
+  smItem15,
+  smItem16,
+  smItem17,
+] as const;
+
+export const smScroll = sessionState(0);
+
+export const smQuantity = sessionState(1);
+export const smSuggested = sessionState(1);
+export const smQuantityString = sessionState('');
+export const smXPending = sessionState(0);
+
+export function skillmultiQuantityXReceive(typed: String): void {
+  const [, setQuantity] = useState(smQuantity);
+  const [, setQuantityString] = useState(smQuantityString);
+  playSound(Sounds.INTERFACE_SELECT1);
+  let text: String = countDialogValue(typed);
+  let length: Int = text.length;
+  const cap: Int = 28;
+  if (length > `${cap}`.length) {
+    setQuantity(cap);
+    return;
+  }
+  let value: Int = 0;
+  while (length > 0) {
+    const digit: Int = '0123456789'.indexOf(text.substring(0, 1), 0);
+    value = value + digit * pow10(length - 1);
+    text = text.substring(1, length);
+    length = length - 1;
+  }
+  setQuantity(value);
+  setQuantityString(text);
+}
+
+function pow10(n: Int): Int {
+  let out: Int = 1;
+  let i: Int = 0;
+  while (i < n) {
+    out = out * 10;
+    i = i + 1;
+  }
+  return out;
+}
+
+export function setGridScroll(y: Int): void {
+  const [count] = useState(smCount);
+  const [, setScroll] = useState(smScroll);
+  setScroll(clampGridScroll(count, y));
+}
+
+export function scrollGridBy(delta: Int): void {
+  const [scroll] = useState(smScroll);
+  setGridScroll(scroll + delta);
+}

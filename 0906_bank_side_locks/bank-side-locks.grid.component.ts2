@@ -1,0 +1,83 @@
+import { CS2, createRef, predictServerState, useInventory, useServerState, useState } from 'ts2';
+import { playSound } from '../lib/lib.engine';
+import { onMobile } from '../lib/lib.helpers';
+import { sideSlotLocked } from '../0192_bank_depositbox/bank-depositbox.helpers';
+import { Grid, Layout, LockColors, LockInv, LockSounds, LockVars } from './bank-side-locks.constants';
+
+const slotsRef = createRef('bank_side_locks_slots');
+
+export function LockGrid({ built }: { built: Boolean }): Component {
+  const inv = useInventory(LockInv.INV);
+  const ignore: Int = useServerState(LockVars.IGNORE_LOCKS);
+  const overview: Int = useServerState(LockVars.OVERVIEW);
+  const [lit, setLit] = useState(-1);
+  const w: Int = Layout.SLOTS_W - Layout.SLOTS_PANE_INSET;
+  const h: Int = Layout.WINDOW_H - Layout.SLOTS_H_INSET - Layout.SLOTS_PANE_INSET;
+  const rows: Int = inv.size / Grid.COLUMNS;
+  const pitchX: Int = (w - Grid.SLOT_W * Grid.COLUMNS) / (Grid.COLUMNS - 1) + Grid.SLOT_W;
+  const pitchY: Int = (h - Grid.SLOT_H * rows) / (rows - 1) + Grid.SLOT_H;
+  const mobile: Boolean = onMobile();
+
+  return (
+    <layer
+      ref={slotsRef}
+      x="center"
+      y="center"
+      w={{ fill: Layout.SLOTS_PANE_INSET }}
+      h={{ fill: Layout.SLOTS_PANE_INSET }}
+    >
+      {inv.map(
+        (item, slot) =>
+          built && (
+            <sprite
+              x={(slot % Grid.COLUMNS) * pitchX}
+              y={(slot / Grid.COLUMNS) * pitchY}
+              w={Grid.SLOT_W}
+              h={Grid.SLOT_H}
+              item={item !== -1 ? item : Grid.LIME_DUMMY}
+              itemCount={item !== -1 ? inv.count(slot) : 1}
+              itemCountMode="never"
+              outline={1}
+              shadowColor={LockColors.SHADOW}
+              transparency={item !== -1 ? Grid.ITEM_TRANSPARENCY : Grid.EMPTY_TRANSPARENCY}
+              options={[sideSlotLocked(ignore, overview, slot) ? 'Unlock' : 'Lock']}
+              optionSubject="<col=ff9040>Slot</col>"
+              onMouseRepeat={mobile ? null : () => setLit(slot)}
+              onMouseLeave={mobile ? null : () => setLit(-1)}
+              onOptionSelect={(event) => {
+                if (event.option !== 1) {
+                  return;
+                }
+                playSound(LockSounds.SELECT);
+                if (ignore === 0) {
+                  predictServerState(
+                    LockVars.OVERVIEW,
+                    CS2.testbit(overview, slot) ? CS2.bit_clear(overview, slot) : CS2.bit_set(overview, slot),
+                  );
+                }
+              }}
+            />
+          ),
+      )}
+      {inv.map(
+        (item, slot) =>
+          built && (
+            <rect
+              x={(slot % Grid.COLUMNS) * pitchX}
+              y={(slot / Grid.COLUMNS) * pitchY}
+              w={Grid.SLOT_W}
+              h={Grid.SLOT_H}
+              color={outlineColor(sideSlotLocked(ignore, overview, slot), lit === slot)}
+            />
+          ),
+      )}
+    </layer>
+  );
+}
+
+function outlineColor(locked: Boolean, lit: Boolean): Int {
+  if (locked) {
+    return lit ? LockColors.RED_HOVER : LockColors.RED;
+  }
+  return lit ? LockColors.WHITE : LockColors.GREY;
+}

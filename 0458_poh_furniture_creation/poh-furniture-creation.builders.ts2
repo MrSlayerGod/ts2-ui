@@ -1,5 +1,7 @@
 import { CS2, intArray, useState } from 'ts2';
 
+import { Furniture, FurnitureRow } from './poh-furniture.data';
+import { FurnitureId } from './poh-furniture.ids.data';
 import { ShortcutLower, ShortcutUpper } from '../0590_poh_jewellery_box/poh-jewellery-box.data';
 import { chatDefaultStopInput } from '../0608_fossil_mushtrees/chatdefault-input';
 import { BarSprite, scrollTo, scrollbarVertical } from './scrollbar-vertical.skins';
@@ -27,6 +29,51 @@ export function pohFurnitureRow(slot: Int, piece: Item, level: Int, buildable: I
     return;
   }
   CS2.cc_all_delete(row);
+  furnitureCard(row, slot, piece, itemName(piece), level, buildable === 1, text);
+}
+
+export function pohFurnitureCard(slot: Int, piece: FurnitureId, level: Int, text: String, buildable: Boolean): void {
+  const row: ComponentId = rowComponent(slot);
+  if (row === -1) {
+    return;
+  }
+  CS2.cc_all_delete(row);
+  if (level < 0) {
+    CS2.if_ops_clear(row);
+    CS2.if_onop_set(null, row);
+    CS2.if_on_key_set(null, row);
+    return;
+  }
+  const furniture: FurnitureRow | null = furnitureOf(piece);
+  if (furniture === null) {
+    return;
+  }
+  furnitureCard(row, slot, furniture.modelObj, furniture.name, level, buildable, text);
+}
+
+function furnitureOf(piece: FurnitureId): FurnitureRow | null {
+  let i: Int = 0;
+  while (i < Furniture.length) {
+    const row: FurnitureRow | null = Furniture.at(i);
+    if (row !== null) {
+      if (row.id === piece) {
+        return row;
+      }
+    }
+    i = i + 1;
+  }
+  return null;
+}
+
+function furnitureCard(
+  row: ComponentId,
+  slot: Int,
+  piece: Item,
+  name: String,
+  level: Int,
+  buildable: Boolean,
+  text: String,
+): void {
   CS2.cc_create(row, ComponentType.TEXT, 0, false);
   CS2.cc_hide_set(true);
   CS2.cc_text_font_set(Font.ROW);
@@ -67,14 +114,14 @@ export function pohFurnitureRow(slot: Int, piece: Item, level: Int, buildable: I
   CS2.cc_outline_set(1);
   CS2.if_op_set(1, 'Build', row);
   CS2.if_op_set(10, 'Examine', row);
-  CS2.if_op_base_set(`<col=ff9040>${itemName(piece)}</col>`, row);
-  CS2.if_onop_set((event) => pieceOp(event.option, slot, piece, row, 4), row);
+  CS2.if_op_base_set(`<col=ff9040>${name}</col>`, row);
+  CS2.if_onop_set((event) => pieceOp(event.option, slot, name, row, 4), row);
 
   CS2.cc_create(row, ComponentType.SPRITE, 5, false);
   CS2.cc_size_set(Layout.MARK_WH, Layout.MARK_WH, 0, 0);
   CS2.cc_position_set(Layout.MARK_X, 0, 0, 0);
   CS2.cc_sprite_set(CANNOT_BUILD);
-  if (buildable === 1) {
+  if (buildable) {
     CS2.cc_hide_set(true);
     CS2.cc_create(row, ComponentType.TEXT, 6, false);
     CS2.cc_size_set(Layout.LABEL_W, Layout.LEVEL_H, 0, 0);
@@ -89,10 +136,10 @@ export function pohFurnitureRow(slot: Int, piece: Item, level: Int, buildable: I
   }
 }
 
-function pieceOp(option: Int, slot: Int, piece: Item, row: ComponentId, icon: Int): void {
+function pieceOp(option: Int, slot: Int, name: String, row: ComponentId, icon: Int): void {
   if (option !== 1) {
     if (option === 10) {
-      chatMessage(`${itemName(piece)}.`);
+      chatMessage(`${name}.`);
     }
     return;
   }
@@ -195,7 +242,7 @@ export function pohFurnitureLayout(requested: Int, relayout: Boolean): void {
   } else if (filledCount <= Layout.FOUR_MAX) {
     perColumn = Layout.FOUR;
   } else {
-    perColumn = filledCount / 2 + (filledCount % 2);
+    perColumn = filledCount / 2 + filledCount % 2;
   }
 
   let y: Int = top;

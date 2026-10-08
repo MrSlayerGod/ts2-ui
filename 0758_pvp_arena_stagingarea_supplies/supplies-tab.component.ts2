@@ -1,8 +1,9 @@
-import { onMounted, onUpdated, useRef, useServerState, useState } from 'ts2';
+import { onMounted, onUpdated, sessionState, useRef, useServerState, useState, useWatch } from 'ts2';
 import { playSound } from '../lib/lib.engine';
 import { xpdropsFake6 } from '../lib/game/varcs';
-import { SuppliesTab } from '../lib/pvp-arena/kit-tab.component';
-import { battleSettled, kitTabShown, kitTabX, selectDisplays } from './supplies-tabs';
+import { SuppliesTab, suppliesTabUnpainted } from '../lib/pvp-arena/kit-tab.component';
+import { battleSettled, kitTabShown, kitTabX } from './supplies-tabs';
+import { displayA, displayB, displayC, statsDisplay } from './pvp-arena-stagingarea-supplies.refs';
 import {
   Build,
   Copy,
@@ -13,21 +14,27 @@ import {
   SuppliesSounds,
   SuppliesSprites,
   SuppliesVarbits,
+  SuppliesVarps,
 } from './pvp-arena-stagingarea-supplies.constants';
 
 export function SuppliesTabStrip(): Component {
   const battleType: Int = useServerState(SuppliesVarbits.BATTLE_TYPE);
   const build: Int = useServerState(SuppliesVarbits.BUILD);
-  const [tab] = useState(xpdropsFake6);
+  const [varcTab] = useState(xpdropsFake6);
+  const [unpainted] = useState(suppliesTabUnpainted);
+  const [repaints] = useState(suppliesTabRepaints);
+  const tab: Int = unpainted === 1 ? STATS_TAB : varcTab;
   const settled: Boolean = battleSettled(battleType);
 
-  onMounted(() => selectDisplays(tab));
-  onUpdated(() => selectDisplays(tab));
+  useWatch([SuppliesVarps.TEMP_TRANSMIT_0, SuppliesVarps.TEMP_TRANSMIT_1], () => repaintSuppliesTabs());
+
+  onMounted(() => showDisplays(tab));
+  onUpdated(() => showDisplays(tab));
 
   return (
     <>
       <layer x={0} y="center" w={Layout.tabs.statsW} h="fill">
-        <SuppliesTab index={STATS_TAB} label={Copy.TAB_STATS} active={tab === STATS_TAB} />
+        <SuppliesTab index={STATS_TAB} label={Copy.TAB_STATS} active={tab === STATS_TAB} repaint={repaints} />
       </layer>
       <layer
         x={kitTabX(settled, Build.MAX_MED)}
@@ -36,7 +43,7 @@ export function SuppliesTabStrip(): Component {
         h="fill"
         hide={!kitTabShown(settled, build, Build.MAX_MED)}
       >
-        <SuppliesTab index={Build.MAX_MED} label={Copy.TAB_MAX_MED} active={tab === Build.MAX_MED} />
+        <SuppliesTab index={Build.MAX_MED} label={Copy.TAB_MAX_MED} active={tab === Build.MAX_MED} repaint={repaints} />
       </layer>
       <layer
         x={kitTabX(settled, Build.ZERKER)}
@@ -45,7 +52,7 @@ export function SuppliesTabStrip(): Component {
         h="fill"
         hide={!kitTabShown(settled, build, Build.ZERKER)}
       >
-        <SuppliesTab index={Build.ZERKER} label={Copy.TAB_ZERKER} active={tab === Build.ZERKER} />
+        <SuppliesTab index={Build.ZERKER} label={Copy.TAB_ZERKER} active={tab === Build.ZERKER} repaint={repaints} />
       </layer>
       <layer
         x={kitTabX(settled, Build.PURE)}
@@ -54,8 +61,24 @@ export function SuppliesTabStrip(): Component {
         h="fill"
         hide={!kitTabShown(settled, build, Build.PURE)}
       >
-        <SuppliesTab index={Build.PURE} label={Copy.TAB_PURE} active={tab === Build.PURE} />
+        <SuppliesTab index={Build.PURE} label={Copy.TAB_PURE} active={tab === Build.PURE} repaint={repaints} />
       </layer>
     </>
   );
+}
+
+function showDisplays(tab: Int): void {
+  displayA.props = { hide: tab !== Build.MAX_MED };
+  displayB.props = { hide: tab !== Build.ZERKER };
+  displayC.props = { hide: tab !== Build.PURE };
+  statsDisplay.props = { hide: tab === Build.MAX_MED || tab === Build.ZERKER || tab === Build.PURE };
+}
+
+export const suppliesTabRepaints = sessionState(0);
+
+function repaintSuppliesTabs(): void {
+  const [n, setN] = useState(suppliesTabRepaints);
+  const [, setUnpainted] = useState(suppliesTabUnpainted);
+  setN(n + 1);
+  setUnpainted(0);
 }

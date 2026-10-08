@@ -24,6 +24,7 @@ export const HiscoresArt = {
   DROP_CLOSED: Sprites.SCROLLBAR_V2_1,
   DROP_OPEN: Sprites.SCROLLBAR_V2_0,
   SETTINGS_COG: Sprites.ACC_MAN_ICONS_7,
+  LIST_BACKING: Sprites.TRADEBACKING_LIGHT,
 } as const;
 
 export const HiscoresScrollbar = {

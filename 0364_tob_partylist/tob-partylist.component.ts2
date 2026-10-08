@@ -1,22 +1,21 @@
-import { useServerState } from 'ts2';
+import { useServerState, useState } from 'ts2';
 
 import { BoardButton } from '../lib/board-button.component';
-import { ScrollbarVertical } from '../lib/scrollbar-vertical.component';
 import { SteelBorderEntrypoint } from '../lib/steel-border-entrypoint.component';
 import { ThinBoxEntrypoint } from '../lib/thin-box-entrypoint.component';
 import { Varbits } from '../lib/game/varbits';
 import { Varps } from '../lib/game/varps';
 import {
+  BoardPausebutton,
+  boardAnchorsRef,
   Copy,
   Layout,
-  TobPartylistColor,
-  TobPartylistFonts,
+  ListSort,
   TobPartylistModels,
-  TobPartylistScrollbar,
-  TobPartylistSlots,
-  listRef,
 } from './tob-partylist.constants';
 import { resetTobPartyList } from './tob-partylist.helpers';
+import { TobListSortColumn, TobPartyListPane, TobRefreshButton } from './tob-partylist-rows.component';
+import { tobListBuilt } from './tob-partylist.state';
 
 export function TobPartylist(): Component {
   return (
@@ -81,73 +80,48 @@ export function TobPartylist(): Component {
           />
 
           <layer x="center" y={0} w="fill" h={Layout.HEADER_H}>
-            <layer x={Layout.COL_MEMBERS_X} y="center" w={Layout.COL_MEMBERS_W} h={{ fill: Layout.HEADER_INSET_H }} />
-            <layer x={Layout.COL_SIZE_X} y="center" w={Layout.COL_SIZE_W} h={{ fill: Layout.HEADER_INSET_H }} />
-            <layer x={Layout.COL_LEADER_X} y="center" w={Layout.COL_LEADER_W} h={{ fill: Layout.HEADER_INSET_H }} />
-            <layer x={Layout.COL_COMBAT_X} y="center" w={Layout.COL_COMBAT_W} h={{ fill: Layout.HEADER_INSET_H }} />
-            <layer x={Layout.COL_MODE_X} y="center" w={Layout.COL_MODE_W} h={{ fill: Layout.HEADER_INSET_H }} />
+            <layer x={Layout.COL_MEMBERS_X} y="center" w={Layout.COL_MEMBERS_W} h={{ fill: Layout.HEADER_INSET_H }}>
+              <TobListSortColumn asc={ListSort.MEMBERS_ASC} desc={ListSort.MEMBERS_DESC} tip={Copy.TIP_MEMBERS} />
+            </layer>
+            <layer x={Layout.COL_SIZE_X} y="center" w={Layout.COL_SIZE_W} h={{ fill: Layout.HEADER_INSET_H }}>
+              <TobListSortColumn asc={ListSort.SIZE_ASC} desc={ListSort.SIZE_DESC} tip={Copy.TIP_SIZE} />
+            </layer>
+            <layer x={Layout.COL_LEADER_X} y="center" w={Layout.COL_LEADER_W} h={{ fill: Layout.HEADER_INSET_H }}>
+              <TobListSortColumn asc={ListSort.LEADER_ASC} desc={ListSort.LEADER_DESC} tip={Copy.TIP_LEADER} />
+            </layer>
+            <layer x={Layout.COL_COMBAT_X} y="center" w={Layout.COL_COMBAT_W} h={{ fill: Layout.HEADER_INSET_H }}>
+              <TobListSortColumn asc={ListSort.COMBAT_ASC} desc={ListSort.COMBAT_DESC} tip={Copy.TIP_COMBAT} />
+            </layer>
+            <layer x={Layout.COL_MODE_X} y="center" w={Layout.COL_MODE_W} h={{ fill: Layout.HEADER_INSET_H }}>
+              <TobListSortColumn asc={ListSort.MODE_ASC} desc={ListSort.MODE_DESC} tip={Copy.TIP_MODE} />
+            </layer>
             <layer
               right={Layout.COL_AGE_RIGHT}
               y="center"
               w={{ fill: Layout.COL_AGE_INSET_W }}
               h={{ fill: Layout.HEADER_INSET_H }}
-            />
+            >
+              <TobListSortColumn asc={ListSort.AGE_ASC} desc={ListSort.AGE_DESC} tip={Copy.TIP_AGE} />
+            </layer>
             <ThinBoxEntrypoint />
           </layer>
 
-          <layer
-            ref={listRef}
-            x={Layout.LIST_X}
-            y={{ bottom: Layout.LIST_BOTTOM }}
-            w={{ fill: Layout.LIST_INSET_W }}
-            h={{ fill: Layout.LIST_INSET_H }}
-          >
-            {TobPartylistSlots.map(() => (
-              <layer x="center" y={0} w="fill" h={Layout.ROW_H} hide />
-            ))}
-            <text
-              x="center"
-              y="center"
-              w="fill"
-              h="fill"
-              text={Copy.LOADING}
-              font={TobPartylistFonts.BODY}
-              color={TobPartylistColor.LOADING}
-              align="center"
-              valign="middle"
-              shadow
-            />
-          </layer>
-
-          <layer
-            right={Layout.SCROLLBAR_RIGHT}
-            y={{ bottom: Layout.LIST_BOTTOM }}
-            w={Layout.SCROLLBAR_W}
-            h={{ fill: Layout.LIST_INSET_H }}
-          >
-            <ScrollbarVertical
-              content={listRef}
-              track={TobPartylistScrollbar.TRACK}
-              capTopSprite={TobPartylistScrollbar.CAP_TOP}
-              thumbSprite={TobPartylistScrollbar.THUMB}
-              capBottomSprite={TobPartylistScrollbar.CAP_BOTTOM}
-              arrowUp={TobPartylistScrollbar.ARROW_UP}
-              arrowDown={TobPartylistScrollbar.ARROW_DOWN}
-            />
+          <layer x={0} y={0} w="fill" h="fill">
+            <TobPartyListPane />
           </layer>
 
           <ThinBoxEntrypoint />
         </layer>
 
-        <layer x={Layout.REFRESH_X} y="bottom" w={Layout.BUTTON_W} h={Layout.BUTTON_H} hide>
-          <BoardButton label={Copy.REFRESH} />
+        <layer x={Layout.REFRESH_X} y="bottom" w={Layout.BUTTON_W} h={Layout.BUTTON_H}>
+          <TobRefreshButton />
         </layer>
 
-        <layer x="center" y="bottom" w={Layout.BUTTON_W} h={Layout.BUTTON_H} hide>
+        <layer x="center" y="bottom" w={Layout.BUTTON_W} h={Layout.BUTTON_H}>
           <TobMyPartyButton />
         </layer>
 
-        <layer right={Layout.FRIENDS_RIGHT} y="bottom" w={Layout.BUTTON_W} h={Layout.BUTTON_H} hide>
+        <layer right={Layout.FRIENDS_RIGHT} y="bottom" w={Layout.BUTTON_W} h={Layout.BUTTON_H}>
           <TobFriendsClanButton />
         </layer>
       </layer>
@@ -157,18 +131,28 @@ export function TobPartylist(): Component {
 
 export function TobMyPartyButton(): Component {
   const partyHeld: Int = useServerState(Varps.TOB_MYCONTROLLER);
+  const [built] = useState(tobListBuilt);
   return (
-    <layer w="fill" h="fill">
-      <BoardButton label={partyHeld !== -1 ? Copy.MY_PARTY : Copy.MAKE_PARTY} />
+    <layer w="fill" h="fill" hide={built !== 1}>
+      <BoardButton
+        label={partyHeld !== -1 ? Copy.MY_PARTY : Copy.MAKE_PARTY}
+        resumeIn={boardAnchorsRef}
+        resumeAt={BoardPausebutton.MY_PARTY}
+      />
     </layer>
   );
 }
 
 export function TobFriendsClanButton(): Component {
   const filtered: Int = useServerState(Varbits.TOB_LOBBY_FRIENDS_FILTER);
+  const [built] = useState(tobListBuilt);
   return (
-    <layer w="fill" h="fill">
-      <BoardButton label={filtered === 1 ? Copy.FRIENDS_CLAN_ON : Copy.FRIENDS_CLAN} />
+    <layer w="fill" h="fill" hide={built !== 1}>
+      <BoardButton
+        label={filtered === 1 ? Copy.FRIENDS_CLAN_ON : Copy.FRIENDS_CLAN}
+        resumeIn={boardAnchorsRef}
+        resumeAt={BoardPausebutton.FILTER}
+      />
     </layer>
   );
 }

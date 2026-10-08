@@ -1,22 +1,65 @@
-import { useState } from 'ts2';
+import { CS2, onMounted, useInterval, useState } from 'ts2';
 
-import { Layout, PartydetailsAnims, PartydetailsModels, statsSlot } from './raids-lobby-partydetails.constants';
+import { BoardButton } from '../lib/board-button.component';
+import { clientClock, playSound } from '../lib/lib.engine';
+import {
+  AUTOREFRESH_CYCLES,
+  autoRefreshAt,
+  Layout,
+  PartydetailsAnims,
+  PartydetailsModels,
+  Pausebutton,
+  PartydetailsSounds,
+  boardAnchorsRef,
+  statsSlot,
+} from './raids-lobby-partydetails.constants';
 
 export function PartydetailsTimer(): Component {
   const [selected] = useState(statsSlot);
 
   return selected < 0 ? (
     <layer w="fill" h="fill">
-      <model
-        x="center"
-        y="center"
-        w="fill"
-        h="fill"
-        model={PartydetailsModels.SANDTIMER}
-        anim={PartydetailsAnims.SANDTIMER_10SECS_LOOPED}
-        offsetY={Layout.SANDTIMER_OFFSET_Y}
-        zoom={Layout.SANDTIMER_ZOOM}
-      />
+      <SandTimer />
     </layer>
   ) : null;
+}
+
+function SandTimer(): Component {
+  const [deadline, setDeadline] = useState(0);
+  onMounted(() => {
+    setDeadline(clientClock() + AUTOREFRESH_CYCLES);
+  });
+  useInterval(
+    deadline > 0
+      ? () => {
+          if (clientClock() < deadline) {
+            return;
+          }
+          setDeadline(-1);
+          const [, setPressedAt] = useState(autoRefreshAt);
+          playSound(PartydetailsSounds.CLICK);
+          setPressedAt(clientClock());
+          if (CS2.cc_find(boardAnchorsRef, Pausebutton.REFRESH) === true) {
+            CS2.cc_resume_pausebutton();
+          }
+        }
+      : undefined,
+  );
+  return (
+    <model
+      x="center"
+      y="center"
+      w="fill"
+      h="fill"
+      model={PartydetailsModels.SANDTIMER}
+      anim={PartydetailsAnims.SANDTIMER_10SECS_LOOPED}
+      offsetY={Layout.SANDTIMER_OFFSET_Y}
+      zoom={Layout.SANDTIMER_ZOOM}
+    />
+  );
+}
+
+export function RefreshButton({ label }: { label: String }): Component {
+  const [pressedAt] = useState(autoRefreshAt);
+  return <BoardButton label={label} pressedAt={pressedAt} resumeIn={boardAnchorsRef} resumeAt={Pausebutton.REFRESH} />;
 }

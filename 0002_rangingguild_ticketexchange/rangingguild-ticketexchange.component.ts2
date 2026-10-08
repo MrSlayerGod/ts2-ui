@@ -31,7 +31,7 @@ export function RangingGuildTicketExchange(): Component {
   const paneWidth: Int = universe.width - Panel.PANE_INSET;
   const stride: Int = (paneWidth - Grid.COLUMNS * Grid.SLOT_W) / Grid.COLUMN_GAPS + Grid.SLOT_W;
 
-  const contentHeight: Int = ((Grid.STOCK - 1) / Grid.COLUMNS) * stride + Grid.SLOT_H;
+  const contentHeight: Int = (Grid.STOCK - 1) / Grid.COLUMNS * stride + Grid.SLOT_H;
 
   return (
     <layer w="fill" h="fill">

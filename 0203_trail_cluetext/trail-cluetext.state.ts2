@@ -1,0 +1,13 @@
+import { sessionState, useState } from 'ts2';
+
+export const trailClueTextTight = sessionState(0);
+
+export function trailClueTextTighten(): void {
+  const [, setTight] = useState(trailClueTextTight);
+  setTight(1);
+}
+
+export function resetClueTextTight(): void {
+  const [, setTight] = useState(trailClueTextTight);
+  setTight(0);
+}

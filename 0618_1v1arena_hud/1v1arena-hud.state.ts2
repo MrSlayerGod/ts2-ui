@@ -1,0 +1,15 @@
+import { sessionState } from 'ts2';
+
+import { ArenaColor } from './1v1arena-hud.constants';
+
+export const arenaCollapsed = sessionState(0);
+
+export const arenaToggleColour = sessionState(ArenaColor.LABEL);
+
+export const spectatorColour = sessionState(ArenaColor.LABEL);
+
+export const startAllColour = sessionState(ArenaColor.LABEL);
+
+export const spectatorFlashUntil = sessionState(-1);
+
+export const startAllFlashUntil = sessionState(-1);

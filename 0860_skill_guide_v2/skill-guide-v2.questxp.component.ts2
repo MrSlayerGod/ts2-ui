@@ -1,0 +1,257 @@
+import { CS2 } from 'ts2';
+
+import { Fonts } from '../lib/game/fonts';
+import { Sounds } from '../lib/game/sounds';
+import { playSound } from '../lib/lib.engine';
+import { Sprites } from '../lib/game/sprites';
+import { colourTag } from '../0889_nps/colour-tag';
+import { QuestOverviewRow, QuestOverviews } from '../0782_questjournal_overview/questjournal-overview.data';
+
+import { GuideSkillIcons } from './skill-guide-v2.data';
+import { QuestXpCount, QuestXpKind, QuestXpStart, QuestXpTokens } from './skill-guide-v2.questxp.data';
+import {
+  QuestXpColour,
+  QuestXpLayout,
+  cursorRecShown,
+  cursorShown,
+  cursorX,
+  cursorY,
+  deficitText,
+  itemBody,
+  tokenDeficit,
+  itemLabel,
+  itemLineX,
+  itemLineY,
+  itemSprite,
+  itemSpriteSize,
+  itemText,
+  itemVisible,
+  labelWidth,
+  nameWidth,
+  questRowColour,
+  questXpKey,
+  questId,
+  rowActive,
+  rowHeight,
+  rowStar,
+  rowTransparency,
+  stepCursor,
+  textWidthOf,
+  tokenDropped,
+  xpLineEnd,
+  xpText,
+} from './skill-guide-v2.questxp.helpers';
+
+export function QuestXpList({ stat, extent }: { stat: Int; extent: Int }): Component {
+  const key: Int = questXpKey(stat);
+  const start: Int = QuestXpStart.get(key) ?? 0;
+  const end: Int = start + (QuestXpCount.get(key) ?? 0);
+  return (
+    <layer x={0} y={0} w="fill" h={extent}>
+      {QuestXpTokens.filter((token, index) => index >= start && index < end && !tokenDropped(token)).scan(
+        (token, index, top, cursor, active, stripe) =>
+          (token.kind === QuestXpKind.ROW ? (
+            <QuestXpRow
+              top={top}
+              stripe={stripe}
+              id={questId(token.quest)}
+              skill={token.skill}
+              name={questNameOf(token.quest)}
+              nameW={nameWidth(token.quest)}
+              colour={questRowColour(token.quest)}
+              star={rowStar(token)}
+              height={rowHeight(token)}
+              xp={xpText(token)}
+              xpW={xpLineEnd(token) - QuestXpLayout.XP_GAP - XP_TEXT_X}
+            />
+          ) : (itemVisible(token, cursorShown(cursor), active) ? (
+            <QuestXpItem
+              top={top}
+              body={itemBody(token, cursor, tokenDeficit(token))}
+              label={itemLabel(token, cursorShown(cursor), cursorRecShown(cursor))}
+              size={itemSpriteSize(token)}
+              sprite={itemSprite(token)}
+              text={itemText(token, cursorShown(cursor))}
+              deficit={tokenDeficit(token)}
+              lineX={itemLineX(token, cursor)}
+              lineY={itemLineY(token, cursor)}
+            />
+          ) : null)),
+        [
+          (token, index, top, cursor, active) =>
+            (token.kind === QuestXpKind.MISC ? cursorY(stepCursor(token, cursor, active)) + QuestXpLayout.ROW_TAIL : 0),
+          (token, index, top, cursor, active) => stepCursor(token, cursor, active) - cursor,
+          (token, index, top, cursor, active) => (token.kind === QuestXpKind.ROW ? rowActive(token.quest) - active : 0),
+          (token) => (token.kind === QuestXpKind.ROW ? 1 : 0),
+        ],
+        [0, 0, 0, 0],
+      )}
+    </layer>
+  );
+}
+
+const XP_TEXT_X = 40;
+
+function questNameOf(quest: Int): String {
+  const row: QuestOverviewRow | null = QuestOverviews.at(quest);
+  return row === null ? '' : row.name;
+}
+
+function QuestXpRow({
+  top,
+  stripe,
+  id,
+  skill,
+  name,
+  nameW,
+  colour,
+  star,
+  height,
+  xp,
+  xpW,
+}: {
+  top: Int;
+  stripe: Int;
+  id: Int;
+  skill: Int;
+  name: String;
+  nameW: Int;
+  colour: Int;
+  star: Boolean;
+  height: Int;
+  xp: String;
+  xpW: Int;
+}): Component {
+  const nameX: Int = QuestXpLayout.LEFT + QuestXpLayout.DIARY + QuestXpLayout.DIARY_GAP;
+  return (
+    <>
+      <rect x={0} y={top} w="fill" h={height} color={QuestXpColour.ROW} fill transparency={rowTransparency(stripe)} />
+      <sprite
+        x={QuestXpLayout.LEFT}
+        y={top + QuestXpLayout.TOP + (QuestXpLayout.LINE_H - QuestXpLayout.DIARY) / 2}
+        w={QuestXpLayout.DIARY}
+        h={QuestXpLayout.DIARY}
+        sprite={Sprites.ACHIEVEMENT_DIARY_ICONS_0}
+      />
+      <text
+        x={nameX}
+        y={top + QuestXpLayout.TOP}
+        w={nameW}
+        h={QuestXpLayout.LINE_H}
+        text={`${colourTag(colour, 'u')}${name}</u>`}
+        font={Fonts.B12_FULL}
+        color={colour}
+        shadow
+        valign="middle"
+        lineHeight={QuestXpLayout.LINE_H}
+        options={['View-journal']}
+        optionSubject={`<col=ff9040>${name}</col>`}
+        onOptionSelect={(event) => questJournal(id, event.component, event.subId)}
+      />
+      <sprite
+        x={nameX + nameW + 2}
+        y={top + QuestXpLayout.TOP - 1}
+        w={QuestXpLayout.STAR}
+        h={QuestXpLayout.STAR}
+        sprite={Sprites.WORLDSWITCHER_STARS_0}
+        hide={!star}
+      />
+      <sprite
+        x={QuestXpLayout.INDENT}
+        y={top + QuestXpLayout.XP_Y + (QuestXpLayout.LINE_H - QuestXpLayout.SKILL_ICON) / 2}
+        w={QuestXpLayout.SKILL_ICON}
+        h={QuestXpLayout.SKILL_ICON}
+        sprite={GuideSkillIcons.get(skill as Skill) ?? -1}
+      />
+      <text
+        x={XP_TEXT_X}
+        y={top + QuestXpLayout.XP_Y}
+        w={xpW}
+        h={QuestXpLayout.LINE_H}
+        text={xp}
+        font={Fonts.P12_FULL}
+        color={colour}
+        shadow
+        valign="middle"
+        lineHeight={QuestXpLayout.LINE_H}
+      />
+    </>
+  );
+}
+
+function QuestXpItem({
+  top,
+  body,
+  label,
+  size,
+  sprite,
+  text,
+  deficit,
+  lineX,
+  lineY,
+}: {
+  top: Int;
+  body: Int;
+  label: String;
+  size: Int;
+  sprite: Sprite;
+  text: String;
+  deficit: Int;
+  lineX: Int;
+  lineY: Int;
+}): Component {
+  const bodyX: Int = cursorX(body);
+  const bodyY: Int = cursorY(body);
+  const extra: String = deficitText(deficit);
+  const textX: Int = size > 0 ? bodyX + size + QuestXpLayout.SPRITE_GAP : bodyX;
+  const textW: Int = textWidthOf(text);
+  return (
+    <>
+      {label.length > 0 && (
+        <text
+          x={lineX}
+          y={top + lineY}
+          w={labelWidth(label)}
+          h={QuestXpLayout.LINE_H}
+          text={label}
+          font={Fonts.P11_FULL}
+          color={QuestXpColour.LABEL}
+          valign="middle"
+          lineHeight={QuestXpLayout.LINE_H}
+        />
+      )}
+      {size > 0 && <sprite x={bodyX} y={top + bodyY} w={size} h={size} sprite={sprite} />}
+      <text
+        x={textX}
+        y={top + bodyY}
+        w={textW}
+        h={QuestXpLayout.LINE_H}
+        text={text}
+        font={Fonts.P11_FULL}
+        color={QuestXpColour.TEXT}
+        valign="middle"
+        lineHeight={QuestXpLayout.LINE_H}
+      />
+      {extra.length > 0 && (
+        <text
+          x={textX + textW + 1}
+          y={top + bodyY}
+          w={textWidthOf(extra)}
+          h={QuestXpLayout.LINE_H}
+          text={extra}
+          font={Fonts.P11_FULL}
+          color={QuestXpColour.DEFICIT}
+          valign="middle"
+          lineHeight={QuestXpLayout.LINE_H}
+        />
+      )}
+    </>
+  );
+}
+
+function questJournal(id: Int, source: ComponentId, sourceSub: Int): void {
+  playSound(Sounds.INTERFACE_SELECT1);
+  CS2.if_runscript(QUEST_JOURNAL_SCRIPT, source, sourceSub, id, 'i');
+}
+
+const QUEST_JOURNAL_SCRIPT = 1707091816;

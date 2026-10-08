@@ -1,4 +1,11 @@
-import { sessionState } from 'ts2';
+import { CS2, sessionState, useState } from 'ts2';
+
+import { leagueTasksHeight, leagueTasksWidth, leagueTasksX, leagueTasksY } from '../lib/game/varcs';
+import { GameframeSlot, gameframeSlot } from '../lib/lib.gameframe';
+import { debugWarn } from '../0922_jigsaw/jigsaw.state';
+import { LeagueTaskId } from './league-task-ids.data';
+import { hotfixStoreRef } from './league-tasks.constants';
+import { LeagueTask, LeagueTaskList } from './league-tasks.data';
 
 export const openFilter = sessionState(-1);
 
@@ -7,3 +14,58 @@ export const dropdownOpenTick = sessionState(0);
 export const listExtent = sessionState(0);
 
 export const listPaneHeight = sessionState(0);
+
+export function leagueTasksSavePosition(): void {
+  const modal: ComponentId = gameframeSlot(GameframeSlot.VIEWPORT);
+  if ((modal as Int) === -1) {
+    return;
+  }
+  const [, setWidth] = useState(leagueTasksWidth);
+  const [, setHeight] = useState(leagueTasksHeight);
+  const [, setX] = useState(leagueTasksX);
+  const [, setY] = useState(leagueTasksY);
+  setWidth(CS2.if_width_get(modal));
+  setHeight(CS2.if_height_get(modal));
+  setX(CS2.if_x_get(modal));
+  setY(CS2.if_y_get(modal));
+}
+
+export const leagueTaskHotfixCount = sessionState(0);
+
+export function leagueTaskHotfixClear(): void {
+  const [, setCount] = useState(leagueTaskHotfixCount);
+  hotfixStoreRef.text = '';
+  setCount(0);
+}
+
+export function leagueTaskHotfix(task: LeagueTaskId, name: String, description: String): void {
+  if ((task as Int) === -1) {
+    return;
+  }
+  const [count, setCount] = useState(leagueTaskHotfixCount);
+  const hotfixes: String = count === 0 ? '' : CS2.if_text_get(hotfixStoreRef);
+  if (hotfixes.indexOf(`\n${task}\t`) !== -1) {
+    debugWarn(
+      'Hotfix',
+      `Duplicate $task hotfix data in hotfix layer, for $task = [${leagueTaskTableName(task)}]. Ensure you arent hotfixing this task more than once.`,
+    );
+    return;
+  }
+  const next: String = `${hotfixes}\n${task}\t${name}\t${description}`;
+  hotfixStoreRef.text = next;
+  setCount(count + 1);
+}
+
+function leagueTaskTableName(task: LeagueTaskId): String {
+  let i: Int = 0;
+  while (i < LeagueTaskList.length) {
+    const row: LeagueTask | null = LeagueTaskList.at(i);
+    if (row !== null) {
+      if (row.id === task) {
+        return row.name;
+      }
+    }
+    i = i + 1;
+  }
+  return '';
+}

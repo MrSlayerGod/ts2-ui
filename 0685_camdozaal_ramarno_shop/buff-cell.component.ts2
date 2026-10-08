@@ -77,9 +77,9 @@ export function BuffCell({ slot }: { slot: Int }): Component {
   const affordable: Boolean = cost <= available ? true : false;
 
   const status: String = active
-    ? slot === 5
+    ? (slot === 5
       ? `<col=0dc10d>Time: ${stringOf(minutes)} min</col>`
-      : '<col=0dc10d>Active</col>'
+      : '<col=0dc10d>Active</col>')
     : '<col=9f9f9f>Inactive</col>';
 
   const priceColor: Int = active || !affordable ? RamarnoColors.MUTED : RamarnoColors.ACTIVE;

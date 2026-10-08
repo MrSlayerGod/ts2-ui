@@ -13,3 +13,17 @@ export const dialRemaining = sessionState(AutoRefresh.CYCLES);
 export const arrowsPlaced = sessionState(0);
 
 export const partyTitled = sessionState(0);
+
+export const memberLines = sessionState('');
+
+export const applicantLines = sessionState('');
+
+export const partyLeader = sessionState('');
+
+export const boardRole = sessionState(0);
+export const boardSize = sessionState(0);
+export const boardLevel = sessionState(0);
+export const boardMode = sessionState(0);
+
+export const forcedButton = sessionState(-1);
+export const forcedAt = sessionState(0);

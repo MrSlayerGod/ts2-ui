@@ -2,7 +2,7 @@ import { useRef } from 'ts2';
 import { StoneButtonPressed } from '../lib/stone-button-pressed.component';
 import { StoneButton } from '../lib/stone-button.component';
 
-export function StoneHoverButton({ op }: { op: String }): Component {
+export function StoneHoverButton(): Component {
   const base = useRef();
   const pressed = useRef();
 
@@ -10,7 +10,6 @@ export function StoneHoverButton({ op }: { op: String }): Component {
     <layer
       w="fill"
       h="fill"
-      options={[op]}
       onMouseEnter={() => {
         base.hide = true;
         pressed.hide = false;

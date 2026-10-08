@@ -1,9 +1,17 @@
+import { sessionState } from 'ts2';
+
 import { Sprites } from '../lib/game/sprites';
 
 export declare const CataBossSprite: {
   readonly ORB: typeof Sprites.ORB_FILLER_5;
   readonly MARKER: typeof Sprites.MAGICON_9;
+  readonly MARKER_OFF: typeof Sprites.MAGICOFF_9;
 };
+
+export const altarWestDark = sessionState(0);
+export const altarEastDark = sessionState(0);
+export const altarSouthDark = sessionState(0);
+export const altarNorthDark = sessionState(0);
 
 export enum CataBossModel {
   ALTAR = 3039,

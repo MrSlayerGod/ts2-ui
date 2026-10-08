@@ -76,6 +76,9 @@ export const Layout = {
   OPEN_H_DEN: 9,
   OPEN_H_OF: 334,
 
+  GLUE: 10,
+  UNSEEN: -2147483648,
+
   dodger: { BATTLEAREA: 45, XPDROPS: 65, XPDROPS_PROGRESS: 9 },
 
   scrollBox: { y: 35, insetW: 20, insetH: 75 },

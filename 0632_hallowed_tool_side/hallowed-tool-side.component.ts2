@@ -9,7 +9,7 @@ export function HallowedToolSide(): Component {
       {HALLOWED_TOOLS.map((tool, index) => (
         <layer
           x={index % 2 === 0 ? 0 : { right: 0 }}
-          y={(index / 2) * ToolSlot.HEIGHT}
+          y={index / 2 * ToolSlot.HEIGHT}
           w={ToolSlot.WIDTH}
           h={ToolSlot.HEIGHT}
         >

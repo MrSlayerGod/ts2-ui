@@ -1,23 +1,58 @@
 import { useRef, useState } from 'ts2';
-import { league3FragmentFilterCategory } from '../lib/game/varcs';
+import {
+  league3FragmentFilterCategory,
+  league3FragmentFilterEffect,
+  league3FragmentFilterLevel,
+  league3FragmentFilterLock,
+} from '../lib/game/varcs';
 import { ScrollbarVertical } from '../lib/scrollbar-vertical.component';
 import { ThinBoxEntrypoint } from '../lib/thin-box-entrypoint.component';
 import { FragmentRow } from './fragment-row.component';
 import { Fragments, ROW_HEIGHT, ScrollbarSprites as Bar, XP_MAX } from './league-3-fragments.constants';
-import { equippedInLoadout, fragmentXp } from './league-3-fragments.helpers';
+import type { FragmentsRow } from './fragments.data';
+import { equippedInLoadout, fragmentTier, fragmentXp, leagueColour } from './league-3-fragments.helpers';
+import { FragmentFonts, LEAGUE_3 } from './league-3-fragments.constants';
+import { fragmentListJump } from './league-3-fragments.state';
 
 export function FragmentList(): Component {
   const [category] = useState(league3FragmentFilterCategory);
+  const [effect] = useState(league3FragmentFilterEffect);
+  const [level] = useState(league3FragmentFilterLevel);
+  const [lock] = useState(league3FragmentFilterLock);
+  const [jump] = useState(fragmentListJump);
   const content = useRef();
+  let shown: Int = 0;
+  let key: Int = 1;
+  while (key <= Fragments.length) {
+    const row = Fragments.get(key);
+    if (row !== null) {
+      if (fragmentListed(row, category, effect, level, lock)) {
+        shown = shown + 1;
+      }
+    }
+    key = key + 1;
+  }
+  const rowsH: Int = shown * ROW_HEIGHT;
+  const short: Boolean = rowsH < 167;
+  const offset: Int = Math.clamp(0, short ? 0 : rowsH - 167, jump);
   return (
     <>
       <layer x={12} y={{ bottom: 12 }} w={210} h={171}>
         <ThinBoxEntrypoint />
       </layer>
-      <layer ref={content} x={14} y={{ bottom: 14 }} w={206} h={167} scrollHeight={ROW_HEIGHT * 53}>
-        {Fragments.filter((frag) => category <= 0 || frag.category === category).map((frag, _key, i) => (
+      <layer
+        ref={content}
+        x={14}
+        y={{ bottom: 14 }}
+        w={206}
+        h={167}
+        scrollHeight={short ? 167 : rowsH}
+        scrollY={offset}
+      >
+        {Fragments.filter((frag) => fragmentListed(frag, category, effect, level, lock)).map((frag, _key, i) => (
           <FragmentRow
             index={i}
+            id={frag.id}
             name={frag.name}
             description={frag.description}
             iconKey={frag.icon}
@@ -25,6 +60,32 @@ export function FragmentList(): Component {
             equipped={equippedInLoadout(frag.id)}
           />
         ))}
+        {short && (
+          <rect
+            x={0}
+            y={{ bottom: 0 }}
+            w="fill"
+            h={167 - rowsH}
+            color={0x000000}
+            fill
+            transparency={shown % 2 === 0 ? 200 : 220}
+          />
+        )}
+        {shown === 0 && (
+          <text
+            x={10}
+            y={20}
+            w={{ fill: 20 }}
+            h={30}
+            text="All Fragments filtered"
+            align="center"
+            valign="middle"
+            lineHeight={18}
+            shadow
+            font={FragmentFonts.HEADER}
+            color={leagueColour(LEAGUE_3)}
+          />
+        )}
       </layer>
       <layer x={{ center: -11 }} y={{ bottom: 12 }} w={16} h={171}>
         <ScrollbarVertical
@@ -39,4 +100,23 @@ export function FragmentList(): Component {
       </layer>
     </>
   );
+}
+
+function fragmentListed(frag: FragmentsRow, category: Int, effect: Int, level: Int, lock: Int): Boolean {
+  if (category > 0 && frag.category !== category) {
+    return false;
+  }
+  if (effect > 0 && frag.setA !== effect && frag.setB !== effect) {
+    return false;
+  }
+  if (level > 0 && fragmentTier(frag.id) !== level) {
+    return false;
+  }
+  if (lock === 1 && fragmentXp(frag.id) > 0) {
+    return false;
+  }
+  if (lock === 2 && fragmentXp(frag.id) < 1) {
+    return false;
+  }
+  return true;
 }

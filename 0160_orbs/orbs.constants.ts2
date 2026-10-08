@@ -197,3 +197,10 @@ export const TooltipTimes = { DWELL: 25, WRAP: 512 } as const;
 export const MapHotkey = { M: 70, CTRL: 82 } as const;
 
 export const STORE_OPSOUND = 6;
+
+export enum RegenRing {
+  HP_BLUE = 0x024def,
+  HP_RED = 0xf00b04,
+  SPEC = 0x03cffd,
+  LINE = 2,
+}

@@ -27,11 +27,9 @@ export function collectorPoints(): Int {
 }
 
 export function queenKills(): Int {
-  return (
-    useServerState(QueenVarbits.KILLS_HI) * QueenScale.HI +
+  return useServerState(QueenVarbits.KILLS_HI) * QueenScale.HI +
     useServerState(QueenVarbits.KILLS_MID) * QueenScale.MID +
-    useServerState(RewardVarps.QUEEN_KILLS_LO)
-  );
+    useServerState(RewardVarps.QUEEN_KILLS_LO);
 }
 
 export function rewardUnlocks(coins: Int): Int {

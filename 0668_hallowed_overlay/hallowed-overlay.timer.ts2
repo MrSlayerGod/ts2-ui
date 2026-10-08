@@ -1,0 +1,56 @@
+import { CS2, createRef, useServerState } from 'ts2';
+
+import { clientClock } from '../lib/lib.engine';
+import { Varbits } from '../lib/game/varbits';
+import { HallowedColor } from './hallowed-overlay.constants';
+
+export const timer = createRef('hallowed_overlay_timer');
+
+export const timerText = createRef('hallowed_overlay_timer_text');
+
+const FLASH = 0xfc0000;
+const PAUSED = 0x69a3fb;
+
+export function hallowedTimerUpdate(seconds: Int): void {
+  const deadline: Int = clientClock() + seconds * 30;
+  timer.onTimer = () => hallowedTimer(deadline);
+}
+
+export function hallowedTimerPause(value: Int): void {
+  if (value > 1) {
+    timer.onTimer = () => hallowedTimer(value);
+  }
+}
+
+function hallowedTimer(deadline: Int): void {
+  hallowedTimerText(deadline);
+}
+
+export function hallowedTimerText(deadline: Int): void {
+  const blocked: Int = useServerState(Varbits.HALLOWED_BLOCK_CLIMBOVER);
+  if (blocked === 1) {
+    timer.onTimer = null;
+    const shown: String = CS2.if_text_get(timerText);
+    if (shown.indexOf('(Paused)') === -1) {
+      timerText.text = `${shown} (Paused)`;
+      timerText.color = PAUSED;
+    }
+    return;
+  }
+  const left: Int = deadline - clientClock();
+  const seconds: Int = left / 50;
+  const minutes: Int = seconds / 60;
+  const rest: Int = seconds % 60;
+  let line: String = 'Time Left: ';
+  if (rest >= 10) {
+    line = `${line}${minutes}:${rest}`;
+  } else {
+    line = `${line}${minutes}:0${rest}`;
+  }
+  timerText.text = line;
+  if (clientClock() % 20 < 10 && seconds <= 10) {
+    timerText.color = FLASH;
+  } else {
+    timerText.color = HallowedColor.TIMER;
+  }
+}

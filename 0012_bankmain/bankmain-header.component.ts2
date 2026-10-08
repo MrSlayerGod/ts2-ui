@@ -3,6 +3,7 @@ import { CS2 } from 'ts2';
 import { Bank, BankColors, BankFonts, BankVars, Grid, POTION_TAB } from './bankmain.constants';
 import { bankmainFilterString, bankmainSearching } from './bankmain.helpers';
 import { BankView, bankView } from './bankmain.state';
+import { BankTutorialButton } from './bankmain-tutorial.component';
 
 export function BankHeader(): Component {
   const bank = useInventory(Bank.INV);
@@ -54,7 +55,7 @@ export function BankHeader(): Component {
         valign="middle"
       />
 
-      <layer x={58} y={7} w={21} h={21} />
+      <BankTutorialButton />
 
       <text
         x={3}

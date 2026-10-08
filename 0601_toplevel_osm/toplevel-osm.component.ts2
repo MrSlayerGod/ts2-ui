@@ -5,6 +5,7 @@ import {
   onUpdated,
   useInterval,
   useOnResize,
+  useRef,
   useRerenderOn,
   useServerState,
   useState,
@@ -13,6 +14,8 @@ import {
 } from 'ts2';
 
 import { cameraZoom } from '../0016_oculus/oculus.camera';
+import { logoutTimerNotifierStep } from '../lib/enhanced/logout-notifier';
+import { MouseoverOps } from '../lib/enhanced/mouseover.component';
 import { SteelFrame } from '../0032_boardgames_draughts/steel-frame.component';
 import { chatboxOpenInput } from '../0162_chatbox/meslayer';
 import { FifthTab } from '../0629_side_journal/side-journal.constants';
@@ -161,10 +164,10 @@ import {
   tapToDropWarning,
   toggleChatbox,
   toggleTabExpansion,
-  toplevelOsmInit,
   touchBuffBarDodgers,
   touchDodgers,
 } from './toplevel-osm.helpers';
+import { toplevelOsmLoad } from './toplevel-osm.keys';
 import {
   batteryCharging,
   batteryLevel,
@@ -190,7 +193,7 @@ export function ToplevelOsm(): Component {
         w="fill"
         h="fill"
         contentType="worldView"
-        onLoad={() => toplevelOsmInit()}
+        onLoad={() => toplevelOsmLoad()}
       />
 
       <layer static ref={safezoneNoclickRef} x={0} y={0} w="fill" h="fill">
@@ -626,7 +629,9 @@ export function ToplevelOsm(): Component {
           w={Frame.POPOUT_W}
           h={{ fill: Frame.POPOUT_H_INSET }}
         />
-        <layer static ref={mouseoverRef} x={0} y={0} w="fill" h="fill" />
+        <layer static ref={mouseoverRef} x={0} y={0} w="fill" h="fill">
+          <MouseoverOps />
+        </layer>
       </layer>
 
       <layer static ref={ehcListenerRef} x={0} y={0} w={1} h={1}>
@@ -1156,11 +1161,13 @@ function ModalBackdrop(): Component {
 
 function EhcHooks(): Component {
   const enhanced: Boolean = enhancedAny();
+  const logoutTimer = useRef();
+  useInterval(() => logoutTimerNotifierStep(), logoutTimer);
   return (
     <>
       {enhanced && (
         <>
-          <rect x={0} y={0} w={1} h={1} transparency={255} />
+          <rect ref={logoutTimer} x={0} y={0} w={1} h={1} transparency={255} />
           <rect x={0} y={0} w={1} h={1} transparency={255} />
           <rect x={0} y={0} w={1} h={1} transparency={255} />
           <rect x={0} y={0} w={1} h={1} transparency={255} />

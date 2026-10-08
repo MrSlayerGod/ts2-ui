@@ -31,7 +31,7 @@ export function EventRewardPane(): Component {
   const paneHeight: Int = universe.height - EventLayout.PANE_H_INSET;
   const half: Int = paneWidth / 2;
   const contentHeight: Int =
-    EventLayout.ROW_Y0 + ((EventRewards.length - 1) / 2) * EventLayout.ROW_STRIDE + EventLayout.CONTENT_TAIL;
+    EventLayout.ROW_Y0 + (EventRewards.length - 1) / 2 * EventLayout.ROW_STRIDE + EventLayout.CONTENT_TAIL;
   const rightX: Int = half - EventLayout.ODD_SHIFT + EventLayout.ROW_X;
 
   return (
@@ -51,7 +51,7 @@ export function EventRewardPane(): Component {
               row={row}
               index={index}
               rowX={index % 2 === 0 ? EventLayout.ROW_X : rightX}
-              rowY={EventLayout.ROW_Y0 + (index / 2) * EventLayout.ROW_STRIDE}
+              rowY={EventLayout.ROW_Y0 + index / 2 * EventLayout.ROW_STRIDE}
               cellW={half}
             />
           ))}
@@ -76,7 +76,7 @@ export function EventRewardPane(): Component {
               row={row}
               index={index}
               rowX={index % 2 === 0 ? EventLayout.ROW_X : rightX}
-              rowY={EventLayout.ROW_Y0 + (index / 2) * EventLayout.ROW_STRIDE}
+              rowY={EventLayout.ROW_Y0 + index / 2 * EventLayout.ROW_STRIDE}
               cellW={half}
               selected={selected}
               points={points}

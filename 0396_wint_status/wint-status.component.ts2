@@ -1,7 +1,9 @@
-import { createRef, useWatch } from 'ts2';
+import { CS2, createRef, useServerState, useWatch } from 'ts2';
 
 import { Anchor, overlayInit } from '../lib/lib.overlay';
 import { Layout, WintColor, WintDodge, WintFonts, WintModel, WintSprites, WintVarbits } from './wint-status.constants';
+import { Sprites } from '../lib/game/sprites';
+import { Varbits } from '../lib/game/varbits';
 import { wintTimerResynch } from './wint-status.helpers';
 
 const timerHost1 = createRef('0396_wint_status_timer_host1');
@@ -22,7 +24,7 @@ export function WintStatus(): Component {
         onLoad={() => overlayInit(timerHost1, status, WintDodge.STATUS, Anchor.LEFT, Anchor.TOP, 1)}
       >
         <layer ref={status} x={0} y={0} w={Layout.PLATE_W} h={Layout.PLATE_H}>
-          <layer x={0} y="bottom" w={Layout.ROSE_BOX} h={Layout.ROSE_BOX}>
+          <layer ref={brazierLayerRef} x={0} y="bottom" w={Layout.ROSE_BOX} h={Layout.ROSE_BOX}>
             <sprite x="center" y="center" w={Layout.ROSE_DISC} h={Layout.ROSE_DISC} sprite={WintSprites.ROSE} />
 
             <model
@@ -38,6 +40,7 @@ export function WintStatus(): Component {
             />
 
             <text
+              ref={pointsRef}
               x={Layout.POINTS_X}
               y={Layout.POINTS_Y}
               w={Layout.POINTS_W}
@@ -50,10 +53,31 @@ export function WintStatus(): Component {
               color={WintColor.POINTS}
             />
 
-            <sprite x={0} y="bottom" w={Layout.MARKER} h={Layout.MARKER} sprite={WintSprites.PYROMANCER} />
-            <sprite x={0} y={0} w={Layout.MARKER} h={Layout.MARKER} sprite={WintSprites.PYROMANCER} />
-            <sprite x="right" y={0} w={Layout.MARKER} h={Layout.MARKER} sprite={WintSprites.PYROMANCER} />
-            <sprite x="right" y="bottom" w={Layout.MARKER} h={Layout.MARKER} sprite={WintSprites.PYROMANCER} />
+            <sprite
+              x={0}
+              y="bottom"
+              w={Layout.MARKER}
+              h={Layout.MARKER}
+              sprite={WintSprites.PYROMANCER}
+              ref={pyro1Ref}
+            />
+            <sprite x={0} y={0} w={Layout.MARKER} h={Layout.MARKER} sprite={WintSprites.PYROMANCER} ref={pyro2Ref} />
+            <sprite
+              x="right"
+              y={0}
+              w={Layout.MARKER}
+              h={Layout.MARKER}
+              sprite={WintSprites.PYROMANCER}
+              ref={pyro3Ref}
+            />
+            <sprite
+              x="right"
+              y="bottom"
+              w={Layout.MARKER}
+              h={Layout.MARKER}
+              sprite={WintSprites.PYROMANCER}
+              ref={pyro4Ref}
+            />
 
             <sprite
               x={Layout.BRAZIER_INSET}
@@ -61,6 +85,7 @@ export function WintStatus(): Component {
               w={Layout.MARKER}
               h={Layout.MARKER}
               sprite={WintSprites.BRAZIER}
+              ref={brazier1Ref}
             />
             <sprite
               x={Layout.BRAZIER_INSET}
@@ -68,6 +93,7 @@ export function WintStatus(): Component {
               w={Layout.MARKER}
               h={Layout.MARKER}
               sprite={WintSprites.BRAZIER}
+              ref={brazier2Ref}
             />
             <sprite
               x={{ right: Layout.BRAZIER_INSET }}
@@ -75,6 +101,7 @@ export function WintStatus(): Component {
               w={Layout.MARKER}
               h={Layout.MARKER}
               sprite={WintSprites.BRAZIER}
+              ref={brazier3Ref}
             />
             <sprite
               x={{ right: Layout.BRAZIER_INSET }}
@@ -82,17 +109,27 @@ export function WintStatus(): Component {
               w={Layout.MARKER}
               h={Layout.MARKER}
               sprite={WintSprites.BRAZIER}
+              ref={brazier4Ref}
             />
           </layer>
 
-          <layer x={0} y={0} w="fill" h={Layout.BAND_H}>
+          <layer ref={warmthRef} x={0} y={0} w="fill" h={Layout.BAND_H}>
             <layer x={0} y={0} w={Layout.BAND_W} h={Layout.BAND_H}>
               <rect x="center" y="center" w="fill" h="fill" color={WintColor.WARMTH_BACK} fill />
-              <rect x={0} y={0} w={{ fill: Layout.WARMTH_FILL_INSET }} h="fill" color={WintColor.WARMTH_FILL} fill />
+              <rect
+                ref={warmthBarRef}
+                x={0}
+                y={0}
+                w={{ fill: Layout.WARMTH_FILL_INSET }}
+                h="fill"
+                color={WintColor.WARMTH_FILL}
+                fill
+              />
               <rect x="center" y="center" w="fill" h="fill" color={WintColor.BLACK} />
             </layer>
 
             <text
+              ref={warmthTitleRef}
               x="center"
               y="center"
               w="fill"
@@ -105,10 +142,10 @@ export function WintStatus(): Component {
             />
           </layer>
 
-          <layer x={0} y={Layout.ENERGY_BAND_Y} w={Layout.BAND_W} h={Layout.BAND_H}>
+          <layer ref={energyRef} x={0} y={Layout.ENERGY_BAND_Y} w={Layout.BAND_W} h={Layout.BAND_H}>
             <layer x="center" y="bottom" w="fill" h={Layout.BAND_H}>
               <rect x="center" y="center" w="fill" h="fill" color={WintColor.ENERGY_BACK} fill />
-              <rect x={0} y={0} w="fill" h="fill" color={WintColor.ENERGY_FILL} fill />
+              <rect ref={energyBarRef} x={0} y={0} w="fill" h="fill" color={WintColor.ENERGY_FILL} fill />
               <rect x={0} y={0} w="fill" h="fill" color={WintColor.BLACK} />
             </layer>
 
@@ -130,4 +167,96 @@ export function WintStatus(): Component {
       </layer>
     </layer>
   );
+}
+
+const brazierLayerRef = createRef();
+const pointsRef = createRef();
+const pyro1Ref = createRef();
+const pyro2Ref = createRef();
+const pyro3Ref = createRef();
+const pyro4Ref = createRef();
+const brazier1Ref = createRef();
+const brazier2Ref = createRef();
+const brazier3Ref = createRef();
+const brazier4Ref = createRef();
+const warmthRef = createRef();
+const warmthBarRef = createRef();
+const warmthTitleRef = createRef();
+const energyRef = createRef();
+const energyBarRef = createRef();
+
+const SIZE_ABS = 0;
+const SIZE_MINUS = 1;
+const SIZE_PROPORTION = 2;
+const POINTS_LOW = 0xff0000;
+const POINTS_OK = 0xffffff;
+const POINTS_THRESHOLD = 500;
+
+export function wintUpdate(
+  points: Int,
+  energy: Int,
+  pyro1: Int,
+  pyro2: Int,
+  pyro3: Int,
+  pyro4: Int,
+  brazier1: Int,
+  brazier2: Int,
+  brazier3: Int,
+  brazier4: Int,
+): void {
+  if (energy === 0) {
+    CS2.if_size_set(0, 0, SIZE_ABS, SIZE_MINUS, energyBarRef);
+    timerHost2.text = "Wintertodt's Energy: 0%";
+  } else if (energy !== -1) {
+    CS2.if_size_set(CS2.interpolate(1, 16384, 0, 3500, energy), 0, SIZE_PROPORTION, SIZE_MINUS, energyBarRef);
+    timerHost2.text = `Wintertodt's Energy: ${CS2.interpolate(1, 100, 0, 3500, energy)}%`;
+  }
+  const warmth: Int = useServerState(Varbits.WINT_WARMTH);
+  if (warmth === 0) {
+    CS2.if_size_set(0, 0, SIZE_ABS, SIZE_MINUS, warmthBarRef);
+    warmthTitleRef.text = 'Your Warmth: 0%';
+  } else if (warmth !== -1) {
+    CS2.if_size_set(CS2.interpolate(1, 16384, 0, 1000, warmth), 0, SIZE_PROPORTION, SIZE_MINUS, warmthBarRef);
+    warmthTitleRef.text = `Your Warmth: ${CS2.interpolate(1, 100, 0, 1000, warmth)}%`;
+  }
+  pointsRef.text = `Points<br>${points}`;
+  pointsRef.color = points < POINTS_THRESHOLD ? POINTS_LOW : POINTS_OK;
+  setPyromancer(pyro1Ref, pyro1);
+  setPyromancer(pyro2Ref, pyro2);
+  setPyromancer(pyro3Ref, pyro3);
+  setPyromancer(pyro4Ref, pyro4);
+  setBrazier(brazier1Ref, brazier1);
+  setBrazier(brazier2Ref, brazier2);
+  setBrazier(brazier3Ref, brazier3);
+  setBrazier(brazier4Ref, brazier4);
+}
+
+function setPyromancer(target: ComponentId, up: Int): void {
+  if (up === 1) {
+    target.sprite = -1 as Sprite;
+    return;
+  }
+  target.sprite = Sprites.WINT_ICONS_3;
+}
+
+function setBrazier(target: ComponentId, state: Int): void {
+  if (state === 0) {
+    target.sprite = Sprites.WINT_ICONS_0;
+  } else if (state === 1) {
+    target.sprite = Sprites.WINT_ICONS_1;
+  } else if (state === 2) {
+    target.sprite = Sprites.WINT_ICONS_2;
+  }
+}
+
+export function wintOutsideEvent(): void {
+  brazierLayerRef.hide = true;
+  energyRef.hide = true;
+  warmthRef.hide = true;
+}
+
+export function wintInsideEvent(): void {
+  brazierLayerRef.hide = false;
+  energyRef.hide = false;
+  warmthRef.hide = false;
 }

@@ -1,4 +1,4 @@
-import { onMounted, onUpdated, useOnResize, useServerState, useState, useUniverse } from 'ts2';
+import { onMounted, onUpdated, sessionState, useOnResize, useServerState, useState, useUniverse } from 'ts2';
 
 import { responsiveCurrentBreakpoint } from '../lib/game/varcs';
 import { scaled } from '../lib/lib.engine';
@@ -302,7 +302,9 @@ function FoundryMeters(): Component {
         sprite={FoundrySprites.ICON_COMPLETION}
       />
 
-      <layer w="fill" h="fill" />
+      <layer w="fill" h="fill">
+        <SweetspotGlow />
+      </layer>
 
       <layer x="right" y={ROW_GAP} w={{ fill: inset * 2 }} h={row}>
         <layer x="center" w={{ fill: Layout.TRACK_INSET_W }} h="fill">
@@ -468,3 +470,28 @@ function FoundryMeters(): Component {
     </>
   );
 }
+
+const foundrySweetspot = sessionState(0);
+
+export function foundrySweetspotSet(mode: Int): void {
+  const [, setMode] = useState(foundrySweetspot);
+  setMode(mode);
+}
+
+function SweetspotGlow(): Component {
+  const [mode] = useState(foundrySweetspot);
+  if (mode !== 1 && mode !== 2) {
+    return null;
+  }
+  const colour: Int = mode === 1 ? SWEETSPOT_YELLOW : SWEETSPOT_GREEN;
+  return (
+    <>
+      <rect x={0} y={0} w="fill" h="fill" color={colour} transparency={0} />
+      <rect x={1} y={1} w={{ fill: 2 }} h={{ fill: 2 }} color={colour} transparency={50} />
+      <rect x={2} y={2} w={{ fill: 4 }} h={{ fill: 4 }} color={colour} transparency={100} />
+    </>
+  );
+}
+
+const SWEETSPOT_YELLOW = 0xfcd703;
+const SWEETSPOT_GREEN = 0x00dd00;

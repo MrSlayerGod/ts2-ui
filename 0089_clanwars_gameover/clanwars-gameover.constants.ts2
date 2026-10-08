@@ -1,3 +1,5 @@
+import { sessionState } from 'ts2';
+
 import { Fonts } from '../lib/game/fonts';
 import { Sprites } from '../lib/game/sprites';
 
@@ -17,7 +19,36 @@ export enum GameoverColor {
 
 export enum GameoverModel {
   BACKDROP = 17180,
+  TROPHY = 3037,
+  SKULL = 20733,
 }
+
+export enum GameoverOutcome {
+  NONE = 0,
+  WON = 1,
+  LOST = 2,
+}
+
+export const GameoverText = {
+  WON: 'Congratulations!',
+  LOST: 'Game Over!',
+};
+
+export const gameoverOutcome = sessionState(0);
+export const gameoverMessage = sessionState('');
+
+export const WinLayout = {
+  DECOR_X: -190,
+  DECOR_Y: 75,
+  DECOR_ZOOM: 700,
+  TITLE_X: 180,
+  TITLE_Y: 90,
+  TITLE_W: 215,
+  MESSAGE_X: 180,
+  MESSAGE_Y: 124,
+  MESSAGE_W: 215,
+  MESSAGE_H: 120,
+};
 
 export const Layout = {
   ROOT_W: 512,
@@ -29,6 +60,9 @@ export const Layout = {
   BACKDROP_PITCH: 512,
   BACKDROP_YAW: 512,
   DECOR_ZOOM: 800,
+  DECOR_PITCH: 512,
+  LOST_DECOR_Y: 23,
+  LOST_DECOR_ZOOM: 550,
 
   TITLE_X: 125,
   TITLE_Y: 95,

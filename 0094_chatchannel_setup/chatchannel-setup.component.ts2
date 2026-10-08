@@ -5,7 +5,6 @@ import {
   ChatChannelColor,
   ChatChannelFonts,
   ChatChannelScrollbar,
-  ChatChannelSort,
   ChatChannelSprites,
   FriendRowLayout,
   Layout,
@@ -14,7 +13,7 @@ import { friendList, tooltipHost } from './chatchannel-setup.refs';
 import { FriendRows } from './friend-list.component';
 import { Instructions } from './instructions.component';
 import { SettingRowPlate } from './setting-row.component';
-import { SortButton } from './sort-button.component';
+import { SortColumns } from './sort-columns.component';
 
 export function ChatchannelSetup(): Component {
   return (
@@ -206,27 +205,7 @@ export function ChatchannelSetup(): Component {
           </layer>
 
           <layer x="center" y={0} w="fill" h={Layout.HEADER_H}>
-            <layer x={Layout.SORT_NAME_X} y="center" w={Layout.SORT_NAME_W} h={{ fill: Layout.HEADER_DROP }}>
-              <SortButton first={ChatChannelSort.NAME_ASC} second={ChatChannelSort.NAME_DESC} />
-            </layer>
-
-            <layer
-              x={{ right: Layout.SORT_RANK_RIGHT }}
-              y="center"
-              w={{ fill: Layout.SORT_RANK_INSET }}
-              h={{ fill: Layout.HEADER_DROP }}
-            >
-              <SortButton first={ChatChannelSort.RANK_ASC} second={ChatChannelSort.RANK_DESC} />
-            </layer>
-
-            <layer
-              x={{ right: Layout.SORT_LEGACY_RIGHT }}
-              y="center"
-              w={Layout.SORT_LEGACY_W}
-              h={{ fill: Layout.HEADER_DROP }}
-            >
-              <SortButton first={ChatChannelSort.LEGACY} second={ChatChannelSort.LEGACY_REVERSED} />
-            </layer>
+            <SortColumns />
 
             <ThinStoneBoxEntrypoint />
           </layer>

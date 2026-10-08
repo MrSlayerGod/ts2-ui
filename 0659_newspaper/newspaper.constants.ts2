@@ -19,3 +19,18 @@ export const Layout = {
   RIGHT_SCROLL: { right: 25, bottom: 60, w: 16, h: 200 },
   CLOSE: { right: 20, y: 19, w: 26, h: 23 },
 } as const;
+
+export enum NewspaperText {
+  COLOUR = 0x1b1b1b,
+  LINE_H = 15,
+  PAD = 10,
+}
+
+export declare const NewspaperScrollbar: {
+  readonly TRACK: typeof Sprites.SCROLLBAR_DRAGGER_V2_3;
+  readonly CAP_TOP: typeof Sprites.SCROLLBAR_DRAGGER_V2_0;
+  readonly THUMB: typeof Sprites.SCROLLBAR_DRAGGER_V2_1;
+  readonly CAP_BOTTOM: typeof Sprites.SCROLLBAR_DRAGGER_V2_2;
+  readonly ARROW_UP: typeof Sprites.SCROLLBAR_V2_0;
+  readonly ARROW_DOWN: typeof Sprites.SCROLLBAR_V2_1;
+};

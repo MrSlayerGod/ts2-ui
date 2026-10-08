@@ -1,5 +1,14 @@
-import { Layout, Proportion, PvpaColor, PvpaFonts, PvpaSprites, PvpaText } from './pvp-arena-spectator.constants';
-import { useInterval, useOnResize, useRef, useState, useUniverse } from 'ts2';
+import {
+  InvGrid,
+  Layout,
+  Proportion,
+  PvpaColor,
+  PvpaFonts,
+  PvpaInventories,
+  PvpaSprites,
+  PvpaText,
+} from './pvp-arena-spectator.constants';
+import { useInterval, useInventory, useOnResize, useRef, useState, useUniverse } from 'ts2';
 
 import { pvpaSpectatorLeftCombo, pvpaSpectatorRightCombo } from '../lib/game/varcs';
 import {
@@ -18,7 +27,10 @@ import {
   pvpaRightPrayer,
   pvpaRightSpecial,
   pvpaRightTrailTarget,
+  pvpaLeftInvStart,
+  pvpaRightInvStart,
 } from './pvp-arena-spectator.state';
+import { SPECTATOR_INV_SLOTS } from './pvpa-spectator-inventory';
 import {
   healthDrawn,
   healthLabel,
@@ -85,7 +97,9 @@ export function PvpArenaSpectator(): Component {
           sprite={PvpaSprites.BACKING}
           tiling
         />
-        <layer x="center" y="center" w={{ fill: Layout.INV_CONTENT_INSET }} h={{ fill: Layout.INV_CONTENT_INSET }} />
+        <layer x="center" y="center" w={{ fill: Layout.INV_CONTENT_INSET }} h={{ fill: Layout.INV_CONTENT_INSET }}>
+          <SpectatorInventory side={0} />
+        </layer>
         <rect x={0} y={0} w="fill" h="fill" />
       </layer>
 
@@ -98,7 +112,9 @@ export function PvpArenaSpectator(): Component {
           sprite={PvpaSprites.BACKING}
           tiling
         />
-        <layer x="center" y="center" w={{ fill: Layout.INV_CONTENT_INSET }} h={{ fill: Layout.INV_CONTENT_INSET }} />
+        <layer x="center" y="center" w={{ fill: Layout.INV_CONTENT_INSET }} h={{ fill: Layout.INV_CONTENT_INSET }}>
+          <SpectatorInventory side={1} />
+        </layer>
         <rect x={0} y={0} w="fill" h="fill" />
       </layer>
 
@@ -388,6 +404,31 @@ function RightStats(): Component {
         shadow
         align="right"
       />
+    </layer>
+  );
+}
+
+function SpectatorInventory({ side }: { side: Int }): Component {
+  const [leftStart] = useState(pvpaLeftInvStart);
+  const [rightStart] = useState(pvpaRightInvStart);
+  const start: Int = side === 1 ? rightStart : leftStart;
+  const inv = useInventory(PvpaInventories.SPECTATOR);
+  return (
+    <layer x={0} y={0} w="fill" h="fill">
+      {inv
+        .filter((item, slot) => start >= 0 && slot >= start && slot < start + SPECTATOR_INV_SLOTS)
+        .map((item, i) => (
+          <sprite
+            x={InvGrid.LEFT + i % InvGrid.COLUMNS * InvGrid.STEP_X}
+            y={InvGrid.TOP + i / InvGrid.COLUMNS * InvGrid.STEP_Y}
+            w={InvGrid.W}
+            h={InvGrid.H}
+            item={item}
+            itemCount={inv.count(start + i)}
+            outline={InvGrid.OUTLINE}
+            shadowColor={InvGrid.SHADOW}
+          />
+        ))}
     </layer>
   );
 }

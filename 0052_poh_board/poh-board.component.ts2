@@ -1,11 +1,20 @@
 import { useRef } from 'ts2';
 
 import { onMobile } from '../lib/lib.helpers';
-import { ScrollbarVertical } from '../lib/scrollbar-vertical.component';
 import { StoneBorderEntrypoint } from '../lib/stone-border-entrypoint.component';
-import { BoardSpriteColumn, BoardStripes, BoardTextColumn } from './board-columns.component';
+import { BoardStripes } from './board-columns.component';
+import {
+  BoardHeadings,
+  BoardNameSender,
+  BoardNotice,
+  BoardScrollbar,
+  BoardTooltip,
+  BoardVLines,
+} from './board-headings.component';
+import { BoardRows } from './board-rows.component';
 import { BoardStoneButton } from './board-text-button.component';
 import { LocationFilter } from './location-filter.component';
+import { resetPohBoard } from './poh-board.state';
 import {
   BOARD_TITLE,
   BoardBar,
@@ -20,13 +29,15 @@ import {
 export function PohBoard(): Component {
   return (
     <>
-      <layer x="center" y="center" w={Layout.PANEL_W} h={Layout.PANEL_H}>
+      <layer x="center" y="center" w={Layout.PANEL_W} h={Layout.PANEL_H} static onLoad={() => resetPohBoard()}>
         <StoneBorderEntrypoint title={BOARD_TITLE} />
 
         <BoardBody x="center" y={Layout.BODY_Y} w={{ fill: Layout.BODY_W_INSET }} h={{ fill: Layout.BODY_H_INSET }} />
       </layer>
 
-      <layer x={0} y={0} w="fill" h="fill" />
+      <layer x={0} y={0} w="fill" h="fill">
+        <BoardTooltip />
+      </layer>
     </>
   );
 }
@@ -46,42 +57,21 @@ function BoardBody(): Component {
           lineWidth={Layout.RULE_WIDTH}
           color={BoardColor.RULE}
         />
+        <BoardHeadings />
       </layer>
 
       <layer ref={pane} x={0} y={rowHeight} w={{ fill: Layout.PANE_W_INSET }} h={{ fill: paneInset }}>
         <BoardStripes rowHeight={rowHeight} />
-        <BoardTextColumn />
-        <BoardTextColumn />
-        <layer x={0} y={0} w="fill" h="fill" />
-        <BoardTextColumn />
-        <BoardTextColumn />
-        <BoardTextColumn />
-        <BoardTextColumn />
-        <BoardTextColumn />
-        <BoardTextColumn />
-        <BoardTextColumn />
-        <BoardSpriteColumn />
-        <BoardTextColumn />
-        <BoardTextColumn />
-        <BoardTextColumn />
-        <BoardTextColumn />
-        <BoardTextColumn />
-        <BoardTextColumn />
+        <BoardRows />
       </layer>
 
       <layer x="right" y={rowHeight} w={Layout.BAR_W} h={{ fill: paneInset }}>
-        <ScrollbarVertical
-          content={pane}
-          track={BoardBar.TRACK}
-          capTopSprite={BoardBar.CAP_TOP}
-          thumbSprite={BoardBar.THUMB}
-          capBottomSprite={BoardBar.CAP_BOTTOM}
-          arrowUp={BoardBar.ARROW_UP}
-          arrowDown={BoardBar.ARROW_DOWN}
-        />
+        <BoardScrollbar pane={pane} />
       </layer>
 
-      <layer x={0} y={rowHeight} w={{ fill: Layout.PANE_W_INSET }} h={{ fill: paneInset }} />
+      <layer x={0} y={rowHeight} w={{ fill: Layout.PANE_W_INSET }} h={{ fill: paneInset }}>
+        <BoardVLines />
+      </layer>
 
       <layer x={0} y="bottom" w="fill" h={Layout.FOOTER_H}>
         <layer
@@ -152,18 +142,8 @@ function BoardBody(): Component {
         <line x={0} y={0} w="fill" lineWidth={Layout.RULE_WIDTH} color={BoardColor.RULE} />
       </layer>
 
-      <text
-        x={0}
-        y={0}
-        w="fill"
-        h="fill"
-        text={Copy.LOADING}
-        font={BoardFonts.PLACEHOLDER}
-        color={BoardColor.LABEL}
-        align="center"
-        valign="middle"
-        shadow
-      />
+      <BoardNameSender />
+      <BoardNotice />
     </layer>
   );
 }

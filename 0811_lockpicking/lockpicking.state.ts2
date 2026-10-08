@@ -44,8 +44,7 @@ export function packPins(
   d1: Int,
   d0: Int,
 ): Int {
-  return (
-    minmax(0, 5, d9) * CS2.pow(6, 9) +
+  return minmax(0, 5, d9) * CS2.pow(6, 9) +
     minmax(0, 5, d8) * CS2.pow(6, 8) +
     minmax(0, 5, d7) * CS2.pow(6, 7) +
     minmax(0, 5, d6) * CS2.pow(6, 6) +
@@ -54,8 +53,7 @@ export function packPins(
     minmax(0, 5, d3) * CS2.pow(6, 3) +
     minmax(0, 5, d2) * CS2.pow(6, 2) +
     minmax(0, 5, d1) * 6 +
-    minmax(0, 5, d0)
-  );
+    minmax(0, 5, d0);
 }
 
 export function resetLock(): void {

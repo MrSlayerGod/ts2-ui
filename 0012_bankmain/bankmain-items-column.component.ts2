@@ -2,6 +2,7 @@ import { useState } from 'ts2';
 import { BankBottomBar } from './bankmain-bottom.component';
 import { BankItems } from './bankmain-items.component';
 import { BankLeftColumn } from './bankmain-left-column.component';
+import { PotionStoreContainer } from './bankmain-potionstore.component';
 import { BankTabs } from './bankmain-tabs.component';
 import { BankView, bankView } from './bankmain.state';
 
@@ -16,11 +17,7 @@ export function BankItemsColumn(): Component {
 
       <BankItems />
 
-      <layer x={{ right: 1 }} y={{ bottom: 39 }} w={{ fill: 53 }} h={{ fill: 81 }} hide noClickThrough>
-        <layer x="center" y="center" w="fill" h="fill" />
-        <layer x={{ right: 16 }} y="bottom" w={{ fill: 16 }} h="fill" />
-        <layer x="right" y="bottom" w={16} h="fill" />
-      </layer>
+      <PotionStoreContainer />
 
       <BankBottomBar />
 

@@ -392,6 +392,7 @@ export const voteQ6Blob = sessionState('');
 export const voteQ7Blob = sessionState('');
 
 function voteStore(question: Int, shape: Int, answer: Int): void {
+  voteRowRelease(question);
   const [, setShape0] = useState(voteQ0Shape);
   const [, setShape1] = useState(voteQ1Shape);
   const [, setShape2] = useState(voteQ2Shape);
@@ -437,6 +438,7 @@ function voteStore(question: Int, shape: Int, answer: Int): void {
 }
 
 function voteStoreShape(question: Int, shape: Int): void {
+  voteRowRelease(question);
   const [, setShape0] = useState(voteQ0Shape);
   const [, setShape1] = useState(voteQ1Shape);
   const [, setShape2] = useState(voteQ2Shape);
@@ -633,6 +635,120 @@ export function voteSelectCheck(question: Int, flags: Int, mask: Int): void {
   voteSelect(question, flags, mask, 0);
 }
 
+export const voteQ0RowOn = sessionState(0);
+export const voteQ1RowOn = sessionState(0);
+export const voteQ2RowOn = sessionState(0);
+export const voteQ3RowOn = sessionState(0);
+export const voteQ4RowOn = sessionState(0);
+export const voteQ5RowOn = sessionState(0);
+export const voteQ6RowOn = sessionState(0);
+export const voteQ7RowOn = sessionState(0);
+
+export const voteQ0RowTick = sessionState(0);
+export const voteQ1RowTick = sessionState(0);
+export const voteQ2RowTick = sessionState(0);
+export const voteQ3RowTick = sessionState(0);
+export const voteQ4RowTick = sessionState(0);
+export const voteQ5RowTick = sessionState(0);
+export const voteQ6RowTick = sessionState(0);
+export const voteQ7RowTick = sessionState(0);
+
+export const voteRowHeld = sessionState(0);
+
+export const voteRowOnBank = [
+  voteQ0RowOn,
+  voteQ1RowOn,
+  voteQ2RowOn,
+  voteQ3RowOn,
+  voteQ4RowOn,
+  voteQ5RowOn,
+  voteQ6RowOn,
+  voteQ7RowOn,
+] as const;
+
+export const voteRowTickBank = [
+  voteQ0RowTick,
+  voteQ1RowTick,
+  voteQ2RowTick,
+  voteQ3RowTick,
+  voteQ4RowTick,
+  voteQ5RowTick,
+  voteQ6RowTick,
+  voteQ7RowTick,
+] as const;
+
+const voteShapeBank = [
+  voteQ0Shape,
+  voteQ1Shape,
+  voteQ2Shape,
+  voteQ3Shape,
+  voteQ4Shape,
+  voteQ5Shape,
+  voteQ6Shape,
+  voteQ7Shape,
+] as const;
+
+const voteAnswerBank = [
+  voteQ0Answer,
+  voteQ1Answer,
+  voteQ2Answer,
+  voteQ3Answer,
+  voteQ4Answer,
+  voteQ5Answer,
+  voteQ6Answer,
+  voteQ7Answer,
+] as const;
+
+function voteRowTicks(shape: Int, answer: Int): Int {
+  if (voteShapeSkipped(shape)) {
+    return 0;
+  }
+  if (voteShapeKind(shape) === VoteKind.CHECK) {
+    return answer;
+  }
+  if (answer < 0 || answer >= VOTE_MAX_ANSWERS) {
+    return 0;
+  }
+  return CS2.bit_set(0, answer);
+}
+
+export function voteRowFlag(question: Int, answer: Int, enabled: Int, selected: Int): void {
+  const [shape] = useState(voteShapeBank[question]);
+  const [chosen] = useState(voteAnswerBank[question]);
+  const [rowsOn, setRowsOn] = useState(voteRowOnBank[question]);
+  const [rowsTick, setRowsTick] = useState(voteRowTickBank[question]);
+  const [held, setHeld] = useState(voteRowHeld);
+  if (question < 0 || question >= VOTE_MAX_QUESTIONS || answer < 0 || answer >= VOTE_MAX_ANSWERS) {
+    return;
+  }
+  const kind: Int = voteShapeKind(shape);
+  if (kind !== VoteKind.RADIO && kind !== VoteKind.CHECK) {
+    return;
+  }
+  let on: Int = rowsOn;
+  let tick: Int = rowsTick;
+  if (!hasBit(held, question)) {
+    on = voteShapeReadOnly(shape) ? 0 : -1;
+    tick = voteRowTicks(shape, chosen);
+  }
+  if (enabled !== -1) {
+    on = CS2.bit_range_to_int_set(on, enabled, answer, answer);
+  }
+  if (selected !== -1) {
+    tick = CS2.bit_range_to_int_set(tick, selected, answer, answer);
+  }
+  setRowsOn(on);
+  setRowsTick(tick);
+  setHeld(CS2.bit_set(held, question));
+}
+
+function voteRowRelease(question: Int): void {
+  const [held, setHeld] = useState(voteRowHeld);
+  if (hasBit(held, question)) {
+    setHeld(CS2.bit_clear(held, question));
+  }
+}
+
 export const VOTE_MAX_GRID_ITEMS = 32;
 
 export const VOTE_MAX_GRID_COLUMNS = 8;
@@ -717,13 +833,11 @@ export function voteGridItemIndex(blob: String, i: Int): Int {
 }
 
 export function voteGridItemChoice(blob: String, i: Int): Int {
-  return (
-    CS2.bit_range_get(
+  return CS2.bit_range_get(
       voteRecordHead(blob, voteGridItemAt(blob, i)),
       VoteGridItemWord.CHOICE_START,
       VoteGridItemWord.CHOICE_END,
-    ) - 1
-  );
+    ) - 1;
 }
 
 export function voteGridItemSkippable(blob: String, i: Int): Boolean {

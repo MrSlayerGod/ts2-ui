@@ -84,7 +84,7 @@ function LoadoutBacking({
     return null;
   }
   const chosen: Boolean = row === selected;
-  const rest: Int = chosen ? RowTrans.SELECTED : row % 2 === 0 ? RowTrans.EVEN : RowTrans.ODD;
+  const rest: Int = chosen ? RowTrans.SELECTED : (row % 2 === 0 ? RowTrans.EVEN : RowTrans.ODD);
   return (
     <rect
       x="center"

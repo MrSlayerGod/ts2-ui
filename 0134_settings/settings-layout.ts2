@@ -1,5 +1,6 @@
 import { useServerState } from 'ts2';
 import { textLineCount } from '../lib/lib.engine';
+import { deadzoneReachesPastSafeArea } from '../0601_toplevel_osm/toplevel-osm.deadzone';
 import { onMobile } from '../lib/lib.helpers';
 import { Row, SettingsFonts, SettingsVarbits } from './settings.constants';
 import { SettingsCategories } from './settings-categories.data';
@@ -147,7 +148,20 @@ export function rowInvisible(row: SettingsRow, searching: Boolean): Boolean {
     return true;
   }
 
+  if ((row.needsSafeArea ?? false) && !settingsCustomCheck(row.settingId ?? 0)) {
+    return true;
+  }
+
   return false;
+}
+
+const DEADZONE_SETTING = 53;
+
+export function settingsCustomCheck(settingId: Int): Boolean {
+  if (settingId === DEADZONE_SETTING && !deadzoneReachesPastSafeArea()) {
+    return false;
+  }
+  return true;
 }
 
 function headerIsEmpty(header: SettingsRow): Boolean {
@@ -233,7 +247,7 @@ export function isGridCell(row: SettingsRow): Boolean {
 }
 
 export function gridStep(state: Int, row: SettingsRow): Int {
-  const stepped: Int = state === Grid.fresh ? 0 : state === 0 ? 1 : Grid.lastColumn;
+  const stepped: Int = state === Grid.fresh ? 0 : (state === 0 ? 1 : Grid.lastColumn);
   const forced: Int = row.column ?? 0;
   return forced !== -1 && forced > stepped ? forced : stepped;
 }

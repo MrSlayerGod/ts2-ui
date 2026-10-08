@@ -1,0 +1,163 @@
+import { CS2, sessionState, useServerState, useState } from 'ts2';
+
+import { GameframeSlot, gameframeSlot } from '../lib/lib.gameframe';
+import { pipeHead, pipeTail } from '../lib/lib.format';
+import { partylistKnows } from '../lib/raids-partylist';
+import { Varbits } from '../lib/game/varbits';
+import { raidsCount, raidsListsortList } from '../lib/game/varcs';
+import { ListKey, SLOT_COUNT } from './toa-partylist.constants';
+
+export const toaListData = sessionState('');
+
+export const toaListBuilt = sessionState(0);
+
+export const toaListEmptyFiltered = sessionState(0);
+
+export const toaListPressedSlot = sessionState(-1);
+export const toaListPressedUntil = sessionState(0);
+
+export const toaListResetLow = sessionState(0);
+export const toaListResetHigh = sessionState(0);
+
+export function slotReset(low: Int, high: Int, slot: Int): Boolean {
+  if (slot < 0) {
+    return false;
+  }
+  return slot < ListKey.BITS ? CS2.testbit(low, slot) : CS2.testbit(high, slot - ListKey.BITS);
+}
+
+function panelOpen(): Boolean {
+  return CS2.if_sub_has(gameframeSlot(GameframeSlot.VIEWPORT));
+}
+
+export function recordStart(lines: String, slot: Int): Int {
+  return lines.indexOf(`^${slot}~`, 0);
+}
+
+export function lineOf(lines: String, slot: Int): String {
+  const start: Int = recordStart(lines, slot);
+  if (start === -1) {
+    return '';
+  }
+  const from: Int = lines.indexOf('~', start) + 1;
+  const end: Int = lines.indexOf('^', from);
+  return end === -1 ? lines.substring(from, lines.length) : lines.substring(from, end);
+}
+
+function withoutSlot(lines: String, slot: Int): String {
+  const start: Int = recordStart(lines, slot);
+  if (start === -1) {
+    return lines;
+  }
+  const end: Int = lines.indexOf('^', start + 1);
+  if (end === -1) {
+    return lines.substring(0, start);
+  }
+  return `${lines.substring(0, start)}${lines.substring(end, lines.length)}`;
+}
+
+export function lineField(line: String, n: Int): String {
+  let rest: String = line;
+  let skipped: Int = 0;
+  while (skipped < n) {
+    rest = pipeTail(rest);
+    skipped = skipped + 1;
+  }
+  return pipeHead(rest);
+}
+
+function keyCell(key: String): String {
+  const cut: String = key.length > ListKey.W ? key.substring(0, ListKey.W) : key;
+  return `${`${cut.length}`.padStart(2, '0')}${cut}${ListKey.PAD.substring(0, ListKey.W - cut.length)}`;
+}
+
+function slotKeys(line: String, slot: Int): String {
+  return `${keyCell(`${lineField(line, 8).padStart(3, '0')}${slot}`)}` +
+    `${keyCell(CS2.tags_remove(lineField(line, 0)))}` +
+    `${keyCell(`${lineField(line, 9).padStart(3, '0')}${slot}`)}` +
+    `${keyCell(`${lineField(line, 10).padStart(3, '0')}${slot}`)}` +
+    `${keyCell(`${lineField(line, 11).padStart(3, '0')}${slot}`)}` +
+    `${keyCell(CS2.tags_remove(lineField(line, 12)))}` +
+    `${keyCell(lineField(line, 13).padStart(10, '0'))}`;
+}
+
+function keepsLine(line: String, filtered: Int): Boolean {
+  const leader: String = CS2.tags_remove(lineField(line, 0));
+  if (filtered === 0 || CS2.compare(leader, CS2.chat_playername()) === 0) {
+    return true;
+  }
+  if (partylistKnows(leader)) {
+    return true;
+  }
+  let field: Int = 1;
+  while (field <= 7) {
+    if (partylistKnows(lineField(line, field))) {
+      return true;
+    }
+    field = field + 1;
+  }
+  return false;
+}
+
+function knownSort(sort: Int): Boolean {
+  if (sort === 0 || sort === 1 || sort === 4 || sort === 5 || sort === 12 || sort === 13) {
+    return true;
+  }
+  return sort >= 16 && sort <= 23;
+}
+
+export function toaPartylistAddline(slot: Int, line: String): void {
+  if (!panelOpen()) {
+    return;
+  }
+  if (slot < 0 || slot >= SLOT_COUNT) {
+    return;
+  }
+  const [data, setData] = useState(toaListData);
+  const [count, setCount] = useState(raidsCount);
+  const [pressed, setPressed] = useState(toaListPressedSlot);
+  const [, setPressedUntil] = useState(toaListPressedUntil);
+  const [low, setLow] = useState(toaListResetLow);
+  const [high, setHigh] = useState(toaListResetHigh);
+  const filtered: Int = useServerState(Varbits.TOA_PARTYLIST_FILTER);
+
+  const block: Int = SLOT_COUNT * ListKey.SLOT_W;
+  const full: String = data.length >= block ? data : blankKeys(block);
+  let kept: String = withoutSlot(full, slot);
+  if (pressed === slot) {
+    setPressed(-1);
+    setPressedUntil(0);
+  }
+  if (slot < ListKey.BITS) {
+    setLow(CS2.bit_clear(low, slot));
+  } else {
+    setHigh(CS2.bit_clear(high, slot - ListKey.BITS));
+  }
+
+  if (line.length > 0 && keepsLine(line, filtered)) {
+    kept =
+      `${kept.substring(0, slot * ListKey.SLOT_W)}${slotKeys(line, slot)}` +
+      `${kept.substring((slot + 1) * ListKey.SLOT_W, kept.length)}^${slot}~${line}`;
+    setCount(count + 1);
+  }
+  setData(kept);
+
+  if (slot >= SLOT_COUNT - 1) {
+    const [sort, setSort] = useState(raidsListsortList);
+    if (!knownSort(sort)) {
+      setSort(1);
+    }
+    const [, setEmptyFiltered] = useState(toaListEmptyFiltered);
+    const [, setBuilt] = useState(toaListBuilt);
+    setEmptyFiltered(filtered === 0 ? 0 : 1);
+    setBuilt(1);
+  }
+}
+
+function blankKeys(length: Int): String {
+  let out: String = '';
+  while (out.length + ListKey.PAD.length <= length) {
+    out = `${out}${ListKey.PAD}`;
+  }
+  return `${out}${ListKey.PAD.substring(0, length - out.length)}`;
+}

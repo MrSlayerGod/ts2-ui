@@ -405,7 +405,7 @@ function PassiveBoxBody(): Component {
         y={28}
         w={{ fill: 14 }}
         h={{ fill: 33 }}
-        text={flag === -1 ? '' : collapsed ? `${textDevice('Click', 'Tap')} to expand...` : passive}
+        text={flag === -1 ? '' : (collapsed ? `${textDevice('Click', 'Tap')} to expand...` : passive)}
         font={RelicFonts.BODY}
         color={Effects.TEXT_COLOUR}
         align="left"

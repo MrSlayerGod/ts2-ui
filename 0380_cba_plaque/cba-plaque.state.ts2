@@ -1,0 +1,25 @@
+import { sessionState, useState } from 'ts2';
+
+export const plaqueBody = sessionState('');
+
+export const plaqueSplit = sessionState(0);
+
+export const plaqueCalls = sessionState(0);
+
+export function cbaPlaqueSetText(headers: String, winners: String): void {
+  const [, setBody] = useState(plaqueBody);
+  const [, setSplit] = useState(plaqueSplit);
+  const [calls, setCalls] = useState(plaqueCalls);
+  setBody(headers.concat(winners));
+  setSplit(headers.length);
+  setCalls(calls + 1);
+}
+
+export function resetCbaPlaque(): void {
+  const [, setBody] = useState(plaqueBody);
+  const [, setSplit] = useState(plaqueSplit);
+  const [, setCalls] = useState(plaqueCalls);
+  setBody('');
+  setSplit(0);
+  setCalls(0);
+}

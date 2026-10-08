@@ -310,7 +310,7 @@ export function MenuNew(): Component {
                 ref={thumb}
                 x={
                   Bar.ARROW +
-                  ((gutter.width - thumbWidthOf(bar.width, pane.width, right)) * pane.scrollX) /
+                  (gutter.width - thumbWidthOf(bar.width, pane.width, right)) * pane.scrollX /
                     Math.max(1, pane.scrollWidth - pane.width)
                 }
                 y="center"
@@ -327,7 +327,7 @@ export function MenuNew(): Component {
                   capRight.x = offset + Bar.ARROW + thumb.width - Bar.CAP;
                   const travel: Int = Math.max(1, gutter.width - thumb.width);
                   const range: Int = pane.scrollWidth - pane.width;
-                  pane.scrollX = (offset * range) / travel;
+                  pane.scrollX = offset * range / travel;
                 }}
               />
             )}
@@ -580,7 +580,7 @@ function closeKey(keyCode: Int): void {
 function thumbWidthOf(barWidth: Int, contentWidth: Int, extent: Int): Int {
   const raw: Int = Math.max(
     Bar.MIN_THUMB,
-    extent > 0 ? ((barWidth - Bar.ARROW * 2) * contentWidth) / extent : barWidth - Bar.ARROW * 2,
+    extent > 0 ? (barWidth - Bar.ARROW * 2) * contentWidth / extent : barWidth - Bar.ARROW * 2,
   );
   return Math.min(Math.max(Bar.MIN_THUMB, barWidth - Bar.ARROW * 2), raw);
 }
@@ -588,7 +588,7 @@ function thumbWidthOf(barWidth: Int, contentWidth: Int, extent: Int): Int {
 function trackScrollX(gutter: Ref, thumb: Ref, capLeft: Ref, capRight: Ref, content: Ref): void {
   const travel: Int = Math.max(1, gutter.width - thumb.width);
   const range: Int = Math.max(1, content.scrollWidth - content.width);
-  const at: Int = Bar.ARROW + (travel * content.scrollX) / range;
+  const at: Int = Bar.ARROW + travel * content.scrollX / range;
   thumb.x = at;
   capLeft.x = at;
   capRight.x = at + thumb.width - Bar.CAP;

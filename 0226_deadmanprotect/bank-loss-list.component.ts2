@@ -69,8 +69,8 @@ function BankLossCell({
 
   return (
     <sprite
-      x={originX + (index % Layout.CELL_COLUMNS) * Layout.CELL_STRIDE_X}
-      y={Layout.CELL_ORIGIN_Y + (index / Layout.CELL_COLUMNS) * Layout.CELL_STRIDE_Y}
+      x={originX + index % Layout.CELL_COLUMNS * Layout.CELL_STRIDE_X}
+      y={Layout.CELL_ORIGIN_Y + index / Layout.CELL_COLUMNS * Layout.CELL_STRIDE_Y}
       w={Layout.CELL_W}
       h={Layout.CELL_H}
       item={item}

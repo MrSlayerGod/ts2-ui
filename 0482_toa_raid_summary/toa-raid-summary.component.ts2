@@ -4,7 +4,16 @@ import { tooltipHide } from '../lib/tooltip.component';
 import { RoomTimesTab } from './time-tab.component';
 import { Layout, SummaryColor, SummaryFonts, SummarySprites, TimeTab } from './toa-raid-summary.constants';
 import { bossTimesTable, pathTimesTable, tooltip } from './toa-raid-summary.refs';
-import { showTimeTab } from './toa-raid-summary.state';
+import { resetSummaryRows, showTimeTab } from './toa-raid-summary.state';
+import {
+  SummaryMvps,
+  SummaryNames,
+  SummaryNumbers,
+  SummaryStripes,
+  SummaryTitles,
+  summaryIconTip,
+  summaryIconTipOff,
+} from './toa-raid-summary.rows.component';
 
 export function ToaRaidSummary(): Component {
   return (
@@ -39,6 +48,8 @@ export function ToaRaidSummary(): Component {
                 w={Layout.BADGE_W}
                 h={Layout.BADGE_H}
                 sprite={SummarySprites.COLUMN_C}
+                onMouseRepeat={(event) => summaryIconTip(event.component, 'Deaths')}
+                onMouseLeave={() => summaryIconTipOff()}
               />
               <sprite
                 x={{ center: Layout.BADGE_DX_B }}
@@ -46,6 +57,8 @@ export function ToaRaidSummary(): Component {
                 w={Layout.BADGE_W}
                 h={Layout.BADGE_H}
                 sprite={SummarySprites.COLUMN_B}
+                onMouseRepeat={(event) => summaryIconTip(event.component, 'Damage taken')}
+                onMouseLeave={() => summaryIconTipOff()}
               />
               <sprite
                 x={{ center: Layout.BADGE_DX_A }}
@@ -53,6 +66,8 @@ export function ToaRaidSummary(): Component {
                 w={Layout.BADGE_W}
                 h={Layout.BADGE_H}
                 sprite={SummarySprites.COLUMN_A}
+                onMouseRepeat={(event) => summaryIconTip(event.component, 'Damage dealt')}
+                onMouseLeave={() => summaryIconTipOff()}
               />
               <text
                 x={Layout.TITLE_X}
@@ -80,14 +95,27 @@ export function ToaRaidSummary(): Component {
               />
             </layer>
 
-            <layer x={0} y={0} w={Layout.BODY_ROWS_W} h={Layout.BODY_ROWS_H} />
-
-            <layer x={0} y={0} w={{ fill: Layout.COL_NAME_INSET }} h="fill" />
-            <layer x={{ right: Layout.COL_TITLE_X }} y={0} w={Layout.COL_TITLE_W} h="fill" />
-            <layer x={Layout.COL_D_X} y={0} w={Layout.COL_D_W} h="fill" />
-            <layer x={Layout.COL_C_X} y={0} w={Layout.COL_C_W} h="fill" />
-            <layer x={Layout.COL_B_X} y={0} w={Layout.COL_B_W} h="fill" />
-            <layer x={0} y={0} w={Layout.NAME_W} h={Layout.HEADER_H} />
+            <layer x={0} y={0} w={Layout.BODY_ROWS_W} h={Layout.BODY_ROWS_H} onLoad={() => resetSummaryRows()}>
+              <SummaryStripes />
+            </layer>
+            <layer x={0} y={0} w={{ fill: Layout.COL_NAME_INSET }} h="fill">
+              <SummaryMvps />
+            </layer>
+            <layer x={{ right: Layout.COL_TITLE_X }} y={0} w={Layout.COL_TITLE_W} h="fill">
+              <SummaryTitles />
+            </layer>
+            <layer x={Layout.COL_D_X} y={0} w={Layout.COL_D_W} h="fill">
+              <SummaryNumbers at={7} cap={Layout.DEATHS_CAP} />
+            </layer>
+            <layer x={Layout.COL_C_X} y={0} w={Layout.COL_C_W} h="fill">
+              <SummaryNumbers at={6} cap={Layout.DAMAGE_CAP} />
+            </layer>
+            <layer x={Layout.COL_B_X} y={0} w={Layout.COL_B_W} h="fill">
+              <SummaryNumbers at={5} cap={Layout.DAMAGE_CAP} />
+            </layer>
+            <layer x={0} y={0} w={Layout.NAME_W} h="fill">
+              <SummaryNames />
+            </layer>
 
             <line x={0} y={Layout.RULE_Y} w="fill" h={0} color={SummaryColor.RULE} lineWidth={Layout.RULE_WIDTH} />
             <line

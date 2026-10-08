@@ -79,9 +79,9 @@ export function InventoryHighlights({ forEquipmentSide }: { forEquipmentSide: In
   return (
     <layer w="fill" h="fill">
       {carried.map((item, slot) =>
-        sideTakes === forEquipmentSide && item !== -1 && trackedSlot(item) !== -1 ? (
+        (sideTakes === forEquipmentSide && item !== -1 && trackedSlot(item) !== -1 ? (
           <HighlightBorder slot={slot} tracked={trackedSlot(item)} forEquipmentSide={forEquipmentSide} />
-        ) : null,
+        ) : null),
       )}
     </layer>
   );
@@ -105,12 +105,12 @@ function HighlightBorder({
   }
   const slotX: Int =
     forEquipmentSide === 1
-      ? (slot % 4) * 42
-      : InventoryLayout.ORIGIN_X + (slot % InventoryLayout.COLUMNS) * InventoryLayout.COLUMN_PITCH;
+      ? slot % 4 * 42
+      : InventoryLayout.ORIGIN_X + slot % InventoryLayout.COLUMNS * InventoryLayout.COLUMN_PITCH;
   const slotY: Int =
     forEquipmentSide === 1
-      ? (slot / 4) * 36
-      : InventoryLayout.ORIGIN_Y + (slot / InventoryLayout.COLUMNS) * InventoryLayout.ROW_PITCH;
+      ? slot / 4 * 36
+      : InventoryLayout.ORIGIN_Y + slot / InventoryLayout.COLUMNS * InventoryLayout.ROW_PITCH;
   const border = HighlightBorders.at(style);
   if (border === null) {
     return (

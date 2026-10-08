@@ -281,7 +281,7 @@ export function specDescription(weapon: Item, withSol: Int, capped: Int): String
         weapon === SpecItem.DARK_BOW_2 ||
         weapon === SpecItem.DARK_BOW_3 ||
         weapon === SpecItem.DARK_BOW_4 ||
-        (withSol === 1 && weapon === SpecItem.DARK_BOW_5)) &&
+        withSol === 1 && weapon === SpecItem.DARK_BOW_5) &&
       dragonArrow(ammo)
     ) {
       text = `${DESCENT_8} (${stringOf(cost / 10)}%)`;

@@ -5,12 +5,11 @@ import { Sprites } from '../lib/game/sprites';
 
 export const raidsLobbyPartylistRef = createRef('raids_lobby_partylist');
 
-export const listRef = createRef('raids_lobby_partylist_list');
-
 export const tooltipRef = createRef('raids_lobby_partylist_tooltip');
 
 export declare const RaidsPartylistFonts: {
   readonly BODY: typeof Fonts.P12_FULL;
+  readonly AGE: typeof Fonts.P11_FULL;
 };
 
 export declare const RaidsPartylistScrollbar: {
@@ -24,10 +23,17 @@ export declare const RaidsPartylistScrollbar: {
 
 export declare const RaidsPartylistSprites: {
   readonly BACKING: typeof Sprites.TRADEBACKING_DARK;
+  readonly CHALLENGE: typeof Sprites.RAIDS_CHALLENGE_ICON;
+  readonly ARROW_DOWN: typeof Sprites.SORTARROWS_0;
+  readonly ARROW_UP: typeof Sprites.SORTARROWS_1;
 };
 
 export enum RaidsPartylistColor {
   LOADING = 0x808080,
+  CELL = 0xff981f,
+  FULL = 0xff0000,
+  AGE = 0x9f9f9f,
+  ROW = 0xffffff,
 }
 
 export const Copy = {
@@ -36,6 +42,62 @@ export const Copy = {
   REFRESH: 'Refresh',
   MAKE_PARTY: 'Make party',
   MY_PARTY: '<col=ffff00>My party</col>',
+  VIEW_PARTY: 'View party:',
+  NONE: '<col=9f9f9f>-</col>',
+  NO_PARTIES: 'No parties are currently listed.',
+  TIP_MEMBERS: 'Sort by members',
+  TIP_SIZE: 'Sort by target size',
+  TIP_LEADER: 'Sort by leader name',
+  TIP_COMBAT: 'Sort by preferred combat level',
+  TIP_TOTAL: 'Sort by preferred skill total',
+  TIP_SCALING: 'Sort by scaling',
+  TIP_CHALLENGE: 'Sort by challenge mode',
+  TIP_AGE: 'Sort by age',
+};
+
+export const ListSort = {
+  MEMBERS_ASC: 0,
+  MEMBERS_DESC: 1,
+  SIZE_ASC: 2,
+  SIZE_DESC: 3,
+  LEADER_ASC: 4,
+  LEADER_DESC: 5,
+  COMBAT_ASC: 6,
+  COMBAT_DESC: 7,
+  TOTAL_ASC: 8,
+  TOTAL_DESC: 9,
+  CHALLENGE_ASC: 10,
+  CHALLENGE_DESC: 11,
+  AGE_ASC: 12,
+  AGE_DESC: 13,
+  SCALING_ASC: 24,
+  SCALING_DESC: 25,
+};
+
+export const ListKey = {
+  SIZE: 0,
+  LEADER: 1,
+  COMBAT: 2,
+  TOTAL: 3,
+  SCALING: 4,
+  CHALLENGE: 5,
+  AGE: 6,
+  FILL: 7,
+  NONE: -1,
+  SLOT_W: 176,
+  BITS: 30,
+};
+
+export const ListRow = {
+  EVEN: 245,
+  ODD: 230,
+  HOVER: 210,
+  PRESSED: 190,
+  BUSY_CYCLES: 80,
+  ARROW_DIM: 100,
+  ARROW_LIVE_HOVER: 120,
+  ARROW_DIM_HOVER: 200,
+  TIP_WRAP: 190,
 };
 
 export const Layout = {
@@ -75,6 +137,18 @@ export const Layout = {
   LIST_INSET_H: 15,
 
   ROW_H: 18,
+  CELL_SIZE_X: 35,
+  CELL_LEADER_X: 80,
+  CELL_COMBAT_X: 225,
+  CELL_TOTAL_X: 265,
+  CELL_SCALING_X: 310,
+  CELL_CHALLENGE_X: 347,
+  CELL_CHALLENGE_DY: 2,
+  CELL_CHALLENGE: 16,
+  CELL_AGE_INSET_W: 365,
+
+  SORT_ARROW_W: 7,
+  SORT_ARROW_H: 5,
 
   SCROLLBAR_RIGHT: 2,
   SCROLLBAR_W: 16,
@@ -87,7 +161,16 @@ export const Layout = {
   TOOLTIP: 1,
 };
 
+export const SLOT_COUNT = 40;
+
 export const RaidsPartylistSlots = [
   0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31,
   32, 33, 34, 35, 36, 37, 38, 39,
 ];
+
+export const boardAnchorsRef = createRef('raids_lobby_partylist_board_anchors');
+
+export const BoardPausebutton = {
+  REFRESH: 0,
+  MY_PARTY: 1,
+} as const;

@@ -68,7 +68,7 @@ export function Dropdown(): Component {
   const thumbH: Int = thumbHeightOf(barH, listH, measured, false);
   const travel: Int = barH - ARROW * 2 - thumbH;
   const key: Int = measured * 1024 + barH;
-  const thumbY: Int = thumbKey === key && drawnFor === open ? thumbAt : ARROW + (travel * at) / Math.max(1, range);
+  const thumbY: Int = thumbKey === key && drawnFor === open ? thumbAt : ARROW + travel * at / Math.max(1, range);
 
   return (
     <layer x="center" y="center" w="fill" h="fill" hide={which === 0} noClickThrough onClick={() => closeColumnList()}>
@@ -86,7 +86,7 @@ export function Dropdown(): Component {
             const next: Int = scrolls ? Math.clamp(0, range, at + event.mouseY * WHEEL) : 0;
             setDrawn(next);
             setDrawnFor(open);
-            setThumbAt(ARROW + (travel * next) / Math.max(1, range));
+            setThumbAt(ARROW + travel * next / Math.max(1, range));
             setThumbKey(key);
           }}
         >
@@ -110,16 +110,16 @@ export function Dropdown(): Component {
               const next: Int = scrolls ? Math.clamp(0, range, at + event.mouseY * WHEEL) : 0;
               setDrawn(next);
               setDrawnFor(open);
-              setThumbAt(ARROW + (travel * next) / Math.max(1, range));
+              setThumbAt(ARROW + travel * next / Math.max(1, range));
               setThumbKey(key);
             }}
             onClick={(event) => {
               const span: Int = Math.max(1, travel);
               const offset: Int = Math.clamp(0, span, event.mouseY - thumbH / 2);
-              const next: Int = scrolls ? Math.clamp(0, range, (offset * range) / span) : 0;
+              const next: Int = scrolls ? Math.clamp(0, range, offset * range / span) : 0;
               setDrawn(next);
               setDrawnFor(open);
-              setThumbAt(ARROW + (travel * next) / Math.max(1, range));
+              setThumbAt(ARROW + travel * next / Math.max(1, range));
               setThumbKey(key);
             }}
           />
@@ -133,7 +133,7 @@ export function Dropdown(): Component {
             dragMoves
             onDrag={(event) => {
               const offset: Int = event.mouseY;
-              const next: Int = scrolls ? Math.clamp(0, range, (offset * range) / Math.max(1, travel)) : 0;
+              const next: Int = scrolls ? Math.clamp(0, range, offset * range / Math.max(1, travel)) : 0;
               setDrawn(next);
               setDrawnFor(open);
               setThumbAt(offset + ARROW);
@@ -152,7 +152,7 @@ export function Dropdown(): Component {
               const next: Int = scrolls ? Math.clamp(0, range, at - STEP) : 0;
               setDrawn(next);
               setDrawnFor(open);
-              setThumbAt(ARROW + (travel * next) / Math.max(1, range));
+              setThumbAt(ARROW + travel * next / Math.max(1, range));
               setThumbKey(key);
             }}
           />
@@ -166,7 +166,7 @@ export function Dropdown(): Component {
               const next: Int = scrolls ? Math.clamp(0, range, at + STEP) : 0;
               setDrawn(next);
               setDrawnFor(open);
-              setThumbAt(ARROW + (travel * next) / Math.max(1, range));
+              setThumbAt(ARROW + travel * next / Math.max(1, range));
               setThumbKey(key);
             }}
           />

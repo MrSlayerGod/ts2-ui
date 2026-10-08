@@ -16,11 +16,13 @@ import {
   USE,
 } from './inventory.constants';
 import { opLabel, opPriority, opSlot, shiftClickDropActive, shiftHeld, swapSlot } from './inventory.helpers';
+import { tapToDropOn } from './inventory.drop-modes';
 
 export function Inventory(): Component {
   const carried = useInventory(InventoryInventories.CARRIED);
   const shift: Int = useDerived(() => shiftHeld());
-  const dropSwap: Int = shiftClickDropActive(shift);
+  const tap: Int = useDerived(() => tapToDropOn());
+  const dropSwap: Int = shiftClickDropActive(shift, tap);
 
   return (
     <layer w="fill" h="fill">
@@ -51,8 +53,8 @@ function InventorySlot({
   dropSwap: Int;
   subject: String;
 }): Component {
-  const x: Int = InventoryLayout.ORIGIN_X + (slot % InventoryLayout.COLUMNS) * InventoryLayout.COLUMN_PITCH;
-  const y: Int = InventoryLayout.ORIGIN_Y + (slot / InventoryLayout.COLUMNS) * InventoryLayout.ROW_PITCH;
+  const x: Int = InventoryLayout.ORIGIN_X + slot % InventoryLayout.COLUMNS * InventoryLayout.COLUMN_PITCH;
+  const y: Int = InventoryLayout.ORIGIN_Y + slot / InventoryLayout.COLUMNS * InventoryLayout.ROW_PITCH;
 
   if (item === -1) {
     return (

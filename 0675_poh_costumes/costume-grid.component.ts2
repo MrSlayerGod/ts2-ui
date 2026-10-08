@@ -1,0 +1,215 @@
+import { itemName } from '../lib/lib.engine';
+import { flashFor } from '../lib/lib.components';
+import { playSound } from '../lib/lib.engine';
+import { ButtonArt, Grid, SetArt, SetMode, SetState } from './poh-costumes.constants';
+import { CostumeEntries, CostumeEntry } from './poh-costumes.data';
+
+export function CostumeSet({
+  mode,
+  top,
+  height,
+  state,
+  divider,
+  entryAt,
+  font,
+  canSet,
+}: {
+  mode: Int;
+  top: Int;
+  height: Int;
+  state: Int;
+  divider: Int;
+  entryAt: Int;
+  font: Font;
+  canSet: Boolean;
+}): Component {
+  const entry: CostumeEntry | null = CostumeEntries.at(entryAt);
+  const name: String = entry === null ? '' : entry.name;
+  const x: Int = mode === SetMode.RIGHT ? Grid.HALF : 0;
+  const w: Int = mode === SetMode.BIG ? Grid.W : Grid.HALF;
+  const subject: String = `<col=ff9040>${name}</col>`;
+  const active: Boolean = canSet && state !== SetState.NONE;
+  const light: Boolean = state === SetState.COMPLETE;
+  const arrowX: Int =
+    mode === SetMode.LEFT ? Grid.W - Grid.ARROW_INSET_LEFT - Grid.ARROW_W : Grid.W - Grid.ARROW_INSET - Grid.ARROW_W;
+  const titleX: Int = mode === SetMode.RIGHT ? Grid.HALF + Grid.INSET : Grid.INSET;
+
+  return (
+    <>
+      <layer x={0} y={0} w={0} h={0} />
+      {light && active && (
+        <sprite
+          x={x}
+          y={top}
+          w={w}
+          h={height}
+          sprite={SetArt.LIGHT}
+          tiling
+          transparency={SetArt.LIGHT_REST}
+          options={['Set']}
+          optionSubject={subject}
+          hover={{ transparency: SetArt.LIGHT_HOVER }}
+          onOptionSelect={(event) => {
+            if (event.option === 1) {
+              playSound(ButtonArt.CLICK);
+            }
+            flashFor(event.self, SetArt.LIGHT_FLASH, SetArt.LIGHT_REST);
+          }}
+        />
+      )}
+      {light && !active && (
+        <sprite
+          x={x}
+          y={top}
+          w={w}
+          h={height}
+          sprite={SetArt.LIGHT}
+          tiling
+          transparency={SetArt.LIGHT_REST}
+          optionSubject={subject}
+        />
+      )}
+      {!light && active && (
+        <sprite
+          x={x}
+          y={top}
+          w={w}
+          h={height}
+          sprite={SetArt.DARK}
+          tiling
+          transparency={SetArt.DARK_REST}
+          options={['Set']}
+          optionSubject={subject}
+          hover={{ transparency: SetArt.DARK_HOVER }}
+          onOptionSelect={(event) => {
+            if (event.option === 1) {
+              playSound(ButtonArt.CLICK);
+            }
+            flashFor(event.self, SetArt.DARK_FLASH, SetArt.DARK_REST);
+          }}
+        />
+      )}
+      {!light && !active && (
+        <sprite
+          x={x}
+          y={top}
+          w={w}
+          h={height}
+          sprite={SetArt.DARK}
+          tiling
+          transparency={SetArt.DARK_REST}
+          optionSubject={subject}
+        />
+      )}
+      {active && (
+        <sprite
+          x={arrowX}
+          y={top + Grid.ARROW_Y}
+          w={Grid.ARROW_W}
+          h={Grid.ARROW_H}
+          sprite={SetArt.ARROW}
+          transparency={Grid.ARROW_TRANS}
+        />
+      )}
+      {divider !== -1 && <sprite x={x} y={divider} w={w} h={Grid.TITLE_H} sprite={SetArt.DIVIDER} tiling />}
+      <text
+        x={titleX}
+        y={top}
+        w={w - Grid.INSET}
+        h={Grid.TITLE_H}
+        text={name}
+        font={font}
+        color={state === SetState.NONE ? SetArt.TITLE_NONE : SetArt.TITLE_HELD}
+        shadow
+        align="left"
+        valign="middle"
+      />
+    </>
+  );
+}
+
+export function CostumeItem({
+  item,
+  count,
+  x,
+  y,
+  canSet,
+}: {
+  item: Item;
+  count: Int;
+  x: Int;
+  y: Int;
+  canSet: Boolean;
+}): Component {
+  const subject: String = `<col=ff9040>${itemName(item)}</col>`;
+  const held: Boolean = count > 0;
+  return (
+    <>
+      <layer x={0} y={0} w={0} h={0} />
+      {!held && (
+        <sprite
+          x={x}
+          y={y}
+          w={Grid.ITEM_W}
+          h={Grid.ITEM_H}
+          item={item}
+          itemCount={1}
+          itemCountMode="never"
+          outline={1}
+          shadowColor={Grid.ITEM_SHADOW}
+          transparency={SetArt.MISSING_REST}
+          options={['', '', '', '', '', '', '', '', '', 'Examine']}
+          optionSubject={subject}
+          onOptionSelect={(event) => {
+            if (event.option === 1) {
+              playSound(ButtonArt.CLICK);
+            }
+            flashFor(event.self, SetArt.MISSING_FLASH, SetArt.MISSING_REST);
+          }}
+        />
+      )}
+      {held && canSet && (
+        <sprite
+          x={x}
+          y={y}
+          w={Grid.ITEM_W}
+          h={Grid.ITEM_H}
+          item={item}
+          itemCount={count}
+          outline={1}
+          shadowColor={Grid.ITEM_SHADOW}
+          transparency={SetArt.HELD_REST}
+          options={['Take', '', '', '', '', '', '', '', '', 'Examine']}
+          optionSubject={subject}
+          onOptionSelect={(event) => {
+            if (event.option === 1) {
+              playSound(ButtonArt.CLICK);
+            }
+            flashFor(event.self, SetArt.HELD_FLASH, SetArt.HELD_REST);
+          }}
+        />
+      )}
+      {held && !canSet && (
+        <sprite
+          x={x}
+          y={y}
+          w={Grid.ITEM_W}
+          h={Grid.ITEM_H}
+          item={item}
+          itemCount={count}
+          outline={1}
+          shadowColor={Grid.ITEM_SHADOW}
+          transparency={SetArt.HELD_REST}
+          options={['', '', '', '', '', '', '', '', '', 'Examine']}
+          optionSubject={subject}
+          onOptionSelect={(event) => {
+            if (event.option === 1) {
+              playSound(ButtonArt.CLICK);
+            }
+            flashFor(event.self, SetArt.HELD_FLASH, SetArt.HELD_REST);
+          }}
+        />
+      )}
+    </>
+  );
+}

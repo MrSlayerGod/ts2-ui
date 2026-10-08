@@ -1,5 +1,18 @@
-import { useServerState } from 'ts2';
+import { CS2, useServerState, useState } from 'ts2';
+import { meslayerinput, meslayermode } from '../lib/game/varcs';
 import { Colors, Layout, Qty, Varbits } from './seed-vault.constants';
+
+export function seedVaultSearching(): Boolean {
+  const [mode] = useState(meslayermode);
+  const [input] = useState(meslayerinput);
+  if (mode === 11) {
+    return true;
+  }
+  if (mode <= 0 && CS2.string_length(input) > 0) {
+    return true;
+  }
+  return false;
+}
 
 export function qtyColor(amount: Int, selected: Int): Int {
   if (amount === selected) {

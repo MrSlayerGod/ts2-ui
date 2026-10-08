@@ -18,6 +18,7 @@ export const tooltipRef = createRef('toa_partydetails_tooltip');
 export declare const ToaPartydetailsFonts: {
   readonly BODY: typeof Fonts.P12_FULL;
   readonly COUNTER: typeof Fonts.B12_FULL;
+  readonly ROW: typeof Fonts.P11_FULL;
 };
 
 export declare const ToaPartydetailsScrollbar: {
@@ -37,6 +38,28 @@ export declare const ToaPartydetailsSprites: {
   readonly PLATE_FILL: typeof Sprites.GE_TEXTBACKDROP_TALL_1;
   readonly PLATE_LEFT: typeof Sprites.GE_TEXTBACKDROP_TALL_0;
   readonly PLATE_RIGHT: typeof Sprites.GE_TEXTBACKDROP_TALL_2;
+  readonly MOVE_UP: typeof Sprites.SCROLLBAR_TRANS_ARROWS_0;
+  readonly MOVE_DOWN: typeof Sprites.SCROLLBAR_TRANS_ARROWS_1;
+  readonly SORT_ASC: typeof Sprites.SORTARROWS_0;
+  readonly SORT_DESC: typeof Sprites.SORTARROWS_1;
+  readonly BACK: typeof Sprites.MENU_BUTTONS_4;
+  readonly BACK_LIT: typeof Sprites.MENU_BUTTONS_5;
+  readonly TAB_SELECTED_CAP: typeof Sprites.TABS_MODAL_SHORT_0;
+  readonly TAB_SELECTED_MID: typeof Sprites.TABS_MODAL_SHORT_1;
+  readonly TAB_REST_CAP: typeof Sprites.TABS_MODAL_SHORT_2;
+  readonly TAB_REST_MID: typeof Sprites.TABS_MODAL_SHORT_3;
+  readonly TAB_HOVER_CAP: typeof Sprites.TABS_MODAL_SHORT_4;
+  readonly TAB_HOVER_MID: typeof Sprites.TABS_MODAL_SHORT_5;
+  readonly ICON_NAME: typeof Sprites.TOA_GROUPING_ICONS_1;
+  readonly ICON_COMPLETIONS: typeof Sprites.TOA_GROUPING_ICONS_2;
+  readonly ICON_COMBAT: typeof Sprites.TOA_GROUPING_ICONS_6;
+  readonly ICON_ATTACK: typeof Sprites.TOA_GROUPING_ICONS_7;
+  readonly ICON_STRENGTH: typeof Sprites.TOA_GROUPING_ICONS_8;
+  readonly ICON_RANGED: typeof Sprites.TOA_GROUPING_ICONS_9;
+  readonly ICON_MAGIC: typeof Sprites.TOA_GROUPING_ICONS_10;
+  readonly ICON_DEFENCE: typeof Sprites.TOA_GROUPING_ICONS_11;
+  readonly ICON_HITPOINTS: typeof Sprites.TOA_GROUPING_ICONS_12;
+  readonly ICON_PRAYER: typeof Sprites.TOA_GROUPING_ICONS_13;
 };
 
 export const Color = {
@@ -47,6 +70,9 @@ export const Color = {
   LABEL: 0xff981f,
   COUNTER: 0xffffff,
   LOADING: 0x7f7f7f,
+  ROW_SELF: 0xffffff,
+  TAB_SELECTED: 0xffa82f,
+  COMPLETIONS_HOVER: 0xffb35b,
 };
 
 export const Copy = {
@@ -55,10 +81,61 @@ export const Copy = {
   RAID_MODE: 'Mode: Entry',
   INVOCATION_TOTAL: '500',
   INVOCATION_ACTIVE: '100',
+  PARTY_OF: 'Party of ',
+  PARTY_DETAILS: 'Party Details',
+  RAID_LEVEL_PREFIX: 'Raid Level: ',
+  MODE_EXPERT: 'Mode: <col=ffffff>Expert</col>',
+  MODE_NORMAL: 'Mode: <col=ffffff>Normal</col>',
+  MODE_ENTRY: 'Mode: <col=ffffff>Entry</col>',
+  NO_APPLICANTS: 'No current applicants.',
+  EMPTY_CELL: '-',
+  KICK: 'Kick',
+  QUIT_PARTY: 'Quit Party',
+  MOVE_UP: 'Move up',
+  MOVE_DOWN: 'Move down',
+  ACCEPT: 'Accept',
+  REJECT: 'Reject',
+  VIEW: 'View',
+  BACK: 'Back',
+  TAB_MEMBERS: 'Members',
+  TAB_APPLICANTS: 'Applicants',
+  TAB_INVOCATIONS: 'Invocations',
+  TAB_SUMMARY: 'Summary',
+  REFRESH: 'Refresh',
+  UNBLOCK: 'Unblock',
+  COMPLETIONS: 'Completions',
+  SET: 'Set',
+  BUSY: '...',
+  DISBAND: 'Disband',
+  LEAVE: 'Leave',
+  WITHDRAW: 'Withdraw',
+  APPLY: 'Apply',
+  APPLY_BARRED: '<col=7f7f7f><str=9f9f9f>Apply</str></col>',
+  TIP_NAME: 'Player name',
+  TIP_COMBAT: 'Combat level',
+  TIP_ATTACK: 'Attack level',
+  TIP_STRENGTH: 'Strength level',
+  TIP_RANGED: 'Ranged level',
+  TIP_MAGIC: 'Magic level',
+  TIP_DEFENCE: 'Defence level',
+  TIP_HITPOINTS: 'Hitpoints level',
+  TIP_PRAYER: 'Prayer level',
+  TIP_COMPLETIONS: 'Total completions',
+  SORT_NAME: 'Sort by player name',
+  SORT_COMBAT: 'Sort by Combat level',
+  SORT_ATTACK: 'Sort by Attack level',
+  SORT_STRENGTH: 'Sort by Strength level',
+  SORT_RANGED: 'Sort by Ranged level',
+  SORT_MAGIC: 'Sort by Magic level',
+  SORT_DEFENCE: 'Sort by Defence level',
+  SORT_HITPOINTS: 'Sort by Hitpoints level',
+  SORT_PRAYER: 'Sort by Prayer level',
+  SORT_COMPLETIONS: 'Sort by total completions',
 };
 
 export const Layout = {
   PIN: 1,
+  PAUSEBUTTONS: 98,
 
   PANEL_W: 484,
   PANEL_H: 304,
@@ -199,4 +276,114 @@ export const Layout = {
 
   WASH_OPACITY: 230,
   HEADER_WASH_OPACITY: 235,
+
+  M_CELL_NAME_X: 0,
+  M_CELL_LEVEL_X: 114,
+  M_CELL_ATTACK_X: 145,
+  M_CELL_STRENGTH_X: 168,
+  M_CELL_RANGED_X: 191,
+  M_CELL_MAGIC_X: 214,
+  M_CELL_DEFENCE_X: 237,
+  M_CELL_HITPOINTS_X: 260,
+  M_CELL_PRAYER_X: 283,
+  M_CELL_COMPLETIONS_X: 306,
+  M_ARROW_UP_X: 420,
+  M_ARROW_DOWN_X: 441,
+  A_CELL_NAME_X: 0,
+  A_CELL_LEVEL_X: 114,
+  A_CELL_ATTACK_X: 161,
+  A_CELL_STRENGTH_X: 188,
+  A_CELL_RANGED_X: 215,
+  A_CELL_MAGIC_X: 242,
+  A_CELL_DEFENCE_X: 269,
+  A_CELL_HITPOINTS_X: 296,
+  A_CELL_PRAYER_X: 323,
+  A_CELL_COMPLETIONS_X: 350,
+  A_COMPLETIONS_CELL_W: 110,
+  A_COMPLETIONS_X: 352,
+  HEADER_ICON_W: 19,
+  HEADER_ICON_H: 18,
+  TIP_WRAP: 256,
+  SORT_KEY_W: 13,
+  APPLICANT_CHILDREN: 20,
+
+  FOOTER_SPAN: 318,
+  FOOTER_GAP: 4,
+  FOOTER_PLATE: 120,
+  AUTOREFRESH_CYCLES: 500,
+  COMPLETIONS_REST_X: 206,
+  BACK_MOBILE: 33,
+  BACK_MOBILE_XY: 1,
+  TAB_CAP_W: 20,
+  TAB_MID_INSET: 40,
+  TAB_TEXT_Y: 1,
+  TAB_TEXT_H: 19,
 };
+
+export const ListRow = {
+  H: 22,
+  MEMBER_EVEN: 246,
+  APPLICANT_EVEN: 242,
+  ODD: 228,
+  HOVER: 210,
+  PRESSED: 190,
+  BUSY_CYCLES: 80,
+  ARROW: 16,
+  ARROW_INSET: 3,
+  ARROW_HOVER: 150,
+};
+
+export const SortKey = {
+  DIM: 100,
+  LIVE_HOVER: 120,
+  DIM_HOVER: 200,
+  ICON_HOVER: 120,
+  ARROW_W: 7,
+  ARROW_H: 5,
+  ARROW_Y: 2,
+  ICON_Y: 2,
+  NAME_ASC: 0,
+  NAME_DESC: 1,
+  COMBAT_ASC: 2,
+  COMBAT_DESC: 3,
+  COMPLETIONS_ASC: 6,
+  COMPLETIONS_DESC: 7,
+  ATTACK_ASC: 8,
+  ATTACK_DESC: 9,
+  STRENGTH_ASC: 10,
+  STRENGTH_DESC: 11,
+  RANGED_ASC: 12,
+  RANGED_DESC: 13,
+  MAGIC_ASC: 14,
+  MAGIC_DESC: 15,
+  DEFENCE_ASC: 16,
+  DEFENCE_DESC: 17,
+  HITPOINTS_ASC: 18,
+  HITPOINTS_DESC: 19,
+  PRAYER_ASC: 20,
+  PRAYER_DESC: 21,
+};
+
+export const refreshRef = createRef('toa_partydetails_refresh');
+export const actionRef = createRef('toa_partydetails_action');
+export const unblockRef = createRef('toa_partydetails_unblock');
+
+export const pausebuttonsRef = createRef('toa_partydetails_pausebuttons');
+
+export const Pausebutton = {
+  BACK: 0,
+  REFRESH: 1,
+  UNBLOCK: 2,
+  COMPLETIONS: 3,
+  ACTION: 4,
+  INVOCATIONS_CLEAR: 5,
+  PRESETS_LOAD: 6,
+  PRESETS_SAVE: 7,
+  TAB: 8,
+  COUNT: 12,
+  KICK: 12,
+  MOVE_UP: 20,
+  MOVE_DOWN: 28,
+  ACCEPT: 36,
+  REJECT: 44,
+} as const;

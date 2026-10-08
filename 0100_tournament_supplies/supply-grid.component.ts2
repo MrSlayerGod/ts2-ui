@@ -96,8 +96,8 @@ export function SupplyGrid({ filter }: { filter: String }): Component {
 function SupplyCell({ item, placed }: { item: ItemName; placed: Int }): Component {
   return (
     <sprite
-      x={(placed % Layout.COLUMNS) * (Layout.CELL_W + Layout.COLUMN_GAP)}
-      y={(placed / Layout.COLUMNS) * Layout.ROW_STEP}
+      x={placed % Layout.COLUMNS * (Layout.CELL_W + Layout.COLUMN_GAP)}
+      y={placed / Layout.COLUMNS * Layout.ROW_STEP}
       w={Layout.CELL_W}
       h={Layout.CELL_H}
       item={item}

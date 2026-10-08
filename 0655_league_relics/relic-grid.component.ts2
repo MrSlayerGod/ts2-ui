@@ -117,7 +117,7 @@ function rowsTop(tier: Int, paneH: Int, bp: Int): Int {
 }
 
 function slotRelic(index: Int): Int {
-  return relicAt(index / 3, (index % 3) + 1);
+  return relicAt(index / 3, index % 3 + 1);
 }
 
 function slotName(index: Int): String {
@@ -213,7 +213,7 @@ export function TierLabels(): Component {
       <sprite x={0} y={0} w="fill" h="fill" sprite={RelicSprites.WASH_LIGHT} />
       {TIERS.map(
         (tier) =>
-          tier < count && (
+          (tier < count && (
             <text
               x={gridLeft(box.width, bp) + columnWidth(box.width, bp) * tier}
               y={0}
@@ -226,7 +226,7 @@ export function TierLabels(): Component {
               valign="middle"
               shadow
             />
-          ),
+          )),
       )}
     </layer>
   );
@@ -266,7 +266,7 @@ export function TierWashes(): Component {
     <layer x={0} y={0} w="fill" h="fill">
       {TIERS.map(
         (tier) =>
-          tier < count && <TierWash tier={tier} x={slotX(tier * 3, box.width, bp)} w={columnWidth(box.width, bp)} />,
+          (tier < count && <TierWash tier={tier} x={slotX(tier * 3, box.width, bp)} w={columnWidth(box.width, bp)} />),
       )}
     </layer>
   );
@@ -297,10 +297,10 @@ export function TierDividers(): Component {
     <layer x={0} y={0} w="fill" h="fill">
       {TIERS.map(
         (tier) =>
-          tier > 0 &&
+          (tier > 0 &&
           tier < count && (
             <line x={slotX(tier * 3, box.width, bp)} y={0} w={0} h="fill" color={RelicColour.DIVIDER} lineWidth={1} />
-          ),
+          )),
       )}
     </layer>
   );
@@ -325,14 +325,14 @@ export function RelicFrames(): Component {
   const bp: Int = breakpoint();
   const paneH: Int = box.height + RelicLayout.LABEL_H;
   const theme = RelicThemes.get(relicLeague());
-  const frame: Sprite = theme === null ? 2593 : large(bp) ? theme.frameLarge : theme.frame;
+  const frame: Sprite = theme === null ? 2593 : (large(bp) ? theme.frameLarge : theme.frame);
   const size: Int = (large(bp) ? RelicLayout.ICON_LARGE : RelicLayout.ICON) + RelicLayout.FRAME_PAD;
   const [hover] = useState(relicHover);
   return (
     <layer x={0} y={0} w="fill" h="fill">
       {SLOTS.map(
         (index) =>
-          slotRelic(index) !== -1 && (
+          (slotRelic(index) !== -1 && (
             <sprite
               x={slotX(index, box.width, bp) + columnWidth(box.width, bp) / 2 - size / 2}
               y={slotY(index, paneH, bp) + rowHeight(paneH) / 2 - (size - 1)}
@@ -341,7 +341,7 @@ export function RelicFrames(): Component {
               sprite={frame}
               transparency={slotFrameFade(index, hover === index)}
             />
-          ),
+          )),
       )}
     </layer>
   );
@@ -357,7 +357,7 @@ export function RelicIcons(): Component {
     <layer x={0} y={0} w="fill" h="fill">
       {SLOTS.map(
         (index) =>
-          slotRelic(index) !== -1 && (
+          (slotRelic(index) !== -1 && (
             <sprite
               x={slotX(index, box.width, bp) + columnWidth(box.width, bp) / 2 - size / 2}
               y={slotY(index, paneH, bp) + rowHeight(paneH) / 2 - (size + 1)}
@@ -365,7 +365,7 @@ export function RelicIcons(): Component {
               h={size}
               sprite={hover === index ? slotHoverIcon(index, bp) : slotIcon(index, bp)}
             />
-          ),
+          )),
       )}
     </layer>
   );
@@ -380,7 +380,7 @@ export function RelicNames(): Component {
     <layer x={0} y={0} w="fill" h="fill">
       {SLOTS.map(
         (index) =>
-          slotRelic(index) !== -1 && (
+          (slotRelic(index) !== -1 && (
             <text
               x={slotX(index, box.width, bp) + RelicLayout.NAME_INSET / 2}
               y={slotY(index, paneH, bp) + rowHeight(paneH) / 2 + 1}
@@ -393,7 +393,7 @@ export function RelicNames(): Component {
               valign="middle"
               shadow
             />
-          ),
+          )),
       )}
     </layer>
   );
@@ -409,7 +409,7 @@ export function RelicClicks(): Component {
     <layer x={0} y={0} w="fill" h="fill">
       {SLOTS.map(
         (index) =>
-          slotRelic(index) !== -1 && (
+          (slotRelic(index) !== -1 && (
             <rect
               x={slotX(index, box.width, bp)}
               y={slotY(index, paneH, bp)}
@@ -423,7 +423,7 @@ export function RelicClicks(): Component {
               onMouseRepeat={mobile ? undefined : () => setHover(index)}
               onMouseLeave={mobile ? undefined : () => setHover(-1)}
             />
-          ),
+          )),
       )}
     </layer>
   );

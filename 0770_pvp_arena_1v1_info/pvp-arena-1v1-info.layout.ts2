@@ -1,6 +1,5 @@
-import { stopTimer, useServerState, useState } from 'ts2';
+import { useServerState, useState } from 'ts2';
 
-import { clientClock } from '../lib/lib.engine';
 import { scaled } from '../lib/lib.engine';
 import { gapFor } from './bracket-lines.component';
 import { InfoVarbits, Layout, infoHeight, infoWidth, infoX, infoY } from './pvp-arena-1v1-info.constants';
@@ -52,80 +51,80 @@ export function maxHeight(rounds: Int): Int {
   return gridHeight(rounds) + Layout.bracket.PAD_H;
 }
 
-export function panelWidth(rounds: Int, available: Int): Int {
+export function panelWidth(rounds: Int, available: Int, nudge: Int): Int {
   const [stored] = useState(infoWidth);
-  let raw: Int = stored;
+  let raw: Int = stored + nudge;
   if (raw < minWidth()) {
     raw = scaled(Layout.OPEN_W_NUM, Layout.OPEN_W_DEN, Layout.OPEN_W_OF);
   }
   return Math.max(minWidth(), Math.min(maxWidth(rounds), Math.min(raw, available)));
 }
 
-export function panelHeight(rounds: Int, available: Int): Int {
+export function panelHeight(rounds: Int, available: Int, nudge: Int): Int {
   const [stored] = useState(infoHeight);
-  let raw: Int = stored;
+  let raw: Int = stored + nudge;
   if (raw < minHeight()) {
     raw = scaled(Layout.OPEN_H_NUM, Layout.OPEN_H_DEN, Layout.OPEN_H_OF);
   }
   return Math.max(minHeight(), Math.min(maxHeight(rounds), Math.min(raw, available)));
 }
 
-export function panelX(available: Int, rawWidth: Int, width: Int): Int {
+export function panelX(available: Int, rawWidth: Int, width: Int, nudge: Int): Int {
   const [stored] = useState(infoX);
-  let raw: Int = stored;
+  let raw: Int = stored + nudge;
   if (raw < 0) {
     raw = (available - rawWidth) / 2;
   }
   return Math.max(0, Math.min(raw, available - width));
 }
 
-export function panelY(top: Int, dodgerHeight: Int, available: Int, rawHeight: Int, height: Int): Int {
+export function panelY(top: Int, dodgerHeight: Int, available: Int, rawHeight: Int, height: Int, nudge: Int): Int {
   const [stored] = useState(infoY);
-  let raw: Int = stored;
+  let raw: Int = stored + nudge;
   if (raw < top) {
     raw = Math.max(top, (dodgerHeight - rawHeight) / 2);
   }
   return Math.max(top, Math.min(raw, top + available - height));
 }
 
-export function rawWidth(): Int {
+export function rawWidth(nudge: Int): Int {
   const [stored] = useState(infoWidth);
-  if (stored < minWidth()) {
+  if (stored + nudge < minWidth()) {
     return scaled(Layout.OPEN_W_NUM, Layout.OPEN_W_DEN, Layout.OPEN_W_OF);
   }
-  return stored;
+  return stored + nudge;
 }
 
-export function rawHeight(): Int {
+export function rawHeight(nudge: Int): Int {
   const [stored] = useState(infoHeight);
-  if (stored < minHeight()) {
+  if (stored + nudge < minHeight()) {
     return scaled(Layout.OPEN_H_NUM, Layout.OPEN_H_DEN, Layout.OPEN_H_OF);
   }
-  return stored;
+  return stored + nudge;
 }
 
-export function resizeDrag(
-  self: ComponentId,
+export function dragBox(
+  part: Int,
   index: Int,
   mouseX: Int,
   mouseY: Int,
   top: Int,
   availW: Int,
   dodgerHeight: Int,
-  preview: ComponentId,
-  content: ComponentId,
-): void {
-  self.sprite = -1;
-  const dx: Int = mouseX - self.x!;
-  const dy: Int = mouseY - self.y!;
+): Int {
+  const [storedW] = useState(infoWidth);
+  const [storedH] = useState(infoHeight);
+  const [storedX] = useState(infoX);
+  const [storedY] = useState(infoY);
+  let w: Int = storedW;
+  let h: Int = storedH;
+  let x: Int = storedX;
+  let y: Int = storedY;
+  const dx: Int = mouseX - handleX(index, x, w);
+  const dy: Int = mouseY - handleY(index, y, h);
 
   const rounds: Int = roundCount();
   const availH: Int = dodgerHeight - top;
-
-  let w: Int = panelWidth(rounds, availW);
-  let h: Int = panelHeight(rounds, availH);
-  let x: Int = panelX(availW, rawWidth(), w);
-  let y: Int = panelY(top, dodgerHeight, availH, rawHeight(), h);
 
   if (index === 0) {
     x = x + dx;
@@ -177,28 +176,34 @@ export function resizeDrag(
   x = Math.max(0, Math.min(x, availW - w));
   y = Math.max(top, Math.min(y, top + availH - h));
 
-  preview.x = x;
-  preview.y = y;
-  preview.width = w;
-  preview.height = h;
-  preview.hide = false;
-  content.hide = true;
-
-  const deadline: Int = clientClock() + Layout.COMMIT_CYCLES;
-  self.onTimer = () => commitResize(self, deadline, w, h, x, y);
+  if (part === 0) {
+    return x;
+  }
+  if (part === 1) {
+    return y;
+  }
+  if (part === 2) {
+    return w;
+  }
+  return h;
 }
 
-function commitResize(self: ComponentId, deadline: Int, w: Int, h: Int, x: Int, y: Int): void {
-  if (clientClock() < deadline) {
-    return;
+export function handleX(index: Int, x: Int, w: Int): Int {
+  if (index === 0 || index === 1) {
+    return x + Layout.handle.EDGE;
   }
-  const [, setW] = useState(infoWidth);
-  const [, setH] = useState(infoHeight);
-  const [, setX] = useState(infoX);
-  const [, setY] = useState(infoY);
-  setW(w);
-  setH(h);
-  setX(x);
-  setY(y);
-  stopTimer(self);
+  if (index === 3 || index === 5 || index === 7) {
+    return x + w - Layout.handle.EDGE;
+  }
+  return x;
+}
+
+export function handleY(index: Int, y: Int, h: Int): Int {
+  if (index === 1 || index === 6 || index === 7) {
+    return y + h - Layout.handle.EDGE;
+  }
+  if (index === 2 || index === 3) {
+    return y + Layout.handle.EDGE;
+  }
+  return y;
 }

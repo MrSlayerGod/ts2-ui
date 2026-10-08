@@ -37,10 +37,8 @@ export function CostCardLayer(): Component {
 
 function cardHeight(row: TelenexusTeleport, width: Int): Int {
   const [met, text] = teleportRequirements(row);
-  return (
-    CostCardBox.CHROME_H +
-    CostCardBox.LINE_H * CS2.paraheight(text, width - CostCardBox.TEXT_INSET, TelenexusFonts.LABEL)
-  );
+  return CostCardBox.CHROME_H +
+    CostCardBox.LINE_H * CS2.paraheight(text, width - CostCardBox.TEXT_INSET, TelenexusFonts.LABEL);
 }
 
 function CostCardBody({ row, width }: { row: TelenexusTeleport; width: Int }): Component {

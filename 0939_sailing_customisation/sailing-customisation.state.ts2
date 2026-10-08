@@ -8,7 +8,8 @@ import {
   sailingBoatCustomisationTab,
 } from '../lib/game/varcs';
 import { chatMessage, playSound, textLineCount } from '../lib/lib.engine';
-import { tooltipHide } from '../lib/tooltip.component';
+import { tooltipDown, tooltipDwellElapsed, tooltipHide, tooltipMark, tooltipRaise } from '../lib/tooltip.component';
+import { onMobile } from '../lib/lib.helpers';
 import {
   CustomisationFonts,
   CustomisationSounds,
@@ -184,4 +185,81 @@ export function startBuild(): void {
 
 export function tooltipMessage(text: String): void {
   chatMessage(`${text}.`);
+}
+
+export const tipText = sessionState('');
+export const tipLeft = sessionState(-1);
+export const tipTop = sessionState(-1);
+export const tipHeight = sessionState(-1);
+
+function clipInto(v: Int, scrolled: Int, size: Int): Int {
+  const inside: Int = v - scrolled;
+  if (inside < 0) {
+    return 0;
+  }
+  if (inside > size) {
+    return size;
+  }
+  return inside;
+}
+
+export function showCustomisationTip(
+  text: String,
+  x: Int,
+  y: Int,
+  w: Int,
+  h: Int,
+  list: Ref,
+  pane: Ref,
+  originX: Int,
+  originY: Int,
+): void {
+  const [, setText] = useState(tipText);
+  const [, setLeft] = useState(tipLeft);
+  const [, setTop] = useState(tipTop);
+  const [, setHeight] = useState(tipHeight);
+  if (onMobile()) {
+    return;
+  }
+  tooltipMark();
+  if (!tooltipDwellElapsed(25)) {
+    return;
+  }
+  if (!tooltipDown()) {
+    return;
+  }
+  const listX: Int = list.x;
+  const listY: Int = list.y;
+  const listW: Int = list.width;
+  const listH: Int = list.height;
+  const paneX: Int = pane.x;
+  const paneY: Int = pane.y;
+  const paneW: Int = pane.width;
+  const paneH: Int = pane.height;
+  const scrolled: Int = pane.scrollY;
+  const left: Int = clipInto(clipInto(x, 0, listW) + listX, 0, paneW) + paneX + originX;
+  const top: Int = clipInto(clipInto(y, 0, listH) + listY, scrolled, paneH) + paneY + originY;
+  const bottom: Int = clipInto(clipInto(y + h, 0, listH) + listY, scrolled, paneH) + paneY + originY;
+  setText(text);
+  setLeft(left);
+  setTop(top);
+  setHeight(bottom - top);
+  tooltipRaise();
+}
+
+export function hideCustomisationTip(): void {
+  const [, setText] = useState(tipText);
+  if (onMobile()) {
+    return;
+  }
+  tooltipHide();
+  setText('');
+}
+
+export function customisationLabelPopup(target: Int, sub: Int, title: String, message: String, label: String): void {
+  if (CS2.cc_find(target as ComponentId, sub)) {
+    CS2.cc_text_set(label);
+  }
+  playSound(CustomisationSounds.SELECT);
+  openPopup(title, message);
 }

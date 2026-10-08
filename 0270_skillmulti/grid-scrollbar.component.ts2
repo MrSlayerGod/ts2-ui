@@ -1,0 +1,88 @@
+import { useRef, useState } from 'ts2';
+
+import { Sprites } from '../lib/game/sprites';
+import { ARROW, CAP, MIN_THUMB, STEP, WHEEL } from '../lib/lib.constants';
+import { scrollGridBy, setGridScroll, smCount, smScroll } from './skillmulti.cells';
+import { Layout } from './skillmulti.constants';
+import { gridExtentFor, rowWidthFor } from './skillmulti.layout';
+
+export function GridScrollbar(): Component {
+  const [count] = useState(smCount);
+  const [scroll] = useState(smScroll);
+  const gutter = useRef();
+
+  const extent: Int = gridExtentFor(count);
+  const track: Int = Layout.HOLDER_HEIGHT - ARROW * 2;
+  const thumbH: Int = Math.max(MIN_THUMB, track * Layout.HOLDER_HEIGHT / extent);
+  const travel: Int = Math.max(1, track - thumbH);
+  const range: Int = Math.max(1, extent - Layout.HOLDER_HEIGHT);
+  const thumbY: Int = ARROW + travel * scroll / range;
+
+  return (
+    <>
+      <layer
+        x={Layout.HOLDER_X}
+        y={Layout.HOLDER_Y}
+        w={rowWidthFor(count)}
+        h={Layout.HOLDER_HEIGHT}
+        onScrollWheel={(event) => {
+          scrollGridBy(event.mouseY * WHEEL);
+        }}
+      />
+      <layer x={Layout.BAR_X} y={Layout.BAR_Y} w={Layout.BAR_WIDTH} h={Layout.HOLDER_HEIGHT}>
+        <sprite
+          ref={gutter}
+          y="center"
+          w="fill"
+          h={{ fill: ARROW * 2 }}
+          sprite={Sprites.SCROLLBAR_DRAGGER_V2_3}
+          noClickThrough
+          onScrollWheel={(event) => {
+            scrollGridBy(event.mouseY * WHEEL);
+          }}
+          onClick={(event) => {
+            const offset: Int = Math.clamp(0, travel, event.mouseY - thumbH / 2);
+            setGridScroll(offset * range / travel);
+          }}
+        />
+        <sprite
+          y={thumbY}
+          w="fill"
+          h={thumbH}
+          sprite={Sprites.SCROLLBAR_DRAGGER_V2_1}
+          noClickThrough
+          draggable={gutter}
+          dragMoves
+          onDrag={(event) => {
+            setGridScroll(event.mouseY * range / travel);
+          }}
+          onDragComplete={(event) => {
+            setGridScroll(event.mouseY * range / travel);
+          }}
+        />
+        <sprite y={thumbY} w="fill" h={CAP} sprite={Sprites.SCROLLBAR_DRAGGER_V2_0} />
+        <sprite y={thumbY + thumbH - CAP} w="fill" h={CAP} sprite={Sprites.SCROLLBAR_DRAGGER_V2_2} />
+        <sprite
+          y="top"
+          w="fill"
+          h={ARROW}
+          sprite={Sprites.SCROLLBAR_V2_0}
+          noClickThrough
+          onHold={() => {
+            scrollGridBy(-STEP);
+          }}
+        />
+        <sprite
+          y="bottom"
+          w="fill"
+          h={ARROW}
+          sprite={Sprites.SCROLLBAR_V2_1}
+          noClickThrough
+          onHold={() => {
+            scrollGridBy(STEP);
+          }}
+        />
+      </layer>
+    </>
+  );
+}

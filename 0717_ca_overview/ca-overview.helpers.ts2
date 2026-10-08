@@ -23,19 +23,16 @@ export function formatCount(value: Int): String {
 }
 
 export function tasksCompletedTotal(): Int {
-  return (
-    useServerState(Varbits.CA_TOTAL_TASKS_COMPLETED_EASY) +
+  return useServerState(Varbits.CA_TOTAL_TASKS_COMPLETED_EASY) +
     useServerState(Varbits.CA_TOTAL_TASKS_COMPLETED_MEDIUM) +
     useServerState(Varbits.CA_TOTAL_TASKS_COMPLETED_HARD) +
     useServerState(Varbits.CA_TOTAL_TASKS_COMPLETED_ELITE) +
     useServerState(Varbits.CA_TOTAL_TASKS_COMPLETED_MASTER) +
-    useServerState(Varbits.CA_TOTAL_TASKS_COMPLETED_GRANDMASTER)
-  );
+    useServerState(Varbits.CA_TOTAL_TASKS_COMPLETED_GRANDMASTER);
 }
 
 export function bossKillTotal(): Int {
-  return (
-    0 +
+  return 0 +
     useServerState(Varps.TOTAL_ABYSSALSIRE_KILLS) +
     useServerState(Varps.TOTAL_AMOXLIATL_KILLS) +
     useServerState(Varps.TOTAL_ARAXXOR_KILLS) +
@@ -96,27 +93,22 @@ export function bossKillTotal(): Int {
     useServerState(Varps.TOTAL_YAMA_KILLS) +
     useServerState(Varps.TOTAL_ZAMORAK_KILLS) +
     useServerState(Varps.TOTAL_ZUK_KILLS) +
-    useServerState(Varps.VARP_5407)
-  );
+    useServerState(Varps.VARP_5407);
 }
 
 export function skillingBossKillTotal(): Int {
-  return (
-    useServerState(Varps.TOTAL_TEMPOROSS_KILLS) +
+  return useServerState(Varps.TOTAL_TEMPOROSS_KILLS) +
     useServerState(Varps.TOTAL_WINTERTODT_KILLS) +
-    useServerState(Varps.TOTAL_ZALCANO_KILLS)
-  );
+    useServerState(Varps.TOTAL_ZALCANO_KILLS);
 }
 
 export function raidCompletionTotal(): Int {
-  return (
-    useServerState(Varps.TOTAL_COMPLETED_XERICCHAMBERS) +
+  return useServerState(Varps.TOTAL_COMPLETED_XERICCHAMBERS) +
     useServerState(Varps.TOTAL_COMPLETED_XERICCHAMBERS_CHALLENGE) +
     useServerState(Varps.TOTAL_COMPLETED_THEATREOFBLOOD) +
     useServerState(Varps.TOTAL_COMPLETED_THEATREOFBLOOD_HARD) +
     useServerState(Varps.TOTAL_COMPLETED_TOMBSOFAMASCUT) +
-    useServerState(Varps.TOTAL_COMPLETED_TOMBSOFAMASCUT_EXPERT)
-  );
+    useServerState(Varps.TOTAL_COMPLETED_TOMBSOFAMASCUT_EXPERT);
 }
 
 export function topBossOf(category: Int): Int {

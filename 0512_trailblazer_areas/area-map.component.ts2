@@ -386,8 +386,8 @@ function RegionPlate({
   hoverable: Boolean;
 }): Component {
   const art = regionArt(region);
-  const hot: Sprite = art === null ? resting : w === 32 ? art.shieldHover : art.namePlateHover;
-  const cool: Sprite = art === null ? resting : w === 32 ? art.shield : art.namePlate;
+  const hot: Sprite = art === null ? resting : (w === 32 ? art.shieldHover : art.namePlateHover);
+  const cool: Sprite = art === null ? resting : (w === 32 ? art.shield : art.namePlate);
   const skin: Sprite = hovered ? hot : cool;
   const dimmed: Int = dim ? 130 : 0;
 

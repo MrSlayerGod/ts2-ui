@@ -1,3 +1,5 @@
+import { createRef } from 'ts2';
+
 import { graphicSwapper } from '../lib/lib.helpers';
 import { textColourSwapper } from './barbassault-turret.helpers';
 import {
@@ -16,6 +18,7 @@ export function BarbassaultTurret(): Component {
   return (
     <layer x={0} y={0} w="fill" h="fill" noClickThrough>
       <text
+        ref={emptyRef}
         x={0}
         y={0}
         w={Layout.empty.W}
@@ -26,76 +29,299 @@ export function BarbassaultTurret(): Component {
         valign="middle"
       />
 
-      <layer x={0} y={0} w={Layout.buttons.W} h={Layout.buttons.H} hide>
-        {Columns.map((column) => (
-          <>
-            <model
-              x={column.lidX}
-              y={column.lidY}
-              w={Layout.MODEL_BOX}
-              h={Layout.MODEL_BOX}
-              model={column.lid}
-              zoom={Layout.HOPPER_ZOOM}
-            />
-            <model
-              x={column.poisonX}
-              y={column.poisonY}
-              w={Layout.MODEL_BOX}
-              h={Layout.MODEL_BOX}
-              model={TurretModel.POISON}
-              zoom={Layout.EGG_ZOOM}
-            />
-            <text
-              x={column.poisonCountX}
-              y={column.poisonCountY}
-              w={Layout.count.W}
-              h={Layout.count.H}
-              font={TurretFont.BUTTON}
-              color={TurretColor.REST}
-              shadow
-              align="center"
-              valign="middle"
-            />
-            <model
-              x={column.explosiveX}
-              y={column.explosiveY}
-              w={Layout.MODEL_BOX}
-              h={Layout.MODEL_BOX}
-              model={TurretModel.EXPLOSIVE}
-              zoom={Layout.EGG_ZOOM}
-            />
-            <text
-              x={column.explosiveCountX}
-              y={column.explosiveCountY}
-              w={Layout.count.W}
-              h={Layout.count.H}
-              font={TurretFont.BUTTON}
-              color={TurretColor.REST}
-              shadow
-              align="center"
-              valign="middle"
-            />
-            <model
-              x={column.stunX}
-              y={column.stunY}
-              w={Layout.MODEL_BOX}
-              h={Layout.MODEL_BOX}
-              model={TurretModel.STUN}
-              zoom={Layout.EGG_ZOOM}
-            />
-            <text
-              x={column.stunCountX}
-              y={column.stunCountY}
-              w={Layout.count.W}
-              h={Layout.count.H}
-              font={TurretFont.BUTTON}
-              color={TurretColor.REST}
-              shadow
-              align="center"
-              valign="middle"
-            />
-          </>
-        ))}
+      <layer ref={buttonsRef} x={0} y={0} w={Layout.buttons.W} h={Layout.buttons.H} hide>
+        <>
+          <model
+            x={Columns[0].lidX}
+            y={Columns[0].lidY}
+            w={Layout.MODEL_BOX}
+            h={Layout.MODEL_BOX}
+            model={Columns[0].lid}
+            zoom={Layout.HOPPER_ZOOM}
+          />
+          <model
+            ref={poison0Ref}
+            x={Columns[0].poisonX}
+            y={Columns[0].poisonY}
+            w={Layout.MODEL_BOX}
+            h={Layout.MODEL_BOX}
+            model={TurretModel.POISON}
+            zoom={Layout.EGG_ZOOM}
+          />
+          <text
+            ref={poisonCount0Ref}
+            x={Columns[0].poisonCountX}
+            y={Columns[0].poisonCountY}
+            w={Layout.count.W}
+            h={Layout.count.H}
+            font={TurretFont.BUTTON}
+            color={TurretColor.REST}
+            shadow
+            align="center"
+            valign="middle"
+          />
+          <model
+            ref={explosive0Ref}
+            x={Columns[0].explosiveX}
+            y={Columns[0].explosiveY}
+            w={Layout.MODEL_BOX}
+            h={Layout.MODEL_BOX}
+            model={TurretModel.EXPLOSIVE}
+            zoom={Layout.EGG_ZOOM}
+          />
+          <text
+            ref={explosiveCount0Ref}
+            x={Columns[0].explosiveCountX}
+            y={Columns[0].explosiveCountY}
+            w={Layout.count.W}
+            h={Layout.count.H}
+            font={TurretFont.BUTTON}
+            color={TurretColor.REST}
+            shadow
+            align="center"
+            valign="middle"
+          />
+          <model
+            ref={stun0Ref}
+            x={Columns[0].stunX}
+            y={Columns[0].stunY}
+            w={Layout.MODEL_BOX}
+            h={Layout.MODEL_BOX}
+            model={TurretModel.STUN}
+            zoom={Layout.EGG_ZOOM}
+          />
+          <text
+            ref={stunCount0Ref}
+            x={Columns[0].stunCountX}
+            y={Columns[0].stunCountY}
+            w={Layout.count.W}
+            h={Layout.count.H}
+            font={TurretFont.BUTTON}
+            color={TurretColor.REST}
+            shadow
+            align="center"
+            valign="middle"
+          />
+        </>
+        <>
+          <model
+            x={Columns[1].lidX}
+            y={Columns[1].lidY}
+            w={Layout.MODEL_BOX}
+            h={Layout.MODEL_BOX}
+            model={Columns[1].lid}
+            zoom={Layout.HOPPER_ZOOM}
+          />
+          <model
+            ref={poison1Ref}
+            x={Columns[1].poisonX}
+            y={Columns[1].poisonY}
+            w={Layout.MODEL_BOX}
+            h={Layout.MODEL_BOX}
+            model={TurretModel.POISON}
+            zoom={Layout.EGG_ZOOM}
+          />
+          <text
+            ref={poisonCount1Ref}
+            x={Columns[1].poisonCountX}
+            y={Columns[1].poisonCountY}
+            w={Layout.count.W}
+            h={Layout.count.H}
+            font={TurretFont.BUTTON}
+            color={TurretColor.REST}
+            shadow
+            align="center"
+            valign="middle"
+          />
+          <model
+            ref={explosive1Ref}
+            x={Columns[1].explosiveX}
+            y={Columns[1].explosiveY}
+            w={Layout.MODEL_BOX}
+            h={Layout.MODEL_BOX}
+            model={TurretModel.EXPLOSIVE}
+            zoom={Layout.EGG_ZOOM}
+          />
+          <text
+            ref={explosiveCount1Ref}
+            x={Columns[1].explosiveCountX}
+            y={Columns[1].explosiveCountY}
+            w={Layout.count.W}
+            h={Layout.count.H}
+            font={TurretFont.BUTTON}
+            color={TurretColor.REST}
+            shadow
+            align="center"
+            valign="middle"
+          />
+          <model
+            ref={stun1Ref}
+            x={Columns[1].stunX}
+            y={Columns[1].stunY}
+            w={Layout.MODEL_BOX}
+            h={Layout.MODEL_BOX}
+            model={TurretModel.STUN}
+            zoom={Layout.EGG_ZOOM}
+          />
+          <text
+            ref={stunCount1Ref}
+            x={Columns[1].stunCountX}
+            y={Columns[1].stunCountY}
+            w={Layout.count.W}
+            h={Layout.count.H}
+            font={TurretFont.BUTTON}
+            color={TurretColor.REST}
+            shadow
+            align="center"
+            valign="middle"
+          />
+        </>
+        <>
+          <model
+            x={Columns[2].lidX}
+            y={Columns[2].lidY}
+            w={Layout.MODEL_BOX}
+            h={Layout.MODEL_BOX}
+            model={Columns[2].lid}
+            zoom={Layout.HOPPER_ZOOM}
+          />
+          <model
+            ref={poison2Ref}
+            x={Columns[2].poisonX}
+            y={Columns[2].poisonY}
+            w={Layout.MODEL_BOX}
+            h={Layout.MODEL_BOX}
+            model={TurretModel.POISON}
+            zoom={Layout.EGG_ZOOM}
+          />
+          <text
+            ref={poisonCount2Ref}
+            x={Columns[2].poisonCountX}
+            y={Columns[2].poisonCountY}
+            w={Layout.count.W}
+            h={Layout.count.H}
+            font={TurretFont.BUTTON}
+            color={TurretColor.REST}
+            shadow
+            align="center"
+            valign="middle"
+          />
+          <model
+            ref={explosive2Ref}
+            x={Columns[2].explosiveX}
+            y={Columns[2].explosiveY}
+            w={Layout.MODEL_BOX}
+            h={Layout.MODEL_BOX}
+            model={TurretModel.EXPLOSIVE}
+            zoom={Layout.EGG_ZOOM}
+          />
+          <text
+            ref={explosiveCount2Ref}
+            x={Columns[2].explosiveCountX}
+            y={Columns[2].explosiveCountY}
+            w={Layout.count.W}
+            h={Layout.count.H}
+            font={TurretFont.BUTTON}
+            color={TurretColor.REST}
+            shadow
+            align="center"
+            valign="middle"
+          />
+          <model
+            ref={stun2Ref}
+            x={Columns[2].stunX}
+            y={Columns[2].stunY}
+            w={Layout.MODEL_BOX}
+            h={Layout.MODEL_BOX}
+            model={TurretModel.STUN}
+            zoom={Layout.EGG_ZOOM}
+          />
+          <text
+            ref={stunCount2Ref}
+            x={Columns[2].stunCountX}
+            y={Columns[2].stunCountY}
+            w={Layout.count.W}
+            h={Layout.count.H}
+            font={TurretFont.BUTTON}
+            color={TurretColor.REST}
+            shadow
+            align="center"
+            valign="middle"
+          />
+        </>
+        <>
+          <model
+            x={Columns[3].lidX}
+            y={Columns[3].lidY}
+            w={Layout.MODEL_BOX}
+            h={Layout.MODEL_BOX}
+            model={Columns[3].lid}
+            zoom={Layout.HOPPER_ZOOM}
+          />
+          <model
+            ref={poison3Ref}
+            x={Columns[3].poisonX}
+            y={Columns[3].poisonY}
+            w={Layout.MODEL_BOX}
+            h={Layout.MODEL_BOX}
+            model={TurretModel.POISON}
+            zoom={Layout.EGG_ZOOM}
+          />
+          <text
+            ref={poisonCount3Ref}
+            x={Columns[3].poisonCountX}
+            y={Columns[3].poisonCountY}
+            w={Layout.count.W}
+            h={Layout.count.H}
+            font={TurretFont.BUTTON}
+            color={TurretColor.REST}
+            shadow
+            align="center"
+            valign="middle"
+          />
+          <model
+            ref={explosive3Ref}
+            x={Columns[3].explosiveX}
+            y={Columns[3].explosiveY}
+            w={Layout.MODEL_BOX}
+            h={Layout.MODEL_BOX}
+            model={TurretModel.EXPLOSIVE}
+            zoom={Layout.EGG_ZOOM}
+          />
+          <text
+            ref={explosiveCount3Ref}
+            x={Columns[3].explosiveCountX}
+            y={Columns[3].explosiveCountY}
+            w={Layout.count.W}
+            h={Layout.count.H}
+            font={TurretFont.BUTTON}
+            color={TurretColor.REST}
+            shadow
+            align="center"
+            valign="middle"
+          />
+          <model
+            ref={stun3Ref}
+            x={Columns[3].stunX}
+            y={Columns[3].stunY}
+            w={Layout.MODEL_BOX}
+            h={Layout.MODEL_BOX}
+            model={TurretModel.STUN}
+            zoom={Layout.EGG_ZOOM}
+          />
+          <text
+            ref={stunCount3Ref}
+            x={Columns[3].stunCountX}
+            y={Columns[3].stunCountY}
+            w={Layout.count.W}
+            h={Layout.count.H}
+            font={TurretFont.BUTTON}
+            color={TurretColor.REST}
+            shadow
+            align="center"
+            valign="middle"
+          />
+        </>
 
         <model
           x={Omega.LID_X}
@@ -106,6 +332,7 @@ export function BarbassaultTurret(): Component {
           zoom={Layout.QUEEN_ZOOM}
         />
         <model
+          ref={omegaEggRef}
           x={Omega.EGG_X}
           y={Omega.EGG_Y}
           w={Layout.MODEL_BOX}
@@ -114,6 +341,7 @@ export function BarbassaultTurret(): Component {
           zoom={Layout.EGG_ZOOM}
         />
         <text
+          ref={omegaCountRef}
           x={Omega.COUNT_X}
           y={Omega.COUNT_Y}
           w={Layout.count.W}
@@ -172,4 +400,76 @@ export function BarbassaultTurret(): Component {
       />
     </layer>
   );
+}
+
+const poison0Ref = createRef();
+const poisonCount0Ref = createRef();
+const explosive0Ref = createRef();
+const explosiveCount0Ref = createRef();
+const stun0Ref = createRef();
+const stunCount0Ref = createRef();
+const poison1Ref = createRef();
+const poisonCount1Ref = createRef();
+const explosive1Ref = createRef();
+const explosiveCount1Ref = createRef();
+const stun1Ref = createRef();
+const stunCount1Ref = createRef();
+const poison2Ref = createRef();
+const poisonCount2Ref = createRef();
+const explosive2Ref = createRef();
+const explosiveCount2Ref = createRef();
+const stun2Ref = createRef();
+const stunCount2Ref = createRef();
+const poison3Ref = createRef();
+const poisonCount3Ref = createRef();
+const explosive3Ref = createRef();
+const explosiveCount3Ref = createRef();
+const stun3Ref = createRef();
+const stunCount3Ref = createRef();
+const emptyRef = createRef();
+const buttonsRef = createRef();
+const omegaEggRef = createRef();
+const omegaCountRef = createRef();
+
+export function barbassaultTurretData(poison: Int, explosive: Int, stun: Int, queen: Int, role: Int): void {
+  const omega: Int = role !== 10 ? 0 : queen;
+  if (poison <= 0 && explosive <= 0 && stun <= 0 && omega <= 0) {
+    emptyRef.hide = false;
+    buttonsRef.hide = true;
+    return;
+  }
+  emptyRef.hide = true;
+  buttonsRef.hide = false;
+  const poisonModel: Model = poison > 0 ? TurretModel.POISON : TurretModel.EMPTY;
+  const explosiveModel: Model = explosive > 0 ? TurretModel.EXPLOSIVE : TurretModel.EMPTY;
+  const stunModel: Model = stun > 0 ? TurretModel.STUN : TurretModel.EMPTY;
+  const poisonText: String = `${poison}`;
+  const explosiveText: String = `${explosive}`;
+  const stunText: String = `${stun}`;
+  poison0Ref.model = poisonModel;
+  explosive0Ref.model = explosiveModel;
+  stun0Ref.model = stunModel;
+  poisonCount0Ref.text = poisonText;
+  explosiveCount0Ref.text = explosiveText;
+  stunCount0Ref.text = stunText;
+  poison1Ref.model = poisonModel;
+  explosive1Ref.model = explosiveModel;
+  stun1Ref.model = stunModel;
+  poisonCount1Ref.text = poisonText;
+  explosiveCount1Ref.text = explosiveText;
+  stunCount1Ref.text = stunText;
+  poison2Ref.model = poisonModel;
+  explosive2Ref.model = explosiveModel;
+  stun2Ref.model = stunModel;
+  poisonCount2Ref.text = poisonText;
+  explosiveCount2Ref.text = explosiveText;
+  stunCount2Ref.text = stunText;
+  poison3Ref.model = poisonModel;
+  explosive3Ref.model = explosiveModel;
+  stun3Ref.model = stunModel;
+  poisonCount3Ref.text = poisonText;
+  explosiveCount3Ref.text = explosiveText;
+  stunCount3Ref.text = stunText;
+  omegaEggRef.model = omega > 0 ? TurretModel.OMEGA : TurretModel.EMPTY;
+  omegaCountRef.text = `${omega}`;
 }

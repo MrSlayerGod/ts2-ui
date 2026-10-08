@@ -114,8 +114,8 @@ export function GravestoneGeneric(): Component {
     slot = slot + 1;
   }
   const filled: Int = freeCount + payCount;
-  const freeExtent: Int = freeCount > 0 ? ((freeCount - 1) / cols) * Slot.FREE_STRIDE_Y + Slot.H : 0;
-  const payExtent: Int = payCount > 0 ? ((payCount - 1) / cols) * Slot.PAY_STRIDE_Y + Slot.H + Slot.PRICE_H : 0;
+  const freeExtent: Int = freeCount > 0 ? (freeCount - 1) / cols * Slot.FREE_STRIDE_Y + Slot.H : 0;
+  const payExtent: Int = payCount > 0 ? (payCount - 1) / cols * Slot.PAY_STRIDE_Y + Slot.H + Slot.PRICE_H : 0;
 
   const owing: Int = transmitFee !== 0 ? 1 : 0;
 
@@ -176,8 +176,8 @@ export function GravestoneGeneric(): Component {
                 index >= freeFrom &&
                 item !== -1 && (
                   <sprite
-                    x={insetX + (seen % cols) * strideX}
-                    y={(seen / cols) * Slot.FREE_STRIDE_Y}
+                    x={insetX + seen % cols * strideX}
+                    y={seen / cols * Slot.FREE_STRIDE_Y}
                     w={Slot.W}
                     h={Slot.H}
                     item={item}
@@ -232,8 +232,8 @@ export function GravestoneGeneric(): Component {
                   item !== -1 && (
                     <>
                       <sprite
-                        x={insetX + (seen % cols) * strideX}
-                        y={(seen / cols) * Slot.PAY_STRIDE_Y}
+                        x={insetX + seen % cols * strideX}
+                        y={seen / cols * Slot.PAY_STRIDE_Y}
                         w={Slot.W}
                         h={Slot.H}
                         item={item}
@@ -247,8 +247,8 @@ export function GravestoneGeneric(): Component {
                         }}
                       />
                       <text
-                        x={insetX + (seen % cols) * strideX}
-                        y={(seen / cols) * Slot.PAY_STRIDE_Y + Slot.H}
+                        x={insetX + seen % cols * strideX}
+                        y={seen / cols * Slot.PAY_STRIDE_Y + Slot.H}
                         w={Slot.W}
                         h={Slot.PRICE_H}
                         text={priceLabel(payRowPrice(held.count(index), index, rate1kFrom, rate10kFrom, feeCap))}

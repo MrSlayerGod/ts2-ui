@@ -51,7 +51,7 @@ export function PetPane(): Component {
     slot = slot + 1;
   }
 
-  const extent: Int = drawn > 0 ? ((drawn - 1) / Grid.COLUMNS) * Grid.ROW_STEP + Grid.TAIL : 0;
+  const extent: Int = drawn > 0 ? (drawn - 1) / Grid.COLUMNS * Grid.ROW_STEP + Grid.TAIL : 0;
 
   return (
     <>
@@ -68,7 +68,7 @@ export function PetPane(): Component {
             tableSlot[index] !== -1 && (
               <sprite
                 x={Grid.STRIDE * (tableSlot[index] % Grid.COLUMNS)}
-                y={(tableSlot[index] / Grid.COLUMNS) * Grid.ROW_STEP}
+                y={tableSlot[index] / Grid.COLUMNS * Grid.ROW_STEP}
                 w={Grid.ICON_WIDTH}
                 h={Grid.ICON_HEIGHT}
                 item={pet}
@@ -93,7 +93,7 @@ export function PetPane(): Component {
             inventorySlot[index] !== -1 && (
               <sprite
                 x={Grid.STRIDE * (inventorySlot[index] % Grid.COLUMNS)}
-                y={(inventorySlot[index] / Grid.COLUMNS) * Grid.ROW_STEP}
+                y={inventorySlot[index] / Grid.COLUMNS * Grid.ROW_STEP}
                 w={Grid.ICON_WIDTH}
                 h={Grid.ICON_HEIGHT}
                 item={item}

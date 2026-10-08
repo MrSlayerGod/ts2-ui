@@ -1,3 +1,7 @@
 import { sessionState } from 'ts2';
 
 export const iiTrackerSelectedTab = sessionState(-1);
+
+export const iiTrackerNames = sessionState('');
+export const iiTrackerSplit = sessionState(0);
+export const iiTrackerBuilt = sessionState(0);

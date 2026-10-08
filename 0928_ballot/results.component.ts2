@@ -85,7 +85,7 @@ function ResultsAnswerRow({
   perMille: Int;
 }): Component {
   const filled: Int =
-    (CS2.interpolate(0, ResultsRowLayout.BAR_SPAN, 0, ResultsRowLayout.BAR_PER_MILLE, perMille) * barWidth) /
+    CS2.interpolate(0, ResultsRowLayout.BAR_SPAN, 0, ResultsRowLayout.BAR_PER_MILLE, perMille) * barWidth /
     ResultsRowLayout.BAR_SPAN;
 
   return (

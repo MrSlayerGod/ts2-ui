@@ -22,7 +22,7 @@ export function OrbsOsmNomap(): Component {
       </layer>
       <layer x="right" y={0} w={137} h={178}>
         <XpDropsButton left={110} top={3} fromRight />
-        <HealthOrb left={44} top={0} fromRight wide clickY={5} clickW={58} clickH={25} />
+        <HealthOrb left={44} top={0} fromRight panel={OrbsPanel.OSM_NOMAP} wide clickY={5} clickW={58} clickH={25} />
         <PrayerOrb left={44} top={36} fromRight wide clickY={6} clickW={58} clickH={25} />
         <RunOrb left={44} top={72} fromRight wide clickY={6} clickW={58} clickH={25} />
         <SpecOrb

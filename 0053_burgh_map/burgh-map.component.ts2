@@ -1,4 +1,6 @@
+import { useState } from 'ts2';
 import { closeInterface, graphicSwapper } from '../lib/lib.helpers';
+import { burghHi, burghRouteLeave, burghRouteRepeat, burghTravel } from './burgh-map.state';
 import {
   Blurb,
   BurghArt,
@@ -19,6 +21,8 @@ import {
 } from './burgh-map.constants';
 
 export function BurghMap(): Component {
+  const [hi] = useState(burghHi);
+  const [travel] = useState(burghTravel);
   return (
     <>
       <rect x={0} y={0} w={Layout.stage.W} h={Layout.stage.H} fill color={BurghColor.GROUND} transparency={1} />
@@ -116,7 +120,7 @@ export function BurghMap(): Component {
         pitch={Camera.GRAVEYARD.PITCH}
       />
 
-      <layer x={0} y={0} w={Layout.stage.W} h={Layout.stage.H} hide options={['Deselect']} />
+      <layer x={0} y={0} w={Layout.stage.W} h={Layout.stage.H} hide={travel === 0} options={['Deselect']} />
 
       <layer x={Layout.close.X} y={Layout.close.Y} w={Layout.close.W} h={Layout.close.H}>
         <sprite
@@ -127,12 +131,20 @@ export function BurghMap(): Component {
           sprite={BurghArt.CLOSE}
           options={['Close']}
           onOptionSelect={() => closeInterface()}
-          onMouseEnter={(event) => graphicSwapper(event.component, BurghArt.CLOSE_HOVER)}
-          onMouseLeave={(event) => graphicSwapper(event.component, BurghArt.CLOSE)}
+          onMouseEnter={(event) => graphicSwapper(event.self, BurghArt.CLOSE_HOVER)}
+          onMouseLeave={(event) => graphicSwapper(event.self, BurghArt.CLOSE)}
         />
       </layer>
 
-      <layer x={Layout.route1.X} y={Layout.route1.Y} w={Layout.route1.W} h={Layout.route1.H} options={['Select']}>
+      <layer
+        x={Layout.route1.X}
+        y={Layout.route1.Y}
+        w={Layout.route1.W}
+        h={Layout.route1.H}
+        options={['Select']}
+        onMouseRepeat={() => burghRouteRepeat(1)}
+        onMouseLeave={() => burghRouteLeave(1)}
+      >
         <model
           x="center"
           y={0}
@@ -155,7 +167,15 @@ export function BurghMap(): Component {
         />
       </layer>
 
-      <layer x={Layout.route2.X} y={Layout.route2.Y} w={Layout.route2.W} h={Layout.route2.H} options={['Select']}>
+      <layer
+        x={Layout.route2.X}
+        y={Layout.route2.Y}
+        w={Layout.route2.W}
+        h={Layout.route2.H}
+        options={['Select']}
+        onMouseRepeat={() => burghRouteRepeat(2)}
+        onMouseLeave={() => burghRouteLeave(2)}
+      >
         <model
           x={0}
           y={0}
@@ -178,7 +198,7 @@ export function BurghMap(): Component {
         />
       </layer>
 
-      <layer x={Layout.overlay.X} y={Layout.overlay.Y} w={Layout.overlay.W} h={Layout.overlay.H} hide>
+      <layer x={Layout.overlay.X} y={Layout.overlay.Y} w={Layout.overlay.W} h={Layout.overlay.H} hide={hi !== 1}>
         <model
           x={TempleHi.X}
           y={TempleHi.Y}
@@ -220,7 +240,7 @@ export function BurghMap(): Component {
         />
       </layer>
 
-      <layer x={Layout.overlay.X} y={Layout.overlay.Y} w={Layout.overlay.W} h={Layout.overlay.H} hide>
+      <layer x={Layout.overlay.X} y={Layout.overlay.Y} w={Layout.overlay.W} h={Layout.overlay.H} hide={hi !== 2}>
         <model
           x={TempleHi.X}
           y={TempleHi.Y}
@@ -282,7 +302,7 @@ export function BurghMap(): Component {
         yaw={Layout.promptCamera.YAW}
       />
 
-      <layer x={Layout.prompt.X} y={Layout.prompt.Y} w={Layout.prompt.W} h={Layout.prompt.H}>
+      <layer x={Layout.prompt.X} y={Layout.prompt.Y} w={Layout.prompt.W} h={Layout.prompt.H} hide={travel !== 0}>
         <text
           x={0}
           y={0}
@@ -296,7 +316,14 @@ export function BurghMap(): Component {
         />
       </layer>
 
-      <layer x={Layout.prompt.X} y={Layout.prompt.Y} w={Layout.prompt.W} h={Layout.prompt.H} hide options={['Travel']}>
+      <layer
+        x={Layout.prompt.X}
+        y={Layout.prompt.Y}
+        w={Layout.prompt.W}
+        h={Layout.prompt.H}
+        hide={travel !== 2}
+        options={['Travel']}
+      >
         <text
           x={0}
           y={0}
@@ -309,7 +336,14 @@ export function BurghMap(): Component {
           valign="middle"
         />
       </layer>
-      <layer x={Layout.prompt.X} y={Layout.prompt.Y} w={Layout.prompt.W} h={Layout.prompt.H} hide options={['Travel']}>
+      <layer
+        x={Layout.prompt.X}
+        y={Layout.prompt.Y}
+        w={Layout.prompt.W}
+        h={Layout.prompt.H}
+        hide={travel !== 1}
+        options={['Travel']}
+      >
         <text
           x={0}
           y={0}

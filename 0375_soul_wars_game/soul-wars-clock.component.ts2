@@ -1,0 +1,90 @@
+import { CS2, sessionState, useInterval, useRef, useState } from 'ts2';
+
+import { clientClock, scaled } from '../lib/lib.engine';
+import { minmax } from '../0811_lockpicking/lockpicking.state';
+import { Layout, SoulWarsClock, SoulWarsColor, SoulWarsFonts } from './soul-wars-game.constants';
+
+export const soulWarsClockRunning = sessionState(0);
+export const soulWarsClockDeadline = sessionState(0);
+export const soulWarsClockText = sessionState('10:00');
+export const soulWarsClockColour = sessionState(SoulWarsColor.CAPTION);
+
+export function soulWarsGameTimeUpdate(ticks: Int): void {
+  const [, setDeadline] = useState(soulWarsClockDeadline);
+  const [, setRunning] = useState(soulWarsClockRunning);
+  setDeadline(CS2.clientclock() + ticks * SoulWarsClock.CYCLES_PER_TICK);
+  setRunning(1);
+}
+
+export function soulWarsGameStopTimer(): void {
+  const [, setRunning] = useState(soulWarsClockRunning);
+  const [, setText] = useState(soulWarsClockText);
+  setText('---');
+  setRunning(0);
+}
+
+export function resetSoulWarsClock(): void {
+  const [, setRunning] = useState(soulWarsClockRunning);
+  const [, setText] = useState(soulWarsClockText);
+  const [, setColour] = useState(soulWarsClockColour);
+  setRunning(0);
+  setText('10:00');
+  setColour(SoulWarsColor.CAPTION);
+}
+
+function soulWarsClockCap(): Int {
+  return SoulWarsClock.CAP;
+}
+
+function soulWarsGameTimer(): void {
+  const [running, setRunning] = useState(soulWarsClockRunning);
+  if (running === 0) {
+    return;
+  }
+  const [deadline] = useState(soulWarsClockDeadline);
+  const [, setText] = useState(soulWarsClockText);
+  const [, setColour] = useState(soulWarsClockColour);
+  const remaining: Int = deadline - clientClock();
+  if (remaining <= 0) {
+    setText('0:00');
+    setColour(SoulWarsColor.CAPTION);
+    setRunning(0);
+    return;
+  }
+  const cap: Int = scaled(60, 100, soulWarsClockCap());
+  const seconds: Int = minmax(0, cap, remaining / SoulWarsClock.CYCLES_PER_SECOND);
+  const minutes: Int = seconds / 60;
+  const rest: Int = seconds % 60;
+  let text: String = `${minutes}:${rest}`;
+  if (rest < 10) {
+    text = `${minutes}:0${rest}`;
+  }
+  setText(text);
+  if (clientClock() % 20 < 10 && seconds <= 10) {
+    setColour(SoulWarsClock.FLASH);
+  } else {
+    setColour(SoulWarsColor.CAPTION);
+  }
+}
+
+export function SoulWarsTimeLeft(): Component {
+  const [text] = useState(soulWarsClockText);
+  const [colour] = useState(soulWarsClockColour);
+  const self = useRef();
+  useInterval(() => soulWarsGameTimer(), self);
+  return (
+    <text
+      ref={self}
+      x="center"
+      y="bottom"
+      w={{ fill: Layout.TIME_VALUE_INSET }}
+      h={Layout.CAPTION_H}
+      font={SoulWarsFonts.LABEL}
+      text={text}
+      align="center"
+      valign="middle"
+      shadow
+      color={colour}
+    />
+  );
+}

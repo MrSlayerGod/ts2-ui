@@ -105,7 +105,7 @@ export function ClansInterests(): Component {
                 <InterestRow
                   name={name}
                   index={index}
-                  top={(index / 2) * rowHeight}
+                  top={index / 2 * rowHeight}
                   rowHeight={rowHeight}
                   left={index % 2 === 0 ? 0 : rightColumnX}
                   stripeWidth={index % 2 === 0 ? leftStripe : rightStripe}

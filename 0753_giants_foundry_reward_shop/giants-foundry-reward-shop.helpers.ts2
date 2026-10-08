@@ -145,11 +145,11 @@ export function gridCellWidth(paneWidth: Int): Int {
 }
 
 export function gridCellX(index: Int, paneWidth: Int): Int {
-  return (index % gridColumns(paneWidth)) * (gridCellWidth(paneWidth) + Grid.GUTTER) + Grid.GUTTER;
+  return index % gridColumns(paneWidth) * (gridCellWidth(paneWidth) + Grid.GUTTER) + Grid.GUTTER;
 }
 
 export function gridCellY(index: Int, paneWidth: Int): Int {
-  return (index / gridColumns(paneWidth)) * (Grid.CELL_H + Grid.GUTTER) + Grid.GUTTER;
+  return index / gridColumns(paneWidth) * (Grid.CELL_H + Grid.GUTTER) + Grid.GUTTER;
 }
 
 export function rewardShopPoints(): String {

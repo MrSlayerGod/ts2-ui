@@ -51,3 +51,9 @@ export const chatboxBlockClick = sessionState(1);
 export const chatboxStripAlpha = sessionState(0);
 
 export const chatInputTransparent = sessionState(0);
+
+export const chatboxRebuild = sessionState(0);
+
+export const chatPaneTransparent = sessionState(0);
+
+export const chatAlertMarks = sessionState(0);

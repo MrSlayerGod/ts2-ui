@@ -1,0 +1,78 @@
+import { CS2, useState } from 'ts2';
+
+import { chatboxBackground, chatboxRelayout } from '../0162_chatbox/chatbox-chrome';
+import { chatView, chatViewSaved, osmChatboxDisabled, osmChatboxFiltersDisabled } from '../lib/game/varcs';
+import { toplevelComponents } from '../lib/lib.helpers';
+import { mobileGameframe } from '../lib/lib.overlay';
+import { Modal, mainmodalRef } from './toplevel-osm.constants';
+import { touchDodgers } from './toplevel-osm.helpers';
+import { chatHiddenForModal } from './toplevel-osm.state';
+
+export function osmHidechatEntrypoint(target: Int, frame: Int): void {
+  if (!mobileGameframe(toplevelComponents())) {
+    return;
+  }
+  if (osmHidechat()) {
+    const [, setArmed] = useState(chatHiddenForModal);
+    setArmed(1);
+  }
+}
+
+export function osmHidechatCheck(): void {
+  const [armed, setArmed] = useState(chatHiddenForModal);
+  if (armed !== 1) {
+    return;
+  }
+  if (CS2.if_sub_has(mainmodalRef)) {
+    return;
+  }
+  setArmed(0);
+  osmShowchat();
+}
+
+export function osmClosechat(arg0: Int, arg1: Int): void {
+  const [, setView] = useState(chatView);
+  setView(Modal.CHAT_VIEW_OFF);
+  chatboxBackground();
+}
+
+export function osmShowchat(): void {
+  const [saved] = useState(chatViewSaved);
+  if (saved === Modal.CHAT_VIEW_OFF) {
+    return;
+  }
+  const [, setView] = useState(chatView);
+  setView(saved);
+  chatboxBackground();
+}
+
+export function osmHidechat(): Boolean {
+  const [view, setView] = useState(chatView);
+  const was: Int = view;
+  if (was === Modal.CHAT_VIEW_OFF) {
+    return false;
+  }
+  const [, setSaved] = useState(chatViewSaved);
+  setSaved(was);
+  setView(Modal.CHAT_VIEW_OFF);
+  chatboxBackground();
+  return true;
+}
+
+export function osmChatFiltersToggle(): void {
+  const [chatDisabled] = useState(osmChatboxDisabled);
+  if (chatDisabled === 1) {
+    return;
+  }
+  if (!mobileGameframe(toplevelComponents())) {
+    return;
+  }
+  const [filtersDisabled, setFiltersDisabled] = useState(osmChatboxFiltersDisabled);
+  if (filtersDisabled === 1) {
+    setFiltersDisabled(0);
+  } else {
+    setFiltersDisabled(1);
+  }
+  chatboxRelayout();
+  touchDodgers();
+}

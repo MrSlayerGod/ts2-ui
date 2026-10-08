@@ -1,52 +1,247 @@
-import { Frame } from '../lib/frame.component';
-import { SlotColors, SlotSkinIn, SlotSkinOut } from './skillmulti.constants';
+import { CS2, useInterval, useRef, useServerState, useState } from 'ts2';
 
-export function ProductSlot({
-  item,
-  w,
-  h,
-  pressed = false,
-}: {
-  item: Item;
-  w: Int;
-  h: Int;
-  pressed?: Boolean;
-}): Component {
-  const size: Int = (w < h ? w : h) - 10;
+import { Frame } from '../lib/frame.component';
+import { Models } from '../lib/game/models';
+import { Sounds } from '../lib/game/sounds';
+import { Varps } from '../lib/game/varps';
+import { dialogueMayAdvance } from '../lib/lib.dialogue';
+import { clientClock, playSound } from '../lib/lib.engine';
+import { onMobile } from '../lib/lib.helpers';
+import { smCount, smItemBank, smKind, smQuantity, smScroll } from './skillmulti.cells';
+import {
+  KindHasQuantity,
+  Layout,
+  SkillMultiFonts,
+  SkillMultiGate,
+  SlotColors,
+  SlotKeyLabels,
+  SlotOpText,
+  SlotSkinIn,
+  SlotSkinOut,
+  SlotSpaceHint,
+} from './skillmulti.constants';
+import { gridExtentFor, isGrid, rowWidthFor, slotLeftFor, slotTopFor, slotWidthFor } from './skillmulti.layout';
+import { hideSkillTip, productName, showSkillTip } from './skill-multi-tooltip.component';
+
+const PADS = [
+  0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28,
+] as const;
+
+const HOURGLASS = 5610;
+
+enum Stringstar {
+  ITEM = 1716,
+}
+
+const SPACE_KEY = 83;
+const SPACE_LABEL = 36;
+
+export function ProductSlot({ index }: { index: Int }): Component {
+  const [count] = useState(smCount);
+  const [kind] = useState(smKind);
+  const [item] = useState(smItemBank[index]);
+  const [hover, setHover] = useState(0);
+  const [pressedUntil, setPressedUntil] = useState(0);
+
+  const [scroll] = useState(smScroll);
+
+  const width: Int = slotWidthFor(count);
+  const left: Int = slotLeftFor(count, index);
+  const top: Int = slotTopFor(count, index);
+  const size: Int = (width < Layout.SLOT_HEIGHT ? width : Layout.SLOT_HEIGHT) - 10;
+
+  const grid: Boolean = isGrid(count);
+  const paneWidth: Int = rowWidthFor(count);
+
+  const keySlot: Int = useServerState(Varps.SKILLMULTI_PREVIOUSSELECTION);
+  const spaceBound: Boolean = SlotSpaceHint.get(kind) ?? true;
+  let spaceKey: Int = -1;
+  if (index === keySlot && spaceBound) {
+    spaceKey = SPACE_KEY;
+  }
+  let label: String = SlotKeyLabels.at(index) ?? '';
+  if (spaceKey !== -1 && !onMobile()) {
+    label = SlotKeyLabels.at(SPACE_LABEL) ?? '';
+  }
+  const keyLabel: String = SlotKeyLabels.at(index) ?? '';
+  const name: String = productName(index);
+
+  const clock = useRef();
+  useInterval(
+    pressedUntil > 0
+      ? () => {
+          if (clientClock() < pressedUntil) {
+            return;
+          }
+          setPressedUntil(0);
+          setHover(0);
+        }
+      : undefined,
+    clock,
+  );
 
   return (
-    <layer w={w} h={h}>
-      {pressed ? (
-        <>
-          <rect x="center" y="center" w={{ fill: 2 }} h={{ fill: 2 }} color={SlotColors.PRESSED_FILL} fill />
-          <Frame
-            topLeft={SlotSkinIn.TOP_LEFT}
-            topRight={SlotSkinIn.TOP_RIGHT}
-            bottomLeft={SlotSkinIn.BOTTOM_LEFT}
-            bottomRight={SlotSkinIn.BOTTOM_RIGHT}
-            left={SlotSkinIn.LEFT}
-            top={SlotSkinIn.TOP}
-            right={SlotSkinIn.RIGHT}
-            bottom={SlotSkinIn.BOTTOM}
+    <>
+      {PADS.map(() => (
+        <rect x={0} y={0} w={0} h={0} hide />
+      ))}
+      <layer ref={clock} x={0} y={0} w={0} h={0} />
+      <layer
+        x={grid ? Layout.HOLDER_X : 0}
+        y={grid ? Layout.HOLDER_Y : 0}
+        w={grid ? paneWidth : Layout.ROOT_WIDTH}
+        h={grid ? Layout.HOLDER_HEIGHT : Layout.ROOT_HEIGHT}
+        scrollHeight={gridExtentFor(count)}
+        scrollY={grid ? scroll : 0}
+      >
+        {index < count && (
+          <layer
+            x={left}
+            y={top}
+            w={width}
+            h={Layout.SLOT_HEIGHT}
+            options={[SlotOpText.get(kind) ?? 'Make']}
+            optionSubject={`<col=ff9040>${name}</col>`}
+            onMouseEnter={() => {
+              if (pressedUntil === 0) {
+                setHover(1);
+              }
+            }}
+            onMouseLeave={() => {
+              if (pressedUntil === 0) {
+                setHover(0);
+              }
+              hideSkillTip();
+            }}
+            onMouseRepeat={() => {
+              showSkillTip(index);
+            }}
+            onOptionSelect={(event) => {
+              if (pressedUntil !== 0) {
+                return;
+              }
+              if (event.option === 1) {
+                setPressedUntil(clientClock() + Layout.PRESS_HOLD);
+                productTriggered(event.component, kind);
+              }
+            }}
+            onKey={(event) => {
+              if (pressedUntil !== 0) {
+                return;
+              }
+              if (dialogueMayAdvance(SkillMultiGate.THIS_PANEL, SkillMultiGate.NO_SUB) === false) {
+                return;
+              }
+              let hit: Boolean = false;
+              if (spaceKey !== -1 && event.keyCode === spaceKey) {
+                hit = true;
+              } else if (event.keyChar !== -1 && keyLabel.length > 0) {
+                if (
+                  CS2.string_indexof_char(CS2.lowercase(keyLabel), event.keyChar) !== -1 ||
+                  CS2.string_indexof_char(keyLabel, event.keyChar) !== -1
+                ) {
+                  hit = true;
+                }
+              }
+              if (hit) {
+                setPressedUntil(clientClock() + Layout.PRESS_HOLD);
+                productTriggered(event.component, kind);
+              }
+            }}
+          >
+            {pressedUntil > 0 || hover === 1 ? (
+              <>
+                <rect x="center" y="center" w={{ fill: 2 }} h={{ fill: 2 }} color={SlotColors.PRESSED_FILL} fill />
+                <Frame
+                  topLeft={SlotSkinIn.TOP_LEFT}
+                  topRight={SlotSkinIn.TOP_RIGHT}
+                  bottomLeft={SlotSkinIn.BOTTOM_LEFT}
+                  bottomRight={SlotSkinIn.BOTTOM_RIGHT}
+                  left={SlotSkinIn.LEFT}
+                  top={SlotSkinIn.TOP}
+                  right={SlotSkinIn.RIGHT}
+                  bottom={SlotSkinIn.BOTTOM}
+                />
+              </>
+            ) : (
+              <>
+                <sprite x="center" y="center" w={{ fill: 2 }} h={{ fill: 2 }} sprite={SlotSkinOut.FILL} tiling />
+                <Frame
+                  topLeft={SlotSkinOut.TOP_LEFT}
+                  topRight={SlotSkinOut.TOP_RIGHT}
+                  bottomLeft={SlotSkinOut.BOTTOM_LEFT}
+                  bottomRight={SlotSkinOut.BOTTOM_RIGHT}
+                  left={SlotSkinOut.LEFT}
+                  top={SlotSkinOut.TOP}
+                  right={SlotSkinOut.RIGHT}
+                  bottom={SlotSkinOut.BOTTOM}
+                />
+              </>
+            )}
+            {pressedUntil > 0 ? (
+              <sprite
+                x="center"
+                y="center"
+                w={36}
+                h={32}
+                item={HOURGLASS}
+                itemCount={1}
+                itemCountMode="never"
+                outline={1}
+                shadowColor={SlotColors.HOURGLASS_SHADOW}
+              />
+            ) : ((item === Stringstar.ITEM ? (
+              <model
+                x="center"
+                y="center"
+                w={size}
+                h={size}
+                model={Models.UNBLESSED_SYMBOL_2462}
+                offsetX={0}
+                offsetY={-10}
+                pitch={440}
+                yaw={36}
+                roll={0}
+                zoom={450}
+              />
+            ) : (
+              <model x="center" y="center" w={size} h={size} item={item as Item} itemCount={2147483647} />
+            )))}
+          </layer>
+        )}
+        {index < count && (
+          <text
+            x={left}
+            y={top + Layout.SLOT_HEIGHT}
+            w={width}
+            h={Layout.LABEL_HEIGHT}
+            text={label}
+            align="center"
+            valign="middle"
+            font={SkillMultiFonts.LABEL}
+            color={SlotColors.TITLE}
           />
-        </>
-      ) : (
-        <>
-          <sprite x="center" y="center" w={{ fill: 2 }} h={{ fill: 2 }} sprite={SlotSkinOut.FILL} tiling />
-          <Frame
-            topLeft={SlotSkinOut.TOP_LEFT}
-            topRight={SlotSkinOut.TOP_RIGHT}
-            bottomLeft={SlotSkinOut.BOTTOM_LEFT}
-            bottomRight={SlotSkinOut.BOTTOM_RIGHT}
-            left={SlotSkinOut.LEFT}
-            top={SlotSkinOut.TOP}
-            right={SlotSkinOut.RIGHT}
-            bottom={SlotSkinOut.BOTTOM}
-          />
-        </>
-      )}
-
-      <model x="center" y="center" w={size} h={size} item={item} itemCount={2147483647} />
-    </layer>
+        )}
+      </layer>
+    </>
   );
+}
+
+function productTriggered(product: ComponentId, kind: Int): void {
+  if ((KindHasQuantity.get(kind) ?? true) === false) {
+    playSound(Sounds.INTERFACE_SELECT1);
+    if (CS2.cc_find(product, 0) === true) {
+      CS2.cc_resume_pausebutton();
+    }
+    return;
+  }
+  const [quantity] = useState(smQuantity);
+  if (quantity >= 1 && quantity <= 28) {
+    playSound(Sounds.INTERFACE_SELECT1);
+    if (CS2.cc_find(product, quantity) === true) {
+      CS2.cc_resume_pausebutton();
+    }
+    return;
+  }
+  playSound(Sounds.PILLORY_WRONG);
 }

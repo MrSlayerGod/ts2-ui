@@ -121,23 +121,19 @@ export function tileScores(marked: Int, flagged: Int, index: Int): Int {
 
 export function lineTotal(marked: Int, flagged: Int, line: Int): Int {
   if (line < 5) {
-    return (
-      tileScores(marked, flagged, line) +
+    return tileScores(marked, flagged, line) +
       tileScores(marked, flagged, line + 5) * 2 +
       tileScores(marked, flagged, line + 10) * 3 +
       tileScores(marked, flagged, line + 15) * 4 +
-      tileScores(marked, flagged, line + 20) * 5
-    );
+      tileScores(marked, flagged, line + 20) * 5;
   }
 
   const first: Int = (line - 5) * 5;
-  return (
-    tileScores(marked, flagged, first) +
+  return tileScores(marked, flagged, first) +
     tileScores(marked, flagged, first + 1) * 2 +
     tileScores(marked, flagged, first + 2) * 3 +
     tileScores(marked, flagged, first + 3) * 4 +
-    tileScores(marked, flagged, first + 4) * 5
-  );
+    tileScores(marked, flagged, first + 4) * 5;
 }
 
 export function lineClue(): Int {

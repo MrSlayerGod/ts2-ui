@@ -1,8 +1,101 @@
 import { useState } from 'ts2';
-import { IiTrackerTab } from './ii-tracker.constants';
-import { iiTrackerSelectedTab } from './ii-tracker.state';
+import { IiTrackerTab, ImplingCell } from './ii-tracker.constants';
+import { ImplingModels } from './ii-tracker.data';
+import { iiTrackerBuilt, iiTrackerNames, iiTrackerSelectedTab, iiTrackerSplit } from './ii-tracker.state';
 
 export function iiTrackerTabSelect(tab: IiTrackerTab): void {
   const [, setTab] = useState(iiTrackerSelectedTab);
   setTab(tab);
+}
+
+export function iiTrackerBuild(
+  surfaceGrid: Int,
+  surfaceText: Int,
+  surfaceModels: Int,
+  surfaceBar: Int,
+  puroGrid: Int,
+  puroText: Int,
+  puroModels: Int,
+  puroBar: Int,
+  surface: String,
+  puro: String,
+): void {
+  const [, setNames] = useState(iiTrackerNames);
+  const [, setSplit] = useState(iiTrackerSplit);
+  const [, setBuilt] = useState(iiTrackerBuilt);
+  setNames(`${surface}${puro}`);
+  setSplit(surface.length);
+  setBuilt(1);
+  iiTrackerTabSelect(IiTrackerTab.SURFACE);
+}
+
+export function nameCount(names: String): Int {
+  let count: Int = 1;
+  let at: Int = names.indexOf('|', 0);
+  while (at !== -1) {
+    count = count + 1;
+    at = names.indexOf('|', at + 1);
+  }
+  return count;
+}
+
+export function nameAt(names: String, i: Int): String {
+  let rest: String = names;
+  let k: Int = 0;
+  let at: Int = rest.indexOf('|', 0);
+  while (at !== -1 && k < i) {
+    rest = rest.substring(at + 1, rest.length);
+    at = rest.indexOf('|', 0);
+    k = k + 1;
+  }
+  if (at === -1) {
+    return rest;
+  }
+  return rest.substring(0, at);
+}
+
+export function implingModel(i: Int): Model {
+  return ImplingModels.at(i) ?? 29609;
+}
+
+export function cellX(i: Int, width: Int): Int {
+  let x: Int = ImplingCell.START_X;
+  let k: Int = 0;
+  while (k < i) {
+    x = cellStep(x, k, width) + ImplingCell.MODEL_W + ImplingCell.NAME_GAP + ImplingCell.NAME_W;
+    k = k + 1;
+  }
+  return cellStep(x, i, width);
+}
+
+export function cellY(i: Int, width: Int): Int {
+  let x: Int = ImplingCell.START_X;
+  let y: Int = ImplingCell.START_Y;
+  let k: Int = 0;
+  while (k <= i) {
+    if (x + ImplingCell.MODEL_W + ImplingCell.NAME_GAP + ImplingCell.NAME_W > width) {
+      y = y + ImplingCell.ROW;
+    }
+    x = cellStep(x, k, width) + ImplingCell.MODEL_W + ImplingCell.NAME_GAP + ImplingCell.NAME_W;
+    k = k + 1;
+  }
+  return y;
+}
+
+function cellStep(x: Int, k: Int, width: Int): Int {
+  if (x + ImplingCell.MODEL_W + ImplingCell.NAME_GAP + ImplingCell.NAME_W > width) {
+    return ImplingCell.START_X;
+  }
+  if (k > 0) {
+    return x + ImplingCell.GAP;
+  }
+  return x;
+}
+
+export function gridScroll(names: String, width: Int, height: Int): Int {
+  const lastY: Int = cellY(nameCount(names) - 1, width);
+  if (lastY + ImplingCell.FOOT > height) {
+    return lastY + ImplingCell.SCROLL_FOOT;
+  }
+  return 0;
 }

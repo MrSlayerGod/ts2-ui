@@ -14,8 +14,8 @@ import {
 function ChestSlot({ item, count, slot }: { item: Item; count: Int; slot: Int }): Component {
   return (
     <sprite
-      x={Chest.MARGIN + (slot % Chest.COLUMNS) * Chest.STRIDE_X}
-      y={(slot / Chest.COLUMNS) * Chest.STRIDE_Y}
+      x={Chest.MARGIN + slot % Chest.COLUMNS * Chest.STRIDE_X}
+      y={slot / Chest.COLUMNS * Chest.STRIDE_Y}
       w={Chest.W}
       h={Chest.H}
       item={item}

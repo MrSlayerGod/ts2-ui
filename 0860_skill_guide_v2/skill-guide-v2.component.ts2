@@ -54,6 +54,7 @@ import {
   unlockTextWidth,
 } from './skill-guide-v2.helpers';
 import { guideLevelFrom, guideLevelTo } from './skill-guide-v2.state';
+import { GuideOverview } from './skill-guide-v2.overview.component';
 
 export function SkillGuideV2(): Component {
   return (
@@ -90,7 +91,9 @@ export function SkillGuideV2(): Component {
             y={{ bottom: Layout.page.bottom }}
             w={{ fill: Layout.page.insetW }}
             h={{ fill: Layout.page.insetH }}
-          />
+          >
+            <GuideOverview />
+          </layer>
           <layer
             static
             x={{ right: Layout.page.right }}

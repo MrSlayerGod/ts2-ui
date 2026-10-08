@@ -1,23 +1,32 @@
 import { SteelBorderEntrypoint } from '../lib/steel-border-entrypoint.component';
 import { ThinBoxEntrypoint } from '../lib/thin-box-entrypoint.component';
-import { Layout, MuseumArt, MuseumColors, MuseumCopy, MuseumFonts } from './fortis-museum.constants';
+import { useInterval, useRef, useState } from 'ts2';
+
+import {
+  Layout,
+  MuseumArt,
+  MuseumColors,
+  MuseumCopy,
+  MuseumFonts,
+  SpinStep,
+  museumModel,
+  museumOffsetX,
+  museumOffsetY,
+  museumPitch,
+  museumRoll,
+  museumSpin,
+  museumText,
+  museumTitle,
+  museumYaw,
+  museumZoom,
+} from './fortis-museum.constants';
 
 export function FortisMuseum(): Component {
   return (
     <layer x="center" y="center" w={Layout.WINDOW_W} h={Layout.WINDOW_H}>
       <SteelBorderEntrypoint title={MuseumCopy.FRAME_TITLE} />
 
-      <text
-        x={0}
-        y={Layout.TITLE_Y}
-        w="fill"
-        h={Layout.TITLE_H}
-        font={MuseumFonts.TITLE}
-        color={MuseumColors.TITLE}
-        align="center"
-        valign="middle"
-        shadow
-      />
+      <MuseumTitle />
 
       <layer
         x="center"
@@ -36,15 +45,7 @@ export function FortisMuseum(): Component {
               tiling
             />
 
-            <model
-              x="center"
-              y="center"
-              w={Layout.MODEL_BOX}
-              h={Layout.MODEL_BOX}
-              zoom={Layout.MODEL_ZOOM}
-              yaw={Layout.MODEL_YAW}
-              offsetY={Layout.MODEL_OFFSET_Y}
-            />
+            <MuseumModel />
 
             <ThinBoxEntrypoint />
           </layer>
@@ -66,18 +67,7 @@ export function FortisMuseum(): Component {
               tiling
             />
 
-            <text
-              x="center"
-              y="center"
-              w={{ fill: Layout.TEXT_INSET_W }}
-              h={{ fill: Layout.TEXT_INSET_H }}
-              font={MuseumFonts.BODY}
-              color={MuseumColors.BODY}
-              align="center"
-              valign="middle"
-              shadow
-              lineHeight={Layout.TEXT_LINE_HEIGHT}
-            />
+            <MuseumText />
 
             <ThinBoxEntrypoint />
           </layer>
@@ -85,4 +75,110 @@ export function FortisMuseum(): Component {
       </layer>
     </layer>
   );
+}
+
+function MuseumTitle(): Component {
+  const [title] = useState(museumTitle);
+  return (
+    <text
+      x={0}
+      y={Layout.TITLE_Y}
+      w="fill"
+      h={Layout.TITLE_H}
+      text={title}
+      font={MuseumFonts.TITLE}
+      color={MuseumColors.TITLE}
+      align="center"
+      valign="middle"
+      shadow
+    />
+  );
+}
+
+function MuseumModel(): Component {
+  const [model] = useState(museumModel);
+  const [offsetX] = useState(museumOffsetX);
+  const [offsetY] = useState(museumOffsetY);
+  const [pitch] = useState(museumPitch);
+  const [yaw, setYaw] = useState(museumYaw);
+  const [roll] = useState(museumRoll);
+  const [zoom] = useState(museumZoom);
+  const [spin] = useState(museumSpin);
+  const slot = useRef();
+
+  useInterval(() => {
+    if (spin === 1) {
+      setYaw((yaw + SpinStep.TURN + SpinStep.YAW) % SpinStep.TURN);
+    }
+  }, slot);
+
+  return (
+    <model
+      ref={slot}
+      x="center"
+      y="center"
+      w={Layout.MODEL_BOX}
+      h={Layout.MODEL_BOX}
+      model={model as Model}
+      offsetX={offsetX}
+      offsetY={offsetY}
+      pitch={pitch}
+      yaw={yaw}
+      roll={roll}
+      zoom={zoom}
+    />
+  );
+}
+
+function MuseumText(): Component {
+  const [text] = useState(museumText);
+  return (
+    <text
+      x="center"
+      y="center"
+      w={{ fill: Layout.TEXT_INSET_W }}
+      h={{ fill: Layout.TEXT_INSET_H }}
+      text={text}
+      font={MuseumFonts.BODY}
+      color={MuseumColors.BODY}
+      align="center"
+      valign="middle"
+      shadow
+      lineHeight={Layout.TEXT_LINE_HEIGHT}
+    />
+  );
+}
+
+export function fortisMuseumShow(
+  model: Model,
+  offsetX: Int,
+  offsetY: Int,
+  pitch: Int,
+  yaw: Int,
+  roll: Int,
+  zoom: Int,
+  spin: Int,
+  title: String,
+  text: String,
+): void {
+  const [, setModel] = useState(museumModel);
+  const [, setOffsetX] = useState(museumOffsetX);
+  const [, setOffsetY] = useState(museumOffsetY);
+  const [, setPitch] = useState(museumPitch);
+  const [, setYaw] = useState(museumYaw);
+  const [, setRoll] = useState(museumRoll);
+  const [, setZoom] = useState(museumZoom);
+  const [, setSpin] = useState(museumSpin);
+  const [, setTitle] = useState(museumTitle);
+  const [, setText] = useState(museumText);
+  setTitle(title);
+  setText(text);
+  setModel(model as Int);
+  setOffsetX(offsetX);
+  setOffsetY(offsetY);
+  setPitch(pitch);
+  setYaw(yaw);
+  setRoll(roll);
+  setZoom(zoom);
+  setSpin(spin === 1 ? 1 : 0);
 }

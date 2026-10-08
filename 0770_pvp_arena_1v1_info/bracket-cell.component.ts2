@@ -1,0 +1,282 @@
+import { sessionState, useInterval, useRef, useState } from 'ts2';
+
+import { Fonts } from '../lib/game/fonts';
+import { Sounds } from '../lib/game/sounds';
+import { Sprites } from '../lib/game/sprites';
+import { clientClock, playSound } from '../lib/lib.engine';
+import { ThinStoneBox } from '../lib/thin-stone-box.component';
+import { InfoColor, InfoFonts, Layout } from './pvp-arena-1v1-info.constants';
+
+export const bracketMatches = sessionState('');
+
+export const bracketDetails = sessionState('');
+export const bracketDetailsUntil = sessionState(-1);
+
+enum Cell {
+  FILLED_W = 50,
+  BAR_W = 46,
+  PRESS_HOLD = 40,
+  DETAILS_HOLD = 250,
+}
+
+const WASH = { REST: 255, HOVER: 240, PRESSED: 220, RED_REST: 235, RED_HOVER: 210, RED_PRESSED: 190 } as const;
+
+enum CellColor {
+  WHITE = 0xffffff,
+  RED = 0xff0000,
+  BLACK = 0x000000,
+  TEXT = 0xff981f,
+  RED_OUTER = 0xffffd0,
+  RED_INNER = 0xb0b080,
+}
+
+const FILLED_OPS = ['Details', '', '', '', '', '', '', '', '', 'Teleport'] as const;
+const EMPTY_OPS = ['', '', '', '', '', '', '', '', '', '*'] as const;
+
+function matchKey(round: Int, slot: Int): String {
+  return `\n${round}.${slot}\t`;
+}
+
+function matchStart(matches: String, round: Int, slot: Int): Int {
+  const key: String = matchKey(round, slot);
+  const at: Int = matches.indexOf(key);
+  if (at === -1) {
+    return -1;
+  }
+  return at + key.length;
+}
+
+function matchField(matches: String, start: Int, n: Int): String {
+  let from: Int = start;
+  let i: Int = 0;
+  while (i < n) {
+    from = matches.indexOf('\t', from) + 1;
+    i = i + 1;
+  }
+  return matches.substring(from, matches.indexOf('\t', from));
+}
+
+function initial(name: String): String {
+  if (name.length > 0) {
+    return name.substring(0, 1);
+  }
+  return '-';
+}
+
+function barWidth(k: Int, n: Int): Int {
+  const of: Int = Math.max(1, n);
+  return Math.min(of, k) * Cell.BAR_W / of;
+}
+
+export function pvpa1v1InfoTransmitData(
+  round: Int,
+  slot: Int,
+  state: Int,
+  highlight: Int,
+  coord: Coord,
+  name0: String,
+  name1: String,
+): void {
+  if (round < 1 || round > 6 || slot < 0 || slot >= Math.pow(2, round - 1)) {
+    return;
+  }
+  const a: String = initial(name0);
+  const b: String = initial(name1);
+  let text: String = `${a} <col=8f8f8f>v</col> ${b}`;
+  if (state === 3) {
+    text = `<col=ffffff>${a}</col> <col=8f8f8f>v</col> ${b}`;
+  } else if (state === 4) {
+    text = `${a} <col=8f8f8f>v</col> <col=ffffff>${b}</col>`;
+  }
+  let top: Int = -1;
+  let bottom: Int = -1;
+  let first: String = name0;
+  let second: String = name1;
+  if (state === 2 && name0.length > 0 && name1.length > 0 && (coord as Int) !== -1) {
+    const x: Int = coord.x;
+    const z: Int = coord.z;
+    const xk: Int = x / 100;
+    const xn: Int = Math.max(1, x % 100);
+    const zk: Int = z / 100;
+    const zn: Int = Math.max(1, z % 100);
+    top = barWidth(xk, xn);
+    bottom = barWidth(zk, zn);
+    first = `${name0} (${xk}/${xn})`;
+    second = `${name1} (${zk}/${zn})`;
+  }
+  let details: String = `${first} <col=8f8f8f>v</col> ${second}`;
+  if (state === 3) {
+    details = `<col=ffffff>${first}</col> beat ${second}`;
+  } else if (state === 4) {
+    details = `<col=ffffff>${second}</col> beat ${first}`;
+  } else if (state === 0) {
+    details = `Waiting: ${first} <col=8f8f8f>v</col> ${second}`;
+  }
+  const red: Int = highlight === 1 ? 1 : 0;
+
+  const [matches, setMatches] = useState(bracketMatches);
+  const key: String = matchKey(round, slot);
+  let kept: String = matches;
+  const at: Int = matches.indexOf(key);
+  if (at !== -1) {
+    const next: Int = matches.indexOf('\n', at + 1);
+    const tail: String = next === -1 ? '' : matches.substring(next, matches.length);
+    kept = `${matches.substring(0, at)}${tail}`;
+  }
+  setMatches(`${kept}${key}${red}\t${top}\t${bottom}\t${text}\t${details}\t`);
+}
+
+export function BracketCell({
+  round,
+  slot,
+  cx,
+  cy,
+  hidden,
+}: {
+  round: Int;
+  slot: Int;
+  cx: Int;
+  cy: Int;
+  hidden: Boolean;
+}): Component {
+  const [matches] = useState(bracketMatches);
+  const [, setDetails] = useState(bracketDetails);
+  const [, setDetailsUntil] = useState(bracketDetailsUntil);
+  const [hover, setHover] = useState(0);
+  const [pressedUntil, setPressedUntil] = useState(0);
+
+  const start: Int = matchStart(matches, round, slot);
+  const filled: Boolean = start !== -1;
+  const red: Boolean = filled && parseInt(matchField(matches, start, 0)) === 1;
+  const top: Int = filled ? parseInt(matchField(matches, start, 1)) : -1;
+  const bottom: Int = filled ? parseInt(matchField(matches, start, 2)) : -1;
+  const text: String = filled ? matchField(matches, start, 3) : '';
+
+  let wash: Int = red ? WASH.RED_REST : WASH.REST;
+  if (pressedUntil > 0) {
+    wash = red ? WASH.RED_PRESSED : WASH.PRESSED;
+  } else if (hover === 1) {
+    wash = red ? WASH.RED_HOVER : WASH.HOVER;
+  }
+
+  const cell = useRef();
+  useInterval(
+    pressedUntil > 0
+      ? () => {
+          if (clientClock() >= pressedUntil) {
+            setPressedUntil(0);
+            setHover(0);
+          }
+        }
+      : undefined,
+    cell,
+  );
+
+  return (
+    <layer
+      ref={cell}
+      hide={hidden}
+      x={{ center: cx }}
+      y={{ center: cy }}
+      w={filled ? Cell.FILLED_W : Layout.bracket.SLOT_W}
+      h={Layout.bracket.SLOT_H}
+      options={filled ? FILLED_OPS : EMPTY_OPS}
+      onMouseRepeat={() => {
+        if (filled && pressedUntil === 0) {
+          setHover(1);
+        }
+      }}
+      onMouseLeave={() => {
+        if (filled && pressedUntil === 0) {
+          setHover(0);
+        }
+      }}
+      onOptionSelect={(event) => {
+        if (!filled) {
+          return;
+        }
+        playSound(Sounds.INTERFACE_SELECT1);
+        if (event.option === 1) {
+          setDetails(matchField(matches, start, 4));
+          setDetailsUntil(clientClock() + Cell.DETAILS_HOLD);
+        }
+        setPressedUntil(clientClock() + Cell.PRESS_HOLD);
+      }}
+    >
+      {filled && (
+        <>
+          <sprite x="center" y="center" w={{ fill: 2 }} h={{ fill: 2 }} sprite={Sprites.TRADEBACKING_DARK} tiling />
+          <rect
+            x="center"
+            y="center"
+            w={{ fill: 2 }}
+            h={{ fill: 2 }}
+            color={red ? CellColor.RED : CellColor.WHITE}
+            transparency={wash}
+            fill
+          />
+          {red ? (
+            <>
+              <rect x="center" y="center" w="fill" h="fill" color={CellColor.RED_OUTER} />
+              <rect x="center" y="center" w={{ fill: 2 }} h={{ fill: 2 }} color={CellColor.RED_INNER} />
+            </>
+          ) : (
+            <ThinStoneBox />
+          )}
+          <text
+            x="center"
+            y="center"
+            w="fill"
+            h="fill"
+            text={text}
+            font={Fonts.P12_FULL}
+            color={CellColor.TEXT}
+            align="center"
+            valign="middle"
+            shadow
+          />
+          {top >= 0 && (
+            <>
+              <rect x="center" y={2} w={{ fill: 4 }} h={4} color={CellColor.BLACK} fill />
+              <rect x={2} y={2} w={top} h={4} color={CellColor.RED} fill />
+              <rect x="center" y={{ bottom: 2 }} w={{ fill: 4 }} h={4} color={CellColor.BLACK} fill />
+              <rect x={2} y={{ bottom: 2 }} w={bottom} h={4} color={CellColor.RED} fill />
+            </>
+          )}
+        </>
+      )}
+    </layer>
+  );
+}
+
+export function DetailsLine(): Component {
+  const [details, setDetails] = useState(bracketDetails);
+  const [until, setUntil] = useState(bracketDetailsUntil);
+  const line = useRef();
+  useInterval(
+    until >= 0
+      ? () => {
+          if (clientClock() >= until) {
+            setDetails('');
+            setUntil(-1);
+          }
+        }
+      : undefined,
+    line,
+  );
+  return (
+    <text
+      ref={line}
+      x="center"
+      y="center"
+      w="fill"
+      h="fill"
+      text={details}
+      font={InfoFonts.BODY}
+      color={InfoColor.STATUS}
+      align="center"
+      valign="middle"
+      shadow
+    />
+  );
+}

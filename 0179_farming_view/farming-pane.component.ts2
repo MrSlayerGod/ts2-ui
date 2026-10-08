@@ -31,7 +31,7 @@ export function FarmingPane(): Component {
   const measured: Int = scrolls ? extent : paneH;
   const thumbH: Int = thumbHeightOf(paneH, paneH, measured, false);
   const travel: Int = paneH - ARROW * 2 - thumbH;
-  const thumbY: Int = thumbFor === at ? thumbAt : ARROW + (travel * at) / range;
+  const thumbY: Int = thumbFor === at ? thumbAt : ARROW + travel * at / range;
 
   return (
     <>
@@ -71,7 +71,7 @@ export function FarmingPane(): Component {
           onClick={(event) => {
             const span: Int = Math.max(1, travel);
             const offset: Int = Math.clamp(0, span, event.mouseY - thumbH / 2);
-            const next: Int = scrolls ? Math.clamp(0, range, (offset * range) / span) : 0;
+            const next: Int = scrolls ? Math.clamp(0, range, offset * range / span) : 0;
             scrollFarmingTo(next);
             setDrawn(next);
             setSeated(true);
@@ -88,7 +88,7 @@ export function FarmingPane(): Component {
           dragMoves
           onDrag={(event) => {
             const offset: Int = event.mouseY;
-            const next: Int = scrolls ? Math.clamp(0, range, (offset * range) / Math.max(1, travel)) : 0;
+            const next: Int = scrolls ? Math.clamp(0, range, offset * range / Math.max(1, travel)) : 0;
             scrollFarmingTo(next);
             setDrawn(next);
             setSeated(true);

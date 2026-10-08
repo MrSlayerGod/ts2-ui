@@ -1,0 +1,418 @@
+import { CS2, intArray, useInterval, useRef, useState } from 'ts2';
+
+import { BoardButton } from '../lib/board-button.component';
+import { clientClock, playSound } from '../lib/lib.engine';
+import { onMobile } from '../lib/lib.helpers';
+import {
+  partylistAgeNow,
+  partylistAgeSeconds,
+  partylistAgeText,
+  partylistField,
+  partylistKeyOf,
+  partylistLineOf,
+  partylistQuicksort,
+  partylistRecordStart,
+} from '../lib/raids-partylist';
+import { ScrollbarVertical } from '../lib/scrollbar-vertical.component';
+import { serverTooltipHide, serverTooltipRepeat } from '../lib/server-tooltip';
+import { Sounds } from '../lib/game/sounds';
+import { clanwarsOpponentchangetime, raidsCount, raidsListsortList } from '../lib/game/varcs';
+import {
+  BoardPausebutton,
+  boardAnchorsRef,
+  Copy,
+  Layout,
+  ListKey,
+  ListRow,
+  ListSort,
+  SLOT_COUNT,
+  RaidsPartylistColor,
+  RaidsPartylistFonts,
+  RaidsPartylistScrollbar,
+  RaidsPartylistSlots,
+  RaidsPartylistSprites,
+  tooltipRef,
+} from './raids-lobby-partylist.constants';
+import {
+  raidsListBuilt,
+  raidsListData,
+  raidsListDeadHigh,
+  raidsListDeadLow,
+  raidsListPressedSlot,
+  raidsListPressedUntil,
+  slotBit,
+  sortedRun,
+} from './raids-lobby-partylist.state';
+
+export function RaidsPartyListPane(): Component {
+  const pane = useRef();
+  const [data] = useState(raidsListData);
+  const [built] = useState(raidsListBuilt);
+  const [count] = useState(raidsCount);
+  const [sort] = useState(raidsListsortList);
+  const [pressed, setPressed] = useState(raidsListPressedSlot);
+  const [pressedUntil, setPressedUntil] = useState(raidsListPressedUntil);
+  const [deadLow] = useState(raidsListDeadLow);
+  const [deadHigh] = useState(raidsListDeadHigh);
+
+  useInterval(() => {
+    if (pressedUntil !== 0 && clientClock() >= pressedUntil) {
+      setPressedUntil(0);
+      setPressed(-1);
+    }
+  }, pane);
+
+  const rowAt = intArray(SLOT_COUNT);
+  const washOf = intArray(SLOT_COUNT);
+  let slot: Int = 0;
+  while (slot < SLOT_COUNT) {
+    if (partylistRecordStart(data, slot) !== -1) {
+      const fill: Int = parseInt(partylistKeyOf(data, slot, ListKey.SLOT_W, ListKey.FILL));
+      rowAt[slot] = fill;
+      washOf[slot] = fill % 2 === 0 ? ListRow.EVEN : ListRow.ODD;
+    } else {
+      rowAt[slot] = -1;
+    }
+    slot = slot + 1;
+  }
+
+  const n: Int = sortedRun(data);
+  const run = intArray(SLOT_COUNT);
+  let i: Int = 0;
+  while (i < n) {
+    run[i] = i;
+    i = i + 1;
+  }
+  const sorted = partylistQuicksort(data, ListKey.SLOT_W, sortKeyOf(sort), run, n);
+  const descending: Boolean = sortDescending(sort);
+  i = 0;
+  while (i < n) {
+    rowAt[sorted[i]] = descending ? n - 1 - i : i;
+    washOf[sorted[i]] = i % 2 === 0 ? ListRow.EVEN : ListRow.ODD;
+    i = i + 1;
+  }
+
+  const extent: Int = count * Layout.ROW_H;
+  return (
+    <>
+      {RaidsPartylistSlots.map(() => (
+        <rect x={0} y={0} w={0} h={0} hide />
+      ))}
+      <layer
+        ref={pane}
+        x={Layout.LIST_X}
+        y={{ bottom: Layout.LIST_BOTTOM }}
+        w={{ fill: Layout.LIST_INSET_W }}
+        h={{ fill: Layout.LIST_INSET_H }}
+        scrollHeight={built === 1 && extent > pane.height ? extent : 0}
+      >
+        {RaidsPartylistSlots.map((at) => (
+          <RaidsPartyRow
+            row={rowAt[at]}
+            slot={at}
+            line={built === 1 ? partylistLineOf(data, at) : ''}
+            wash={washOf[at]}
+            pressed={pressed === at}
+            dead={slotBit(deadLow, deadHigh, at)}
+          />
+        ))}
+        {built !== 1 ? (
+          <text
+            x="center"
+            y="center"
+            w="fill"
+            h="fill"
+            text={Copy.LOADING}
+            font={RaidsPartylistFonts.BODY}
+            color={RaidsPartylistColor.LOADING}
+            align="center"
+            valign="middle"
+            shadow
+          />
+        ) : null}
+        {built === 1 && count <= 0 ? (
+          <text
+            x="center"
+            y="center"
+            w="fill"
+            h="fill"
+            text={Copy.NO_PARTIES}
+            font={RaidsPartylistFonts.BODY}
+            color={RaidsPartylistColor.CELL}
+            align="center"
+            valign="middle"
+            shadow
+          />
+        ) : null}
+      </layer>
+
+      <layer
+        right={Layout.SCROLLBAR_RIGHT}
+        y={{ bottom: Layout.LIST_BOTTOM }}
+        w={Layout.SCROLLBAR_W}
+        h={{ fill: Layout.LIST_INSET_H }}
+      >
+        <ScrollbarVertical
+          content={pane}
+          track={RaidsPartylistScrollbar.TRACK}
+          capTopSprite={RaidsPartylistScrollbar.CAP_TOP}
+          thumbSprite={RaidsPartylistScrollbar.THUMB}
+          capBottomSprite={RaidsPartylistScrollbar.CAP_BOTTOM}
+          arrowUp={RaidsPartylistScrollbar.ARROW_UP}
+          arrowDown={RaidsPartylistScrollbar.ARROW_DOWN}
+        />
+      </layer>
+    </>
+  );
+}
+
+function sortKeyOf(sort: Int): Int {
+  if (sort === ListSort.SIZE_ASC || sort === ListSort.SIZE_DESC) {
+    return ListKey.SIZE;
+  }
+  if (sort === ListSort.LEADER_ASC || sort === ListSort.LEADER_DESC) {
+    return ListKey.LEADER;
+  }
+  if (sort === ListSort.COMBAT_ASC || sort === ListSort.COMBAT_DESC) {
+    return ListKey.COMBAT;
+  }
+  if (sort === ListSort.TOTAL_ASC || sort === ListSort.TOTAL_DESC) {
+    return ListKey.TOTAL;
+  }
+  if (sort === ListSort.SCALING_ASC || sort === ListSort.SCALING_DESC) {
+    return ListKey.SCALING;
+  }
+  if (sort === ListSort.CHALLENGE_ASC || sort === ListSort.CHALLENGE_DESC) {
+    return ListKey.CHALLENGE;
+  }
+  if (sort === ListSort.AGE_ASC || sort === ListSort.AGE_DESC) {
+    return ListKey.AGE;
+  }
+  return ListKey.NONE;
+}
+
+function sortDescending(sort: Int): Boolean {
+  return sort === ListSort.MEMBERS_DESC ||
+    sort === ListSort.SIZE_DESC ||
+    sort === ListSort.LEADER_DESC ||
+    sort === ListSort.COMBAT_DESC ||
+    sort === ListSort.TOTAL_DESC ||
+    sort === ListSort.CHALLENGE_DESC ||
+    sort === ListSort.AGE_DESC ||
+    sort === ListSort.SCALING_DESC;
+}
+
+function orNone(field: String): String {
+  return CS2.compare(field, '0') !== 0 ? field : Copy.NONE;
+}
+
+function RaidsPartyRow({
+  row,
+  slot,
+  line,
+  wash,
+  pressed,
+  dead,
+}: {
+  row: Int;
+  slot: Int;
+  line: String;
+  wash: Int;
+  pressed: Boolean;
+  dead: Boolean;
+}): Component {
+  const [hovered, setHovered] = useState(0);
+  const [, setPressed] = useState(raidsListPressedSlot);
+  const [, setPressedUntil] = useState(raidsListPressedUntil);
+  if (line.length === 0) {
+    return null;
+  }
+  const mobile: Boolean = onMobile();
+  const leader: String = partylistField(line, 0);
+  const members: String = partylistField(line, 1);
+  const size: String = partylistField(line, 2);
+  const sized: Boolean = CS2.compare(size, '0') !== 0;
+  const full: Boolean = sized && CS2.compare(members.padStart(3, '0'), size.padStart(3, '0')) >= 0;
+  const countColor: Int = full ? RaidsPartylistColor.FULL : RaidsPartylistColor.CELL;
+  const challenge: Boolean = CS2.compare(partylistField(line, 6), '0') !== 0;
+  return (
+    <layer
+      x="center"
+      y={row * Layout.ROW_H}
+      w="fill"
+      h={Layout.ROW_H}
+      options={pressed || dead ? [] : [Copy.VIEW_PARTY]}
+      optionSubject={pressed || dead ? '' : `<col=ff9040>${CS2.tags_remove(leader)}</col>`}
+      onMouseRepeat={!pressed && !mobile ? () => setHovered(1) : undefined}
+      onMouseLeave={!pressed && !mobile ? () => setHovered(0) : undefined}
+      onOptionSelect={
+        !pressed
+          ? (event) => {
+              if (event.option !== 1) {
+                return;
+              }
+              playSound(Sounds.INTERFACE_SELECT1);
+              setHovered(0);
+              setPressed(slot);
+              setPressedUntil(clientClock() + ListRow.BUSY_CYCLES);
+              if (CS2.cc_find(event.component, slot) === true) {
+                CS2.cc_resume_pausebutton();
+              }
+            }
+          : undefined
+      }
+    >
+      <rect
+        x="center"
+        y="center"
+        w="fill"
+        h="fill"
+        fill
+        color={RaidsPartylistColor.ROW}
+        transparency={pressed ? ListRow.PRESSED : (hovered === 1 ? ListRow.HOVER : wash)}
+      />
+      <PartyCell x={0} w={Layout.COL_MEMBERS_W} text={members} color={countColor} />
+      <PartyCell
+        x={Layout.CELL_SIZE_X}
+        w={Layout.COL_SIZE_W}
+        text={sized ? `/ ${size}` : Copy.NONE}
+        color={countColor}
+      />
+      <PartyCell x={Layout.CELL_LEADER_X} w={Layout.COL_LEADER_W} text={leader} color={RaidsPartylistColor.CELL} />
+      <PartyCell
+        x={Layout.CELL_COMBAT_X}
+        w={Layout.COL_COMBAT_W}
+        text={orNone(partylistField(line, 3))}
+        color={RaidsPartylistColor.CELL}
+      />
+      <PartyCell
+        x={Layout.CELL_TOTAL_X}
+        w={Layout.COL_TOTAL_W}
+        text={orNone(partylistField(line, 4))}
+        color={RaidsPartylistColor.CELL}
+      />
+      <PartyCell
+        x={Layout.CELL_SCALING_X}
+        w={Layout.COL_SCALING_W}
+        text={orNone(partylistField(line, 5))}
+        color={RaidsPartylistColor.CELL}
+      />
+      {challenge ? (
+        <sprite
+          x={Layout.CELL_CHALLENGE_X}
+          y={{ center: Layout.CELL_CHALLENGE_DY }}
+          w={Layout.CELL_CHALLENGE}
+          h={Layout.CELL_CHALLENGE}
+          sprite={RaidsPartylistSprites.CHALLENGE}
+        />
+      ) : null}
+      <AgeCell seconds={partylistAgeSeconds(partylistField(line, 7))} />
+    </layer>
+  );
+}
+
+function PartyCell({ x, w, text, color }: { x: Int; w: Int; text: String; color: Int }): Component {
+  return (
+    <text
+      x={x}
+      y="center"
+      w={w}
+      h="fill"
+      text={text}
+      font={RaidsPartylistFonts.BODY}
+      color={color}
+      align="center"
+      valign="middle"
+      shadow
+    />
+  );
+}
+
+function AgeCell({ seconds }: { seconds: Int }): Component {
+  const [fetchedAt] = useState(clanwarsOpponentchangetime);
+  const [shown, setShown] = useState(-1);
+  useInterval(() => {
+    const now: Int = partylistAgeNow(seconds, fetchedAt);
+    if (now !== -1 && now !== shown) {
+      setShown(now);
+    }
+  });
+  return (
+    <text
+      right={0}
+      y="center"
+      w={{ fill: Layout.CELL_AGE_INSET_W }}
+      h="fill"
+      text={partylistAgeText(shown === -1 ? seconds : shown)}
+      font={RaidsPartylistFonts.AGE}
+      color={RaidsPartylistColor.AGE}
+      align="center"
+      valign="middle"
+      shadow
+    />
+  );
+}
+
+export function RaidsListSortColumn({ asc, desc, tip }: { asc: Int; desc: Int; tip: String }): Component {
+  const [built] = useState(raidsListBuilt);
+  const [data] = useState(raidsListData);
+  const [sort, setSort] = useState(raidsListsortList);
+  const [pressed, setPressed] = useState(raidsListPressedSlot);
+  const [, setPressedUntil] = useState(raidsListPressedUntil);
+  const [deadLow, setDeadLow] = useState(raidsListDeadLow);
+  const [deadHigh, setDeadHigh] = useState(raidsListDeadHigh);
+  const [hovered, setHovered] = useState(0);
+  const live: Boolean = sort === asc || sort === desc;
+  let arrow: Int = live ? 0 : ListRow.ARROW_DIM;
+  if (hovered === 1) {
+    arrow = live ? ListRow.ARROW_LIVE_HOVER : ListRow.ARROW_DIM_HOVER;
+  }
+  if (built !== 1) {
+    return <layer w="fill" h="fill" />;
+  }
+  return (
+    <layer
+      w="fill"
+      h="fill"
+      onMouseRepeat={(event) => {
+        setHovered(1);
+        serverTooltipRepeat(tooltipRef, event.component, tip, ListRow.TIP_WRAP);
+      }}
+      onMouseLeave={() => {
+        setHovered(0);
+        serverTooltipHide(tooltipRef);
+      }}
+      onClick={() => {
+        playSound(Sounds.INTERFACE_SELECT1);
+        if (pressed !== -1 && pressed < sortedRun(data)) {
+          if (pressed < ListKey.BITS) {
+            setDeadLow(CS2.bit_set(deadLow, pressed));
+          } else {
+            setDeadHigh(CS2.bit_set(deadHigh, pressed - ListKey.BITS));
+          }
+          setPressed(-1);
+          setPressedUntil(0);
+        }
+        setSort(sort === asc ? desc : asc);
+      }}
+    >
+      <sprite
+        x="center"
+        y="center"
+        w={Layout.SORT_ARROW_W}
+        h={Layout.SORT_ARROW_H}
+        sprite={sort === desc ? RaidsPartylistSprites.ARROW_UP : RaidsPartylistSprites.ARROW_DOWN}
+        transparency={arrow}
+      />
+    </layer>
+  );
+}
+
+export function RaidsRefreshButton(): Component {
+  const [built] = useState(raidsListBuilt);
+  return (
+    <layer w="fill" h="fill" hide={built !== 1}>
+      <BoardButton label={Copy.REFRESH} resumeIn={boardAnchorsRef} resumeAt={BoardPausebutton.REFRESH} />
+    </layer>
+  );
+}

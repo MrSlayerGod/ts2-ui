@@ -30,10 +30,10 @@ export function costPts(points: Int): String {
 
 export function trainingXp(skill: Skill, base: Int): Int {
   if (skill === PestSkill.RANGED || skill === PestSkill.MAGIC) {
-    return (Math.pow(base, 2) / 600) * 32;
+    return Math.pow(base, 2) / 600 * 32;
   }
   if (skill === PestSkill.PRAYER) {
-    return (Math.pow(base, 2) / 600) * 18;
+    return Math.pow(base, 2) / 600 * 18;
   }
-  return (Math.pow(base, 2) / 600) * 35;
+  return Math.pow(base, 2) / 600 * 35;
 }

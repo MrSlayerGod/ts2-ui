@@ -1,10 +1,13 @@
 import { createRef } from 'ts2';
 import { BurghMap } from './burgh-map.component';
+import { burghMapReset } from './burgh-map.state';
 
 const burghMapRef = createRef('burgh_map');
 
 export const burghMapUi = (): UI => (
   <ui ref={burghMapRef}>
-    <BurghMap />
+    <layer x={0} y={0} w="fill" h="fill" onLoad={() => burghMapReset()}>
+      <BurghMap />
+    </layer>
   </ui>
 );

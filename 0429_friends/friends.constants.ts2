@@ -5,11 +5,6 @@ import { Varbits } from '../lib/game/varbits';
 
 export const friendsRef = createRef('friends');
 export const ignoreRef = createRef('friends_ignore');
-export const ignoreIconRef = createRef('friends_ignore_icon');
-export const headerRef = createRef('friends_header');
-export const listContainerRef = createRef('friends_list_container');
-export const friendsListRef = createRef('friends_list');
-export const loadingRef = createRef('friends_loading');
 
 export declare const FriendsFonts: {
   readonly BUTTON: typeof Fonts.P11_FULL;

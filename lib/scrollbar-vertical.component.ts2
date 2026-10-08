@@ -5,7 +5,7 @@ import { trackScroll } from './lib.helpers';
 export function thumbHeightOf(barHeight: Int, contentHeight: Int, extent: Int, rebuilt: Boolean): Int {
   const raw: Int = Math.max(
     MIN_THUMB,
-    extent > 0 ? ((barHeight - ARROW * 2) * contentHeight) / extent : barHeight - ARROW * 2,
+    extent > 0 ? (barHeight - ARROW * 2) * contentHeight / extent : barHeight - ARROW * 2,
   );
   if (rebuilt) {
     return Math.min(Math.max(MIN_THUMB, barHeight - ARROW * 2), raw);
@@ -63,7 +63,7 @@ export function ScrollbarVertical({
           const travel: Int = Math.max(1, gutter.height - thumb.height);
           const offset: Int = Math.clamp(0, travel, event.mouseY - thumb.height / 2);
           const range: Int = content.scrollHeight - content.height;
-          content.scrollY = (offset * range) / travel;
+          content.scrollY = offset * range / travel;
           trackScroll(gutter, thumb, capTop, capBottom, content);
         }}
       />
@@ -71,7 +71,7 @@ export function ScrollbarVertical({
         ref={thumb}
         y={
           ARROW +
-          ((gutter.height - thumbHeightOf(bar.height, content.height, extent, rebuilt)) * content.scrollY) /
+          (gutter.height - thumbHeightOf(bar.height, content.height, extent, rebuilt)) * content.scrollY /
             Math.max(1, content.scrollHeight - content.height)
         }
         w="fill"
@@ -88,7 +88,7 @@ export function ScrollbarVertical({
 
           const travel: Int = Math.max(1, gutter.height - thumb.height);
           const range: Int = content.scrollHeight - content.height;
-          content.scrollY = (offset * range) / travel;
+          content.scrollY = offset * range / travel;
         }}
       />
       <sprite ref={capTop} y={thumb.y} w="fill" h={CAP} sprite={capTopSprite} />

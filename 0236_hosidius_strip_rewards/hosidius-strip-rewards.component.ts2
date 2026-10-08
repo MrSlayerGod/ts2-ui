@@ -94,7 +94,7 @@ export function HosidiusStripRewards(): Component {
             <RewardItemCell
               name={name}
               col={i % TitheGrid.COLUMNS}
-              rowY={(i / TitheGrid.COLUMNS) * TitheGrid.ROW_STEP}
+              rowY={i / TitheGrid.COLUMNS * TitheGrid.ROW_STEP}
             />
           ),
         )}
@@ -107,7 +107,7 @@ export function HosidiusStripRewards(): Component {
               name={name}
               points={points}
               col={i % TitheGrid.COLUMNS}
-              rowY={(i / TitheGrid.COLUMNS) * TitheGrid.ROW_STEP}
+              rowY={i / TitheGrid.COLUMNS * TitheGrid.ROW_STEP}
             />
           ),
         )}
@@ -284,9 +284,9 @@ export function HosidiusStripRewards(): Component {
           shadow
           color={
             autoWeed === 0
-              ? points < TitheCost.AUTO_WEED
+              ? (points < TitheCost.AUTO_WEED
                 ? TitheColor.RED
-                : TitheColor.WHITE
+                : TitheColor.WHITE)
               : autoWeed === 1
                 ? TitheColor.RED
                 : TitheColor.WHITE

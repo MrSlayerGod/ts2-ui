@@ -1,4 +1,4 @@
-import { useRef, useState } from 'ts2';
+import { sessionState, useState } from 'ts2';
 import { playSound } from '../lib.engine';
 import { xpdropsFake6 } from '../game/varcs';
 import { closeSeekPrompt } from './loadout-chrome.component';
@@ -10,12 +10,26 @@ import {
   SuppliesSprites,
 } from '../../0758_pvp_arena_stagingarea_supplies/pvp-arena-stagingarea-supplies.constants';
 
-export function SuppliesTab({ index, label, active }: { index: Int; label: String; active: Boolean }): Component {
-  const endRest: Sprite = active ? SuppliesSprites.TAB_END_ON : SuppliesSprites.TAB_END_OFF;
-  const midRest: Sprite = active ? SuppliesSprites.TAB_MID_ON : SuppliesSprites.TAB_MID_OFF;
-  const left = useRef();
-  const right = useRef();
-  const middle = useRef();
+export function SuppliesTab({
+  index,
+  label,
+  active,
+  repaint,
+}: {
+  index: Int;
+  label: String;
+  active: Boolean;
+  repaint: Int;
+}): Component {
+  const [hoverPaint, setHoverPaint] = useState(0);
+  const [hoverStamp, setHoverStamp] = useState(0);
+  const hovered: Boolean = hoverPaint === (active ? 2 : 1) && hoverStamp === repaint;
+  let end: Sprite = active ? SuppliesSprites.TAB_END_ON : SuppliesSprites.TAB_END_OFF;
+  let middle: Sprite = active ? SuppliesSprites.TAB_MID_ON : SuppliesSprites.TAB_MID_OFF;
+  if (hovered) {
+    end = SuppliesSprites.TAB_END_HOVER;
+    middle = SuppliesSprites.TAB_MID_HOVER;
+  }
 
   return (
     <layer
@@ -25,18 +39,17 @@ export function SuppliesTab({ index, label, active }: { index: Int; label: Strin
         active
           ? undefined
           : () => {
-              left.sprite = SuppliesSprites.TAB_END_HOVER;
-              right.sprite = SuppliesSprites.TAB_END_HOVER;
-              middle.sprite = SuppliesSprites.TAB_MID_HOVER;
+              setHoverPaint(suppliesTabNow() === index ? 2 : 1);
+              setHoverStamp(repaint);
             }
       }
       onMouseLeave={
         active
           ? undefined
           : () => {
-              left.sprite = SuppliesSprites.TAB_END_OFF;
-              right.sprite = SuppliesSprites.TAB_END_OFF;
-              middle.sprite = SuppliesSprites.TAB_MID_OFF;
+              if (suppliesTabNow() !== index) {
+                setHoverPaint(0);
+              }
             }
       }
       onClick={
@@ -49,17 +62,9 @@ export function SuppliesTab({ index, label, active }: { index: Int; label: Strin
             }
       }
     >
-      <sprite ref={left} x="left" y="bottom" w={Layout.tab.endW} h={Layout.tab.endH} sprite={endRest} />
-      <sprite ref={right} x="right" y="bottom" w={Layout.tab.endW} h={Layout.tab.endH} sprite={endRest} hflip />
-      <sprite
-        ref={middle}
-        x="center"
-        y="bottom"
-        w={{ fill: Layout.tab.middleInset }}
-        h={Layout.tab.endH}
-        sprite={midRest}
-        tiling
-      />
+      <sprite x="left" y="bottom" w={Layout.tab.endW} h={Layout.tab.endH} sprite={end} />
+      <sprite x="right" y="bottom" w={Layout.tab.endW} h={Layout.tab.endH} sprite={end} hflip />
+      <sprite x="center" y="bottom" w={{ fill: Layout.tab.middleInset }} h={Layout.tab.endH} sprite={middle} tiling />
       <text
         x="center"
         y={{ center: Layout.tab.labelDy }}
@@ -76,7 +81,16 @@ export function SuppliesTab({ index, label, active }: { index: Int; label: Strin
   );
 }
 
+export function suppliesTabNow(): Int {
+  const [tab] = useState(xpdropsFake6);
+  return tab;
+}
+
+export const suppliesTabUnpainted = sessionState(0);
+
 export function chooseSuppliesTab(tab: Int): void {
   const [, setTab] = useState(xpdropsFake6);
+  const [, setUnpainted] = useState(suppliesTabUnpainted);
   setTab(tab);
+  setUnpainted(0);
 }

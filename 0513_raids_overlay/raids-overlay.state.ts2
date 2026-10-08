@@ -1,0 +1,50 @@
+import { CS2, sessionState, useState } from 'ts2';
+
+import { FaderSteps } from './raids-overlay.constants';
+
+export const raidsFadeFrom = sessionState(0);
+
+export const raidsFadeTo = sessionState(255);
+
+export const raidsFadeStep = sessionState(-1);
+
+export function raidsFade(from: Int, to: Int, step: Int): void {
+  const [, setFrom] = useState(raidsFadeFrom);
+  const [, setTo] = useState(raidsFadeTo);
+  const [, setStep] = useState(raidsFadeStep);
+  setFrom(from);
+  setTo(to);
+  setStep(step);
+}
+
+export function raidsFadeOut(): void {
+  raidsFade(255, 0, 0);
+}
+
+export function raidsFadeIn(): void {
+  raidsFade(0, 255, 0);
+}
+
+export function raidsFadeTick(): void {
+  const [step, setStep] = useState(raidsFadeStep);
+  if (step >= 0 && step < FaderSteps.LAST) {
+    setStep(step + 1);
+  }
+}
+
+export function raidsFadeTransparency(from: Int, to: Int, step: Int): Int {
+  if (step >= FaderSteps.LAST) {
+    return to;
+  }
+  return from + CS2.interpolate(0, step, 0, FaderSteps.LAST, to - from);
+}
+
+export function raidsFadeHidden(to: Int, step: Int): Boolean {
+  if (step < 0) {
+    return true;
+  }
+  if (step >= FaderSteps.LAST) {
+    return to >= 255;
+  }
+  return false;
+}

@@ -886,7 +886,7 @@ function LinkMarks({
   const toY: Int = shown ? mapOffsetY(to, mapH, top, bottom) : 0;
   const spanX: Int = toX - fromX < 0 ? fromX - toX : toX - fromX;
   const spanY: Int = toY - fromY < 0 ? fromY - toY : toY - fromY;
-  const rising: Boolean = toX - fromX < 0 !== toY - fromY < 0;
+  const rising: Boolean = (toX - fromX < 0) !== (toY - fromY < 0);
   const end: Int = WorldmapLayout.LINK_END;
   return (
     <>
@@ -1005,13 +1005,13 @@ function MapMarker({
   const markX: Int = offLeft ? half - halfW : offRight ? halfW - half : rawX;
   const markY: Int = offTop ? half - halfH : offBottom ? halfH - half : rawY;
   const angle: Int = offLeft
-    ? offTop
+    ? (offTop
       ? 16384
-      : 32768
+      : 32768)
     : offRight
-      ? offBottom
+      ? (offBottom
         ? 49152
-        : 0
+        : 0)
       : offTop
         ? 16384
         : offBottom
@@ -1397,7 +1397,7 @@ function KeyRow({
           }
           playSound(WorldmapSound.CLICK);
           setUntil(clientClock() + 50);
-          CS2.worldmap_flashiconcategory(category as ContentCategory);
+          CS2.worldmap_flashiconcategory(category as Tag);
         }}
         onMouseRepeat={until === -1 ? () => setHot(1) : null}
         onMouseLeave={until === -1 ? () => setHot(0) : null}

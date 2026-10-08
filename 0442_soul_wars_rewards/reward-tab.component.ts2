@@ -26,8 +26,8 @@ export function RewardTabFace({
   }
 
   const hoverable: Boolean = !selected && !mobile;
-  const cap: Sprite = selected ? TabArt.SELECTED_CAP : hot === 1 ? TabArt.HOVER_CAP : TabArt.REST_CAP;
-  const mid: Sprite = selected ? TabArt.SELECTED_MID : hot === 1 ? TabArt.HOVER_MID : TabArt.REST_MID;
+  const cap: Sprite = selected ? TabArt.SELECTED_CAP : (hot === 1 ? TabArt.HOVER_CAP : TabArt.REST_CAP);
+  const mid: Sprite = selected ? TabArt.SELECTED_MID : (hot === 1 ? TabArt.HOVER_MID : TabArt.REST_MID);
 
   return (
     <layer

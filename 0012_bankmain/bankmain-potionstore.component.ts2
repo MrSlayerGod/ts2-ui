@@ -1,0 +1,610 @@
+import { intArray, predictServerState, useRef, useServerState, useState } from 'ts2';
+import { itemName, playSound, textWidth } from '../lib/lib.engine';
+import { groupDigits } from '../lib/lib.format';
+import { ScrollbarVertical } from '../lib/scrollbar-vertical.component';
+import { defaultQuantityLabel } from './bankmain.helpers';
+import { potionStoreAmount, potionStoreShownDose } from './bankmain-potionstore.helpers';
+import { PotionStoreLists, PotionStoreRows } from './bankmain-potionstore.data';
+import {
+  Bar,
+  BankColors,
+  BankFonts,
+  BankSounds,
+  BankSprites,
+  BankVars,
+  POTION_STORE_HELP,
+  POTION_TAB,
+  PotionStore,
+  PotionStoreSprites,
+  PotionStoreVars,
+} from './bankmain.constants';
+
+export function PotionStoreContainer(): Component {
+  const currentTab: Int = useServerState(BankVars.CURRENT_TAB);
+  const tabDisplay: Int = useServerState(BankVars.TAB_DISPLAY);
+  const tabTotal: Int =
+    useServerState(BankVars.TAB_1) +
+    useServerState(BankVars.TAB_2) +
+    useServerState(BankVars.TAB_3) +
+    useServerState(BankVars.TAB_4) +
+    useServerState(BankVars.TAB_5) +
+    useServerState(BankVars.TAB_6) +
+    useServerState(BankVars.TAB_7) +
+    useServerState(BankVars.TAB_8) +
+    useServerState(BankVars.TAB_9);
+
+  const open: Boolean = currentTab === POTION_TAB ? true : false;
+  const inset: Int = tabDisplay === 3 && tabTotal <= 0 ? 39 : 81;
+
+  return (
+    <>
+      <layer
+        x={{ right: 1 }}
+        y={{ bottom: 39 }}
+        w={{ fill: PotionStore.INSET_W }}
+        h={{ fill: inset }}
+        hide={open ? false : true}
+        noClickThrough
+      >
+        {open ? (
+          <PotionStorePane />
+        ) : (
+          <>
+            <layer x="center" y="center" w="fill" h="fill" />
+            <layer x={{ right: 16 }} y="bottom" w={{ fill: 16 }} h="fill" />
+            <layer x="right" y="bottom" w={16} h="fill" />
+          </>
+        )}
+      </layer>
+    </>
+  );
+}
+
+function PotionStorePane(): Component {
+  const items = useRef();
+
+  const quantityType: Int = useServerState(BankVars.QUANTITY_TYPE);
+  const requestedQuantity: Int = useServerState(BankVars.REQUESTED_QUANTITY);
+  const vials: Int = useServerState(PotionStoreVars.VIALS);
+
+  const favourites = intArray(PotionStore.MAX_FAVOURITES, [
+    useServerState(PotionStoreVars.FAVOURITE_1),
+    useServerState(PotionStoreVars.FAVOURITE_2),
+    useServerState(PotionStoreVars.FAVOURITE_3),
+    useServerState(PotionStoreVars.FAVOURITE_4),
+    useServerState(PotionStoreVars.FAVOURITE_5),
+    useServerState(PotionStoreVars.FAVOURITE_6),
+    useServerState(PotionStoreVars.FAVOURITE_7),
+    useServerState(PotionStoreVars.FAVOURITE_8),
+  ]);
+
+  let favouriteCount: Int = 0;
+  let firstFree: Int = -1;
+  let k: Int = 0;
+  while (k < PotionStore.MAX_FAVOURITES) {
+    if (favourites[k] !== -1) {
+      favouriteCount = favouriteCount + 1;
+    } else if (firstFree === -1) {
+      firstFree = k;
+    }
+    k = k + 1;
+  }
+
+  const cellX = intArray(PotionStoreLists.ALL);
+  const cellRow = intArray(PotionStoreLists.ALL);
+  const cellLight = intArray(PotionStoreLists.ALL);
+  const cellAmount = intArray(PotionStoreLists.ALL);
+  const cellSlot = intArray(PotionStoreLists.ALL);
+  const cellDose = intArray(PotionStoreLists.ALL);
+
+  let col: Int = 0;
+  let row: Int = 1;
+  if (favouriteCount > 0) {
+    row = 1 + (favouriteCount + 1) / 2;
+  } else {
+    row = 0;
+  }
+  const potionsHeader: Int = row;
+  row = row + 1;
+
+  let favCol: Int = 0;
+  let favRow: Int = 1;
+  let favIndex: Int = 0;
+
+  let placed: Int = 0;
+  let lastCol: Int = 0;
+  let unfinishedHeader: Int = 0;
+  let potionsSection: Boolean = false;
+  let unfinishedSection: Boolean = false;
+  let potionsLastCol: Int = 0;
+  let potionsPlaced: Int = 0;
+
+  let family: Int = 0;
+  while (family < PotionStoreLists.ALL) {
+    if (family === PotionStoreLists.POTIONS) {
+      if (col === 1) {
+        col = 0;
+        row = row + 1;
+      }
+      if (row - 1 !== potionsHeader) {
+        potionsSection = true;
+      } else {
+        row = row - 1;
+      }
+      potionsLastCol = lastCol;
+      potionsPlaced = placed;
+      unfinishedHeader = row;
+      row = row + 1;
+      placed = 0;
+      lastCol = 0;
+    }
+
+    const entry = PotionStoreRows.at(family);
+    const amount: Int = Math.max(potionStoreAmount(family), 0);
+    cellAmount[family] = amount;
+    cellDose[family] = potionStoreShownDose(family);
+    cellX[family] = -1;
+    cellSlot[family] = -1;
+
+    let slot: Int = -1;
+    if (entry !== null) {
+      k = 0;
+      while (k < PotionStore.MAX_FAVOURITES && slot === -1) {
+        if (favourites[k] === entry.dose1) {
+          slot = k;
+        }
+        k = k + 1;
+      }
+    }
+
+    if (slot !== -1) {
+      cellSlot[family] = slot;
+      cellX[family] = favCol === 1 ? PotionStore.COL1_X : 0;
+      cellRow[family] = favRow;
+      cellLight[family] = favIndex / 2 % 2 === 0 ? 0 : 1;
+      if (favCol === 0) {
+        favCol = 1;
+      } else {
+        favCol = 0;
+        favRow = favRow + 1;
+      }
+      favIndex = favIndex + 1;
+    } else if (amount >= 1) {
+      cellX[family] = col === 1 ? PotionStore.COL1_X : 0;
+      cellRow[family] = row;
+      cellLight[family] = placed / 2 % 2 === 0 ? 0 : 1;
+      if (col === 0) {
+        col = 1;
+      } else {
+        col = 0;
+        row = row + 1;
+      }
+      placed = placed + 1;
+      lastCol = col;
+    }
+    family = family + 1;
+  }
+
+  if (col === 1) {
+    col = 0;
+    row = row + 1;
+  }
+  if (row - 1 !== unfinishedHeader) {
+    unfinishedSection = true;
+  } else {
+    row = row - 1;
+  }
+  const total: Int = row;
+
+  const primaryOp: String = `Withdraw-${defaultQuantityLabel(quantityType, requestedQuantity)}`;
+  const oneOp: String = quantityType !== 0 ? 'Withdraw-1' : '';
+  const requestedOp: String = requestedQuantity > 0 ? `Withdraw-${requestedQuantity}` : '';
+  const vialsText: String = `Vials: <col=ffffff>${groupDigits(vials, ',')}</col>`;
+  const anyFavourite: Boolean = favouriteCount > 0 ? true : false;
+  const empty: Boolean = !anyFavourite && !potionsSection && !unfinishedSection ? true : false;
+
+  return (
+    <>
+      <layer x="center" y="center" w="fill" h="fill">
+        <sprite x={0} y="bottom" w="fill" h="fill" sprite={PotionStoreSprites.LIGHT} tiling />
+      </layer>
+
+      <layer
+        ref={items}
+        x={{ right: 16 }}
+        y="bottom"
+        w={{ fill: 16 }}
+        h="fill"
+        scrollHeight={total * PotionStore.ROW_H}
+      >
+        {PotionStoreRows.map(
+          (entry, i) =>
+            cellX[i] >= 0 && (
+              <PotionCell
+                dose1={entry.dose1}
+                dose2={entry.dose2}
+                dose3={entry.dose3}
+                dose4={entry.dose4}
+                label={entry.label}
+                x={cellX[i]}
+                y={cellRow[i] * PotionStore.ROW_H}
+                light={cellLight[i] === 1 ? true : false}
+                amount={cellAmount[i]}
+                dose={cellDose[i]}
+                slot={cellSlot[i]}
+                firstFree={firstFree}
+                full={favouriteCount === PotionStore.MAX_FAVOURITES ? true : false}
+                primary={primaryOp}
+                one={oneOp}
+                requested={requestedOp}
+              />
+            ),
+        )}
+
+        {anyFavourite && favCol > 0 && favRow % 2 !== 0 && (
+          <sprite
+            x={PotionStore.COL1_X}
+            y={favRow * PotionStore.ROW_H}
+            w={PotionStore.HALF}
+            h={PotionStore.ROW_H}
+            sprite={PotionStoreSprites.DARK}
+            tiling
+          />
+        )}
+        {anyFavourite && (
+          <SectionHeader
+            row={0}
+            title={`Favourites ${favouriteCount}/${PotionStore.MAX_FAVOURITES}`}
+            ruleY={PotionStore.ROW_H}
+            ruleH={(potionsHeader - 1) * PotionStore.ROW_H}
+            vials={vialsText}
+            primary={primaryOp}
+            one={oneOp}
+            requested={requestedOp}
+          />
+        )}
+        {potionsSection && potionsLastCol > 0 && potionsPlaced / 2 % 2 === 0 && (
+          <sprite
+            x={PotionStore.COL1_X}
+            y={(unfinishedHeader - 1) * PotionStore.ROW_H}
+            w={PotionStore.HALF}
+            h={PotionStore.ROW_H}
+            sprite={PotionStoreSprites.DARK}
+            tiling
+          />
+        )}
+        {potionsSection && (
+          <SectionHeader
+            row={potionsHeader}
+            title="Potions"
+            ruleY={(potionsHeader + 1) * PotionStore.ROW_H}
+            ruleH={(unfinishedHeader - (potionsHeader + 1)) * PotionStore.ROW_H}
+            vials={vialsText}
+            primary={primaryOp}
+            one={oneOp}
+            requested={requestedOp}
+          />
+        )}
+        {unfinishedSection && lastCol > 0 && placed / 2 % 2 === 0 && (
+          <sprite
+            x={PotionStore.COL1_X}
+            y={(total - 1) * PotionStore.ROW_H}
+            w={PotionStore.HALF}
+            h={PotionStore.ROW_H}
+            sprite={PotionStoreSprites.DARK}
+            tiling
+          />
+        )}
+        {unfinishedSection && (
+          <SectionHeader
+            row={unfinishedHeader}
+            title="Unfinished Potions"
+            ruleY={(unfinishedHeader + 1) * PotionStore.ROW_H}
+            ruleH={(total - (unfinishedHeader + 1)) * PotionStore.ROW_H}
+            vials={vialsText}
+            primary={primaryOp}
+            one={oneOp}
+            requested={requestedOp}
+          />
+        )}
+        {empty && (
+          <text
+            x="center"
+            y="center"
+            w={{ fill: 20 }}
+            h={{ fill: 40 }}
+            text={POTION_STORE_HELP}
+            font={BankFonts.BODY}
+            color={BankColors.LABEL}
+            shadow
+            align="center"
+            valign="top"
+          />
+        )}
+      </layer>
+
+      <layer x="right" y="bottom" w={16} h="fill">
+        <ScrollbarVertical
+          content={items}
+          track={BankSprites.BAR_TRACK}
+          capTopSprite={BankSprites.BAR_CAP_TOP}
+          thumbSprite={BankSprites.BAR_THUMB}
+          capBottomSprite={BankSprites.BAR_CAP_BOTTOM}
+          arrowUp={BankSprites.BAR_ARROW_UP}
+          arrowDown={BankSprites.BAR_ARROW_DOWN}
+          rebuilt
+        />
+      </layer>
+    </>
+  );
+}
+
+function PotionCell({
+  dose1,
+  dose2,
+  dose3,
+  dose4,
+  label,
+  x,
+  y,
+  light,
+  amount,
+  dose,
+  slot,
+  firstFree,
+  full,
+  primary,
+  one,
+  requested,
+}: {
+  dose1: Item;
+  dose2: Item;
+  dose3: Item;
+  dose4: Item;
+  label: String;
+  x: Int;
+  y: Int;
+  light: Boolean;
+  amount: Int;
+  dose: Int;
+  slot: Int;
+  firstFree: Int;
+  full: Boolean;
+  primary: String;
+  one: String;
+  requested: String;
+}): Component {
+  const shown: Item = dose === 1 ? dose1 : dose === 2 ? dose2 : dose === 3 ? dose3 : dose === 4 ? dose4 : -1;
+  const name: String = label.length === 0 ? itemName(shown) : `${label}(${dose})`;
+  const caption: String = dose2 === -1 ? 'Quantity:' : 'Doses:';
+  const favourite: Boolean = slot !== -1 ? true : false;
+
+  return (
+    <>
+      <sprite
+        x={x}
+        y={y}
+        w={PotionStore.HALF}
+        h={PotionStore.ROW_H}
+        sprite={light ? PotionStoreSprites.LIGHT : PotionStoreSprites.DARK}
+        tiling
+        options={[
+          primary,
+          one,
+          'Withdraw-5',
+          'Withdraw-10',
+          requested,
+          'Withdraw-X',
+          'Withdraw-All',
+          'Withdraw-All-but-1',
+        ]}
+      />
+      <sprite
+        x={x + PotionStore.ITEM_DX}
+        y={y + PotionStore.ITEM_DY}
+        w={PotionStore.ITEM_W}
+        h={PotionStore.ITEM_H}
+        item={shown}
+        itemCount={-1}
+        noClickThrough
+        shadowColor={BankColors.SLOT_SHADOW}
+        outline={1}
+        options={[
+          '',
+          '',
+          '',
+          '',
+          '',
+          dose2 !== -1 ? '1 Dose' : '',
+          dose2 !== -1 ? '2 Dose' : '',
+          dose3 !== -1 ? '3 Dose' : '',
+          dose4 !== -1 ? '4 Dose' : '',
+        ]}
+        optionSubject={`<col=ff9040>${itemName(shown)}</col>`}
+      />
+      <text
+        x={x + PotionStore.TEXT_DX}
+        y={y + PotionStore.NAME_DY}
+        w={PotionStore.HALF}
+        h={PotionStore.ROW_H}
+        text={name}
+        font={BankFonts.BODY}
+        color={BankColors.LABEL}
+        shadow
+      />
+      <text
+        x={x + PotionStore.TEXT_DX}
+        y={y + PotionStore.DOSES_DY}
+        w={PotionStore.HALF}
+        h={PotionStore.ROW_H}
+        text={`${caption} ${groupDigits(amount, ',')}`}
+        font={BankFonts.SMALL}
+        color={BankColors.WHITE}
+        shadow
+      />
+      <sprite
+        x={x + PotionStore.STAR_DX}
+        y={y + PotionStore.STAR_DY}
+        w={PotionStore.STAR_W}
+        h={PotionStore.STAR_H}
+        sprite={favourite ? PotionStoreSprites.FAVOURITE : PotionStoreSprites.NOT_FAVOURITE}
+        tiling
+        hide={!favourite && full ? true : false}
+        noClickThrough
+        options={[favourite ? 'Remove Favourite' : 'Add Favourite']}
+        onOptionSelect={() => writeFavourite(favourite ? slot : firstFree, favourite ? -1 : dose1 as Int)}
+      />
+    </>
+  );
+}
+
+function SectionHeader({
+  row,
+  title,
+  ruleY,
+  ruleH,
+  vials,
+  primary,
+  one,
+  requested,
+}: {
+  row: Int;
+  title: String;
+  ruleY: Int;
+  ruleH: Int;
+  vials: String;
+  primary: String;
+  one: String;
+  requested: String;
+}): Component {
+  const y: Int = row * PotionStore.ROW_H;
+  return (
+    <>
+      <sprite x={0} y={y} w="fill" h={PotionStore.ROW_H} sprite={PotionStoreSprites.LIGHT} tiling />
+      <rect x={0} y={y + PotionStore.ROW_H - 1} w="fill" h={1} color={PotionStore.RULE} />
+      <text
+        x={0}
+        y={y}
+        w="fill"
+        h={PotionStore.TITLE_H}
+        text={title}
+        font={BankFonts.TITLE}
+        color={BankColors.LABEL}
+        shadow
+        align="left"
+        valign="bottom"
+      />
+      <rect x={PotionStore.HALF} y={ruleY} w={1} h={ruleH} color={PotionStore.RULE} />
+      <text
+        x={{ right: PotionStore.VIALS_RIGHT }}
+        y={y + PotionStore.VIALS_DY}
+        w={textWidth(vials, 3000, BankFonts.BODY)}
+        h={PotionStore.VIALS_H}
+        text={vials}
+        font={BankFonts.BODY}
+        color={BankColors.LABEL}
+        shadow
+        align="right"
+        valign="bottom"
+        options={[
+          primary,
+          one,
+          'Withdraw-5',
+          'Withdraw-10',
+          requested,
+          'Withdraw-X',
+          'Withdraw-All',
+          'Withdraw-All-but-1',
+        ]}
+      />
+    </>
+  );
+}
+
+function writeFavourite(slot: Int, value: Int): void {
+  switch (slot) {
+    case 0:
+      predictServerState(PotionStoreVars.FAVOURITE_1, value);
+      return;
+    case 1:
+      predictServerState(PotionStoreVars.FAVOURITE_2, value);
+      return;
+    case 2:
+      predictServerState(PotionStoreVars.FAVOURITE_3, value);
+      return;
+    case 3:
+      predictServerState(PotionStoreVars.FAVOURITE_4, value);
+      return;
+    case 4:
+      predictServerState(PotionStoreVars.FAVOURITE_5, value);
+      return;
+    case 5:
+      predictServerState(PotionStoreVars.FAVOURITE_6, value);
+      return;
+    case 6:
+      predictServerState(PotionStoreVars.FAVOURITE_7, value);
+      return;
+    case 7:
+      predictServerState(PotionStoreVars.FAVOURITE_8, value);
+      return;
+  }
+}
+
+export function PotionStoreButton({
+  unlocked,
+  currentTab,
+  previousTab,
+}: {
+  unlocked: Boolean;
+  currentTab: Int;
+  previousTab: Int;
+}): Component {
+  const [hover, setHover] = useState(0);
+  if (!unlocked) {
+    return <layer x={2} y={{ bottom: 66 }} w={36} h={36} hide />;
+  }
+  return (
+    <layer
+      x={2}
+      y={{ bottom: 2 }}
+      w={36}
+      h={36}
+      options={['Potion Storage']}
+      onOptionSelect={(event) => switchToPotionStore(event.option, currentTab, previousTab)}
+      onMouseRepeat={() => setHover(1)}
+      onMouseLeave={() => setHover(0)}
+    >
+      <sprite
+        x={0}
+        y={0}
+        w={36}
+        h={36}
+        sprite={currentTab === POTION_TAB ? BankSprites.BUTTON_ON : BankSprites.BUTTON_OFF}
+      />
+      <sprite
+        x={4}
+        y={4}
+        w={28}
+        h={28}
+        sprite={PotionStoreSprites.GLYPH}
+        transparency={hover === 1 ? Bar.HOVER_TRANSPARENCY : 0}
+      />
+    </layer>
+  );
+}
+
+function switchToPotionStore(option: Int, current: Int, previous: Int): void {
+  if (option !== 1) {
+    return;
+  }
+  const tab: Int = current === POTION_TAB ? previous : POTION_TAB;
+  if ((tab >= 0 && tab <= 9) || tab === POTION_TAB) {
+    if (tab !== current) {
+      playSound(BankSounds.SELECT);
+    }
+    if (tab === POTION_TAB) {
+      predictServerState(PotionStoreVars.PREVIOUS_TAB, current);
+    }
+    predictServerState(BankVars.CURRENT_TAB, tab);
+  }
+}

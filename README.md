@@ -529,8 +529,8 @@ Files are named `<subject>.<role>.ts2`.
 | `<UI>.refs.ts2` | `createRef()` handles, declared once and used across components. |
 | `<subject>.<topic>.ts2` | Functions grouped by what they do, when one `helpers` file is no longer the honest place for them — `.actions`, `.slots`, `.stored`, `.carried`. A `.shared` file is one that a neighbouring folder imports. |
 | `game/<kind>.ts2` | A generated dictionary (`lib/game/` only). |
-| `_preview.png` | The UI, rendered from the source beside it. |
-| `_preview.mobile.png` | The same UI on the mobile client. |
+| `_preview.png` | The UI, rendered in the game. |
+| `_preview.mobile.png` | The same UI, in a mobile client. |
 | `_preview.<state>.png` | A UI with more than one state worth showing — `_preview.flying.png`, `_preview.wizard.png`. Usually paired with a `.mobile.png` of its own. |
 
 `<UI>` is the name half of the folder name (`house-options`, `league-3-fragments`), so
@@ -541,7 +541,7 @@ the entry point for `0370_house-options` is `0370_house-options/house-options.ui
 Reading a folder therefore has an obvious order: start at `*.ui.ts2`, follow it into the
 component it renders, and look up anything unfamiliar in `*.constants.ts2`.
 
-### `lib/` — what the ports share
+### `lib/` - shared code
 
 `lib/` is the one folder that is not a UI. Components in it are named the same way
 ports name theirs (`stone-button.component.ts2`, `scrollbar-vertical.component.ts2`);

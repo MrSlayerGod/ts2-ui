@@ -1,4 +1,4 @@
-import { CS2, useRef } from 'ts2';
+import { CS2, useRef, useState } from 'ts2';
 
 import { Layout } from './pvp-arena-1v1-info.constants';
 
@@ -24,11 +24,14 @@ export function ScrollbarHorizontal({
   const bar = useRef();
   const gutter = useRef();
   const thumb = useRef();
-  const capLeft = useRef();
-  const capRight = useRef();
+
+  const [scrolled, setScrolled] = useState(-1);
+  const [draggedTo, setDraggedTo] = useState(-1);
 
   const scrollExtent: Int = content.scrollWidth;
   const extent: Int = scrollExtent > 0 ? scrollExtent : content.width;
+  const range: Int = Math.max(1, content.scrollWidth - content.width);
+  const offset: Int = scrolled >= 0 ? scrolled : content.scrollX;
 
   return (
     <layer ref={bar} w="fill" h="fill">
@@ -40,8 +43,9 @@ export function ScrollbarHorizontal({
         sprite={track}
         noClickThrough
         onScrollWheel={(event) => {
-          content.scrollX = content.scrollX + event.mouseY * Layout.WHEEL_X;
-          trackScrollX(gutter, thumb, capLeft, capRight, content);
+          const next: Int = Math.clamp(0, liveRange(content), content.scrollX + event.mouseY * Layout.WHEEL_X);
+          content.scrollX = next;
+          setScrolled(next);
         }}
         onClick={() => {
           CS2.cc_dragpickup(thumb.width / 2, 0);
@@ -49,11 +53,7 @@ export function ScrollbarHorizontal({
       />
       <sprite
         ref={thumb}
-        x={
-          Layout.ARROW +
-          ((gutter.width - thumbWidthOf(bar.width, content.width, extent, rebuilt)) * content.scrollX) /
-            Math.max(1, content.scrollWidth - content.width)
-        }
+        x={thumbAt(draggedTo, gutter.width, thumbWidthOf(bar.width, content.width, extent, rebuilt), offset, range)}
         y="center"
         h="fill"
         w={thumbWidthOf(bar.width, content.width, extent, rebuilt)}
@@ -62,20 +62,41 @@ export function ScrollbarHorizontal({
         draggable={gutter}
         dragMoves
         onDrag={(event) => {
-          const offset: Int = event.mouseX;
-          thumb.x = offset + Layout.ARROW;
-          capLeft.x = offset + Layout.ARROW;
-          capRight.x = offset + Layout.ARROW + thumb.width - Layout.CAP;
-
           const travel: Int = Math.max(1, gutter.width - thumb.width);
-          const range: Int = content.scrollWidth - content.width;
-          content.scrollX = (offset * range) / travel;
+          const next: Int = Math.clamp(
+            0,
+            liveRange(content),
+            event.mouseX * (content.scrollWidth - content.width) / travel,
+          );
+          content.scrollX = next;
+          setScrolled(next);
+          setDraggedTo(event.mouseX);
+        }}
+        onDragComplete={(event) => {
+          const travel: Int = Math.max(1, gutter.width - thumb.width);
+          const next: Int = Math.clamp(
+            0,
+            liveRange(content),
+            event.mouseX * (content.scrollWidth - content.width) / travel,
+          );
+          content.scrollX = next;
+          setScrolled(next);
+          setDraggedTo(-1);
         }}
       />
-      <sprite ref={capLeft} x={thumb.x} y="center" w={Layout.CAP} h="fill" sprite={capLeftSprite} />
       <sprite
-        ref={capRight}
-        x={thumb.x + thumb.width - Layout.CAP}
+        x={thumbAt(draggedTo, gutter.width, thumbWidthOf(bar.width, content.width, extent, rebuilt), offset, range)}
+        y="center"
+        w={Layout.CAP}
+        h="fill"
+        sprite={capLeftSprite}
+      />
+      <sprite
+        x={
+          thumbAt(draggedTo, gutter.width, thumbWidthOf(bar.width, content.width, extent, rebuilt), offset, range) +
+          thumbWidthOf(bar.width, content.width, extent, rebuilt) -
+          Layout.CAP
+        }
         y="center"
         w={Layout.CAP}
         h="fill"
@@ -89,8 +110,9 @@ export function ScrollbarHorizontal({
         sprite={arrowLeft}
         noClickThrough
         onHold={() => {
-          content.scrollX = content.scrollX - Layout.STEP_X;
-          trackScrollX(gutter, thumb, capLeft, capRight, content);
+          const next: Int = Math.clamp(0, liveRange(content), content.scrollX - Layout.STEP_X);
+          content.scrollX = next;
+          setScrolled(next);
         }}
       />
       <sprite
@@ -101,8 +123,9 @@ export function ScrollbarHorizontal({
         sprite={arrowRight}
         noClickThrough
         onHold={() => {
-          content.scrollX = content.scrollX + Layout.STEP_X;
-          trackScrollX(gutter, thumb, capLeft, capRight, content);
+          const next: Int = Math.clamp(0, liveRange(content), content.scrollX + Layout.STEP_X);
+          content.scrollX = next;
+          setScrolled(next);
         }}
       />
     </layer>
@@ -112,7 +135,7 @@ export function ScrollbarHorizontal({
 function thumbWidthOf(barWidth: Int, contentWidth: Int, extent: Int, rebuilt: Boolean): Int {
   const raw: Int = Math.max(
     Layout.MIN_THUMB,
-    extent > 0 ? ((barWidth - Layout.ARROW * 2) * contentWidth) / extent : barWidth - Layout.ARROW * 2,
+    extent > 0 ? (barWidth - Layout.ARROW * 2) * contentWidth / extent : barWidth - Layout.ARROW * 2,
   );
   if (rebuilt) {
     return Math.min(Math.max(Layout.MIN_THUMB, barWidth - Layout.ARROW * 2), raw);
@@ -120,11 +143,13 @@ function thumbWidthOf(barWidth: Int, contentWidth: Int, extent: Int, rebuilt: Bo
   return raw;
 }
 
-function trackScrollX(gutter: Ref, thumb: Ref, capLeft: Ref, capRight: Ref, content: Ref): void {
-  const travel: Int = Math.max(1, gutter.width - thumb.width);
-  const range: Int = Math.max(1, content.scrollWidth - content.width);
-  const at: Int = Layout.ARROW + (travel * content.scrollX) / range;
-  thumb.x = at;
-  capLeft.x = at;
-  capRight.x = at + thumb.width - Layout.CAP;
+function thumbAt(draggedTo: Int, gutterWidth: Int, thumbWidth: Int, offset: Int, range: Int): Int {
+  if (draggedTo >= 0) {
+    return draggedTo + Layout.ARROW;
+  }
+  return Layout.ARROW + (gutterWidth - thumbWidth) * offset / range;
+}
+
+function liveRange(content: Ref): Int {
+  return Math.max(1, content.scrollWidth - content.width);
 }

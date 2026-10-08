@@ -81,7 +81,7 @@ export function trialBonusClaimed(trial: Int, rank: Int): Int {
 }
 
 export function formatDuration(seconds: Int): String {
-  const minutes: Int = (seconds / 60) % 60;
+  const minutes: Int = seconds / 60 % 60;
   const hours: Int = seconds / 60 / 60;
   const rest: Int = seconds % 60;
 

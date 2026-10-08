@@ -88,6 +88,36 @@ import {
   tradeSlot26Changed,
   tradeSlot27Changed,
 } from '../lib/game/varcs';
+import {
+  yourSlot0Changed,
+  yourSlot1Changed,
+  yourSlot2Changed,
+  yourSlot3Changed,
+  yourSlot4Changed,
+  yourSlot5Changed,
+  yourSlot6Changed,
+  yourSlot7Changed,
+  yourSlot8Changed,
+  yourSlot9Changed,
+  yourSlot10Changed,
+  yourSlot11Changed,
+  yourSlot12Changed,
+  yourSlot13Changed,
+  yourSlot14Changed,
+  yourSlot15Changed,
+  yourSlot16Changed,
+  yourSlot17Changed,
+  yourSlot18Changed,
+  yourSlot19Changed,
+  yourSlot20Changed,
+  yourSlot21Changed,
+  yourSlot22Changed,
+  yourSlot23Changed,
+  yourSlot24Changed,
+  yourSlot25Changed,
+  yourSlot26Changed,
+  yourSlot27Changed,
+} from './trademain.state';
 
 export function tradeSlotPrice(slot: Int): Int {
   switch (slot) {
@@ -382,11 +412,67 @@ export function resetTradeChangedFlags(): void {
   s26(0);
   const [, s27] = useState(tradeSlot27Changed);
   s27(0);
+  const [, y0] = useState(yourSlot0Changed);
+  y0(-1);
+  const [, y1] = useState(yourSlot1Changed);
+  y1(-1);
+  const [, y2] = useState(yourSlot2Changed);
+  y2(-1);
+  const [, y3] = useState(yourSlot3Changed);
+  y3(-1);
+  const [, y4] = useState(yourSlot4Changed);
+  y4(-1);
+  const [, y5] = useState(yourSlot5Changed);
+  y5(-1);
+  const [, y6] = useState(yourSlot6Changed);
+  y6(-1);
+  const [, y7] = useState(yourSlot7Changed);
+  y7(-1);
+  const [, y8] = useState(yourSlot8Changed);
+  y8(-1);
+  const [, y9] = useState(yourSlot9Changed);
+  y9(-1);
+  const [, y10] = useState(yourSlot10Changed);
+  y10(-1);
+  const [, y11] = useState(yourSlot11Changed);
+  y11(-1);
+  const [, y12] = useState(yourSlot12Changed);
+  y12(-1);
+  const [, y13] = useState(yourSlot13Changed);
+  y13(-1);
+  const [, y14] = useState(yourSlot14Changed);
+  y14(-1);
+  const [, y15] = useState(yourSlot15Changed);
+  y15(-1);
+  const [, y16] = useState(yourSlot16Changed);
+  y16(-1);
+  const [, y17] = useState(yourSlot17Changed);
+  y17(-1);
+  const [, y18] = useState(yourSlot18Changed);
+  y18(-1);
+  const [, y19] = useState(yourSlot19Changed);
+  y19(-1);
+  const [, y20] = useState(yourSlot20Changed);
+  y20(-1);
+  const [, y21] = useState(yourSlot21Changed);
+  y21(-1);
+  const [, y22] = useState(yourSlot22Changed);
+  y22(-1);
+  const [, y23] = useState(yourSlot23Changed);
+  y23(-1);
+  const [, y24] = useState(yourSlot24Changed);
+  y24(-1);
+  const [, y25] = useState(yourSlot25Changed);
+  y25(-1);
+  const [, y26] = useState(yourSlot26Changed);
+  y26(-1);
+  const [, y27] = useState(yourSlot27Changed);
+  y27(-1);
 }
 
 export function secondsOfPercent(percent: Int): Int {
   const whole: Int = CS2.scale(60, 100, percent);
-  if (((percent % 10) * 6) % 10 >= 5) {
+  if (percent % 10 * 6 % 10 >= 5) {
     return whole + 1;
   }
   return whole;

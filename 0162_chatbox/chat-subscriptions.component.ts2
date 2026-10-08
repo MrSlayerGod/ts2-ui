@@ -3,6 +3,7 @@ import { CS2, Engine, onMounted, onUpdated, useRef, useState, useWatch } from 't
 import { Varps } from '../lib/game/varps';
 import { chatView, osmChatboxDisabled } from '../lib/game/varcs';
 import { chatAlertSet } from './chat-buttons';
+import { chatTransmit } from './chat-messages.helpers';
 import { chatboxRelayout } from './chatbox-chrome';
 import { chatboxVarTransmit } from './chatbox.init';
 import { chatboxAreaRef, chatmodalRef, chatoverlayRef, crmspaceRef } from './chatbox.constants';
@@ -59,6 +60,9 @@ export function ChatSubscriptions(): Component {
     () => chatboxVarTransmit(),
     host,
   );
+
+  useWatch(Engine.CHAT, () => chatTransmit(), host);
+  useWatch(Engine.FRIENDS, () => chatTransmit(), host);
 
   onMounted(() => chatToggleChanged(chatOff));
   onUpdated(() => chatToggleChanged(chatOff));

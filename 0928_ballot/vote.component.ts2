@@ -80,6 +80,9 @@ import {
   voteShapeSkip,
   voteShapeSkipped,
   voteStackHeightBlob,
+  voteRowHeld,
+  voteRowOnBank,
+  voteRowTickBank,
 } from './vote.state';
 
 const VoteColour = {
@@ -166,14 +169,14 @@ export function VoteAnswerRow({
   );
 
   const sprite: Sprite = multi
-    ? selected
+    ? (selected
       ? VoteSprite.CHECK_ON
-      : VoteSprite.CHECK
-    : selected
+      : VoteSprite.CHECK)
+    : (selected
       ? VoteSprite.RADIO_ON
-      : VoteSprite.RADIO;
+      : VoteSprite.RADIO);
 
-  const painted: Int = !enabled ? VoteColour.LABEL_DISABLED : answer === -1 ? VoteColour.LABEL_SKIP : VoteColour.LABEL;
+  const painted: Int = !enabled ? VoteColour.LABEL_DISABLED : (answer === -1 ? VoteColour.LABEL_SKIP : VoteColour.LABEL);
 
   const deselect: Boolean = multi && selected && answer !== -1;
 
@@ -305,6 +308,10 @@ export function VoteAnswerStack({
   const enabled: Boolean = !CS2.testbit(flags, 2);
   const skipped: Boolean = CS2.testbit(flags, 1);
   const rows: Int = CS2.min(count, VOTE_MAX_ANSWERS);
+  const [held] = useState(voteRowHeld);
+  const [rowsOn] = useState(voteRowOnBank[question]);
+  const [rowsTick] = useState(voteRowTickBank[question]);
+  const own: Boolean = CS2.testbit(held, question);
 
   return (
     <layer x={0} y={0} w="fill" h="fill">
@@ -317,9 +324,13 @@ export function VoteAnswerStack({
               question={question}
               y={voteStackRowY(blob, position, width)}
               h={voteRowHeight(voteBlobLabel(blob, position), width)}
-              enabled={enabled}
+              enabled={own ? CS2.testbit(rowsOn, voteBlobAnswer(blob, position)) : enabled}
               multi={multi}
-              selected={voteRowSelected(skipped, multi, answer, voteBlobAnswer(blob, position))}
+              selected={
+                own
+                  ? CS2.testbit(rowsTick, voteBlobAnswer(blob, position))
+                  : voteRowSelected(skipped, multi, answer, voteBlobAnswer(blob, position))
+              }
               votable={votable}
               transmit={multi ? VoteTransmit.MULTI_SELECT : VoteTransmit.SELECT}
             />
@@ -479,11 +490,9 @@ function voteGridGutter(width: Int, columns: Int, allowSkipColumn: Boolean): Int
 }
 
 function voteGridColumnX(width: Int, columns: Int, allowSkipColumn: Boolean, c: Int): Int {
-  return (
-    voteGridGutter(width, columns, allowSkipColumn) +
+  return voteGridGutter(width, columns, allowSkipColumn) +
     VoteMetric.CELL_GAP +
-    voteGridStride(width, columns, allowSkipColumn) * c
-  );
+    voteGridStride(width, columns, allowSkipColumn) * c;
 }
 
 function voteGridHeaderHeight(blob: String, width: Int, columns: Int, allowSkipColumn: Boolean): Int {
@@ -503,10 +512,8 @@ function voteGridHeaderHeight(blob: String, width: Int, columns: Int, allowSkipC
 
 function voteGridRowHeight(blob: String, i: Int, width: Int, columns: Int, allowSkipColumn: Boolean): Int {
   const gutterTextW: Int = voteGridGutter(width, columns, allowSkipColumn) - VoteMetric.CELL_PAD;
-  return (
-    textLineCount(voteGridItemLabel(blob, i), gutterTextW, Fonts.P11_FULL) * VoteMetric.GRID_ROW_LINE_H +
-    VoteMetric.CELL_PAD
-  );
+  return textLineCount(voteGridItemLabel(blob, i), gutterTextW, Fonts.P11_FULL) * VoteMetric.GRID_ROW_LINE_H +
+    VoteMetric.CELL_PAD;
 }
 
 function voteGridRowsAbove(blob: String, upTo: Int, width: Int, columns: Int, allowSkipColumn: Boolean): Int {
@@ -693,7 +700,7 @@ function VoteGridRow({
           align="right"
           valign="middle"
           lineHeight={VoteMetric.GRID_ROW_LINE_H}
-          color={hovered ? VoteColour.LABEL_HOVER : enabled ? VoteColour.LABEL : VoteColour.LABEL_DISABLED}
+          color={hovered ? VoteColour.LABEL_HOVER : (enabled ? VoteColour.LABEL : VoteColour.LABEL_DISABLED)}
         />
       </layer>
 
@@ -798,9 +805,9 @@ function VoteGrid({
                 color={
                   hoverQuestion === question && hoverColumn === c
                     ? VoteColour.LABEL_HOVER
-                    : enabled
+                    : (enabled
                       ? VoteColour.LABEL
-                      : VoteColour.LABEL_DISABLED
+                      : VoteColour.LABEL_DISABLED)
                 }
               />
             </layer>
@@ -837,9 +844,9 @@ function VoteGrid({
             color={
               hoverQuestion === question && hoverColumn === -1
                 ? VoteColour.LABEL_HOVER
-                : enabled
+                : (enabled
                   ? VoteColour.LABEL_SKIP
-                  : VoteColour.LABEL_DISABLED
+                  : VoteColour.LABEL_DISABLED)
             }
           />
         </layer>
@@ -945,10 +952,8 @@ function voteSlotHeight(shape: Int, blob: String, width: Int): Int {
 }
 
 function voteQuestionTextHeight(text: String, index: Int, width: Int): Int {
-  return (
-    textLineCount(text, width - ballotQuestionLabelWidth(index), BallotFont.BODY) * BallotRowLayout.LINE_H +
-    VOTE_QUESTION_TEXT_PAD
-  );
+  return textLineCount(text, width - ballotQuestionLabelWidth(index), BallotFont.BODY) * BallotRowLayout.LINE_H +
+    VOTE_QUESTION_TEXT_PAD;
 }
 
 const VOTE_QUESTION_TEXT_PAD = 4;

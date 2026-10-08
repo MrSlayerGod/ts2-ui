@@ -159,7 +159,7 @@ export function StoreButton({
         h={wholeClick ? ButtonBox.RING : ButtonBox.FACE}
         hide={hidden}
         noClickThrough={!frameless}
-        options={frameless ? ['*', '*'] : live ? [OrbText.OPEN_STORE, secondOp] : undefined}
+        options={frameless ? ['*', '*'] : (live ? [OrbText.OPEN_STORE, secondOp] : undefined)}
         onOptionSelect={live ? (event) => buttonOp(event.option, STORE_OPSOUND) : null}
         onMouseRepeat={
           live
@@ -284,7 +284,7 @@ export function AdviserButton({ panel, wholeClick }: { panel: Int; wholeClick: B
         hide={hidden}
         noClickThrough={!frameless}
         options={
-          frameless ? ['*'] : live ? [adviserOpen === 1 ? OrbText.CLOSE_ADVISER : OrbText.OPEN_ADVISER] : undefined
+          frameless ? ['*'] : (live ? [adviserOpen === 1 ? OrbText.CLOSE_ADVISER : OrbText.OPEN_ADVISER] : undefined)
         }
         onOptionSelect={live ? (event) => buttonOp(event.option, -1) : null}
         onMouseRepeat={
@@ -424,9 +424,9 @@ export function WorldMapButton({ panel, spare }: { panel: Int; spare: Boolean })
         transparency={floating ? 125 : 0}
         options={
           frameless
-            ? phoneArt(panel) && panel === OrbsPanel.OSM
+            ? (phoneArt(panel) && panel === OrbsPanel.OSM
               ? ['*', '*', '', '*']
-              : ['*', '*', '*', '*']
+              : ['*', '*', '*', '*'])
             : floating
               ? ['', OrbText.MAP_CLOSE_FLOATING]
               : mobileFrame

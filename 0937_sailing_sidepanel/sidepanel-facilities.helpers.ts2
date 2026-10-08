@@ -102,10 +102,8 @@ export function facilityPlayers(code: Int): Int {
     case 3:
       return useServerState(Varbits.SAILING_SIDEPANEL_PLAYER_AT_HELM);
     case 4:
-      return (
-        useServerState(Varbits.SAILING_SIDEPANEL_PLAYER_AT_SAILS) +
-        useServerState(Varbits.SAILING_SIDEPANEL_PLAYER_AT_HELM)
-      );
+      return useServerState(Varbits.SAILING_SIDEPANEL_PLAYER_AT_SAILS) +
+        useServerState(Varbits.SAILING_SIDEPANEL_PLAYER_AT_HELM);
     case 6:
       return useServerState(Varbits.SAILING_SIDEPANEL_PLAYER_AT_FACILITY_0);
     case 7:

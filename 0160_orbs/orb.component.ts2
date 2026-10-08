@@ -7,9 +7,11 @@ import {
   useRef,
   useRerenderOn,
   useServerState,
+  useServerStateOnce,
   useSkill,
   useSkillBase,
   useState,
+  useWatch,
 } from 'ts2';
 
 import { Varbits } from '../lib/game/varbits';
@@ -25,6 +27,7 @@ import {
   OrbSkills,
   OrbText,
   OrbsPanel,
+  RegenRing,
   SidePanel,
   SpecMax,
   SpecWeapon,
@@ -45,6 +48,20 @@ import {
   stepRunFlash,
 } from './orbs.helpers';
 import { runFlashLit } from './orbs.state';
+import {
+  healthOrbStatWatch,
+  healthOrbVarWatch,
+  hpBlueAngle,
+  hpBlueHidden,
+  hpRedAngle,
+  hpRingsPanel,
+  specAngle,
+  specBuiltAngle,
+  specRegenVarWatch,
+  specRingPanel,
+  stepHealthRegen,
+  stepSpecRegen,
+} from './orbs-regen';
 
 function orbMax(base: Int): Int {
   if (useServerState(Varbits.BR_INGAME) === 1) {
@@ -57,6 +74,7 @@ export function HealthOrb({
   left,
   top,
   fromRight,
+  panel,
   wide,
   clickY,
   clickW,
@@ -65,6 +83,7 @@ export function HealthOrb({
   left: Int;
   top: Int;
   fromRight: Boolean;
+  panel: Int;
   wide: Boolean;
   clickY: Int;
   clickW: Int;
@@ -72,6 +91,14 @@ export function HealthOrb({
 }): Component {
   useRerenderOn(Engine.SUB_CHANGE);
   const plate = useRef();
+  const spare = useRef();
+  const blueRing = useRef();
+  const redRing = useRef();
+
+  const [ringsPanel] = useState(hpRingsPanel);
+  const [blueHidden] = useState(hpBlueHidden);
+  useWatch(OrbSkills.HITPOINTS, () => healthOrbStatWatch(panel), spare);
+  useWatch([Varps.SETTINGS_VARP_1, Varps.PRAYER0, Varps.PRAYER_RUINOUS_0], () => healthOrbVarWatch(panel), spare);
 
   const current: Int = useSkill(OrbSkills.HITPOINTS);
   const max: Int = orbMax(useSkillBase(OrbSkills.HITPOINTS));
@@ -157,7 +184,40 @@ export function HealthOrb({
           transparency={afflicted ? 100 : 0}
         />
       </layer>
-      <layer x={meterX} y={OrbBox.METER_Y} w={OrbBox.SPARE} h={OrbBox.SPARE} />
+      <layer ref={spare} x={meterX} y={OrbBox.METER_Y} w={OrbBox.SPARE} h={OrbBox.SPARE}>
+        {ringsPanel === panel && (
+          <>
+            <arc
+              ref={blueRing}
+              x="center"
+              y="center"
+              w="fill"
+              h="fill"
+              color={RegenRing.HP_BLUE}
+              lineWidth={RegenRing.LINE}
+              arcStart={0}
+              arcEnd={useServerStateOnce(() => hpBlueAngle())}
+              hide={blueHidden === 1}
+            />
+            <arc
+              ref={redRing}
+              x="center"
+              y="center"
+              w="fill"
+              h="fill"
+              color={RegenRing.HP_RED}
+              lineWidth={RegenRing.LINE}
+              arcStart={0}
+              arcEnd={useServerStateOnce(() => hpRedAngle())}
+              onTimer={() => {
+                stepHealthRegen();
+                blueRing.arcEnd = hpBlueAngle();
+                redRing.arcEnd = hpRedAngle();
+              }}
+            />
+          </>
+        )}
+      </layer>
       <sprite x={meterX} y={OrbBox.METER_Y} w={OrbBox.METER} h={OrbBox.METER} sprite={OrbArt.HEART} />
     </layer>
   );
@@ -277,6 +337,7 @@ export function RunOrb({
   useRerenderOn(Engine.SUB_CHANGE);
   useRerenderOn(Engine.MISC);
   const plate = useRef();
+  const button = useRef('runbutton');
 
   const energy: Int = CS2.runenergy_visible();
   const open: Boolean = sidePanelOpen(SidePanel.SETTINGS);
@@ -304,6 +365,7 @@ export function RunOrb({
     <layer x={fromRight ? { right: left } : left} y={top} w={wide ? OrbBox.OSM.W : OrbBox.DESKTOP.W} h={OrbBox.H}>
       <sprite ref={plate} x={0} y={0} w="fill" h="fill" sprite={drawn} noClickThrough />
       <layer
+        ref={button}
         x={OrbBox.CLICK_X}
         y={clickY}
         w={clickW}
@@ -376,6 +438,11 @@ export function SpecOrb({
   subject: String;
 }): Component {
   const plate = useRef();
+  const spare = useRef();
+  const ring = useRef();
+
+  const [ringPanel] = useState(specRingPanel);
+  useWatch([Varps.SETTINGS_VARP_1, Varps.SA_ENERGY], () => specRegenVarWatch(panel), spare);
 
   const worn = useInventory(OrbInventories.WORN);
   const weapon: Item = worn[WEAPON_SLOT];
@@ -470,7 +537,25 @@ export function SpecOrb({
       <layer x={meterX} y={OrbBox.METER_Y} w={OrbBox.METER} h={meterEmptyH(value, max)}>
         <sprite x={0} y={0} w={OrbBox.METER} h={OrbBox.METER} sprite={OrbArt.EMPTY} />
       </layer>
-      <layer x={meterX} y={OrbBox.METER_Y} w={OrbBox.SPARE} h={OrbBox.SPARE} />
+      <layer ref={spare} x={meterX} y={OrbBox.METER_Y} w={OrbBox.SPARE} h={OrbBox.SPARE}>
+        {ringPanel === panel && (
+          <arc
+            ref={ring}
+            x="center"
+            y="center"
+            w="fill"
+            h="fill"
+            color={RegenRing.SPEC}
+            lineWidth={RegenRing.LINE}
+            arcStart={0}
+            arcEnd={useServerStateOnce(() => specBuiltAngle())}
+            onTimer={() => {
+              stepSpecRegen();
+              ring.arcEnd = specAngle();
+            }}
+          />
+        )}
+      </layer>
       <sprite x={meterX} y={OrbBox.METER_Y} w={OrbBox.METER} h={OrbBox.METER} sprite={icon} />
     </layer>
   );

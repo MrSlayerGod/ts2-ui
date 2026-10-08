@@ -2,6 +2,7 @@ import { CS2, createRef } from 'ts2';
 
 import { StoneBorderEntrypoint } from '../lib/stone-border-entrypoint.component';
 import { ChallengeList } from './challenge-list.component';
+import { RaidsScoreBoard, resetRaidsScore } from './raids-score.component';
 import { Challenge, ChallengeColors, ChallengeFonts, ChallengeText } from './raids-challenge.constants';
 
 const raidsChallenge = createRef('raids_challenge');
@@ -31,7 +32,13 @@ export function RaidsChallenge(): Component {
       <layer x="center" y={Challenge.BODY_Y} w={{ fill: Challenge.BODY_INSET_W }} h={{ fill: Challenge.BODY_INSET_H }}>
         <ChallengeList />
 
-        <layer x={Challenge.BOARD_X} y={0} w={{ fill: Challenge.BOARD_INSET_W }} h="fill">
+        <layer
+          x={Challenge.BOARD_X}
+          y={0}
+          w={{ fill: Challenge.BOARD_INSET_W }}
+          h="fill"
+          onLoad={() => resetRaidsScore()}
+        >
           <rect
             x={Challenge.PLATE_X}
             y={Challenge.PLATE_Y_0}
@@ -71,65 +78,7 @@ export function RaidsChallenge(): Component {
             valign="middle"
             text={ChallengeText.GLOBAL_BEST}
           />
-          <text
-            x="right"
-            y={0}
-            w={Challenge.GLOBAL_TIME_W}
-            h={Challenge.LABEL_H}
-            font={ChallengeFonts.LABEL}
-            color={ChallengeColors.LABEL}
-            shadow
-            valign="middle"
-            text={ChallengeText.ZERO_TIME}
-          />
-          <text
-            x={Challenge.TARGET_X}
-            y={0}
-            w={Challenge.TARGET_W}
-            h={Challenge.LABEL_H}
-            font={ChallengeFonts.LABEL}
-            color={ChallengeColors.LABEL}
-            shadow
-            valign="middle"
-            text={ChallengeText.TARGET_TIME}
-          />
-          <text
-            x={Challenge.TARGET_TIME_X}
-            y={0}
-            w={Challenge.TARGET_TIME_W}
-            h={Challenge.LABEL_H}
-            font={ChallengeFonts.LABEL}
-            color={ChallengeColors.LABEL}
-            shadow
-            valign="middle"
-            text={ChallengeText.ZERO_TIME}
-          />
-
-          <text
-            x={{ right: Challenge.TIMES_RIGHT_X }}
-            y={Challenge.TIMES_Y}
-            w={Challenge.TIMES_RIGHT_W}
-            h={Challenge.TIMES_H}
-            font={ChallengeFonts.BODY}
-            color={ChallengeColors.LABEL}
-            shadow
-            align="right"
-            valign="middle"
-            lineHeight={Challenge.TIMES_LINE}
-            text={ChallengeText.FIVE_TIMES}
-          />
-          <text
-            x={Challenge.TIMES_LEFT_X}
-            y={Challenge.TIMES_Y}
-            w={Challenge.TIMES_LEFT_W}
-            h={Challenge.TIMES_H}
-            font={ChallengeFonts.BODY}
-            color={ChallengeColors.LABEL}
-            shadow
-            valign="middle"
-            lineHeight={Challenge.TIMES_LINE}
-            text=""
-          />
+          <RaidsScoreBoard />
 
           <WorldLabel x="center" y={Challenge.WORLD_Y} w={Challenge.WORLD_W} h={Challenge.WORLD_H} />
         </layer>

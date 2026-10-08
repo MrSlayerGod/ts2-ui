@@ -59,7 +59,18 @@ export const Layout = {
 export enum SpColor {
   LABEL = 0xff981f,
   VALUE = 0xffffff,
+  BOX_BED = 0x726451,
 }
+
+export enum BadgeColor {
+  WHITE = 0xffffff,
+  GREY = 0x777777,
+  YELLOW = 0xffff00,
+  CREAM = 0xe6dbca,
+  AMBER = 0xff981f,
+}
+
+export const BADGE_FLASH_CYCLES = 10;
 
 export declare const SpFonts: {
   readonly HEADING: typeof Fonts.B12_FULL;

@@ -1,0 +1,617 @@
+import { CS2, sessionState, useState } from 'ts2';
+
+import { replaceAll } from '../0889_nps/colour-tag';
+import { Fonts } from '../lib/game/fonts';
+import { Sounds } from '../lib/game/sounds';
+import { pollScroll, raidsCount, raidsScroll } from '../lib/game/varcs';
+import { GameframeSlot, gameframeSlot } from '../lib/lib.gameframe';
+import { chatMessage, textLineCount } from '../lib/lib.engine';
+import { Layout } from './bond-main.constants';
+
+export function redeemWidth(): Int {
+  return Layout.PANEL_W - Layout.BODY_W_INSET - Layout.QTY_W_INSET - Layout.LIST_W_INSET;
+}
+
+export enum RedeemOption {
+  PRICE_W = 60,
+  PRICE_RIGHT = 5,
+  BOND_W = 36,
+  BOND_H = 32,
+  BOND_RIGHT = 67,
+  ICON_LEFT = 5,
+  LABEL_GAP = 2,
+  WASH = 75,
+  PRICE_COLOUR = 0xff981f,
+  WARNING_COLOUR = 0xcfcfcf,
+}
+
+export enum RedeemLineStyle {
+  COLOUR = 0xffb83f,
+  LINE_H = 12,
+  PAD = 5,
+  GAP = 5,
+}
+
+export const redeemShown0 = sessionState(0);
+export const redeemShown1 = sessionState(0);
+export const redeemShown2 = sessionState(0);
+export const redeemShown3 = sessionState(0);
+export const redeemShown4 = sessionState(0);
+export const redeemShown5 = sessionState(0);
+export const redeemShown6 = sessionState(0);
+export const redeemShown7 = sessionState(0);
+export const redeemShown8 = sessionState(0);
+export const redeemShown9 = sessionState(0);
+export const redeemShown10 = sessionState(0);
+export const redeemShown11 = sessionState(0);
+export const redeemShown12 = sessionState(0);
+export const redeemShown13 = sessionState(0);
+export const redeemShown14 = sessionState(0);
+
+export const redeemShown = [
+  redeemShown0,
+  redeemShown1,
+  redeemShown2,
+  redeemShown3,
+  redeemShown4,
+  redeemShown5,
+  redeemShown6,
+  redeemShown7,
+  redeemShown8,
+  redeemShown9,
+  redeemShown10,
+  redeemShown11,
+  redeemShown12,
+  redeemShown13,
+  redeemShown14,
+] as const;
+
+export const redeemY0 = sessionState(0);
+export const redeemY1 = sessionState(0);
+export const redeemY2 = sessionState(0);
+export const redeemY3 = sessionState(0);
+export const redeemY4 = sessionState(0);
+export const redeemY5 = sessionState(0);
+export const redeemY6 = sessionState(0);
+export const redeemY7 = sessionState(0);
+export const redeemY8 = sessionState(0);
+export const redeemY9 = sessionState(0);
+export const redeemY10 = sessionState(0);
+export const redeemY11 = sessionState(0);
+export const redeemY12 = sessionState(0);
+export const redeemY13 = sessionState(0);
+export const redeemY14 = sessionState(0);
+
+export const redeemY = [
+  redeemY0,
+  redeemY1,
+  redeemY2,
+  redeemY3,
+  redeemY4,
+  redeemY5,
+  redeemY6,
+  redeemY7,
+  redeemY8,
+  redeemY9,
+  redeemY10,
+  redeemY11,
+  redeemY12,
+  redeemY13,
+  redeemY14,
+] as const;
+
+export const redeemPrice0 = sessionState(0);
+export const redeemPrice1 = sessionState(0);
+export const redeemPrice2 = sessionState(0);
+export const redeemPrice3 = sessionState(0);
+export const redeemPrice4 = sessionState(0);
+export const redeemPrice5 = sessionState(0);
+export const redeemPrice6 = sessionState(0);
+export const redeemPrice7 = sessionState(0);
+export const redeemPrice8 = sessionState(0);
+export const redeemPrice9 = sessionState(0);
+export const redeemPrice10 = sessionState(0);
+export const redeemPrice11 = sessionState(0);
+export const redeemPrice12 = sessionState(0);
+export const redeemPrice13 = sessionState(0);
+export const redeemPrice14 = sessionState(0);
+
+export const redeemPrice = [
+  redeemPrice0,
+  redeemPrice1,
+  redeemPrice2,
+  redeemPrice3,
+  redeemPrice4,
+  redeemPrice5,
+  redeemPrice6,
+  redeemPrice7,
+  redeemPrice8,
+  redeemPrice9,
+  redeemPrice10,
+  redeemPrice11,
+  redeemPrice12,
+  redeemPrice13,
+  redeemPrice14,
+] as const;
+
+export const redeemIcon0 = sessionState(-1);
+export const redeemIcon1 = sessionState(-1);
+export const redeemIcon2 = sessionState(-1);
+export const redeemIcon3 = sessionState(-1);
+export const redeemIcon4 = sessionState(-1);
+export const redeemIcon5 = sessionState(-1);
+export const redeemIcon6 = sessionState(-1);
+export const redeemIcon7 = sessionState(-1);
+export const redeemIcon8 = sessionState(-1);
+export const redeemIcon9 = sessionState(-1);
+export const redeemIcon10 = sessionState(-1);
+export const redeemIcon11 = sessionState(-1);
+export const redeemIcon12 = sessionState(-1);
+export const redeemIcon13 = sessionState(-1);
+export const redeemIcon14 = sessionState(-1);
+
+export const redeemIcon = [
+  redeemIcon0,
+  redeemIcon1,
+  redeemIcon2,
+  redeemIcon3,
+  redeemIcon4,
+  redeemIcon5,
+  redeemIcon6,
+  redeemIcon7,
+  redeemIcon8,
+  redeemIcon9,
+  redeemIcon10,
+  redeemIcon11,
+  redeemIcon12,
+  redeemIcon13,
+  redeemIcon14,
+] as const;
+
+export const redeemIconSize0 = sessionState(0);
+export const redeemIconSize1 = sessionState(0);
+export const redeemIconSize2 = sessionState(0);
+export const redeemIconSize3 = sessionState(0);
+export const redeemIconSize4 = sessionState(0);
+export const redeemIconSize5 = sessionState(0);
+export const redeemIconSize6 = sessionState(0);
+export const redeemIconSize7 = sessionState(0);
+export const redeemIconSize8 = sessionState(0);
+export const redeemIconSize9 = sessionState(0);
+export const redeemIconSize10 = sessionState(0);
+export const redeemIconSize11 = sessionState(0);
+export const redeemIconSize12 = sessionState(0);
+export const redeemIconSize13 = sessionState(0);
+export const redeemIconSize14 = sessionState(0);
+
+export const redeemIconSize = [
+  redeemIconSize0,
+  redeemIconSize1,
+  redeemIconSize2,
+  redeemIconSize3,
+  redeemIconSize4,
+  redeemIconSize5,
+  redeemIconSize6,
+  redeemIconSize7,
+  redeemIconSize8,
+  redeemIconSize9,
+  redeemIconSize10,
+  redeemIconSize11,
+  redeemIconSize12,
+  redeemIconSize13,
+  redeemIconSize14,
+] as const;
+
+export const redeemWarned0 = sessionState(0);
+export const redeemWarned1 = sessionState(0);
+export const redeemWarned2 = sessionState(0);
+export const redeemWarned3 = sessionState(0);
+export const redeemWarned4 = sessionState(0);
+export const redeemWarned5 = sessionState(0);
+export const redeemWarned6 = sessionState(0);
+export const redeemWarned7 = sessionState(0);
+export const redeemWarned8 = sessionState(0);
+export const redeemWarned9 = sessionState(0);
+export const redeemWarned10 = sessionState(0);
+export const redeemWarned11 = sessionState(0);
+export const redeemWarned12 = sessionState(0);
+export const redeemWarned13 = sessionState(0);
+export const redeemWarned14 = sessionState(0);
+
+export const redeemWarned = [
+  redeemWarned0,
+  redeemWarned1,
+  redeemWarned2,
+  redeemWarned3,
+  redeemWarned4,
+  redeemWarned5,
+  redeemWarned6,
+  redeemWarned7,
+  redeemWarned8,
+  redeemWarned9,
+  redeemWarned10,
+  redeemWarned11,
+  redeemWarned12,
+  redeemWarned13,
+  redeemWarned14,
+] as const;
+
+export const RedeemLines = [0, 1, 2, 3, 4, 5, 6, 7] as const;
+
+export const redeemLineY0 = sessionState(0);
+export const redeemLineY1 = sessionState(0);
+export const redeemLineY2 = sessionState(0);
+export const redeemLineY3 = sessionState(0);
+export const redeemLineY4 = sessionState(0);
+export const redeemLineY5 = sessionState(0);
+export const redeemLineY6 = sessionState(0);
+export const redeemLineY7 = sessionState(0);
+
+export const redeemLineY = [
+  redeemLineY0,
+  redeemLineY1,
+  redeemLineY2,
+  redeemLineY3,
+  redeemLineY4,
+  redeemLineY5,
+  redeemLineY6,
+  redeemLineY7,
+] as const;
+
+export const redeemLineH0 = sessionState(0);
+export const redeemLineH1 = sessionState(0);
+export const redeemLineH2 = sessionState(0);
+export const redeemLineH3 = sessionState(0);
+export const redeemLineH4 = sessionState(0);
+export const redeemLineH5 = sessionState(0);
+export const redeemLineH6 = sessionState(0);
+export const redeemLineH7 = sessionState(0);
+
+export const redeemLineH = [
+  redeemLineH0,
+  redeemLineH1,
+  redeemLineH2,
+  redeemLineH3,
+  redeemLineH4,
+  redeemLineH5,
+  redeemLineH6,
+  redeemLineH7,
+] as const;
+
+export const redeemText = sessionState('');
+
+export const redeemLabelAt0 = sessionState(0);
+export const redeemLabelAt1 = sessionState(0);
+export const redeemLabelAt2 = sessionState(0);
+export const redeemLabelAt3 = sessionState(0);
+export const redeemLabelAt4 = sessionState(0);
+export const redeemLabelAt5 = sessionState(0);
+export const redeemLabelAt6 = sessionState(0);
+export const redeemLabelAt7 = sessionState(0);
+export const redeemLabelAt8 = sessionState(0);
+export const redeemLabelAt9 = sessionState(0);
+export const redeemLabelAt10 = sessionState(0);
+export const redeemLabelAt11 = sessionState(0);
+export const redeemLabelAt12 = sessionState(0);
+export const redeemLabelAt13 = sessionState(0);
+export const redeemLabelAt14 = sessionState(0);
+
+export const redeemLabelAt = [
+  redeemLabelAt0,
+  redeemLabelAt1,
+  redeemLabelAt2,
+  redeemLabelAt3,
+  redeemLabelAt4,
+  redeemLabelAt5,
+  redeemLabelAt6,
+  redeemLabelAt7,
+  redeemLabelAt8,
+  redeemLabelAt9,
+  redeemLabelAt10,
+  redeemLabelAt11,
+  redeemLabelAt12,
+  redeemLabelAt13,
+  redeemLabelAt14,
+] as const;
+
+export const redeemLabelLen0 = sessionState(0);
+export const redeemLabelLen1 = sessionState(0);
+export const redeemLabelLen2 = sessionState(0);
+export const redeemLabelLen3 = sessionState(0);
+export const redeemLabelLen4 = sessionState(0);
+export const redeemLabelLen5 = sessionState(0);
+export const redeemLabelLen6 = sessionState(0);
+export const redeemLabelLen7 = sessionState(0);
+export const redeemLabelLen8 = sessionState(0);
+export const redeemLabelLen9 = sessionState(0);
+export const redeemLabelLen10 = sessionState(0);
+export const redeemLabelLen11 = sessionState(0);
+export const redeemLabelLen12 = sessionState(0);
+export const redeemLabelLen13 = sessionState(0);
+export const redeemLabelLen14 = sessionState(0);
+
+export const redeemLabelLen = [
+  redeemLabelLen0,
+  redeemLabelLen1,
+  redeemLabelLen2,
+  redeemLabelLen3,
+  redeemLabelLen4,
+  redeemLabelLen5,
+  redeemLabelLen6,
+  redeemLabelLen7,
+  redeemLabelLen8,
+  redeemLabelLen9,
+  redeemLabelLen10,
+  redeemLabelLen11,
+  redeemLabelLen12,
+  redeemLabelLen13,
+  redeemLabelLen14,
+] as const;
+
+export const redeemWarningAt0 = sessionState(0);
+export const redeemWarningAt1 = sessionState(0);
+export const redeemWarningAt2 = sessionState(0);
+export const redeemWarningAt3 = sessionState(0);
+export const redeemWarningAt4 = sessionState(0);
+export const redeemWarningAt5 = sessionState(0);
+export const redeemWarningAt6 = sessionState(0);
+export const redeemWarningAt7 = sessionState(0);
+export const redeemWarningAt8 = sessionState(0);
+export const redeemWarningAt9 = sessionState(0);
+export const redeemWarningAt10 = sessionState(0);
+export const redeemWarningAt11 = sessionState(0);
+export const redeemWarningAt12 = sessionState(0);
+export const redeemWarningAt13 = sessionState(0);
+export const redeemWarningAt14 = sessionState(0);
+
+export const redeemWarningAt = [
+  redeemWarningAt0,
+  redeemWarningAt1,
+  redeemWarningAt2,
+  redeemWarningAt3,
+  redeemWarningAt4,
+  redeemWarningAt5,
+  redeemWarningAt6,
+  redeemWarningAt7,
+  redeemWarningAt8,
+  redeemWarningAt9,
+  redeemWarningAt10,
+  redeemWarningAt11,
+  redeemWarningAt12,
+  redeemWarningAt13,
+  redeemWarningAt14,
+] as const;
+
+export const redeemWarningLen0 = sessionState(0);
+export const redeemWarningLen1 = sessionState(0);
+export const redeemWarningLen2 = sessionState(0);
+export const redeemWarningLen3 = sessionState(0);
+export const redeemWarningLen4 = sessionState(0);
+export const redeemWarningLen5 = sessionState(0);
+export const redeemWarningLen6 = sessionState(0);
+export const redeemWarningLen7 = sessionState(0);
+export const redeemWarningLen8 = sessionState(0);
+export const redeemWarningLen9 = sessionState(0);
+export const redeemWarningLen10 = sessionState(0);
+export const redeemWarningLen11 = sessionState(0);
+export const redeemWarningLen12 = sessionState(0);
+export const redeemWarningLen13 = sessionState(0);
+export const redeemWarningLen14 = sessionState(0);
+
+export const redeemWarningLen = [
+  redeemWarningLen0,
+  redeemWarningLen1,
+  redeemWarningLen2,
+  redeemWarningLen3,
+  redeemWarningLen4,
+  redeemWarningLen5,
+  redeemWarningLen6,
+  redeemWarningLen7,
+  redeemWarningLen8,
+  redeemWarningLen9,
+  redeemWarningLen10,
+  redeemWarningLen11,
+  redeemWarningLen12,
+  redeemWarningLen13,
+  redeemWarningLen14,
+] as const;
+
+export const redeemLineAt0 = sessionState(0);
+export const redeemLineAt1 = sessionState(0);
+export const redeemLineAt2 = sessionState(0);
+export const redeemLineAt3 = sessionState(0);
+export const redeemLineAt4 = sessionState(0);
+export const redeemLineAt5 = sessionState(0);
+export const redeemLineAt6 = sessionState(0);
+export const redeemLineAt7 = sessionState(0);
+
+export const redeemLineAt = [
+  redeemLineAt0,
+  redeemLineAt1,
+  redeemLineAt2,
+  redeemLineAt3,
+  redeemLineAt4,
+  redeemLineAt5,
+  redeemLineAt6,
+  redeemLineAt7,
+] as const;
+
+export const redeemLineLen0 = sessionState(0);
+export const redeemLineLen1 = sessionState(0);
+export const redeemLineLen2 = sessionState(0);
+export const redeemLineLen3 = sessionState(0);
+export const redeemLineLen4 = sessionState(0);
+export const redeemLineLen5 = sessionState(0);
+export const redeemLineLen6 = sessionState(0);
+export const redeemLineLen7 = sessionState(0);
+
+export const redeemLineLen = [
+  redeemLineLen0,
+  redeemLineLen1,
+  redeemLineLen2,
+  redeemLineLen3,
+  redeemLineLen4,
+  redeemLineLen5,
+  redeemLineLen6,
+  redeemLineLen7,
+] as const;
+
+export const redeemFinished = sessionState(0);
+
+function modalOpen(): Boolean {
+  return CS2.if_sub_has(gameframeSlot(GameframeSlot.VIEWPORT));
+}
+
+export function redeemLine(text: String): void {
+  if (!modalOpen()) {
+    return;
+  }
+  const [extent, setExtent] = useState(raidsScroll);
+  const [count, setCount] = useState(raidsCount);
+  const top: Int = extent + RedeemLineStyle.GAP;
+  const height: Int = textLineCount(text, redeemWidth(), Fonts.B12_FULL) * RedeemLineStyle.LINE_H + RedeemLineStyle.PAD;
+  if (count >= 0 && count < 8) {
+    writeLine(count, text, top, height);
+  }
+  setCount(count + 1);
+  setExtent(top + height);
+}
+
+function writeLine(line: Int, text: String, top: Int, height: Int): void {
+  const [, setAt] = useState(redeemLineAt[line]);
+  const [, setLen] = useState(redeemLineLen[line]);
+  const [, setY] = useState(redeemLineY[line]);
+  const [, setH] = useState(redeemLineH[line]);
+  setAt(appendText(text));
+  setLen(text.length);
+  setY(top);
+  setH(height);
+}
+
+function appendText(text: String): Int {
+  const [all, setAll] = useState(redeemText);
+  const at: Int = all.length;
+  setAll(`${all}${text}`);
+  return at;
+}
+
+export function redeemPiece(all: String, at: Int, length: Int): String {
+  return all.substring(at, at + length);
+}
+
+export function redeemOption(
+  slot: Int,
+  price: Int,
+  icon: Sprite,
+  iconSize: Coord,
+  label: String,
+  warning: String,
+): void {
+  if (!modalOpen() || slot < 0 || slot >= 15) {
+    return;
+  }
+  if (label.length <= 0) {
+    hideOption(slot);
+    return;
+  }
+  const [extent, setExtent] = useState(raidsScroll);
+  let top: Int = extent;
+  if (top > 0) {
+    top = top + 1;
+  }
+  writeOption(slot, price, icon, iconSize, label, warning, top);
+  setExtent(top + Layout.OPTION_H);
+}
+
+function hideOption(slot: Int): void {
+  const [, setShown] = useState(redeemShown[slot]);
+  setShown(0);
+}
+
+function writeOption(
+  slot: Int,
+  price: Int,
+  icon: Sprite,
+  iconSize: Coord,
+  label: String,
+  warning: String,
+  top: Int,
+): void {
+  const [, setPrice] = useState(redeemPrice[slot]);
+  const [, setIcon] = useState(redeemIcon[slot]);
+  const [, setSize] = useState(redeemIconSize[slot]);
+  const [, setLabelAt] = useState(redeemLabelAt[slot]);
+  const [, setLabelLen] = useState(redeemLabelLen[slot]);
+  const [, setWarningAt] = useState(redeemWarningAt[slot]);
+  const [, setWarningLen] = useState(redeemWarningLen[slot]);
+  const [, setWarned] = useState(redeemWarned[slot]);
+  const [, setY] = useState(redeemY[slot]);
+  const [, setShown] = useState(redeemShown[slot]);
+  setPrice(price);
+  setIcon(icon as Int);
+  setSize(iconSize as Int);
+  setLabelAt(appendText(label));
+  setLabelLen(label.length);
+  setWarningAt(appendText(warning));
+  setWarningLen(warning.length);
+  setWarned(warning.length > 0 ? 1 : 0);
+  setY(top);
+  setShown(1);
+}
+
+export function redeemFinish(): void {
+  if (!modalOpen()) {
+    return;
+  }
+  const [, setPoll] = useState(pollScroll);
+  const [extent, setExtent] = useState(raidsScroll);
+  const [, setFinished] = useState(redeemFinished);
+  setPoll(0);
+  if (extent > 0) {
+    setExtent(extent + 1);
+  }
+  setFinished(1);
+}
+
+export function resetRedeem(): void {
+  let slot: Int = 0;
+  while (slot < 15) {
+    hideOption(slot);
+    slot = slot + 1;
+  }
+  const [, setFinished] = useState(redeemFinished);
+  const [, setAll] = useState(redeemText);
+  setFinished(0);
+  setAll('');
+}
+
+export function affordable(tradeable: Int, untradeable: Int, price: Int): Boolean {
+  let held: Int = 2147483647;
+  if (2147483647 - tradeable >= untradeable) {
+    held = tradeable + untradeable;
+  }
+  return held >= price;
+}
+
+export function priceText(price: Int): String {
+  if (price > 1) {
+    return `${price} bonds`;
+  }
+  if (price === 1) {
+    return '1 bond';
+  }
+  return '---';
+}
+
+export function optionLabel(label: String): String {
+  return replaceAll(label, '<br>', ' ');
+}
+
+export function redeemRefused(slot: Int): void {
+  const [all] = useState(redeemText);
+  const [at] = useState(redeemWarningAt[slot]);
+  const [length] = useState(redeemWarningLen[slot]);
+  const warning: String = redeemPiece(all, at, length);
+  CS2.sound_effect(Sounds.PILLORY_WRONG, 1, 0);
+  chatMessage(CS2.tags_remove(warning));
+}

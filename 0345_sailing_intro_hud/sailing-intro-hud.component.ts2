@@ -1,5 +1,6 @@
 import { createRef, useInterval } from 'ts2';
 
+import { textDevice } from '../lib/lib.helpers';
 import { layoutSailingHint } from './sailing-intro-hud.helpers';
 import { HintColor, HintFonts, HintSprites, HintTransparency, Layout } from './sailing-intro-hud.constants';
 
@@ -38,6 +39,7 @@ export function SailingIntroHud(): Component {
           <rect x="center" y="center" w="fill" h="fill" color={HintColor.BORDER} />
 
           <text
+            ref={hintText1}
             x="center"
             y={{ center: Layout.LINE_1_Y }}
             w={{ fill: Layout.LINE_INSET_W }}
@@ -51,6 +53,7 @@ export function SailingIntroHud(): Component {
           />
 
           <text
+            ref={hintText2}
             x="center"
             y={{ center: Layout.LINE_2_Y }}
             w={{ fill: Layout.LINE_INSET_W }}
@@ -66,4 +69,58 @@ export function SailingIntroHud(): Component {
       </layer>
     </layer>
   );
+}
+
+const hintText1 = createRef();
+const hintText2 = createRef();
+
+export function sailingIntroHint(step: Int): void {
+  if (step <= 0) {
+    timerHost.hide = true;
+    return;
+  }
+  timerHost.hide = false;
+  let line1: String = '';
+  let line2: String = '';
+  if (step === 1) {
+    line1 = `When on a boat, the <col=ffffff>helm<col=ff981f> can be<br>used to enter <col=ffffff>navigation mode<col=ff981f>.`;
+    line2 = `To use the helm, you just<br>need to <col=ffffff>${textDevice('click', 'tap')}<col=ff981f> on it.`;
+  } else if (step === 2) {
+    line1 = `To set your <col=ffffff>heading<col=ff981f>, simply <col=ffffff>${textDevice('click', 'tap')}<col=ff981f><br>in the direction you wish to travel.`;
+    line2 = `You can do so by either ${textDevice('clicking', 'tapping')}<br>in the <col=ffffff>game world<col=ff981f> or on your <col=ffffff>minimap<col=ff981f>.`;
+  } else if (step === 3 || step === 12) {
+    line1 = `When sailing, you can <col=ffffff>stop<col=ff981f> your boat by <col=ffffff>${textDevice('right-clicking', 'long pressing')}<col=ff981f> on the <col=ffffff>sails<col=ff981f>.`;
+    line2 = `You can also control your boat<br>from within the <col=ffffff>Sailing Side Panel<col=ff981f>.`;
+  } else if (step === 4) {
+    line1 = `After stopping your boat, you can <col=ffffff>start<col=ff981f> it again by <col=ffffff>${textDevice('clicking', 'tapping')}<col=ff981f> on the <col=ffffff>sails<col=ff981f>.`;
+    line2 = `You can also control your boat<br>from within the <col=ffffff>Sailing Side Panel<col=ff981f>.`;
+  } else if (step === 14) {
+    line1 = `You can <col=ffffff>start<col=ff981f> your boat by <col=ffffff>${textDevice('clicking', 'tapping')}<col=ff981f><br>on the <col=ffffff>sails<col=ff981f>.`;
+    line2 = `You can also control your boat<br>from within the <col=ffffff>Sailing Side Panel<col=ff981f>.`;
+  } else if (step === 5) {
+    line1 = `The wind has <col=ffffff>picked up<col=ff981f> and your<br><col=ffffff>sails<col=ff981f> need to be <col=ffffff>trimmed<col=ff981f>.`;
+    line2 = `To trim your sails, you just<br>need to <col=ffffff>${textDevice('click', 'tap')}<col=ff981f> on them.`;
+  } else if (step === 6) {
+    line1 = `Trimming your sails at the right<br>time will <col=ffffff>boost your speed<col=ff981f>.`;
+    line2 = `This boost is only <col=ffffff>temporary<col=ff981f>,<br>but the wind will pick up regularly.`;
+  } else if (step === 13) {
+    line1 = `If your boat gets <col=ffffff>stuck<col=ff981f>, you<br>can <col=ffffff>reverse<col=ff981f> it.`;
+    line2 = `The option to reverse can be found within the <col=ffffff>Sailing Side Panel<col=ff981f>.`;
+  } else if (step === 7) {
+    line1 = `The <col=ffffff>salvaging hook<col=ff981f> is one of many<br><col=ffffff>facilities<col=ff981f> you can have on a boat.`;
+    line2 = `To use the salvaging hook, you<br>just need to <col=ffffff>${textDevice('click', 'tap')}<col=ff981f> on it.`;
+  } else if (step === 8 || step === 9) {
+    line1 = `To customise your <col=ffffff>boat<col=ff981f>, you will<br>need a <col=ffffff>saw<col=ff981f> and a <col=ffffff>hammer<col=ff981f>.`;
+    line2 = `You can pick these tools up<br>from the <col=ffffff>nearby crates<col=ff981f>.`;
+  } else if (step === 10) {
+    line1 = `In the <col=ffffff>shipyard<col=ff981f>, you can board your<br>boat using the <col=ffffff>gangplank<col=ff981f>.`;
+    line2 = `You can also use the gangplank<br>to disembark from your boat again.`;
+  } else if (step === 11) {
+    line1 = `<col=ffffff>Hotspots<col=ff981f> are locations where you<br>can build things on your boat.`;
+    line2 = `To build your <col=ffffff>cargo hold<col=ff981f>, just interact<br>with the hotspot by <col=ffffff>${textDevice('clicking', 'tapping')}<col=ff981f> on it.`;
+  } else {
+    return;
+  }
+  hintText1.text = line1;
+  hintText2.text = line2;
 }

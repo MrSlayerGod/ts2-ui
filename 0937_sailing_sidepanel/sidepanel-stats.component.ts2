@@ -32,7 +32,7 @@ export function StatsRows(): Component {
   return (
     <layer x={0} y={0} w="fill" h="fill" hide={!shown}>
       {StatRows.map((row, index) =>
-        row.header ? (
+        (row.header ? (
           <>
             <rect x={0} y={index * ROW_H} w="fill" h={ROW_H} fill color={StatColor.HEADER} />
             <text
@@ -79,7 +79,7 @@ export function StatsRows(): Component {
               lineHeight={13}
             />
           </>
-        ),
+        )),
       )}
     </layer>
   );

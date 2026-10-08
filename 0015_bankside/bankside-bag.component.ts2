@@ -30,8 +30,8 @@ function BagSlot({
 }): Component {
   return (
     <sprite
-      x={(slot % Grid.COLUMNS) * BagGrid.STRIDE_X}
-      y={(slot / Grid.COLUMNS) * BagGrid.STRIDE_Y}
+      x={slot % Grid.COLUMNS * BagGrid.STRIDE_X}
+      y={slot / Grid.COLUMNS * BagGrid.STRIDE_Y}
       w={Grid.W}
       h={Grid.H}
       item={item}

@@ -1,0 +1,201 @@
+import { useInventory, useInterval, useRef, useServerState, useState, useWatch } from 'ts2';
+import { deadmanWorld, privateEventWorld } from '../0226_deadmanprotect/deadman-world.helpers';
+import { PouchBoltOf } from '../0433_xbows_pouch/tables.data';
+import { SigilAttunedItem, SigilOfferItem } from '../0719_deadman_sigils/tables.data';
+import { isQuiverObj } from '../0084_equipment/tables.data';
+import { highlightComponent, removeHighlight } from '../0161_toplevel_osrs_stretch/toplevel-osrs-stretch.highlight';
+import { itemName, membersWorld, clientClock } from '../lib/lib.engine';
+import { flashFor } from '../lib/lib.components';
+import {
+  ActionIcons,
+  BOLT_POUCH,
+  CarriedInventories,
+  EquipSlot,
+  ExtraSlotSprites,
+  Inventories,
+  SlotBackgroundSprites,
+  SlotColors,
+  TutorialStep,
+  WornVarbits,
+  WornVarps,
+} from './wornitems.constants';
+
+enum PouchFlash {
+  PRESSED = 100,
+  REST = 0,
+}
+
+const NO_SIGIL_KEY = 53;
+
+const FLASH_PERIOD = 20;
+
+const TUTORIAL_CTA_STYLE = 0;
+const HIGHLIGHT_KIND = 3;
+const HIGHLIGHT_INDEX = 2;
+
+function extraAmmoWorld(): Boolean {
+  if (deadmanWorld() !== 0) {
+    return false;
+  }
+  return membersWorld();
+}
+
+function pouchDrawn(): Boolean {
+  const worn = useInventory(Inventories.WORN);
+  const carried = useInventory(CarriedInventories.INV);
+  if (carried.total(BOLT_POUCH) <= 0) {
+    return false;
+  }
+  const cape: Item = worn[EquipSlot.CAPE];
+  if (cape !== -1) {
+    if (isQuiverObj(cape)) {
+      return false;
+    }
+  }
+  let scan: Int = 0;
+  while (scan < carried.size) {
+    if (carried[scan] !== -1) {
+      if (isQuiverObj(carried[scan])) {
+        return false;
+      }
+    }
+    scan = scan + 1;
+  }
+  return true;
+}
+
+export function ExtraAmmoSlot(): Component {
+  const item = useRef();
+  const shown: Boolean = extraAmmoWorld();
+  const drawn: Boolean = pouchDrawn();
+  const key: Int = useServerState(WornVarbits.POUCH_SLOT_4);
+  const count: Int = useServerState(WornVarbits.POUCH_NUM_4);
+  const bolt: Item = PouchBoltOf.get(key) ?? -1;
+  const wearable: Boolean = shown && drawn && bolt !== -1;
+
+  return (
+    <layer
+      x={118}
+      y={4}
+      w={36}
+      h={36}
+      hide={!shown}
+      optionSubject={wearable ? `<col=ff9040>${itemName(bolt)}</col>` : ''}
+      options={wearable ? ['Wear'] : []}
+      onOptionSelect={() => {
+        flashFor(item, PouchFlash.PRESSED, PouchFlash.REST);
+      }}
+    >
+      {drawn && <sprite x="center" y="center" w={36} h={36} sprite={ExtraSlotSprites.PLATE} />}
+      {drawn && bolt === -1 && <sprite x="center" y="center" w={32} h={32} sprite={ExtraSlotSprites.EMPTY_AMMO} />}
+      {drawn && bolt !== -1 && (
+        <sprite
+          ref={item}
+          x={2}
+          y={2}
+          w={36}
+          h={32}
+          item={bolt}
+          itemCount={count}
+          outline={1}
+          shadowColor={SlotColors.ITEM_SHADOW}
+        />
+      )}
+    </layer>
+  );
+}
+
+export function ExtraAmmoLink(): Component {
+  const shown: Boolean = extraAmmoWorld() && pouchDrawn();
+  return <sprite x={118} y={19} w={36} h={45} sprite={SlotBackgroundSprites.NARROW} tiling hide={!shown} />;
+}
+
+function sigilItem(): ItemName {
+  const first: ItemName = SigilAttunedItem.get(useServerState(WornVarbits.SIGIL_SLOT_0)) ?? -1;
+  if (first !== -1) {
+    return first;
+  }
+  const second: ItemName = SigilAttunedItem.get(useServerState(WornVarbits.SIGIL_SLOT_1)) ?? -1;
+  if (second !== -1) {
+    return second;
+  }
+  const third: ItemName = SigilAttunedItem.get(useServerState(WornVarbits.SIGIL_SLOT_2)) ?? -1;
+  if (third !== -1) {
+    return third;
+  }
+  return SigilOfferItem.get(NO_SIGIL_KEY) ?? -1;
+}
+
+export function DeadmanSigilsButton(): Component {
+  let season: Boolean = false;
+  if (deadmanWorld() === 3) {
+    if (privateEventWorld() === 0) {
+      season = true;
+    }
+  }
+  const sigil: ItemName = sigilItem();
+
+  return (
+    <layer x={18} y={4} w={36} h={36} options={season ? ['Sigils'] : []}>
+      {season && <sprite x="center" y="center" w={36} h={36} sprite={ExtraSlotSprites.PLATE} />}
+      {season && (
+        <sprite
+          x={2}
+          y={2}
+          w={36}
+          h={32}
+          item={sigil}
+          itemCount={1}
+          itemCountMode="never"
+          outline={1}
+          shadowColor={SlotColors.ITEM_SHADOW}
+        />
+      )}
+    </layer>
+  );
+}
+
+export function EquipmentIcon({ host, target }: { host: ComponentId; target: ComponentId }): Component {
+  const [armed, setArmed] = useState(0);
+  const [blank, setBlank] = useState(0);
+
+  useWatch([WornVarps.TUTORIAL, WornVarps.TUTORIAL_2], () => {
+    const tutorial: Int = useServerState(WornVarps.TUTORIAL);
+    const tutorial2: Int = useServerState(WornVarps.TUTORIAL_2);
+    if (tutorial === TutorialStep.EQUIPMENT) {
+      highlightComponent(
+        HIGHLIGHT_KIND,
+        HIGHLIGHT_INDEX,
+        host as unknown as Int,
+        target as unknown as Int,
+        TUTORIAL_CTA_STYLE,
+        0,
+      );
+    } else if (tutorial2 === TutorialStep.EQUIPMENT) {
+      setArmed(1);
+    } else {
+      setArmed(0);
+      setBlank(0);
+      removeHighlight(HIGHLIGHT_KIND, HIGHLIGHT_INDEX);
+    }
+  });
+
+  useInterval(() => {
+    if (armed === 0) {
+      return;
+    }
+    const tutorial: Int = useServerState(WornVarps.TUTORIAL);
+    const tutorial2: Int = useServerState(WornVarps.TUTORIAL_2);
+    let next: Int = 0;
+    if (tutorial === TutorialStep.EQUIPMENT || tutorial2 === TutorialStep.EQUIPMENT) {
+      if (clientClock() % FLASH_PERIOD >= FLASH_PERIOD / 2) {
+        next = 1;
+      }
+    }
+    if (next !== blank) {
+      setBlank(next);
+    }
+  });
+
+  return <sprite x={10} y={210} w={32} h={32} sprite={blank === 1 ? -1 : ActionIcons.EQUIPMENT_STATS} />;
+}

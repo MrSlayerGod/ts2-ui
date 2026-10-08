@@ -13,18 +13,18 @@ export function BarrowsRewardGrid(): Component {
             <sprite
               x={
                 slot / Grid.COLUMNS < Grid.MIRROR_FROM_ROW
-                  ? slot % Grid.COLUMNS === 0
+                  ? (slot % Grid.COLUMNS === 0
                     ? 'left'
                     : slot % Grid.COLUMNS === 1
                       ? 'center'
-                      : 'right'
-                  : slot % Grid.COLUMNS === 0
+                      : 'right')
+                  : (slot % Grid.COLUMNS === 0
                     ? 'right'
                     : slot % Grid.COLUMNS === 1
                       ? 'center'
-                      : 'left'
+                      : 'left')
               }
-              y={(slot / Grid.COLUMNS) * Grid.ROW_PITCH}
+              y={slot / Grid.COLUMNS * Grid.ROW_PITCH}
               w={Grid.SLOT_WIDTH}
               h={Grid.SLOT_HEIGHT}
               item={item}

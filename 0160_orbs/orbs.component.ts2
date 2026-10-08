@@ -10,7 +10,16 @@ export function Orbs(): Component {
         <sprite x={0} y={0} w={0} h={0} hide />
       </layer>
       <XpDropsButton left={0} top={17} fromRight={false} />
-      <HealthOrb left={0} top={37} fromRight={false} wide={false} clickY={5} clickW={50} clickH={26} />
+      <HealthOrb
+        left={0}
+        top={37}
+        fromRight={false}
+        panel={OrbsPanel.DESKTOP}
+        wide={false}
+        clickY={5}
+        clickW={50}
+        clickH={26}
+      />
       <PrayerOrb left={0} top={71} fromRight={false} wide={false} clickY={5} clickW={49} clickH={26} />
       <RunOrb left={10} top={103} fromRight={false} wide={false} clickY={5} clickW={50} clickH={26} />
       <SpecOrb

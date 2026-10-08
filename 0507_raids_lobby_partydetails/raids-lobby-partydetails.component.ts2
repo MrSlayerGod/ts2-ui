@@ -6,7 +6,7 @@ import { PartydetailsLabelRow } from './partydetails-label-row.component';
 import { PartydetailsRows } from './partydetails-rows.component';
 import { PartydetailsSortButton } from './partydetails-sort-button.component';
 import { PartydetailsStats } from './partydetails-stats.component';
-import { PartydetailsTimer } from './partydetails-timer.component';
+import { PartydetailsTimer, RefreshButton } from './partydetails-timer.component';
 import {
   Copy,
   LabelKind,
@@ -16,7 +16,10 @@ import {
   PartydetailsScrollbar,
   PartydetailsSprites,
   SortMode,
+  Pausebutton,
+  boardAnchorsRef,
   listRef,
+  refreshRef,
   sortComlevelRef,
   sortNameRef,
   sortSkilltotalRef,
@@ -116,32 +119,44 @@ export function RaidsLobbyPartydetails(): Component {
 
         <layer right={0} y={0} w={Layout.LABEL_ROW_W} h={Layout.LABEL_ROW_H}>
           <LabelRowBackdrop />
-          <PartydetailsLabelRow kind={LabelKind.PARTY_SIZE} label={Copy.PREFERRED_SIZE} />
+          <PartydetailsLabelRow
+            kind={LabelKind.PARTY_SIZE}
+            label={Copy.PREFERRED_SIZE}
+            resumeAt={Pausebutton.PREFERRED_SIZE}
+          />
         </layer>
 
         <layer right={0} y={Layout.LABEL_ROW_STEP} w={Layout.LABEL_ROW_W} h={Layout.LABEL_ROW_H}>
           <LabelRowBackdrop />
-          <PartydetailsLabelRow kind={LabelKind.MIN_COMBAT} label={Copy.PREFERRED_COMBAT} />
+          <PartydetailsLabelRow
+            kind={LabelKind.MIN_COMBAT}
+            label={Copy.PREFERRED_COMBAT}
+            resumeAt={Pausebutton.PREFERRED_COMLEVEL}
+          />
         </layer>
 
         <layer right={0} y={Layout.LABEL_ROW_STEP * 2} w={Layout.LABEL_ROW_W} h={Layout.LABEL_ROW_H}>
           <LabelRowBackdrop />
-          <PartydetailsLabelRow kind={LabelKind.MIN_SKILLTOTAL} label={Copy.PREFERRED_SKILLTOTAL} />
+          <PartydetailsLabelRow
+            kind={LabelKind.MIN_SKILLTOTAL}
+            label={Copy.PREFERRED_SKILLTOTAL}
+            resumeAt={Pausebutton.PREFERRED_SKILLTOTAL}
+          />
         </layer>
 
         <layer right={0} y={Layout.LABEL_ROW_STEP * 3} w={Layout.LABEL_ROW_W} h={Layout.LABEL_ROW_H}>
           <LabelRowBackdrop />
-          <PartydetailsLabelRow kind={LabelKind.SCALING} label={Copy.SCALING} />
+          <PartydetailsLabelRow kind={LabelKind.SCALING} label={Copy.SCALING} resumeAt={Pausebutton.SCALING} />
         </layer>
 
         <layer right={0} y={Layout.LABEL_ROW_STEP * 4} w={Layout.LABEL_ROW_W} h={Layout.LABEL_ROW_H}>
           <LabelRowBackdrop />
-          <PartydetailsLabelRow kind={LabelKind.CHALLENGE} label={Copy.CHALLENGE} />
+          <PartydetailsLabelRow kind={LabelKind.CHALLENGE} label={Copy.CHALLENGE} resumeAt={Pausebutton.CHALLENGE} />
         </layer>
 
         <layer right={0} y={Layout.LABEL_ROW_STEP * 5} w={Layout.LABEL_ROW_W} h={Layout.LABEL_ROW_H}>
           <LabelRowBackdrop />
-          <PartydetailsLabelRow kind={LabelKind.MAP_POOL} label={Copy.MAP_LAYOUT} />
+          <PartydetailsLabelRow kind={LabelKind.MAP_POOL} label={Copy.MAP_LAYOUT} resumeAt={Pausebutton.MAP_POOL} />
         </layer>
 
         <model
@@ -178,7 +193,7 @@ export function RaidsLobbyPartydetails(): Component {
             w={Layout.BUTTON_W}
             h={Layout.BUTTON_H}
           >
-            <BoardButton label={Copy.DELIST} />
+            <BoardButton label={Copy.DELIST} resumeIn={boardAnchorsRef} resumeAt={Pausebutton.ADVERTISE} />
           </layer>
         ) : PartydetailsSetup.ADVERTISE_COUNT > 0 ? (
           <layer
@@ -187,7 +202,7 @@ export function RaidsLobbyPartydetails(): Component {
             w={Layout.BUTTON_W}
             h={Layout.BUTTON_H}
           >
-            <BoardButton label={AdvertiseLabel} />
+            <BoardButton label={AdvertiseLabel} resumeIn={boardAnchorsRef} resumeAt={Pausebutton.ADVERTISE} />
           </layer>
         ) : (
           <layer
@@ -196,13 +211,13 @@ export function RaidsLobbyPartydetails(): Component {
             w={Layout.BUTTON_W}
             h={Layout.BUTTON_H}
           >
-            <BoardButton label={Copy.ADVERTISE_NONE} />
+            <BoardButton label={Copy.ADVERTISE_NONE} resumeIn={boardAnchorsRef} resumeAt={Pausebutton.ADVERTISE} />
           </layer>
         )}
 
         {PartydetailsSetup.ROLE === PartyRole.OWNER ? (
           <layer right={0} y={{ bottom: Layout.BUTTON_TOP_ROW_BOTTOM }} w={Layout.BUTTON_W} h={Layout.BUTTON_H}>
-            <BoardButton label={Copy.DISBAND} />
+            <BoardButton label={Copy.DISBAND} resumeIn={boardAnchorsRef} resumeAt={Pausebutton.DISBAND} />
           </layer>
         ) : (
           <layer right={0} y={{ bottom: Layout.BUTTON_TOP_ROW_BOTTOM }} w={Layout.BUTTON_W} h={Layout.BUTTON_H} hide />
@@ -212,20 +227,20 @@ export function RaidsLobbyPartydetails(): Component {
           <layer right={0} y={{ bottom: Layout.BUTTON_TOP_ROW_BOTTOM }} w={Layout.JOIN_W} h={Layout.BUTTON_H} hide />
         ) : PartydetailsSetup.ROLE === PartyRole.MEMBER ? (
           <layer right={0} y={{ bottom: Layout.BUTTON_TOP_ROW_BOTTOM }} w={Layout.JOIN_W} h={Layout.BUTTON_H}>
-            <BoardButton label={Copy.LEAVE} />
+            <BoardButton label={Copy.LEAVE} resumeIn={boardAnchorsRef} resumeAt={Pausebutton.JOIN} />
           </layer>
         ) : (
           <layer right={0} y={{ bottom: Layout.BUTTON_TOP_ROW_BOTTOM }} w={Layout.JOIN_W} h={Layout.BUTTON_H}>
-            <BoardButton label={Copy.JOIN} />
+            <BoardButton label={Copy.JOIN} resumeIn={boardAnchorsRef} resumeAt={Pausebutton.JOIN} />
           </layer>
         )}
 
         <layer right={Layout.BUTTON_PAIR_RIGHT} y="bottom" w={Layout.BUTTON_W} h={Layout.BUTTON_H}>
-          <BoardButton label={Copy.BACK} />
+          <BoardButton label={Copy.BACK} resumeIn={boardAnchorsRef} resumeAt={Pausebutton.BACK} />
         </layer>
 
-        <layer right={0} y="bottom" w={Layout.BUTTON_W} h={Layout.BUTTON_H}>
-          <BoardButton label={Copy.REFRESH} />
+        <layer static ref={refreshRef} right={0} y="bottom" w={Layout.BUTTON_W} h={Layout.BUTTON_H}>
+          <RefreshButton label={Copy.REFRESH} />
         </layer>
       </layer>
     </layer>

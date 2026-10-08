@@ -1,0 +1,378 @@
+import { useRef, useServerState } from 'ts2';
+
+import { slayerTaskName } from '../0711_helper_generic/helper-slayer.state';
+import { Ink, SlayerFonts, SlayerSprites, SlayerVars } from './slayer-rewards.constants';
+import { Confirm, openTaskConfirm, openUnblockConfirm } from './slayer-rewards.confirm';
+import { blockCost, blockedByMaster, blockedTask, blockedTaskName } from './slayer-rewards.tasks';
+
+export enum TaskArt {
+  WHITE = 0xffffff,
+  DEAD = 0x7f4c0f,
+  GREY = 0x9f9f9f,
+  RED = 0xff0000,
+  BUTTON_W = 57,
+  BUTTON_H = 22,
+  BUTTON_Y = 47,
+  CANCEL_X = 220,
+  BLOCK_X = 277,
+  STORE_X = 334,
+  VIEW_X = 391,
+  VIEW_Y = 25,
+  VIEW_W = 75,
+  SLOT_W = 85,
+  ROW_H = 22,
+  BOSS = 98,
+  UNBLOCKABLE_A = 97,
+  UNBLOCKABLE_B = 105,
+}
+
+function taskActionsAreFree(): Boolean {
+  return false;
+}
+
+function taskHeld(count: Int, target: Int): Boolean {
+  if (target === TaskArt.BOSS) {
+    return count > 0 || count === -1;
+  }
+  return count > 0 && target !== 0;
+}
+
+export function TasksPane(): Component {
+  const master: Int = useServerState(SlayerVars.MASTER_IN_FOCUS);
+  const storage: Boolean = useServerState(SlayerVars.UNLOCK_STORAGE) === 1;
+  const free: Boolean = taskActionsAreFree();
+  const cost: Int = blockCost(master);
+
+  const count: Int = useServerState(SlayerVars.TASK_COUNT);
+  const target: Int = useServerState(SlayerVars.TASK_TARGET);
+  const held: Boolean = taskHeld(count, target);
+  const name: String = !held
+    ? 'Creature'
+    : slayerTaskName(target, target === TaskArt.BOSS ? useServerState(SlayerVars.TASK_BOSS) : -1);
+  let current: String = 'None';
+  if (held) {
+    current = count === -1 ? name : `${count} x ${name}`;
+  }
+
+  const storedCount: Int = useServerState(SlayerVars.STORED_COUNT);
+  const storedTarget: Int = useServerState(SlayerVars.STORED_TARGET);
+  const stored: Boolean = taskHeld(storedCount, storedTarget);
+  let storedName: String = 'Creature';
+  if (stored) {
+    storedName =
+      storedTarget === TaskArt.BOSS && storedCount === -1
+        ? ''
+        : slayerTaskName(storedTarget, storedTarget === TaskArt.BOSS ? useServerState(SlayerVars.STORED_BOSS) : -1);
+  }
+  let storedLine: String = 'No stored task';
+  if (stored) {
+    storedLine = storedCount === -1 ? storedName : `${storedCount} x ${storedName}`;
+  }
+
+  const blockable: Boolean =
+    held &&
+    target !== TaskArt.UNBLOCKABLE_A &&
+    target !== TaskArt.UNBLOCKABLE_B &&
+    target !== TaskArt.BOSS &&
+    !blockedByMaster(target, master);
+  const storeLabel: String = stored && held ? 'Swap' : (stored ? 'Unstore' : 'Store');
+  const storeLive: Boolean = storage && (held || stored);
+  const storeAction: Int = held ? Confirm.STORE : Confirm.UNSTORE;
+  const storeTask: String = held ? name : storedName;
+
+  return (
+    <>
+      <layer x={0} y={22} w="fill" h={{ fill: 22 }} options={['View List']}>
+        <TaskButton
+          x={TaskArt.VIEW_X}
+          y={TaskArt.VIEW_Y}
+          w={TaskArt.VIEW_W}
+          label="View List"
+          live={true}
+          option="View List"
+          action={0}
+          task=""
+          free={free}
+          cost={cost}
+        />
+      </layer>
+      <layer x={221} y={70} w={245} h={18}>
+        <rect x={0} y={0} w="fill" h="fill" color={Ink.BORDER_OUTER} />
+        <rect x={1} y={1} w={{ fill: 2 }} h={{ fill: 2 }} color={Ink.WHITE} fill transparency={240} />
+        <rect x={1} y={1} w={{ fill: 2 }} h={{ fill: 2 }} color={0x474745} />
+        <text
+          x={0}
+          y={3}
+          w="fill"
+          h="fill"
+          text={storedLine}
+          font={SlayerFonts.BUTTON}
+          color={stored ? TaskArt.WHITE : TaskArt.GREY}
+          shadow
+          align="center"
+        />
+      </layer>
+      <text
+        x="center"
+        y={0}
+        w="fill"
+        h={48}
+        text={introduction(free, storage, cost)}
+        font={SlayerFonts.BUTTON}
+        color={Ink.DIALOG}
+        shadow
+        align="center"
+        valign="middle"
+      />
+      <layer x={0} y={48} w={219} h={40}>
+        <rect x={0} y={0} w={219} h={40} color={Ink.BORDER_OUTER} />
+        <rect x={1} y={1} w={217} h={38} color={Ink.WHITE} fill transparency={240} />
+        <rect x={1} y={1} w={217} h={38} color={0x474745} />
+        <text
+          x={0}
+          y={0}
+          w={219}
+          h={20}
+          text="Current assignment:"
+          font={SlayerFonts.HEADING}
+          color={Ink.DIALOG}
+          shadow
+          align="center"
+          valign="bottom"
+          lineHeight={17}
+        />
+        <text
+          x={0}
+          y={20}
+          w={219}
+          h={20}
+          text={current}
+          font={SlayerFonts.DIALOG}
+          color={Ink.WHITE}
+          shadow
+          align="center"
+          lineHeight={17}
+        />
+      </layer>
+      <text
+        x={0}
+        y={85}
+        w="fill"
+        h={25}
+        text="Blocked tasks:"
+        font={SlayerFonts.HEADING}
+        color={Ink.DIALOG}
+        shadow
+        align="center"
+        valign="middle"
+      />
+      <BlockedRow y={103} slot={1} qp={50} code={3} master={master} />
+      <BlockedRow y={125} slot={2} qp={100} code={4} master={master} />
+      <BlockedRow y={147} slot={3} qp={150} code={5} master={master} />
+      <BlockedRow y={169} slot={4} qp={200} code={6} master={master} />
+      <BlockedRow y={191} slot={5} qp={250} code={7} master={master} />
+      <BlockedRow y={213} slot={6} qp={300} code={12} master={master} />
+      <BlockedRow y={235} slot={7} qp={0} code={8} master={master} />
+      <TaskButton
+        x={TaskArt.CANCEL_X}
+        y={TaskArt.BUTTON_Y}
+        w={TaskArt.BUTTON_W}
+        label="Cancel"
+        live={held}
+        option="Cancel"
+        action={Confirm.CANCEL}
+        task={name}
+        free={free}
+        cost={cost}
+      />
+      <TaskButton
+        x={TaskArt.BLOCK_X}
+        y={TaskArt.BUTTON_Y}
+        w={TaskArt.BUTTON_W}
+        label="Block"
+        live={blockable}
+        option="Block"
+        action={Confirm.BLOCK}
+        task={name}
+        free={free}
+        cost={cost}
+      />
+      <TaskButton
+        x={TaskArt.STORE_X}
+        y={TaskArt.BUTTON_Y}
+        w={TaskArt.BUTTON_W}
+        label={storeLabel}
+        live={storeLive}
+        option={storeLabel}
+        action={storeAction}
+        task={storeTask}
+        free={free}
+        cost={cost}
+      />
+    </>
+  );
+}
+
+function introduction(free: Boolean, storage: Boolean, cost: Int): String {
+  const cancel: String = free ? '<col=06600c>(Free)</col>' : `<col=ff0000>(30 points)</col>`;
+  const block: String = free ? '<col=06600c>(Free)</col>' : `<col=ff0000>(${cost} points)</col>`;
+  const tail: String = storage
+    ? 'You may also <col=ffffff>store</col> your current task for later.'
+    : '<col=ffffff>Neither</col> option will reset your current tally of completed Slayer tasks.';
+  return `You may spend points to <col=ffffff>Cancel</col> or <col=ffffff>Block</col> your current task.<br>If you <col=ffffff>cancel</col> it, you may be assigned that target again in future. ${cancel}<br>If you <col=ffffff>block</col> it, you will not get that assignment again. ${block}<br>${tail}`;
+}
+
+function TaskButton({
+  x,
+  y,
+  w,
+  label,
+  live,
+  option,
+  action,
+  task,
+  free,
+  cost,
+}: {
+  x: Int;
+  y: Int;
+  w: Int;
+  label: String;
+  live: Boolean;
+  option: String;
+  action: Int;
+  task: String;
+  free: Boolean;
+  cost: Int;
+}): Component {
+  const text = useRef();
+  return (
+    <>
+      <sprite
+        x={x}
+        y={y}
+        w={w}
+        h={TaskArt.BUTTON_H}
+        sprite={SlayerSprites.TAB}
+        options={live ? [option] : undefined}
+        onOptionSelect={live && action !== 0 ? () => openTaskConfirm(task, action, free, cost) : null}
+        onMouseEnter={
+          live
+            ? () => {
+                text.color = TaskArt.WHITE;
+              }
+            : null
+        }
+        onMouseLeave={
+          live
+            ? () => {
+                text.color = Ink.AMBER;
+              }
+            : null
+        }
+      />
+      <text
+        ref={text}
+        x={x}
+        y={y}
+        w={w}
+        h={TaskArt.BUTTON_H}
+        text={label}
+        font={SlayerFonts.SMALL}
+        color={live ? Ink.AMBER : TaskArt.DEAD}
+        shadow
+        align="center"
+        valign="middle"
+      />
+    </>
+  );
+}
+
+function BlockedRow({ y, slot, qp, code, master }: { y: Int; slot: Int; qp: Int; code: Int; master: Int }): Component {
+  const task: Int = blockedTask(master, slot);
+  const name: String = task === 0 ? '' : blockedTaskName(task);
+  let line: String = name;
+  let ink: Int = TaskArt.WHITE;
+  let small: Boolean = false;
+  if (task === 0) {
+    ink = Ink.AMBER;
+    line = 'Empty';
+    if (qp <= 0) {
+      if (useServerState(SlayerVars.LUMBRIDGE_ELITE) === 0) {
+        ink = TaskArt.RED;
+        small = true;
+        line = 'You must complete the Lumbridge & Draynor<br>elite diary to use this slot.';
+      }
+    } else if (useServerState(SlayerVars.QP) < qp) {
+      ink = TaskArt.RED;
+      line = `You need ${qp} QP to use this slot.`;
+    }
+  }
+  const live: Boolean = task !== 0;
+  const text = useRef();
+
+  return (
+    <layer x="center" y={y} w={400} h={TaskArt.ROW_H}>
+      <text
+        x={0}
+        y="center"
+        w={TaskArt.SLOT_W}
+        h="fill"
+        text={`Slot ${slot}:`}
+        font={SlayerFonts.NAME}
+        color={Ink.AMBER}
+        shadow
+        align="left"
+        valign="middle"
+      />
+      <text
+        x="center"
+        y="center"
+        w={{ fill: TaskArt.SLOT_W * 2 }}
+        h="fill"
+        text={line}
+        font={small ? SlayerFonts.SMALL : SlayerFonts.NAME}
+        color={ink}
+        shadow
+        align="center"
+        valign="middle"
+      />
+      <sprite
+        x="right"
+        y="center"
+        w={TaskArt.SLOT_W}
+        h={TaskArt.BUTTON_H}
+        sprite={SlayerSprites.TAB}
+        options={live ? ['Unblock'] : undefined}
+        onOptionSelect={live ? () => openUnblockConfirm(name, Confirm.TASK_BASE + code) : null}
+        onMouseEnter={
+          live
+            ? () => {
+                text.color = TaskArt.WHITE;
+              }
+            : null
+        }
+        onMouseLeave={
+          live
+            ? () => {
+                text.color = Ink.AMBER;
+              }
+            : null
+        }
+      />
+      <text
+        ref={text}
+        x="right"
+        y="center"
+        w={TaskArt.SLOT_W}
+        h={TaskArt.BUTTON_H}
+        text="Unblock task"
+        font={SlayerFonts.SMALL}
+        color={live ? Ink.AMBER : TaskArt.DEAD}
+        shadow
+        align="center"
+        valign="middle"
+      />
+    </layer>
+  );
+}

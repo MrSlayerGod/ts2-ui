@@ -24,6 +24,10 @@ export const collectionLogCategory = sessionState(-1);
 export const collectionSearchOpen = sessionState(0);
 export const collectionSearchQuery = sessionState('');
 
+export const searchLitCategory = sessionState(-1);
+export const searchLitItem = sessionState(-1);
+export const searchLitCount = sessionState(-1);
+
 export const collectionBurgerOpen = sessionState(0);
 
 export function collectionDrawList(tab: Int, index: Int): void {
@@ -119,9 +123,15 @@ export function collectionSearchInit(): void {
 export function populateSearchResults(committed: Int): void {
   const [query] = useState(settingsSearchString);
   const [, setResults] = useState(collectionSearchQuery);
+  const [, setLitCategory] = useState(searchLitCategory);
+  const [, setLitItem] = useState(searchLitItem);
+  const [, setLitCount] = useState(searchLitCount);
   if (onMobile() && query.length !== 0 && committed === 0) {
     return;
   }
+  setLitCategory(-1);
+  setLitItem(-1);
+  setLitCount(-1);
   setResults(query);
 }
 

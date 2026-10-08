@@ -1,0 +1,30 @@
+import { createRef } from 'ts2';
+
+import { Sprites } from '../lib/game/sprites';
+import { graphicSwapper, onMobile } from '../lib/lib.helpers';
+
+export const strip1 = createRef('coa_decoder_panel_strip_1');
+export const strip2 = createRef('coa_decoder_panel_strip_2');
+export const strip3 = createRef('coa_decoder_panel_strip_3');
+export const strip4 = createRef('coa_decoder_panel_strip_4');
+
+export function coaDecoderSelectStrip(selected: Int): void {
+  coaDecoderStrip(strip1, Sprites.COA_STRIPS_0, Sprites.COA_STRIPS_8, Sprites.COA_STRIPS_4, selected === 1);
+  coaDecoderStrip(strip2, Sprites.COA_STRIPS_1, Sprites.COA_STRIPS_9, Sprites.COA_STRIPS_5, selected === 2);
+  coaDecoderStrip(strip3, Sprites.COA_STRIPS_2, Sprites.COA_STRIPS_10, Sprites.COA_STRIPS_6, selected === 3);
+  coaDecoderStrip(strip4, Sprites.COA_STRIPS_3, Sprites.COA_STRIPS_11, Sprites.COA_STRIPS_7, selected === 4);
+}
+
+function coaDecoderStrip(strip: ComponentId, rest: Sprite, lit: Sprite, hovered: Sprite, selected: Boolean): void {
+  if (selected) {
+    strip.sprite = lit;
+    strip.onMouseRepeat = null;
+    strip.onMouseLeave = null;
+    return;
+  }
+  strip.sprite = rest;
+  if (!onMobile()) {
+    strip.onMouseRepeat = () => graphicSwapper(strip, hovered);
+    strip.onMouseLeave = () => graphicSwapper(strip, rest);
+  }
+}

@@ -1,0 +1,124 @@
+import { CS2, sessionState, useServerState, useState } from 'ts2';
+
+import { GameframeSlot, gameframeSlot } from '../lib/lib.gameframe';
+import {
+  partylistBlankKeys,
+  partylistField,
+  partylistKeyCell,
+  partylistKnows,
+  partylistRecordStart,
+  partylistWithoutSlot,
+} from '../lib/raids-partylist';
+import { Varbits } from '../lib/game/varbits';
+import { raidsCount, raidsListsortList } from '../lib/game/varcs';
+import { ListKey, SLOT_COUNT } from './tob-partylist.constants';
+
+export const tobListData = sessionState('');
+
+export const tobListBuilt = sessionState(0);
+
+export const tobListEmptyFiltered = sessionState(0);
+
+export const tobListPressedSlot = sessionState(-1);
+export const tobListPressedUntil = sessionState(0);
+
+export const tobListDeadLow = sessionState(0);
+export const tobListDeadHigh = sessionState(0);
+
+export function slotBit(low: Int, high: Int, slot: Int): Boolean {
+  if (slot < 0) {
+    return false;
+  }
+  return slot < ListKey.BITS ? CS2.testbit(low, slot) : CS2.testbit(high, slot - ListKey.BITS);
+}
+
+function panelOpen(): Boolean {
+  return CS2.if_sub_has(gameframeSlot(GameframeSlot.VIEWPORT));
+}
+
+function numberKey(field: String, slot: Int): String {
+  return partylistKeyCell(`${field.padStart(3, '0')}${slot}`);
+}
+
+function slotKeys(line: String, slot: Int): String {
+  return `${numberKey(partylistField(line, 5), slot)}` +
+    `${numberKey(partylistField(line, 6), slot)}` +
+    `${partylistKeyCell(CS2.tags_remove(partylistField(line, 0)))}` +
+    `${numberKey(partylistField(line, 7), slot)}` +
+    `${partylistKeyCell(CS2.tags_remove(partylistField(line, 8)))}` +
+    `${partylistKeyCell(partylistField(line, 9).padStart(10, '0'))}`;
+}
+
+function keepsLine(line: String, filtered: Int): Boolean {
+  const leader: String = CS2.tags_remove(partylistField(line, 0));
+  if (filtered === 0 || CS2.compare(leader, CS2.chat_playername()) === 0) {
+    return true;
+  }
+  if (partylistKnows(leader)) {
+    return true;
+  }
+  let field: Int = 1;
+  while (field <= 4) {
+    if (partylistKnows(partylistField(line, field))) {
+      return true;
+    }
+    field = field + 1;
+  }
+  return false;
+}
+
+function knownSort(sort: Int): Boolean {
+  return (sort >= 0 && sort <= 7) || (sort >= 12 && sort <= 15);
+}
+
+export function tobPartylistAddline(slot: Int, line: String): void {
+  if (!panelOpen()) {
+    return;
+  }
+  if (slot < 0 || slot >= SLOT_COUNT) {
+    return;
+  }
+  const [data, setData] = useState(tobListData);
+  const [count, setCount] = useState(raidsCount);
+  const [pressed, setPressed] = useState(tobListPressedSlot);
+  const [, setPressedUntil] = useState(tobListPressedUntil);
+  const [low, setLow] = useState(tobListDeadLow);
+  const [high, setHigh] = useState(tobListDeadHigh);
+  const filtered: Int = useServerState(Varbits.TOB_LOBBY_FRIENDS_FILTER);
+
+  const block: Int = SLOT_COUNT * ListKey.SLOT_W;
+  const full: String = data.length >= block ? data : partylistBlankKeys(block);
+  let kept: String = partylistWithoutSlot(full, slot);
+  if (pressed === slot) {
+    setPressed(-1);
+    setPressedUntil(0);
+  }
+  if (slot < ListKey.BITS) {
+    setLow(CS2.bit_clear(low, slot));
+  } else {
+    setHigh(CS2.bit_clear(high, slot - ListKey.BITS));
+  }
+
+  if (line.length > 0 && keepsLine(line, filtered)) {
+    kept =
+      `${kept.substring(0, slot * ListKey.SLOT_W)}${slotKeys(line, slot)}` +
+      `${kept.substring((slot + 1) * ListKey.SLOT_W, kept.length)}^${slot}~${line}`;
+    setCount(count + 1);
+  }
+  setData(kept);
+
+  if (slot >= SLOT_COUNT - 1) {
+    const [sort, setSort] = useState(raidsListsortList);
+    if (!knownSort(sort)) {
+      setSort(1);
+    }
+    const [, setEmptyFiltered] = useState(tobListEmptyFiltered);
+    const [, setBuilt] = useState(tobListBuilt);
+    setEmptyFiltered(filtered === 0 ? 0 : 1);
+    setBuilt(1);
+  }
+}
+
+export function slotFilled(data: String, slot: Int): Boolean {
+  return partylistRecordStart(data, slot) !== -1;
+}

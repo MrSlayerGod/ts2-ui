@@ -158,8 +158,8 @@ export function CollectionLog(): Component {
               female={item.female ?? -1}
               useFemale={female}
               count={log.total(item.item)}
-              x={(index % columns) * Build.CELL_STRIDE}
-              y={(index / columns) * Build.CELL_ROW}
+              x={index % columns * Build.CELL_STRIDE}
+              y={index / columns * Build.CELL_ROW}
             />
           ))}
         </layer>

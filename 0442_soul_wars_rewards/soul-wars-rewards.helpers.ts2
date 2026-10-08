@@ -42,12 +42,12 @@ export function xpPerToken(skill: Int): Int {
     return 0;
   }
   if (skill === RewardSkill.RANGED || skill === RewardSkill.MAGIC) {
-    return ((level * level) / 600) * 27 * 10;
+    return level * level / 600 * 27 * 10;
   }
   if (skill === RewardSkill.PRAYER) {
-    return ((level * level) / 600) * 14 * 10;
+    return level * level / 600 * 14 * 10;
   }
-  return ((level * level) / 600) * 30 * 10;
+  return level * level / 600 * 30 * 10;
 }
 
 export function tokenWord(count: Int): String {
@@ -79,7 +79,7 @@ export function rewardGate(reward: ItemName): String {
 
 export function expConfirmCaption(pick: Int): String {
   const quantity: Int = useServerState(RewardsVarps.XP_QUANTITY);
-  const xp: Int = (xpPerToken(expSkillAt(pick / 4)) * quantity) / 10;
+  const xp: Int = xpPerToken(expSkillAt(pick / 4)) * quantity / 10;
   return `${groupDigits(xp, ',')} ${ExpOptionNames.at(pick) ?? 'null'}`;
 }
 

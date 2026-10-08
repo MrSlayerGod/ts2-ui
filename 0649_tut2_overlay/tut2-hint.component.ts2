@@ -1,0 +1,156 @@
+import { sessionState, useState } from 'ts2';
+
+import { onMobile } from '../lib/lib.helpers';
+import { Layout, Tut2Color, Tut2Fonts } from './tut2-overlay.constants';
+
+export const tut2HintStep = sessionState(0);
+
+export function resetTut2Hint(): void {
+  const [, setStep] = useState(tut2HintStep);
+  setStep(0);
+}
+
+export function tut2HintLine(step: Int, line: Int, mobile: Boolean): String {
+  if (step === 1) {
+    if (line === 1) {
+      return 'Follow the instructions in the <col=ffffff>chatbox<col=ff981f>';
+    }
+    if (line === 2) {
+      return 'to complete the tutorial.';
+    }
+    if (line === 3) {
+      return 'The <col=ffffff>chatbox<col=ff981f> can be found at the';
+    }
+    return `<col=ffffff>${mobile ? 'top' : 'bottom'}<col=ff981f> of the screen.`;
+  }
+  if (step === 2) {
+    if (mobile) {
+      if (line === 1) {
+        return '<col=ffffff>Swipe<col=ff981f> with <col=ffffff>one finger<col=ff981f> to';
+      }
+      if (line === 2) {
+        return 'rotate the <col=ffffff>camera<col=ff981f>.';
+      }
+      if (line === 3) {
+        return '<col=ffffff>Pinch<col=ff981f> with <col=ffffff>two fingers<col=ff981f>';
+      }
+      return 'to <col=ffffff>zoom<col=ff981f> in and out.';
+    }
+    if (line === 1) {
+      return 'Use the <col=ffffff>arrow keys<col=ff981f> on your <col=ffffff>keyboard<col=ff981f>';
+    }
+    if (line === 2) {
+      return 'to rotate the <col=ffffff>camera<col=ff981f>.';
+    }
+    if (line === 3) {
+      return '<col=ffffff>Scroll<col=ff981f> with your <col=ffffff>middle mouse button<col=ff981f>';
+    }
+    return 'to <col=ffffff>zoom<col=ff981f> in and out.';
+  }
+  if (step === 3) {
+    if (mobile) {
+      if (line === 1) {
+        return '<col=ffffff>Tap<col=ff981f> a point on the ground';
+      }
+      if (line === 2) {
+        return 'to <col=ffffff>move<col=ff981f> there.';
+      }
+      if (line === 3) {
+        return 'Alternatively, you can <col=ffffff>tap<col=ff981f> a point';
+      }
+      return 'on the <col=ffffff>minimap<col=ff981f> instead.';
+    }
+    if (line === 1) {
+      return '<col=ffffff>Left-click<col=ff981f> a point on the';
+    }
+    if (line === 2) {
+      return 'ground to <col=ffffff>move<col=ff981f> there.';
+    }
+    if (line === 3) {
+      return 'Alternatively, you can <col=ffffff>left-click<col=ff981f> a';
+    }
+    return 'point on the <col=ffffff>minimap<col=ff981f> instead.';
+  }
+  if (step === 4) {
+    if (mobile) {
+      if (line === 1) {
+        return '<col=ffffff>Tap<col=ff981f> on something to perform';
+      }
+      if (line === 2) {
+        return 'the default <col=ffffff>interaction<col=ff981f>.';
+      }
+      if (line === 3) {
+        return 'Alternatively, <col=ffffff>tap and hold<col=ff981f> to view all';
+      }
+      return 'of the possible <col=ffffff>interactions<col=ff981f>.';
+    }
+    if (line === 1) {
+      return '<col=ffffff>Left-click<col=ff981f> on something to perform';
+    }
+    if (line === 2) {
+      return 'the default <col=ffffff>interaction<col=ff981f>.';
+    }
+    if (line === 3) {
+      return 'Alternatively, <col=ffffff>right-click<col=ff981f> to view all';
+    }
+    return 'of the possible <col=ffffff>interactions<col=ff981f>.';
+  }
+  return '';
+}
+
+export function Tut2HintLines(): Component {
+  const [step] = useState(tut2HintStep);
+  const mobile: Boolean = onMobile();
+  return (
+    <>
+      <text
+        x="center"
+        y={Layout.HINT_LINE_1_Y}
+        w={{ fill: Layout.HINT_LINE_W_INSET }}
+        h={Layout.HINT_LINE_H}
+        font={Tut2Fonts.HINT}
+        text={tut2HintLine(step, 1, mobile)}
+        align="center"
+        valign="middle"
+        shadow
+        color={Tut2Color.HINT_TEXT}
+      />
+      <text
+        x="center"
+        y={Layout.HINT_LINE_2_Y}
+        w={{ fill: Layout.HINT_LINE_W_INSET }}
+        h={Layout.HINT_LINE_H}
+        font={Tut2Fonts.HINT}
+        text={tut2HintLine(step, 2, mobile)}
+        align="center"
+        valign="middle"
+        shadow
+        color={Tut2Color.HINT_TEXT}
+      />
+      <text
+        x="center"
+        y={Layout.HINT_LINE_3_Y}
+        w={{ fill: Layout.HINT_LINE_W_INSET }}
+        h={Layout.HINT_LINE_H}
+        font={Tut2Fonts.HINT}
+        text={tut2HintLine(step, 3, mobile)}
+        align="center"
+        valign="middle"
+        shadow
+        color={Tut2Color.HINT_TEXT}
+      />
+      <text
+        x="center"
+        y={Layout.HINT_LINE_4_Y}
+        w={{ fill: Layout.HINT_LINE_W_INSET }}
+        h={Layout.HINT_LINE_H}
+        font={Tut2Fonts.HINT}
+        text={tut2HintLine(step, 4, mobile)}
+        align="center"
+        valign="middle"
+        shadow
+        color={Tut2Color.HINT_TEXT}
+      />
+    </>
+  );
+}

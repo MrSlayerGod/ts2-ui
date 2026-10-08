@@ -1,0 +1,230 @@
+import { useServerState } from 'ts2';
+
+import { Varbits } from '../lib/game/varbits';
+import { slayerTaskName } from '../0711_helper_generic/helper-slayer.state';
+
+export function blockCost(master: Int): Int {
+  switch (master) {
+    case 1:
+      return 40;
+    case 9:
+      return 40;
+    case 2:
+      return 50;
+    case 3:
+      return 60;
+    case 4:
+      return 70;
+    case 5:
+      return 100;
+    case 6:
+      return 90;
+    case 7:
+      return 100;
+    case 8:
+      return 80;
+  }
+  return 100;
+}
+
+export function blockedTask(master: Int, slot: Int): Int {
+  switch (master) {
+    case 1:
+      return blockedTurael(slot);
+    case 9:
+      return blockedTurael(slot);
+    case 2:
+      return blockedMazchna(slot);
+    case 3:
+      return blockedVannaka(slot);
+    case 4:
+      return blockedChaeldar(slot);
+    case 5:
+      return blockedDuradel(slot);
+    case 6:
+      return blockedNieve(slot);
+    case 7:
+      return blockedKrystilia(slot);
+    case 8:
+      return blockedKonar(slot);
+  }
+  return -1;
+}
+
+function blockedTurael(slot: Int): Int {
+  switch (slot) {
+    case 1:
+      return useServerState(Varbits.SLAYER_BLOCKED_TURAEL_1);
+    case 2:
+      return useServerState(Varbits.SLAYER_BLOCKED_TURAEL_2);
+    case 3:
+      return useServerState(Varbits.SLAYER_BLOCKED_TURAEL_3);
+    case 4:
+      return useServerState(Varbits.SLAYER_BLOCKED_TURAEL_4);
+    case 5:
+      return useServerState(Varbits.SLAYER_BLOCKED_TURAEL_5);
+    case 6:
+      return useServerState(Varbits.SLAYER_BLOCKED_TURAEL_6);
+    case 7:
+      return useServerState(Varbits.SLAYER_BLOCKED_TURAEL_DIARY);
+  }
+  return -1;
+}
+
+function blockedMazchna(slot: Int): Int {
+  switch (slot) {
+    case 1:
+      return useServerState(Varbits.SLAYER_BLOCKED_MAZCHNA_1);
+    case 2:
+      return useServerState(Varbits.SLAYER_BLOCKED_MAZCHNA_2);
+    case 3:
+      return useServerState(Varbits.SLAYER_BLOCKED_MAZCHNA_3);
+    case 4:
+      return useServerState(Varbits.SLAYER_BLOCKED_MAZCHNA_4);
+    case 5:
+      return useServerState(Varbits.SLAYER_BLOCKED_MAZCHNA_5);
+    case 6:
+      return useServerState(Varbits.SLAYER_BLOCKED_MAZCHNA_6);
+    case 7:
+      return useServerState(Varbits.SLAYER_BLOCKED_MAZCHNA_DIARY);
+  }
+  return -1;
+}
+
+function blockedVannaka(slot: Int): Int {
+  switch (slot) {
+    case 1:
+      return useServerState(Varbits.SLAYER_BLOCKED_VANNAKA_1);
+    case 2:
+      return useServerState(Varbits.SLAYER_BLOCKED_VANNAKA_2);
+    case 3:
+      return useServerState(Varbits.SLAYER_BLOCKED_VANNAKA_3);
+    case 4:
+      return useServerState(Varbits.SLAYER_BLOCKED_VANNAKA_4);
+    case 5:
+      return useServerState(Varbits.SLAYER_BLOCKED_VANNAKA_5);
+    case 6:
+      return useServerState(Varbits.SLAYER_BLOCKED_VANNAKA_6);
+    case 7:
+      return useServerState(Varbits.SLAYER_BLOCKED_VANNAKA_DIARY);
+  }
+  return -1;
+}
+
+function blockedChaeldar(slot: Int): Int {
+  switch (slot) {
+    case 1:
+      return useServerState(Varbits.SLAYER_BLOCKED_CHAELDAR_1);
+    case 2:
+      return useServerState(Varbits.SLAYER_BLOCKED_CHAELDAR_2);
+    case 3:
+      return useServerState(Varbits.SLAYER_BLOCKED_CHAELDAR_3);
+    case 4:
+      return useServerState(Varbits.SLAYER_BLOCKED_CHAELDAR_4);
+    case 5:
+      return useServerState(Varbits.SLAYER_BLOCKED_CHAELDAR_5);
+    case 6:
+      return useServerState(Varbits.SLAYER_BLOCKED_CHAELDAR_6);
+    case 7:
+      return useServerState(Varbits.SLAYER_BLOCKED_CHAELDAR_DIARY);
+  }
+  return -1;
+}
+
+function blockedKonar(slot: Int): Int {
+  switch (slot) {
+    case 1:
+      return useServerState(Varbits.SLAYER_BLOCKED_KONAR_1);
+    case 2:
+      return useServerState(Varbits.SLAYER_BLOCKED_KONAR_2);
+    case 3:
+      return useServerState(Varbits.SLAYER_BLOCKED_KONAR_3);
+    case 4:
+      return useServerState(Varbits.SLAYER_BLOCKED_KONAR_4);
+    case 5:
+      return useServerState(Varbits.SLAYER_BLOCKED_KONAR_5);
+    case 6:
+      return useServerState(Varbits.SLAYER_BLOCKED_KONAR_6);
+    case 7:
+      return useServerState(Varbits.SLAYER_BLOCKED_KONAR_DIARY);
+  }
+  return -1;
+}
+
+function blockedNieve(slot: Int): Int {
+  switch (slot) {
+    case 1:
+      return useServerState(Varbits.SLAYER_BLOCKED_NIEVE_1);
+    case 2:
+      return useServerState(Varbits.SLAYER_BLOCKED_NIEVE_2);
+    case 3:
+      return useServerState(Varbits.SLAYER_BLOCKED_NIEVE_3);
+    case 4:
+      return useServerState(Varbits.SLAYER_BLOCKED_NIEVE_4);
+    case 5:
+      return useServerState(Varbits.SLAYER_BLOCKED_NIEVE_5);
+    case 6:
+      return useServerState(Varbits.SLAYER_BLOCKED_NIEVE_6);
+    case 7:
+      return useServerState(Varbits.SLAYER_BLOCKED_NIEVE_DIARY);
+  }
+  return -1;
+}
+
+function blockedDuradel(slot: Int): Int {
+  switch (slot) {
+    case 1:
+      return useServerState(Varbits.SLAYER_BLOCKED_DURADEL_1);
+    case 2:
+      return useServerState(Varbits.SLAYER_BLOCKED_DURADEL_2);
+    case 3:
+      return useServerState(Varbits.SLAYER_BLOCKED_DURADEL_3);
+    case 4:
+      return useServerState(Varbits.SLAYER_BLOCKED_DURADEL_4);
+    case 5:
+      return useServerState(Varbits.SLAYER_BLOCKED_DURADEL_5);
+    case 6:
+      return useServerState(Varbits.SLAYER_BLOCKED_DURADEL_6);
+    case 7:
+      return useServerState(Varbits.SLAYER_BLOCKED_DURADEL_DIARY);
+  }
+  return -1;
+}
+
+function blockedKrystilia(slot: Int): Int {
+  switch (slot) {
+    case 1:
+      return useServerState(Varbits.SLAYER_BLOCKED_KRYSTILIA_1);
+    case 2:
+      return useServerState(Varbits.SLAYER_BLOCKED_KRYSTILIA_2);
+    case 3:
+      return useServerState(Varbits.SLAYER_BLOCKED_KRYSTILIA_3);
+    case 4:
+      return useServerState(Varbits.SLAYER_BLOCKED_KRYSTILIA_4);
+    case 5:
+      return useServerState(Varbits.SLAYER_BLOCKED_KRYSTILIA_5);
+    case 6:
+      return useServerState(Varbits.SLAYER_BLOCKED_KRYSTILIA_6);
+    case 7:
+      return useServerState(Varbits.SLAYER_BLOCKED_KRYSTILIA_DIARY);
+  }
+  return -1;
+}
+
+export function blockedByMaster(task: Int, master: Int): Boolean {
+  let slot: Int = 1;
+  while (slot <= 7) {
+    if (task === blockedTask(master, slot)) {
+      return true;
+    }
+    slot = slot + 1;
+  }
+  return false;
+}
+
+export function blockedTaskName(task: Int): String {
+  if (task === -1) {
+    return "Kree'arra";
+  }
+  return slayerTaskName(task, -1);
+}

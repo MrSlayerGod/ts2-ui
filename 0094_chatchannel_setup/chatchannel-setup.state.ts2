@@ -3,7 +3,7 @@ import { CS2, useState } from 'ts2';
 import { chatchannelSetupSort } from '../lib/game/varcs';
 import { playSound } from '../lib/lib.engine';
 import { Sounds } from '../lib/lib.constants';
-import { ChatChannelSort, RankBySlot, RankTitles } from './chatchannel-setup.constants';
+import { ChatChannelSort, RankBySlot } from './chatchannel-setup.constants';
 
 export function currentSort(): Int {
   const [stored] = useState(chatchannelSetupSort);
@@ -25,12 +25,8 @@ export function chooseSort(sort: Int): void {
   setSort(sort);
 }
 
-export function sortArrowHover(arrow: Ref, transparency: Int): void {
-  arrow.transparency = transparency;
-}
-
-export function setFriendRank(label: Ref, subject: String, option: Int): void {
+export function applyFriendRank(subject: String, option: Int): Int {
   const rank: Int = RankBySlot.get(option) ?? -1;
   CS2.friend_rank_set(CS2.tags_remove(subject), rank);
-  label.text = RankTitles.get(rank) ?? '';
+  return rank;
 }

@@ -1,4 +1,4 @@
-import { CS2, onMounted, onUpdated, sessionState, useState } from 'ts2';
+import { CS2, sessionState, useState } from 'ts2';
 
 import { textLineCount, textWidth } from '../lib/lib.engine';
 import { onMobile } from '../lib/lib.helpers';
@@ -30,17 +30,6 @@ function widthOf(component: ComponentId): Int {
 
 function parentOf(component: ComponentId): ComponentId {
   return CS2.if_layer_get(component);
-}
-
-function placeTip(x: Int, y: Int, w: Int, h: Int): void {
-  moveBox(tooltipHostRef, x, y, w, h);
-}
-
-function moveBox(component: ComponentId, x: Int, y: Int, w: Int, h: Int): void {
-  component.x = x;
-  component.y = y;
-  component.width = w;
-  component.height = h;
 }
 
 export function showSlotTip(name: String, top: Int): void {
@@ -110,19 +99,12 @@ export function TobHudTooltip(): Component {
     }
   }
 
-  onMounted(() => {
-    placeTip(x, y, boxW, boxH);
-  });
-  onUpdated(() => {
-    placeTip(x, y, boxW, boxH);
-  });
-
   if (up === 0) {
     return null;
   }
 
   return (
-    <layer w="fill" h="fill">
+    <layer x={x} y={y} w={boxW} h={boxH}>
       <TooltipChrome text={text} font={TooltipBox.font} lineHeight={TooltipBox.line} />
     </layer>
   );

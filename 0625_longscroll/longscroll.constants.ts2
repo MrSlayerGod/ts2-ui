@@ -14,3 +14,14 @@ export enum ScrollFonts {
 export enum ScrollColors {
   TEXT = 0xebd5b2,
 }
+
+export enum ScrollLayout {
+  TEXT_W = 343,
+  LINE_H = 16,
+  TEXT_PAD = 10,
+  BODY_H = 244,
+  BODY_H_NO_TITLE = 266,
+  BODY_DY = 10,
+  BODY_DY_NO_TITLE = -1,
+  TEXT_H_DEFINITION = 1200,
+}

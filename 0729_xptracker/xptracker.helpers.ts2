@@ -224,14 +224,12 @@ export function trackerActsLeft(xp: Int, target: Int, average: Int): Int {
 }
 
 export function trackerIsCombat(skill: Int): Boolean {
-  return (
-    skill === TrackedSkill.ATTACK ||
+  return skill === TrackedSkill.ATTACK ||
     skill === TrackedSkill.STRENGTH ||
     skill === TrackedSkill.RANGED ||
     skill === TrackedSkill.DEFENCE ||
     skill === TrackedSkill.HITPOINTS ||
-    skill === TrackedSkill.SLAYER
-  );
+    skill === TrackedSkill.SLAYER;
 }
 
 export function trackerKillsLeft(skill: Int, target: Int): Int {

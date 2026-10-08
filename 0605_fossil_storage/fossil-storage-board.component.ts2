@@ -50,7 +50,7 @@ export function FossilBoard(): Component {
         scrollHeight={content > listHeight ? content : 0}
       >
         {FossilSlots.map((slot) =>
-          useServerState(slot.stock) > 0 ? (
+          (useServerState(slot.stock) > 0 ? (
             <sprite
               x={Board.CELL_X0 + slot.col * (slot.wide === 1 ? colStepWide : colStep)}
               y={slot.row * rowStep}
@@ -89,7 +89,7 @@ export function FossilBoard(): Component {
               options={['', '', '', '', '', '', '', '', '', 'Examine']}
               optionSubject={`<col=ff9040>${itemName(slot.item)}</col>`}
             />
-          ),
+          )),
         )}
       </layer>
     </>

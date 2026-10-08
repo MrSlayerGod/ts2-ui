@@ -1,12 +1,18 @@
 import { createRef } from 'ts2';
 import { BankpinKeypad } from './bankpin-keypad.component';
+import { resetBankpin } from './bankpin-keypad.state';
 import { setMobileFullscreen } from '../lib/lib.toplevel';
 
 export const bankpinKeypadRef = createRef('bankpin_keypad');
 
+export function openBankpin(): void {
+  setMobileFullscreen(1);
+  resetBankpin();
+}
+
 export const bankpinKeypadUi = (): UI => (
   <ui ref={bankpinKeypadRef}>
     <BankpinKeypad />
-    <layer x={0} y={0} w={0} h={0} onLoad={() => setMobileFullscreen(1)} />
+    <layer x={0} y={0} w={0} h={0} onLoad={() => openBankpin()} />
   </ui>
 );
