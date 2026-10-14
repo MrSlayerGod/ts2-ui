@@ -75,6 +75,10 @@ export function cameraZoomRangeApply(smallMin: Int, smallMax: Int, bigMin: Int, 
   cameraDoZoom(small, big);
 }
 
+export function cameraZoomRangeFromServer(smallMin: Int, smallMax: Int, bigMin: Int, bigMax: Int): void {
+  cameraZoomRangeApply(smallMin, smallMax, bigMin, bigMax);
+}
+
 export function cameraZoomRangeDefault(): void {
   cameraZoomRangeSet(ZoomRange.MIN, ZoomRange.MAX, ZoomRange.MIN, ZoomRange.MAX);
 }
@@ -86,4 +90,8 @@ enum ZoomRange {
 
 export function zoomPositionSlider(): void {
   return;
+}
+
+export function viewportZoomFromServer(zoomY: Int, zoomX: Int): void {
+  CS2.viewport_zoom_set(zoomY, zoomX);
 }

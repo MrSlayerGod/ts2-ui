@@ -6,7 +6,7 @@ export type CaBossRow = {
   difficulty: String;
   wikiUrl?: String;
   model: Model;
-  anim: Int;
+  anim: Animation;
   offsetX: Int;
   offsetY: Int;
   pitch: Int;

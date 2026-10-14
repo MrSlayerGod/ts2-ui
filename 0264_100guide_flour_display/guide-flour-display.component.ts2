@@ -11,7 +11,13 @@ import {
   Layout,
 } from './guide-flour-display.constants';
 
-const Markers = [
+type Marker = {
+  x: Int;
+  y: Int;
+  anim: Animation;
+};
+
+const Markers: Marker[] = [
   { x: 27, y: 256, anim: GuideAnim.UP },
   { x: 149, y: 256, anim: GuideAnim.UP },
   { x: 271, y: 256, anim: GuideAnim.UP },

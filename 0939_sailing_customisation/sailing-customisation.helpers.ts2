@@ -151,7 +151,7 @@ export function previewAnim(option: Int): Animation {
   if (row === null) {
     return -1;
   }
-  return row.anim as Animation;
+  return row.anim;
 }
 
 export function previewAngle(option: Int, boat: Int, field: Int): Int {

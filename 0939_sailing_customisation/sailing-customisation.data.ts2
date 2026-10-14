@@ -255,7 +255,7 @@ export type CustomisationOption = {
   description: String;
   subtype: Int;
   loc: WorldObject;
-  anim: Int;
+  anim: Animation;
   hasAngles: Boolean;
   anglesFirst: Int;
   anglesCount: Int;

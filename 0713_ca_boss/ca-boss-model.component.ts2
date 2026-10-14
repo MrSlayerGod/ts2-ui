@@ -26,7 +26,7 @@ export function CaBossModel(): Component {
       w="fill"
       h="fill"
       model={row.model}
-      anim={row.anim as Animation}
+      anim={row.anim}
       offsetX={row.offsetX}
       offsetY={row.offsetY}
       pitch={row.pitch}
